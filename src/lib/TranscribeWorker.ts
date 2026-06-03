@@ -269,7 +269,10 @@ async function transcribe(
       DECODER_MAX_TOKENS,
       Math.max(MIN_NEW_TOKENS, Math.ceil(seconds * TOKENS_PER_SECOND)),
     )
-    const output = await transcriber(audio, { max_new_tokens: maxNewTokens })
+    const output = await transcriber(audio, {
+      max_new_tokens: maxNewTokens,
+      language: 'english',
+    })
     const text = (
       Array.isArray(output) ? output.map((o) => o.text).join(' ') : output.text
     ).trim()

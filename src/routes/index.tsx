@@ -16,7 +16,7 @@
  */
 
 import { createFileRoute } from '@tanstack/react-router'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { toast } from 'sonner'
 
@@ -48,7 +48,11 @@ import { exportWav } from '#/lib/exportWav'
 import { RopeGainCache } from '#/lib/ropeLoudness'
 import { SabRope } from '#/lib/SabRope'
 import type { SabRopeGrow, SabRopeShare } from '#/lib/SabRope'
-import { updateSettings, useSettings } from '#/lib/settings'
+import {
+  isManualTranscription,
+  updateSettings,
+  useSettings,
+} from '#/lib/settings'
 import { consumeBundledCrashFlag } from '#/lib/transcribeBundled'
 import {
   chunkAudioFromRopes,
@@ -81,6 +85,16 @@ function App() {
     useState(false)
 
   const settings = useSettings()
+
+  // Bumped whenever chunk transcriptions change in place (a manual pass
+  // progresses, or a model switch clears them). `analysisMut`'s identity is
+  // stable across those mutations, so derived render values that scan it (the
+  // Transcribe button's disabled state) must read this version to recompute —
+  // see project_react_compiler_inplace_mutation.
+  const [transcriptionVersion, bumpTranscriptions] = useReducer(
+    (x: number) => x + 1,
+    0,
+  )
 
   const [ropes, setRopes] = useState<Array<SabRope>>([])
   const {
@@ -373,7 +387,11 @@ function App() {
   // whose voiced segment has ended (next chunk is unvoiced), create spans for
   // newly-voiced chunks, and kick off transcription.
   const applyReconciliation = useCallback(() => {
-    if (settingsRef.current.transcriptionMode === 'disabled') return
+    const mode = settingsRef.current.transcriptionMode
+    // Nothing to reconcile when transcription is off, or when the current model
+    // only transcribes on demand — manual modes don't transcribe live during
+    // recording, so no live spans are created until the user asks.
+    if (mode === 'disabled' || isManualTranscription(mode)) return
 
     const chunks = analysisMutRef.current
     const liveSpans = liveSpansRef.current
@@ -437,11 +455,64 @@ function App() {
     [applyReconciliation],
   )
 
-  const handleTranscribe = useCallback(() => {
-    // We automatically transcribe things if transcription is enabled. Before it's enabled,
-    // we show a button to enable transcription, and that's what this handles.
+  const handleSetUpTranscription = useCallback(() => {
+    // When transcription is off, the header's Transcribe button is the prompt to
+    // turn it on (it replaces the per-segment buttons that used to live in the
+    // SpeechStrip): clicking it opens the transcription settings.
     setShowTranscriptionSettings(true)
   }, [])
+
+  // Manual transcription: kick off a pass over everything recorded/imported so
+  // far and report progress in a single toast. Used for models that don't
+  // transcribe automatically (see isManualTranscription). Chunks recorded after
+  // this runs stay untranscribed until the user triggers it again.
+  const transcribeToastSeq = useRef(0)
+  const handleTranscribeAll = useCallback(() => {
+    const chunks = analysisMutRef.current
+    // The chunks transcription is being requested for, captured now. They're
+    // mutated in place as results land, so we can read their status to track
+    // progress.
+    const targets = chunks.filter((c) => c.voiced && !c.transcription)
+    if (targets.length === 0) {
+      toast('Nothing to transcribe')
+      return
+    }
+    const total = targets.length
+    const id = `transcribe-${(transcribeToastSeq.current += 1)}`
+    const settled = () =>
+      targets.filter(
+        (c) => c.transcription && c.transcription.status !== 'pending',
+      ).length
+
+    toast.loading(`Transcribing… 0/${total}`, { id })
+    transcribeChunks(
+      chunks,
+      settingsRef.current,
+      getAudio,
+      () => {
+        speechStripRef.current?.refreshTranscriptions()
+        bumpTranscriptions()
+        const done = settled()
+        if (done < total)
+          toast.loading(`Transcribing… ${done}/${total}`, { id })
+      },
+      handleModelUnavailable,
+      getViewport,
+      () => {
+        const done = settled()
+        const word = total === 1 ? 'segment' : 'segments'
+        if (done >= total) {
+          toast.success(`Transcribed ${total} ${word}`, { id })
+        } else if (done === 0) {
+          // Nothing landed — e.g. the model turned out to be unavailable, which
+          // surfaces its own toast and reverts the mode. Drop the progress one.
+          toast.dismiss(id)
+        } else {
+          toast.warning(`Transcribed ${done} of ${total} segments`, { id })
+        }
+      },
+    )
+  }, [getAudio, handleModelUnavailable, getViewport])
 
   useMicCapture({
     enabled: status.value === 'recording',
@@ -482,6 +553,36 @@ function App() {
       window.removeEventListener('beforeunload', handleBeforeUnload)
     }
   }, [hasData])
+
+  const isRecording =
+    status.value === 'recording' || status.value === 'analyzing'
+  const manualTranscription = isManualTranscription(settings.transcriptionMode)
+  // Only meaningful in manual mode. Disable the Transcribe action while
+  // recording, when everything voiced is already transcribed (nothing left to
+  // do), or while a segment is mid-transcription (a pass is already running).
+  // `transcriptionVersion >= 0` is always true; reading it here makes the
+  // version a real dependency so in-place transcription mutations (which leave
+  // `analysisMut`'s identity untouched) recompute this under the React Compiler.
+  const transcribeDisabled =
+    transcriptionVersion >= 0 &&
+    (isRecording ||
+      !analysisMut.some((c) => c.voiced && !c.transcription) ||
+      analysisMut.some((c) => c.transcription?.status === 'pending'))
+
+  // The header's Transcribe button does double duty: in a manual model it runs a
+  // pass; with transcription off (and once there's audio) it's the prompt to set
+  // it up. Automatic models just transcribe, so it's hidden.
+  const transcriptionOff = settings.transcriptionMode === 'disabled'
+  const showTranscribe = manualTranscription || transcriptionOff
+  const onTranscribeClick = manualTranscription
+    ? handleTranscribeAll
+    : handleSetUpTranscription
+  const transcribeTitle = manualTranscription
+    ? 'Transcribe (T)'
+    : 'Set up transcription'
+  const transcribeButtonDisabled = manualTranscription
+    ? transcribeDisabled
+    : false
 
   useHotkeys(
     'space',
@@ -535,6 +636,13 @@ function App() {
     [status, handleStart],
   )
   useHotkeys(
+    't',
+    () => {
+      if (manualTranscription && !transcribeDisabled) handleTranscribeAll()
+    },
+    [manualTranscription, transcribeDisabled, handleTranscribeAll],
+  )
+  useHotkeys(
     'mod+o',
     (e) => {
       e.preventDefault()
@@ -563,8 +671,6 @@ function App() {
     Math.floor(timelineState.trackDurationSec / 30 + 1) * 30 +
     (timelineState.viewportRightSec - timelineState.viewportLeftSec)
 
-  const isRecording =
-    status.value === 'recording' || status.value === 'analyzing'
   const showWelcome = analysisMut.length === 0 && status.value === 'inactive'
   const noOp = useCallback(() => {}, [])
 
@@ -590,6 +696,7 @@ function App() {
     if (prev === null || prev === next) return
     invalidateTranscriptions(analysisMutRef.current)
     speechStripRef.current?.refreshTranscriptions()
+    bumpTranscriptions()
   }, [settings.transcriptionMode])
 
   // Transcribe. Results mutate chunks in place, so we tell the SpeechStrip
@@ -598,6 +705,9 @@ function App() {
   // the post-recording pass (imports, re-scans, settings changes).
   useEffect(() => {
     if (isRecording || ropes.length === 0) return
+    // Manual modes only transcribe when the user triggers it (the header's
+    // Transcribe action / `t`), so the automatic pass stands down here.
+    if (isManualTranscription(settings.transcriptionMode)) return
     transcribeChunks(
       analysisMut,
       settings,
@@ -644,6 +754,10 @@ function App() {
           exportAudioDisabled={exportAudioDisabled}
           onOpenAudioSettings={handleOpenAudioSettings}
           onOpenTranscriptionSettings={() => setShowTranscriptionSettings(true)}
+          showTranscribe={showTranscribe}
+          onTranscribe={onTranscribeClick}
+          transcribeDisabled={transcribeButtonDisabled}
+          transcribeTitle={transcribeTitle}
         />
         <div className="relative flex flex-col grow overflow-hidden">
           <Plot
@@ -702,7 +816,6 @@ function App() {
               />
               <SpeechStrip
                 analysisMut={analysisMut}
-                onTranscribe={handleTranscribe}
                 liveChunks={liveChunks}
                 ref={speechStripRef}
               />

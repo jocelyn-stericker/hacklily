@@ -15,11 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { AlertTriangle, Captions, Loader2 } from 'lucide-react'
+import { AlertTriangle, Loader2 } from 'lucide-react'
 import {
   useEffect,
   useImperativeHandle,
-  useLayoutEffect,
   useReducer,
   useRef,
   useState,
@@ -27,7 +26,6 @@ import {
 import type { ReactNode, RefObject } from 'react'
 
 import type { AnalysisChunk } from '#/lib/AnalysisFrame'
-import { useSettings } from '#/lib/settings'
 
 import {
   InCanvas,
@@ -36,7 +34,6 @@ import {
   useSpeechStripHeight,
   useTimeToX,
 } from './Plot'
-import { Button } from './ui/button'
 import { useColourScheme } from './useColourScheme'
 
 const VOICED_FILL = 'rgba(78,205,196,1.0)'
@@ -52,12 +49,10 @@ export interface SpeechStripHandle {
 
 export function SpeechStrip({
   analysisMut,
-  onTranscribe,
   liveChunks,
   ref,
 }: {
   analysisMut: AnalysisChunk[]
-  onTranscribe?: (chunkIndex: number) => void
   liveChunks?: Set<AnalysisChunk>
   ref: RefObject<SpeechStripHandle | null>
 }) {
@@ -84,9 +79,6 @@ export function SpeechStrip({
 
   const scheme = useColourScheme()
   const bgColor = scheme === 'dark' ? '#000000' : '#ffffff'
-
-  const transcriptionMode = useSettings().transcriptionMode
-  const transcriptionDisabled = transcriptionMode === 'disabled'
 
   useEffect(() => {
     if (!canvas || canvasWidth <= 0 || canvasHeight <= 0) return
@@ -170,8 +162,6 @@ export function SpeechStrip({
         analysisMut={analysisMut}
         stripWidth={stripWidth}
         stripTop={stripTop}
-        transcriptionDisabled={transcriptionDisabled}
-        onTranscribe={onTranscribe}
         liveChunks={liveChunks}
       />
     </>
@@ -180,17 +170,13 @@ export function SpeechStrip({
 
 function SpeechStripDOMOverlay({
   analysisMut,
-  onTranscribe,
   stripWidth,
   stripTop,
-  transcriptionDisabled,
   liveChunks,
 }: {
   analysisMut: AnalysisChunk[]
-  onTranscribe?: (chunkIndex: number) => void
   stripWidth: number
   stripTop: number
-  transcriptionDisabled: boolean
   liveChunks?: Set<AnalysisChunk>
 }) {
   const plotPad = usePlotPad()
@@ -215,22 +201,6 @@ function SpeechStripDOMOverlay({
         const left = timeToXDom(startSec) - plotPad.left
         const right = timeToXDom(endSec) - plotPad.left
         if (right < 0 || left > stripWidth) return null
-
-        // With transcription disabled, the only affordance is a button that
-        // opens the transcription settings.
-        if (transcriptionDisabled) {
-          if (liveChunks?.has(chunk)) return null
-          return (
-            <TranscribeButton
-              key={index}
-              // Account for the 2px inset on each side of the chunk.
-              availableWidth={right - left - 4}
-              rightOffset={stripWidth - right + 2}
-              height={speechStripHeight - 4}
-              onClick={() => onTranscribe?.(index)}
-            />
-          )
-        }
 
         return (
           <ChunkTranscription
@@ -288,49 +258,5 @@ function ChunkTranscription({
     >
       {inner}
     </div>
-  )
-}
-
-// Renders a transcribe button right-aligned within a chunk, but only if the
-// button's intrinsic width fits in the available chunk space. It measures
-// itself after layout and removes itself when there isn't room.
-function TranscribeButton({
-  availableWidth,
-  rightOffset,
-  height,
-  onClick,
-}: {
-  availableWidth: number
-  rightOffset: number
-  height: number
-  onClick: () => void
-}) {
-  const ref = useRef<HTMLButtonElement>(null)
-  const [fits, setFits] = useState(false)
-
-  // The button stays mounted (just hidden) when it doesn't fit, so it can be
-  // re-measured and reappear once the chunk is wide enough — e.g. after zooming.
-  useLayoutEffect(() => {
-    if (ref.current) setFits(ref.current.offsetWidth <= availableWidth)
-  }, [availableWidth])
-
-  return (
-    <Button
-      ref={ref}
-      type="button"
-      variant="secondary"
-      size="icon-sm"
-      title="Transcribe this segment"
-      onClick={onClick}
-      className="absolute h-auto rounded px-1.5 py-0 text-[10px] leading-none"
-      style={{
-        top: 2,
-        right: rightOffset,
-        height,
-        visibility: fits ? 'visible' : 'hidden',
-      }}
-    >
-      <Captions />
-    </Button>
   )
 }

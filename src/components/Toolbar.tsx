@@ -56,6 +56,10 @@ export function Toolbar({
   exportAudioDisabled,
   onOpenAudioSettings,
   onOpenTranscriptionSettings,
+  showTranscribe,
+  onTranscribe,
+  transcribeDisabled,
+  transcribeTitle,
 }: {
   openFilePicker: () => void
   onNew: () => void
@@ -70,6 +74,14 @@ export function Toolbar({
   exportAudioDisabled: boolean
   onOpenAudioSettings: () => void
   onOpenTranscriptionSettings: () => void
+  // Whether to show the header's Transcribe button. The parent decides what it
+  // does: run a manual transcription pass, or — when transcription is off —
+  // open the transcription settings (the button is hidden for automatic
+  // models, which just transcribe).
+  showTranscribe: boolean
+  onTranscribe: () => void
+  transcribeDisabled: boolean
+  transcribeTitle: string
 }) {
   return (
     <header className="flex align-center justify-end gap-1 p-2 flex-wrap">
@@ -77,6 +89,17 @@ export function Toolbar({
         <img src={braatPng} className="h-10" />
       </h1>
       <div className="grow" />
+      {showTranscribe && (
+        <Button
+          variant="default"
+          className="h-10 w-10 cursor-pointer"
+          title={transcribeTitle}
+          disabled={transcribeDisabled}
+          onClick={onTranscribe}
+        >
+          <Captions className="size-6" />
+        </Button>
+      )}
       <Button
         variant="default"
         className="h-10 w-10 cursor-pointer"

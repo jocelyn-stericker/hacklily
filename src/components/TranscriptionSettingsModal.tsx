@@ -304,8 +304,8 @@ export function TranscriptionSettingsModal({
 
   const smallDescription =
     smallEngine === 'moonshine'
-      ? 'A fast, lightweight model'
-      : 'Your browser’s own on-device speech recognition'
+      ? 'A fast, lightweight model. Transcribes automatically'
+      : 'Your browser’s own on-device speech recognition. Transcribes automatically'
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -373,7 +373,7 @@ export function TranscriptionSettingsModal({
                 disabled={!largeAvailable}
                 onSelect={() => setDraft('large')}
                 title="Accurate (Whisper Turbo)"
-                description="Put your MacBook Pro or gaming PC to good use. Requires WebGPU, as well as significant compute and memory"
+                description="Put your MacBook Pro or gaming PC to good use. Requires WebGPU, as well as significant compute and memory. Transcribe on demand, by pressing the Transcribe button in the toolbar"
                 badge={
                   !largeAvailable ? (
                     <Badge variant="outline">Needs WebGPU</Badge>
@@ -417,7 +417,7 @@ export function TranscriptionSettingsModal({
                     <Badge variant="outline">Unavailable</Badge>
                   )
                 }
-                description="Use your browser or operating system's transcription service, subject to that vendor's privacy policy. Whisper Turbo is more accurate"
+                description="Use your browser or operating system's transcription service, subject to that vendor's privacy policy. Transcribes automatically. Whisper Turbo is more accurate"
               />
             </section>
           </div>

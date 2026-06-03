@@ -559,22 +559,28 @@ export function transcribeChunks(
   // Supplies the currently-visible time range so on-screen chunks transcribe
   // first; omitted (or returning `null`) falls back to timeline order.
   getViewport?: ViewportProvider,
+  // Invoked once this pass has finished walking the chunks (whether it
+  // transcribed them, skipped them, or bailed). Lets a caller finalise progress
+  // UI (e.g. a "Transcribe everything" toast) without polling.
+  onDone?: () => void,
 ): void {
   if (settings.transcriptionMode === 'disabled') return
   // Keep `chunksChain` always-resolving so a thrown pass (e.g. getAudio failing)
   // can't wedge the chain and silently stop all later transcription.
-  chunksChain = chunksChain.then(() =>
-    transcribeChunksSequential(
-      chunks,
-      settings,
-      getAudio,
-      onUpdate,
-      onModelUnavailable,
-      getViewport,
-    ).catch((err) => {
-      console.warn(LOG, 'sequential pass failed:', err)
-    }),
-  )
+  chunksChain = chunksChain
+    .then(() =>
+      transcribeChunksSequential(
+        chunks,
+        settings,
+        getAudio,
+        onUpdate,
+        onModelUnavailable,
+        getViewport,
+      ).catch((err) => {
+        console.warn(LOG, 'sequential pass failed:', err)
+      }),
+    )
+    .finally(() => onDone?.())
 }
 
 async function transcribeChunksSequential(

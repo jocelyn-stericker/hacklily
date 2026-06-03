@@ -35,6 +35,18 @@ export type BrowserPreprocessing = 'default' | 'minimal'
 //              remote service, which can send audio off-device.
 export type TranscriptionMode = 'disabled' | 'small' | 'large' | 'cloud'
 
+// Whether a transcription mode runs *on demand* — only when the user asks for it
+// (the "Transcribe" action) — rather than automatically as audio is recorded or
+// imported. The large (Whisper) model is heavy enough that transcribing every
+// chunk as it arrives isn't appropriate on every machine, so it's manual; the
+// lighter tiers stay automatic. This predicate is the single switch for that
+// policy: change the condition here to make other modes manual (or large
+// automatic). When it returns true the automatic transcription paths stand down
+// and nothing is transcribed until the user triggers it.
+export function isManualTranscription(mode: TranscriptionMode): boolean {
+  return mode === 'large'
+}
+
 // localStorage flag recording that the bundled Moonshine weights finished
 // downloading — see modelDownload.ts. Mirrored here so the legacy-settings
 // migration can seed it for users who already had the old "bundled" mode.
