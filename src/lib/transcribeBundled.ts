@@ -128,6 +128,15 @@ function onTranscriptionSettled(): void {
   scheduleIdleTeardown()
 }
 
+// Terminate a model's worker (releasing its loaded weights) and drop the pool
+// reference so the next request builds a fresh one. No-op if absent.
+function teardownWorker(model: TranscribeWorkerModel): void {
+  const worker = workers.get(model)
+  if (!worker) return
+  worker.terminate()
+  workers.delete(model)
+}
+
 function getWorker(model: TranscribeWorkerModel): TranscribeWorker {
   const existing = workers.get(model)
   if (existing) return existing
@@ -154,8 +163,7 @@ function getWorker(model: TranscribeWorkerModel): TranscribeWorker {
   // a fresh one. This is a caught, clean failure — not a crash — so clear the
   // breadcrumb.
   worker.addEventListener('error', (event) => {
-    worker.terminate()
-    workers.delete(model)
+    teardownWorker(model)
     cancelIdleTeardown()
     const error = new Error(
       event.message || 'The transcription model failed to load.',
@@ -213,4 +221,74 @@ export async function transcribeWithWorker(
       pcm.buffer,
     ])
   })
+}
+
+export type WorkerDownloadHandlers = {
+  onProgress: (loaded: number, total: number) => void
+  onReady: () => void
+  onError: (error: string) => void
+}
+
+/**
+ * Download a model's weights into the browser cache, then keep the warmed worker
+ * resident in the shared pool so the next transcription reuses it. Going through
+ * the same pool as `transcribeWithWorker` (rather than a throwaway download
+ * worker) means a large model is loaded once: tearing one down and immediately
+ * reloading it — the old download-then-transcribe handoff — is unstable.
+ *
+ * Returns a cancel function that aborts the wait and tears down the worker.
+ */
+export function downloadWithWorker(
+  model: TranscribeWorkerModel,
+  force: boolean,
+  handlers: WorkerDownloadHandlers,
+): () => void {
+  // `force` is the corrupt-cache recovery path: drop any existing worker first
+  // so the reload starts from a fresh worker that can't reuse an already-loaded
+  // (and presumably stale) in-memory pipeline.
+  if (force) teardownWorker(model)
+  const worker = getWorker(model)
+  // While the download runs the worker must stay resident even if a prior
+  // transcription left an idle teardown armed.
+  cancelIdleTeardown()
+
+  const cleanup = () => {
+    worker.removeEventListener('message', onMessage)
+    worker.removeEventListener('error', onError)
+  }
+  const onMessage = ({ data }: MessageEvent<TranscribeWorkerOutMessage>) => {
+    if (data.type === 'download-progress' && data.model === model) {
+      handlers.onProgress(data.loaded, data.total)
+    } else if (data.type === 'download-ready' && data.model === model) {
+      cleanup()
+      handlers.onReady()
+      // Leave the warmed worker in the pool, but don't let it sit resident
+      // forever if the user never transcribes — start the idle countdown.
+      scheduleIdleTeardown()
+    } else if (data.type === 'download-error' && data.model === model) {
+      cleanup()
+      // The failed load may have left the worker in a bad state; tear it down so
+      // a retry (or a later transcribe) builds a fresh one.
+      teardownWorker(model)
+      handlers.onError(data.error)
+    }
+  }
+  // A worker-level failure never delivers a download-error message; surface it
+  // here. (The pool's own error listener also fires, tearing the worker down.)
+  const onError = (event: ErrorEvent) => {
+    cleanup()
+    teardownWorker(model)
+    handlers.onError(event.message || 'The model failed to download.')
+  }
+
+  worker.addEventListener('message', onMessage)
+  worker.addEventListener('error', onError)
+  worker.postMessage({ type: 'download', model, force })
+
+  // Cancel: a download isn't otherwise cancelable, so stop listening and kill
+  // the worker (its in-flight fetch dies with it).
+  return () => {
+    cleanup()
+    teardownWorker(model)
+  }
 }

@@ -20,9 +20,10 @@
 // start a download. Three things can be downloaded:
 //   - "browser":   the browser's own on-device speech model, via the Web Speech
 //                  `SpeechRecognition.install()` API (no byte progress).
-//   - "moonshine"/"whisper": transformers.js models, fetched by a dedicated,
-//                  remote-allowed TranscribeWorker (byte progress, cancelable by
-//                  terminating the worker).
+//   - "moonshine"/"whisper": transformers.js models, fetched through the shared
+//                  TranscribeWorker pool (see transcribeBundled.ts) so the warmed
+//                  worker is reused for transcription (byte progress, cancelable
+//                  by terminating the worker).
 //
 // "Downloaded" detection for the worker models is a localStorage flag set on a
 // completed download; the browser engine's readiness comes from the authoritative
@@ -34,11 +35,7 @@
 
 import { useSyncExternalStore } from 'react'
 
-import TranscribeWorkerCtor from '#/lib/TranscribeWorker?worker'
-import type {
-  TranscribeWorker,
-  TranscribeWorkerOutMessage,
-} from '#/lib/TranscribeWorker'
+import { downloadWithWorker } from '#/lib/transcribeBundled'
 
 const LOG = '[modelDownload]'
 
@@ -165,53 +162,33 @@ export function useDownloadVersion(): number {
 // Worker-model downloads (Moonshine / Whisper)
 // ---------------------------------------------------------------------------
 
-// The dedicated, remote-allowed download worker for each in-flight worker-model
-// download. Present only while downloading; cancel = terminate.
-const downloadWorkers = new Map<WorkerDownloadModel, TranscribeWorker>()
-
-function teardownDownloadWorker(model: WorkerDownloadModel): void {
-  const worker = downloadWorkers.get(model)
-  if (!worker) return
-  worker.terminate()
-  downloadWorkers.delete(model)
-}
+// A cancel handle for each in-flight worker-model download. The download runs on
+// the shared worker pool (see transcribeBundled.ts) so the warmed worker is
+// reused for the subsequent transcription rather than torn down and rebuilt —
+// reloading a large model right after deleting it is unstable. Present only
+// while downloading; cancel = invoke the handle.
+const downloadCancels = new Map<WorkerDownloadModel, () => void>()
 
 function startWorkerDownload(model: WorkerDownloadModel, force: boolean): void {
-  if (downloadWorkers.has(model)) return
+  if (downloadCancels.has(model)) return
   setState(model, { status: 'downloading', loaded: 0, total: 0 })
 
-  const worker = new TranscribeWorkerCtor()
-  downloadWorkers.set(model, worker)
-
-  worker.addEventListener(
-    'message',
-    ({ data }: MessageEvent<TranscribeWorkerOutMessage>) => {
-      if (data.type === 'download-progress' && data.model === model) {
-        setState(model, {
-          status: 'downloading',
-          loaded: data.loaded,
-          total: data.total,
-        })
-      } else if (data.type === 'download-ready' && data.model === model) {
-        markWorkerDownloaded(model)
-        teardownDownloadWorker(model)
-        setState(model, IDLE)
-        bumpDownloaded()
-      } else if (data.type === 'download-error' && data.model === model) {
-        teardownDownloadWorker(model)
-        setState(model, { status: 'failed', error: data.error })
-      }
+  const cancel = downloadWithWorker(model, force, {
+    onProgress: (loaded, total) => {
+      setState(model, { status: 'downloading', loaded, total })
     },
-  )
-  worker.addEventListener('error', (event) => {
-    teardownDownloadWorker(model)
-    setState(model, {
-      status: 'failed',
-      error: event.message || 'The model failed to download.',
-    })
+    onReady: () => {
+      downloadCancels.delete(model)
+      markWorkerDownloaded(model)
+      setState(model, IDLE)
+      bumpDownloaded()
+    },
+    onError: (error) => {
+      downloadCancels.delete(model)
+      setState(model, { status: 'failed', error })
+    },
   })
-
-  worker.postMessage({ type: 'download', model, force })
+  downloadCancels.set(model, cancel)
 }
 
 function markWorkerDownloaded(model: WorkerDownloadModel): void {
@@ -320,7 +297,8 @@ export function cancelDownload(model: DownloadModel): void {
     // Invalidate the in-flight install so its resolution is ignored.
     browserInstallToken += 1
   } else {
-    teardownDownloadWorker(model)
+    downloadCancels.get(model)?.()
+    downloadCancels.delete(model)
   }
   setState(model, IDLE)
 }

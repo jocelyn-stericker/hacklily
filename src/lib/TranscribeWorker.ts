@@ -16,22 +16,16 @@
  */
 /// <reference lib="webworker" />
 
-// Runs a bundled speech-recognition model off the UI thread via transformers.js,
-// which bundles its own onnxruntime-web and handles the mel front-end and
-// detokenizer. The worker just feeds it 16 kHz mono PCM. Two models are
-// supported, selected per message:
-//   - "moonshine": the small, fast Moonshine model (onnxruntime-web / wasm).
-//   - "whisper":   whisper-large-v3-turbo, far more accurate but ~540 MB and
-//                  WebGPU-only.
+// Runs a bundled speech-recognition model off the UI thread via transformers.js.
 //
-// Downloading is explicit and isolated: a worker instance that receives a
-// `download` message opens the network (see `networkAllowed` below) and fetches
-// the weights, reporting progress. A worker instance that only receives
-// `transcribe` messages keeps the network closed and can only use weights
-// already in the browser cache — so transcription never triggers a download. The
-// client (transcribeBundled.ts / modelDownload.ts) keeps those two roles on
-// separate worker instances, which keeps the process-global state consistent
-// within each worker.
+// Downloading is explicit: the network is opened (see `networkAllowed` below)
+// only for the duration of a `download` message, which fetches the weights and
+// reports progress. A `transcribe` message never opens the network, so it can
+// only use weights already in the browser cache and never triggers a download.
+// The same worker may handle both — a download leaves the network closed again
+// when it finishes, and the now-warmed worker is reused for transcription (see
+// the shared pool in transcribeBundled.ts, driven for downloads by
+// modelDownload.ts).
 import { env, pipeline } from '@huggingface/transformers'
 import type {
   AutomaticSpeechRecognitionPipeline,
@@ -104,7 +98,6 @@ const MODEL_CONFIG: Record<TranscribeWorkerModel, ModelConfig> = {
     options: {
       dtype: 'q4f16',
       device: 'webgpu',
-      session_options: { graphOptimizationLevel: 'basic' },
     },
   },
 }
@@ -163,25 +156,32 @@ declare function postMessage(message: TranscribeWorkerOutMessage): void
 
 // Pipelines are loaded once, lazily, per model. A failed load clears the cache
 // entry so a later request can retry (e.g. after a download lands the weights).
-const pipelines = new Map<
-  TranscribeWorkerModel,
-  Promise<AutomaticSpeechRecognitionPipeline>
->()
+let pipelineModel: TranscribeWorkerModel | null = null
+let _pipeline: Promise<AutomaticSpeechRecognitionPipeline> | null = null
 
 function getPipeline(
   model: TranscribeWorkerModel,
   onProgress?: (info: ProgressInfo) => void,
 ): Promise<AutomaticSpeechRecognitionPipeline> {
-  let promise = pipelines.get(model)
-  if (!promise) {
-    promise = loadPipeline(model, onProgress).catch((err: unknown) => {
-      pipelines.delete(model)
-      throw err
-    })
-    pipelines.set(model, promise)
+  pipelineModel ??= model
+  if (pipelineModel !== model) {
+    throw new Error(
+      'Cannot reuse the same TranscribeWorker for multiple models',
+    )
   }
-  return promise
+  if (_pipeline) {
+    return _pipeline
+  }
+  _pipeline = loadPipeline(model, onProgress).catch((err: unknown) => {
+    _pipeline = null
+    throw err
+  })
+
+  return _pipeline
 }
+
+// More than one thread is silly on moonshine, and can be unstable with whisper.
+env.backends.onnx.wasm!.numThreads = 1
 
 // Moonshine runs on the onnxruntime-web wasm backend. Pin a specific ORT build
 // and force single-threaded: the threaded build's asyncify path doesn't play
@@ -189,14 +189,13 @@ function getPipeline(
 // isolation for SharedArrayBuffer. Whisper runs on WebGPU and doesn't touch the
 // wasm backend, so this only applies when loading Moonshine.
 // TODO: use optimized ort files with a custom build of onnxruntime, like for VAD.
-const ORT_VERSION = '1.24.3'
+const LAST_GOOD_CPU_ORT_VERSION = '1.24.3'
 function configureMoonshineBackend(): void {
   const wasm = env.backends.onnx.wasm
   if (!wasm) return
-  wasm.numThreads = 1
   wasm.wasmPaths = {
-    mjs: `https://cdn.jsdelivr.net/npm/onnxruntime-web@${ORT_VERSION}/dist/ort-wasm-simd-threaded.mjs`,
-    wasm: `https://cdn.jsdelivr.net/npm/onnxruntime-web@${ORT_VERSION}/dist/ort-wasm-simd-threaded.wasm`,
+    mjs: `https://cdn.jsdelivr.net/npm/onnxruntime-web@${LAST_GOOD_CPU_ORT_VERSION}/dist/ort-wasm-simd-threaded.mjs`,
+    wasm: `https://cdn.jsdelivr.net/npm/onnxruntime-web@${LAST_GOOD_CPU_ORT_VERSION}/dist/ort-wasm-simd-threaded.wasm`,
   }
 }
 
@@ -396,9 +395,8 @@ function reportDownloadError(model: TranscribeWorkerModel, err: unknown): void {
   })
 }
 
-// Serialize inference: onnxruntime sessions aren't re-entrant, and the UI fires
-// every pending chunk at once, so requests queue behind one another rather than
-// running concurrently.
+// Serialize inference: onnxruntime sessions aren't re-entrant, so requests
+// queue behind one another rather than running concurrently.
 let queue: Promise<void> = Promise.resolve()
 
 self.onmessage = ({ data }: MessageEvent<TranscribeWorkerInMessage>) => {
