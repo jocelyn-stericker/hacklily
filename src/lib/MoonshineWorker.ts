@@ -27,6 +27,7 @@ import type {
   PretrainedModelOptions,
 } from '@huggingface/transformers'
 
+import { loudnessGain, measureLoudness } from './loudness'
 import { resample } from './ResampleProcessor'
 
 // Run onnxruntime-web single-threaded. Still adequete performance, much less memory use.
@@ -125,12 +126,27 @@ function loadPipeline(): Promise<AutomaticSpeechRecognitionPipeline> {
   return pipeline('automatic-speech-recognition', MODEL, options)
 }
 
+function normalize(pcm: Float32Array, sampleRate: number): void {
+  const gain = loudnessGain(measureLoudness(pcm, sampleRate))
+  pcm.forEach((sample, i) => {
+    pcm[i] = sample * gain
+  })
+}
+
+// Normalize a chunk's mono PCM, resample it to Moonshine's 16 kHz rate
+function prepareAudio(pcm: Float32Array, sampleRate: number): Float32Array {
+  // resample() returns a copy even when the rate already matches, so it's safe
+  // to mutate `pcm` first — it's the worker's own copy of the posted buffer.
+  normalize(pcm, sampleRate)
+  return resample(pcm, sampleRate, MOONSHINE_SAMPLE_RATE)
+}
+
 async function transcribe(data: MoonshineWorkerInMessage): Promise<void> {
   try {
     console.log(LOG, `Transcribing ${data.pcm.length / data.sampleRate}s`)
     console.time(LOG + ' transcribe')
     const transcriber = await getPipeline()
-    const audio = resample(data.pcm, data.sampleRate, MOONSHINE_SAMPLE_RATE)
+    const audio = prepareAudio(data.pcm, data.sampleRate)
     const seconds = audio.length / MOONSHINE_SAMPLE_RATE
     const maxNewTokens = Math.min(
       DECODER_MAX_TOKENS,

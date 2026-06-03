@@ -28,7 +28,11 @@ import type { SabRope } from './SabRope'
  * Must be done in response to a click or other event.
  */
 export function exportWav(ropes: SabRope[], gains: number[]) {
-  const wavBuf = ropesToWav(ropes, gains)
+  const wavBuf = ropesToWav(
+    ropes,
+    gains,
+    // ropes.map(() => 1),
+  )
 
   const ts = new Date()
     .toISOString()

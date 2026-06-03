@@ -101,6 +101,19 @@ export async function runAnalysis(
   let nextFrame = 0 // next frame not yet pushed to the gate
   let vadSamplesFed = 0 // total 16 kHz samples handed to vad.feed
 
+  // Cheap per-frame energy above ONSET_HP_HZ for onset backtracking in the gate
+  // (see SpeechGate). A one-pole high-pass removes F0/rumble but keeps a flat
+  // passband above the cutoff, so the broadband aspiration of weak fricatives
+  // (/f/, /h/, /θ/) counts, not just sibilant HF. Mean-squared per frame, in
+  // lockstep with frameIndex so frameHfEnergy[f] is set as frame f completes.
+  const ONSET_HP_HZ = 300
+  const hpCoeff = 1 / (1 + (2 * Math.PI * ONSET_HP_HZ) / sampleRate)
+  const frameHfEnergy: number[] = []
+  let hpPrevIn = 0
+  let hpPrevOut = 0
+  let hfAcc = 0
+  let hfCount = 0
+
   // Gate every frame whose covering chunk's probability is already known. The
   // covering chunk is non-decreasing in frame index, so once one frame's chunk
   // is missing, so are all later frames'.
@@ -110,7 +123,11 @@ export async function runAnalysis(
         ((nextFrame + 0.5) * timeStepSec) / CHUNK_SEC,
       )
       if (coveringChunk >= vadProbs.length) break
-      gate.push(nextFrame, vadProbs[coveringChunk]!)
+      gate.push(
+        nextFrame,
+        vadProbs[coveringChunk]!,
+        frameHfEnergy[nextFrame] ?? NaN,
+      )
       flushDecisions()
       nextFrame++
     }
@@ -141,10 +158,23 @@ export async function runAnalysis(
     vadResampler.feed(inp)
     const n = vadResampler.drain(vadDrainBuf)
 
-    samplesPending += inp.length
-    while (samplesPending > timeStepSamples) {
-      frameIndex++
-      samplesPending -= timeStepSamples
+    // Count frames and accumulate per-frame HF energy per input sample, so the
+    // two stay aligned. Draining one timeStepSamples at a time per sample yields
+    // the same frame count as adding inp.length then draining in bulk.
+    for (const x of inp) {
+      const hp = hpCoeff * (hpPrevOut + x - hpPrevIn)
+      hpPrevIn = x
+      hpPrevOut = hp
+      hfAcc += hp * hp
+      hfCount++
+      samplesPending += 1
+      if (samplesPending > timeStepSamples) {
+        samplesPending -= timeStepSamples
+        frameHfEnergy[frameIndex] = hfCount > 0 ? hfAcc / hfCount : 0
+        frameIndex++
+        hfAcc = 0
+        hfCount = 0
+      }
     }
 
     if (n > 0) enqueueVadChunk(vadDrainBuf.slice(0, n))
@@ -167,7 +197,11 @@ export async function runAnalysis(
       lastChunk,
       Math.floor(((nextFrame + 0.5) * timeStepSec) / CHUNK_SEC),
     )
-    gate.push(nextFrame, coveringChunk >= 0 ? vadProbs[coveringChunk]! : 0)
+    gate.push(
+      nextFrame,
+      coveringChunk >= 0 ? vadProbs[coveringChunk]! : 0,
+      frameHfEnergy[nextFrame] ?? NaN,
+    )
     flushDecisions()
     nextFrame++
   }

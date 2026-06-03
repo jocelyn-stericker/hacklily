@@ -468,6 +468,58 @@ describe('SpeechGate', () => {
     })
   })
 
+  describe('onset backtrack', () => {
+    // Pushes (probability, onsetFeature) pairs and returns final speechDetected.
+    function gateF(frames: [number, number][]): boolean[] {
+      const out: boolean[] = new Array(frames.length).fill(false)
+      const g = new SpeechGate(FPS, (d) => {
+        out[d.frameIndex] = d.speechDetected
+      })
+      frames.forEach(([p, f], i) => g.push(i, p, f))
+      g.end()
+      return out
+    }
+
+    // 10 silent frames (low HF energy), then 10 unvoiced-attack frames that
+    // Silero misses (probability below threshold) but which carry high HF
+    // energy, then voiced speech. The onset should reclaim back through the
+    // attack to its start, but not into the steady silence before it.
+    const QUIET_HF = 1
+    const ATTACK_HF = 50
+    const VOICED_HF = 100
+    const frames: [number, number][] = [
+      ...fill(10, SILENCE).map((p): [number, number] => [p, QUIET_HF]),
+      ...fill(10, 0.1).map((p): [number, number] => [p, ATTACK_HF]),
+      ...fill(60, SPEECH).map((p): [number, number] => [p, VOICED_HF]),
+    ]
+
+    it('reclaims an unvoiced attack that exceeds the noise floor', () => {
+      const out = gateF(frames)
+      // The whole attack run (indices 10–19) is marked speech...
+      for (let i = 10; i < 20; i++) expect(out[i]).toBe(true)
+      // ...and the voiced run too.
+      expect(out[20]).toBe(true)
+    })
+
+    it('stops at the steady silence before the attack', () => {
+      const out = gateF(frames)
+      // The last silent frame before the attack stays silent: the backtrack
+      // reached the noise floor and stopped, rather than running to the start.
+      expect(out[9]).toBe(false)
+      expect(out[0]).toBe(false)
+    })
+
+    it('falls back to the blind pad when the attack matches the floor', () => {
+      // Same probabilities, but the "attack" carries no extra energy, so there
+      // is nothing above the floor to reclaim beyond the blind PREROLL pad.
+      const flat: [number, number][] = frames.map(([p]) => [p, QUIET_HF])
+      const out = gateF(flat)
+      // Only the PREROLL frames immediately before the voiced onset at 20.
+      for (let i = 20 - PREROLL; i < 20; i++) expect(out[i]).toBe(true)
+      expect(out[20 - PREROLL - 1]).toBe(false)
+    })
+  })
+
   describe('minimum speech duration', () => {
     it('keeps a segment that reaches MIN_SPEECH frames', () => {
       const speech = MIN_SPEECH + 5

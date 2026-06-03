@@ -144,8 +144,22 @@ export const POSITIVE_THRESHOLD = 0.3
 export const NEGATIVE_THRESHOLD = 0.25
 
 // Frames immediately before a voiced onset are retroactively marked as speech,
-// so the attack of a word is not clipped.
+// so the attack of a word is not clipped. Always applied, regardless of audio.
 export const PREROLL_MS = 50
+
+// Upper bound on how far before a voiced onset the gate may reclaim as speech
+// when callers supply a per-frame onset feature (high-frequency energy). Unlike
+// PREROLL_MS, this is only a ceiling: the gate walks back from the onset through
+// frames whose energy stays well above the local noise floor — an unvoiced
+// attack such as /s/ or /f/ that Silero, run on quiet input, tends to miss —
+// and stops once the energy returns to the floor. With no feature supplied it
+// has no effect and the blind PREROLL_MS pad is used.
+export const ONSET_BACKTRACK_MS = 200
+
+// How far above the local noise floor a frame's onset feature must sit to be
+// pulled into the onset by the backtrack (≈5 dB in power). Low enough to catch
+// weak fricatives (/f/, /θ/), high enough that steady-state silence stops it.
+const ONSET_BACKTRACK_FACTOR = 3
 
 // Frames immediately after a voiced segment ends are kept as speech, so the
 // release/decay tail of the last word is not clipped. Unlike redemption (which
@@ -182,6 +196,9 @@ export interface SpeechDecision {
 interface GateFrame {
   frameIndex: number
   speechProbability: number
+  // Per-frame high-frequency energy, used to refine onsets. NaN when the caller
+  // does not supply it; the gate then falls back to the blind PREROLL_MS pad.
+  onsetFeature: number
 }
 
 /**
@@ -199,6 +216,7 @@ interface GateFrame {
  */
 export class SpeechGate {
   private readonly prerollFrames: number
+  private readonly backtrackFrames: number
   private readonly postrollFrames: number
   private readonly redemptionFrames: number
   private readonly minSpeechFrames: number
@@ -227,13 +245,18 @@ export class SpeechGate {
   ) {
     const framesFor = (ms: number) => Math.round((ms / 1000) * framesPerSecond)
     this.prerollFrames = framesFor(PREROLL_MS)
+    this.backtrackFrames = framesFor(ONSET_BACKTRACK_MS)
     this.postrollFrames = framesFor(POSTROLL_MS)
     this.redemptionFrames = framesFor(REDEMPTION_MS)
     this.minSpeechFrames = framesFor(MIN_SPEECH_MS)
   }
 
-  push(frameIndex: number, speechProbability: number): void {
-    const frame: GateFrame = { frameIndex, speechProbability }
+  push(
+    frameIndex: number,
+    speechProbability: number,
+    onsetFeature = NaN,
+  ): void {
+    const frame: GateFrame = { frameIndex, speechProbability, onsetFeature }
 
     if (speechProbability >= POSITIVE_THRESHOLD) this.speaking = true
     else if (speechProbability < NEGATIVE_THRESHOLD) this.speaking = false
@@ -254,9 +277,10 @@ export class SpeechGate {
 
   private onSpeech(frame: GateFrame): void {
     if (!this.inSegment) {
-      // Onset: open a segment and reclaim buffered pre-roll frames.
+      // Onset: open a segment and reclaim buffered pre-roll frames, extending
+      // back through any unvoiced attack the onset feature reveals.
       this.inSegment = true
-      for (const pf of this.preroll) {
+      for (const pf of this.reclaimPreroll()) {
         this.emit(pf, true)
         this.extendSegment(pf)
       }
@@ -305,7 +329,40 @@ export class SpeechGate {
   private onSilence(frame: GateFrame): void {
     this.emit(frame, false)
     this.preroll.push(frame)
-    if (this.preroll.length > this.prerollFrames) this.preroll.shift()
+    if (this.preroll.length > this.backtrackFrames) this.preroll.shift()
+  }
+
+  // Choose which buffered pre-onset frames an onset reclaims as speech. Always
+  // takes at least the last prerollFrames (the blind PREROLL_MS pad). When an
+  // onset feature is available, estimates the noise floor from the oldest part
+  // of the buffer (which predates the attack) and walks further back from the
+  // pad through any contiguous run sitting ONSET_BACKTRACK_FACTOR above that
+  // floor, so the onset lands at the start of an unvoiced consonant rather than
+  // the voiced vowel. Falls back to the blind pad when no usable feature exists.
+  private reclaimPreroll(): GateFrame[] {
+    const n = this.preroll.length
+    let start = Math.max(0, n - this.prerollFrames)
+
+    const refEnd = Math.floor(n / 4)
+    let sum = 0
+    let count = 0
+    for (let i = 0; i < refEnd; i++) {
+      const f = this.preroll[i]!.onsetFeature
+      if (!Number.isNaN(f)) {
+        sum += f
+        count++
+      }
+    }
+    if (count > 0) {
+      const threshold = (sum / count) * ONSET_BACKTRACK_FACTOR
+      if (threshold > 0) {
+        while (start > 0 && this.preroll[start - 1]!.onsetFeature > threshold) {
+          start--
+        }
+      }
+    }
+
+    return this.preroll.slice(start)
   }
 
   private extendSegment(frame: GateFrame): void {

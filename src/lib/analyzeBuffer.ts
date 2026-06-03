@@ -142,6 +142,26 @@ export async function analyzeBuffer(
     frameSpeechProb[x] = vadProbs[vadIdx]!
   }
 
+  // Per-frame energy summed over the spectrogram bins above ONSET_BAND_LO_HZ —
+  // broadband enough to include the aspiration of weak, non-sibilant fricatives
+  // (/f/, /h/, /θ/), whose energy sits in the formant region rather than the
+  // sibilant HF band, while still excluding F0/rumble below the cutoff. The
+  // spectrogram is built from pre-emphasised audio, so faint fricative/consonant
+  // structure is already boosted here; the gate uses this to backtrack onsets to
+  // the start of an unvoiced attack (see SpeechGate).
+  const ONSET_BAND_LO_HZ = 300
+  const hfBin0 = Math.max(
+    0,
+    Math.ceil((ONSET_BAND_LO_HZ - specResult.f1Hz) / specResult.freqStepHz),
+  )
+  const frameHfEnergy = new Float32Array(specResult.numFrames)
+  for (let x = 0; x < specResult.numFrames; x++) {
+    const row = specResult.data[x]!
+    let e = 0
+    for (let b = hfBin0; b < specResult.numFreqs; b++) e += row[b]!
+    frameHfEnergy[x] = e
+  }
+
   // Gate those probabilities into per-frame speech decisions: hysteresis,
   // pre-roll, redemption, and the minimum-duration filter, identical to the
   // realtime VAD worker. The gate revises frames in place via its callback.
@@ -150,7 +170,7 @@ export async function analyzeBuffer(
     speechDetectedArr[d.frameIndex] = d.speechDetected ? 1 : 0
   })
   for (let x = 0; x < specResult.numFrames; x++)
-    gate.push(x, frameSpeechProb[x]!)
+    gate.push(x, frameSpeechProb[x]!, frameHfEnergy[x])
   gate.end()
 
   // Build per-frame formant state with validity filter and last-valid holdover,
