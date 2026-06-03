@@ -19,7 +19,7 @@
 import { AudioRingReader } from './AudioRingReader'
 import { ResamplerStreamProcessor } from './ResampleProcessor'
 import type { SpeechDecision } from './VadProcessor'
-import { SpeechGate, VadStreamProcessor } from './VadProcessor'
+import { SpeechGate, VadStreamProcessor, VAD_CHUNK } from './VadProcessor'
 import type {
   WorkerEndedMessage,
   PatchFramesMessage,
@@ -87,31 +87,53 @@ export async function runAnalysis(
     pendingDecisions.length = 0
   }
 
-  let samplesPending = 0
-  let frameIndex = 0
+  // Per-VAD-chunk speech probability, indexed by chunk. Each chunk c covers
+  // 16 kHz samples [c·VAD_CHUNK, (c+1)·VAD_CHUNK), i.e. absolute time
+  // [c·CHUNK_SEC, (c+1)·CHUNK_SEC). A frame is gated against the chunk covering
+  // its midpoint, identical to analyzeBuffer's frame→probability mapping; here
+  // it is applied incrementally as chunk probabilities arrive.
+  const CHUNK_SEC = VAD_CHUNK / VAD_RATE
+  const timeStepSec = timeStepSamples / sampleRate
+  const vadProbs: number[] = []
 
-  // Frames accumulated since the last resampler drain; attached to the next VAD
-  // chunk so they are gated only once the corresponding inference completes.
-  let accumulatedFrames: number[] = []
+  let samplesPending = 0
+  let frameIndex = 0 // total frames generated so far
+  let nextFrame = 0 // next frame not yet pushed to the gate
+  let vadSamplesFed = 0 // total 16 kHz samples handed to vad.feed
+
+  // Gate every frame whose covering chunk's probability is already known. The
+  // covering chunk is non-decreasing in frame index, so once one frame's chunk
+  // is missing, so are all later frames'.
+  function gateReadyFrames() {
+    while (nextFrame < frameIndex) {
+      const coveringChunk = Math.floor(
+        ((nextFrame + 0.5) * timeStepSec) / CHUNK_SEC,
+      )
+      if (coveringChunk >= vadProbs.length) break
+      gate.push(nextFrame, vadProbs[coveringChunk]!)
+      flushDecisions()
+      nextFrame++
+    }
+  }
 
   // Sequential chain of VAD inference calls.  Growing it never blocks the
   // ring-reader loop, so the SAB can't overrun even if the model is
   // downloading and the first vad.feed() stalls for several seconds.
   let vadChain: Promise<void> = Promise.resolve()
 
-  function gateFrames(frames: number[], speechProbability: number) {
-    for (const fi of frames) {
-      gate.push(fi, speechProbability)
-      flushDecisions()
-    }
-  }
-
-  function enqueueVadChunk(buf: Float32Array, frames: number[]) {
+  function enqueueVadChunk(buf: Float32Array) {
+    vadSamplesFed += buf.length
+    const expectedChunks = Math.floor(vadSamplesFed / VAD_CHUNK)
     vadChain = vadChain.then(() =>
-      vad.feed(buf).then(
-        () => gateFrames(frames, vad.speechProbability),
-        () => gateFrames(frames, 0),
-      ),
+      vad
+        .feed(buf, (prob) => vadProbs.push(prob))
+        .then(gateReadyFrames, () => {
+          // Inference unavailable (e.g. the model failed to load): treat the
+          // chunks that should have completed as silence so their frames still
+          // gate, mirroring the old per-feed `prob = 0` fallback.
+          while (vadProbs.length < expectedChunks) vadProbs.push(0)
+          gateReadyFrames()
+        }),
     )
   }
 
@@ -121,26 +143,35 @@ export async function runAnalysis(
 
     samplesPending += inp.length
     while (samplesPending > timeStepSamples) {
-      accumulatedFrames.push(frameIndex)
       frameIndex++
       samplesPending -= timeStepSamples
     }
 
-    if (n > 0) {
-      enqueueVadChunk(vadDrainBuf.slice(0, n), accumulatedFrames)
-      accumulatedFrames = []
-    }
+    if (n > 0) enqueueVadChunk(vadDrainBuf.slice(0, n))
+    // Frames generated this iteration whose chunk already completed can gate now.
+    gateReadyFrames()
   }
 
-  // Any frames not yet assigned to a VAD chunk (resampler lag at end of
-  // stream) get gated using the last known speech probability.
-  if (accumulatedFrames.length > 0) {
-    const frames = accumulatedFrames
-    vadChain = vadChain.then(() => gateFrames(frames, vad.speechProbability))
-  }
-
-  // Wait for all queued inference to finish, then close out any open segment.
+  // Drain the final partial chunk so the tail is inferred too (the batch path
+  // always runs a zero-padded last chunk).
   await vadChain.catch(() => {})
+  await vad.flush((prob) => vadProbs.push(prob)).catch(() => {})
+  gateReadyFrames()
+
+  // Frames past the last produced chunk — the resampler leaves a few ms of
+  // input unresolved at the tail — clamp to the final chunk, matching
+  // analyzeBuffer's Math.min(vadProbs.length - 1, …).
+  const lastChunk = vadProbs.length - 1
+  while (nextFrame < frameIndex) {
+    const coveringChunk = Math.min(
+      lastChunk,
+      Math.floor(((nextFrame + 0.5) * timeStepSec) / CHUNK_SEC),
+    )
+    gate.push(nextFrame, coveringChunk >= 0 ? vadProbs[coveringChunk]! : 0)
+    flushDecisions()
+    nextFrame++
+  }
+
   gate.end()
   flushDecisions()
 }

@@ -286,11 +286,15 @@ describe('VadStreamProcessor', () => {
 
       expect(mockState.sessionRunCalls.length).toBe(2)
 
-      // Second inference should have input with length = VAD_CHUNK + VAD_V6_EXTRA_CONTEXT
+      // Second inference input = VAD_CHUNK + VAD_V6_EXTRA_CONTEXT samples,
+      // laid out as [64 context][512 chunk]. The context must hold chunk1's
+      // trailing 64 samples (0.1), with chunk2's samples (0.2) following.
       const secondInput = (mockState.sessionRunCalls[1]!.feeds.input as any)
-        .data
+        .data as Float32Array
       expect(secondInput).toBeDefined()
       expect(secondInput.length).toBe(512 + 64) // VAD_CHUNK + VAD_V6_EXTRA_CONTEXT
+      for (let i = 0; i < 64; i++) expect(secondInput[i]).toBeCloseTo(0.1, 5)
+      for (let i = 64; i < 576; i++) expect(secondInput[i]).toBeCloseTo(0.2, 5)
     })
 
     it('produces correct input tensor shape for inference', async () => {

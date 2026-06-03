@@ -25,7 +25,7 @@ import vadModelUrl from '@jocelyn-stericker/ort-silero-vad-wasm-minimal/silero_v
 import * as ort from 'onnxruntime-web/wasm'
 
 const VAD_SAMPLE_RATE = 16000
-const VAD_CHUNK = 512 // 32 ms at 16 kHz
+export const VAD_CHUNK = 512 // 32 ms at 16 kHz
 const VAD_V6_EXTRA_CONTEXT = 64 // overlap prepended to each frame https://github.com/snakers4/silero-vad/issues/771
 const STATE_SIZE = 2 * 1 * 128 // shape [2, 1, 128]
 
@@ -61,7 +61,16 @@ export class VadStreamProcessor {
   private bufLen = 0
   speechProbability = 0
 
-  async feed(samples16k: Float32Array): Promise<void> {
+  /**
+   * Feed 16 kHz mono audio. Runs one inference per 512-sample chunk; `onChunk`,
+   * if given, is invoked with that chunk's speech probability as each inference
+   * completes (in order), so callers can record a per-chunk probability series
+   * rather than only sampling the latest value.
+   */
+  async feed(
+    samples16k: Float32Array,
+    onChunk?: (speechProbability: number) => void,
+  ): Promise<void> {
     const session = await getSession()
     let offset = 0
     while (offset < samples16k.length) {
@@ -74,16 +83,31 @@ export class VadStreamProcessor {
       offset += take
       if (this.bufLen === VAD_CHUNK) {
         await this._run(session)
-        this.buf.set(
-          this.buf.subarray(
-            VAD_CHUNK - VAD_V6_EXTRA_CONTEXT,
-            VAD_V6_EXTRA_CONTEXT - 1,
-          ),
-          0,
-        )
+        onChunk?.(this.speechProbability)
+        // Carry this chunk's trailing VAD_V6_EXTRA_CONTEXT samples into the
+        // context region at the front of the buffer, so the next chunk's
+        // inference sees the proper overlap. The just-processed chunk occupies
+        // buf[VAD_V6_EXTRA_CONTEXT .. VAD_CHUNK + VAD_V6_EXTRA_CONTEXT); its
+        // last VAD_V6_EXTRA_CONTEXT samples are buf[VAD_CHUNK ..].
+        this.buf.copyWithin(0, VAD_CHUNK, VAD_CHUNK + VAD_V6_EXTRA_CONTEXT)
         this.bufLen = 0
       }
     }
+  }
+
+  /**
+   * Run inference on any buffered samples that have not filled a full chunk,
+   * zero-padding the remainder to VAD_CHUNK. Use at end of stream so the final
+   * partial chunk still yields a probability, matching the batch path, which
+   * always runs a (zero-padded) last chunk. No-op when nothing is buffered.
+   */
+  async flush(onChunk?: (speechProbability: number) => void): Promise<void> {
+    if (this.bufLen === 0) return
+    const session = await getSession()
+    this.buf.fill(0, this.bufLen + VAD_V6_EXTRA_CONTEXT)
+    await this._run(session)
+    onChunk?.(this.speechProbability)
+    this.bufLen = 0
   }
 
   private async _run(session: ort.InferenceSession): Promise<void> {

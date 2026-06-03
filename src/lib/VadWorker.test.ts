@@ -91,17 +91,46 @@ vi.mock('./ResampleProcessor', () => {
 })
 
 vi.mock('./VadProcessor', async (importOriginal) => {
+  const { VAD_CHUNK } = await importOriginal<{ VAD_CHUNK: number }>()
+
+  // Emulates the real processor's 512-sample chunking: one inference (one
+  // probability, drawn from probsByChunk in order) per VAD_CHUNK samples fed,
+  // with the partial remainder flushed at end of stream.
   class VadStreamProcessor {
     speechProbability = 0
+    private bufLen = 0
     private chunkIdx = 0
 
-    async feed(_: Float32Array): Promise<void> {
+    private nextProb(): number {
+      const prob =
+        mockVadState.probsByChunk[this.chunkIdx] ?? mockVadState.defaultProb
+      this.chunkIdx++
+      return prob
+    }
+
+    async feed(
+      samples: Float32Array,
+      onChunk?: (speechProbability: number) => void,
+    ): Promise<void> {
       if (mockVadState.shouldFail) {
         throw new Error('VAD processing failed')
       }
-      this.speechProbability =
-        mockVadState.probsByChunk[this.chunkIdx] ?? mockVadState.defaultProb
-      this.chunkIdx++
+      this.bufLen += samples.length
+      while (this.bufLen >= VAD_CHUNK) {
+        this.bufLen -= VAD_CHUNK
+        this.speechProbability = this.nextProb()
+        onChunk?.(this.speechProbability)
+      }
+    }
+
+    async flush(onChunk?: (speechProbability: number) => void): Promise<void> {
+      if (mockVadState.shouldFail) {
+        throw new Error('VAD processing failed')
+      }
+      if (this.bufLen === 0) return
+      this.bufLen = 0
+      this.speechProbability = this.nextProb()
+      onChunk?.(this.speechProbability)
     }
   }
 
@@ -254,9 +283,10 @@ describe('VadWorker', () => {
 
     it('localizes a long speech segment within a longer recording', async () => {
       mockVadState.durationSec = 2
-      // Speak long enough to clear MIN_SPEECH_MS, then fall silent for the rest.
+      // Speak long enough to clear MIN_SPEECH_MS (~13 chunks), then fall silent
+      // for the rest of the ~63-chunk recording.
       const final = finalSpeechByFrame(
-        await testRunAnalysis(Array(250).fill(0.5), 0),
+        await testRunAnalysis(Array(20).fill(0.5), 0),
       )
       expect(final[10]).toBe(true) // inside the speech segment
       expect(final[final.length - 1]).toBe(false) // deep in the trailing silence
@@ -358,11 +388,11 @@ describe('VadWorker', () => {
 
     it('bridges a short gap between two speech segments', async () => {
       mockVadState.durationSec = 2
-      // speech · short gap (< REDEMPTION_MS) · speech, then silence.
+      // speech · short gap (< REDEMPTION_MS ≈ 2.5 chunks) · speech, then silence.
       const probs = [
-        ...Array(200).fill(0.5),
-        ...Array(5).fill(0),
-        ...Array(200).fill(0.5),
+        ...Array(20).fill(0.5),
+        ...Array(2).fill(0),
+        ...Array(20).fill(0.5),
       ]
       const final = finalSpeechByFrame(await testRunAnalysis(probs, 0))
       // The bridged gap leaves a single contiguous speech run.
@@ -373,7 +403,7 @@ describe('VadWorker', () => {
       mockVadState.durationSec = 2
       // Long speech (kept), then silence longer than REDEMPTION_MS.
       const final = finalSpeechByFrame(
-        await testRunAnalysis(Array(250).fill(0.5), 0),
+        await testRunAnalysis(Array(20).fill(0.5), 0),
       )
       // Trailing frames, optimistically held during redemption, end up silent.
       expect(final[final.length - 1]).toBe(false)
