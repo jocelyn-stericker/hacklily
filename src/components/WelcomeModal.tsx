@@ -19,14 +19,6 @@ import { FolderOpen, MicVocal } from 'lucide-react'
 
 import braatPng from '#/braat.png'
 import { Button } from '#/components/ui/button'
-import {
-  Dialog,
-  DialogBody,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '#/components/ui/dialog'
 
 interface WelcomeModalProps {
   open: boolean
@@ -39,13 +31,19 @@ export function WelcomeModal({
   onStartRecording,
   onOpenFile,
 }: WelcomeModalProps) {
+  if (!open) return null
+
+  // Absolute (not fixed/portal) overlay so it only covers its relative parent —
+  // the waveform + spectrogram region — leaving the Toolbar header usable.
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent showCloseButton={false} className="sm:max-w-sm">
-        <DialogHeader>
-          <DialogTitle className="sr-only">Welcome to Braat</DialogTitle>
-        </DialogHeader>
-        <DialogBody>
+    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/10 supports-backdrop-filter:backdrop-blur-xs animate-in fade-in-0 duration-100">
+      <div
+        role="dialog"
+        aria-modal="false"
+        aria-label="Welcome to Braat"
+        className="flex flex-col max-h-[calc(100%-2rem)] w-full max-w-[calc(100%-2rem)] sm:max-w-sm gap-4 rounded-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 animate-in fade-in-0 zoom-in-95 duration-100"
+      >
+        <div className="flex-1 overflow-y-auto min-h-0">
           <div className="flex flex-col items-center gap-4 py-2">
             <img src={braatPng} className="h-12 bg-[#8ace00]" alt="Braat" />
             <div className="flex flex-col gap-2 w-full">
@@ -68,7 +66,7 @@ export function WelcomeModal({
               </Button>
             </div>
           </div>
-          <DialogDescription className="text-center text-xs space-y-2">
+          <div className="text-center text-xs space-y-2 text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground">
             <span className="block">
               Braat shows you the pitch and resonance of your voice in real time
               &mdash; a practice aid for voice training, including trans voice
@@ -104,9 +102,9 @@ export function WelcomeModal({
             <span className="block">
               Made by Jocelyn Stericker {'<'}jocelyn@nettek.ca{'>'}{' '}
             </span>
-          </DialogDescription>
-        </DialogBody>
-      </DialogContent>
-    </Dialog>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }

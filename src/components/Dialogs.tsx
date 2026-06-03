@@ -17,7 +17,6 @@
 
 import { AudioSettingsModal } from '#/components/AudioSettingsModal'
 import { TranscriptionSettingsModal } from '#/components/TranscriptionSettingsModal'
-import type { AnalysisChunk } from '#/lib/AnalysisFrame'
 
 import { Button } from './ui/button'
 import {
@@ -29,14 +28,10 @@ import {
   DialogTitle,
 } from './ui/dialog'
 import type { Status } from './useTimelineState'
-import { WelcomeModal } from './WelcomeModal'
 
 export function Dialogs({
-  analysisMut,
   status,
   onAcknowledgeError,
-  onStartRecording,
-  openFilePicker,
   confirmingNew,
   onCancelNew,
   onConfirmNew,
@@ -45,11 +40,8 @@ export function Dialogs({
   showTranscriptionSettings,
   onCloseTranscriptionSettings,
 }: {
-  analysisMut: AnalysisChunk[]
   status: Status
   onAcknowledgeError: () => void
-  onStartRecording: () => void
-  openFilePicker: () => void
   confirmingNew: boolean
   onCancelNew: () => void
   onConfirmNew: () => void
@@ -58,15 +50,8 @@ export function Dialogs({
   showTranscriptionSettings: boolean
   onCloseTranscriptionSettings: (open: boolean) => void
 }) {
-  const showWelcome = analysisMut.length === 0 && status.value === 'inactive'
-
   return (
     <>
-      <WelcomeModal
-        open={showWelcome}
-        onStartRecording={onStartRecording}
-        onOpenFile={openFilePicker}
-      />
       <Dialog open={status.value === 'analyzing'}>
         <DialogContent showCloseButton={false}>
           <DialogHeader>

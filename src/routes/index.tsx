@@ -37,6 +37,7 @@ import { VowelChart } from '#/components/VowelChart'
 import type { VowelChartHandle } from '#/components/VowelChart'
 import { Waveform } from '#/components/Waveform'
 import type { WaveformHandle } from '#/components/Waveform'
+import { WelcomeModal } from '#/components/WelcomeModal'
 import type {
   AnalysisChunk,
   AnalysisFrame,
@@ -547,6 +548,7 @@ function App() {
 
   const isRecording =
     status.value === 'recording' || status.value === 'analyzing'
+  const showWelcome = analysisMut.length === 0 && status.value === 'inactive'
   const noOp = useCallback(() => {}, [])
 
   // Switching to a different transcription model re-transcribes everything with
@@ -598,11 +600,8 @@ function App() {
   return (
     <>
       <Dialogs
-        analysisMut={analysisMut}
         status={status}
         onAcknowledgeError={handleAcknowledgeError}
-        onStartRecording={startRecording}
-        openFilePicker={openFilePicker}
         confirmingNew={confirmingAction !== null}
         onCancelNew={handleCancelNew}
         onConfirmNew={handleConfirmNew}
@@ -627,77 +626,90 @@ function App() {
           onOpenAudioSettings={handleOpenAudioSettings}
           onOpenTranscriptionSettings={() => setShowTranscriptionSettings(true)}
         />
-        <Plot
-          timelineState={waveformTimelineState}
-          xAxisVisible={false}
-          yAxisVisible={false}
-          yAxis={{
-            type: 'amplitude',
-            ampMaxNorm: ampMaxNorm || 1,
-          }}
-          onScroll={noOp}
-          onZoom={noOp}
-          onClick={isRecording ? noOp : handlePlotClick}
-          onHover={handlePlotHover}
-          className="h-32 max-h-[15dvh] border-b border-b-gray-500"
-          virtualWidthSec={virtualWidthSec}
-          hideScrollBar={isRecording}
-        >
-          <Waveform analysisMut={analysisMut} ref={waveformRef} />
-          <ViewportShade
-            leftSec={timelineState.viewportLeftSec}
-            rightSec={timelineState.viewportRightSec}
-          />
-        </Plot>
-        <div className="flex gap-4 grow">
+        <div className="relative flex flex-col grow overflow-hidden">
           <Plot
-            timelineState={timelineState}
-            xAxisVisible={true}
-            yAxisVisible={true}
+            timelineState={waveformTimelineState}
+            xAxisVisible={false}
+            yAxisVisible={false}
             yAxis={{
-              type: 'freq',
-              fMinHz: 50,
-              fMaxHz: 5500,
-              hover:
-                hoverFrame?.pitchDetected && hoverFrame.speechDetected
-                  ? { f0: hoverFrame.f0, f1: hoverFrame.f1, f2: hoverFrame.f2 }
-                  : null,
+              type: 'amplitude',
+              ampMaxNorm: ampMaxNorm || 1,
             }}
-            onScroll={isRecording ? noOp : handlePlotScroll}
-            onZoom={handlePlotZoom}
+            onScroll={noOp}
+            onZoom={noOp}
             onClick={isRecording ? noOp : handlePlotClick}
             onHover={handlePlotHover}
+            className="h-32 max-h-[15dvh] border-b border-b-gray-500"
             virtualWidthSec={virtualWidthSec}
-            className="flex-1"
             hideScrollBar={isRecording}
-            speechStripHeight={20}
           >
-            <Spectrogram
-              analysisMut={analysisMut}
-              ref={spectrogramRef}
-              debug={false}
+            <Waveform analysisMut={analysisMut} ref={waveformRef} />
+            <ViewportShade
+              leftSec={timelineState.viewportLeftSec}
+              rightSec={timelineState.viewportRightSec}
             />
-            <SpeechStrip
-              analysisMut={analysisMut}
-              onTranscribe={handleTranscribe}
-              liveChunks={liveChunks}
-              ref={speechStripRef}
-            />
-            {status.value !== 'recording' && (
-              <div
-                className={cn(
-                  'absolute z-10 pointer-events-none border border-[#ccccdd] dark:border-[#2a2a3a] right-0 h-40 bottom-auto top-0 left-auto md:right-0 md:w-60 md:h-48',
-                  !hoverFrame?.speechDetected && 'hidden',
-                )}
-              >
-                <VowelChart
-                  analysisMut={analysisMut}
-                  cursorSec={timelineState.hoverSec ?? timelineState.cursorSec}
-                  ref={vowelChartRef}
-                />
-              </div>
-            )}
           </Plot>
+          <div className="flex gap-4 grow">
+            <Plot
+              timelineState={timelineState}
+              xAxisVisible={true}
+              yAxisVisible={true}
+              yAxis={{
+                type: 'freq',
+                fMinHz: 50,
+                fMaxHz: 5500,
+                hover:
+                  hoverFrame?.pitchDetected && hoverFrame.speechDetected
+                    ? {
+                        f0: hoverFrame.f0,
+                        f1: hoverFrame.f1,
+                        f2: hoverFrame.f2,
+                      }
+                    : null,
+              }}
+              onScroll={isRecording ? noOp : handlePlotScroll}
+              onZoom={handlePlotZoom}
+              onClick={isRecording ? noOp : handlePlotClick}
+              onHover={handlePlotHover}
+              virtualWidthSec={virtualWidthSec}
+              className="flex-1"
+              hideScrollBar={isRecording}
+              speechStripHeight={20}
+            >
+              <Spectrogram
+                analysisMut={analysisMut}
+                ref={spectrogramRef}
+                debug={false}
+              />
+              <SpeechStrip
+                analysisMut={analysisMut}
+                onTranscribe={handleTranscribe}
+                liveChunks={liveChunks}
+                ref={speechStripRef}
+              />
+              {status.value !== 'recording' && (
+                <div
+                  className={cn(
+                    'absolute z-10 pointer-events-none border border-[#ccccdd] dark:border-[#2a2a3a] right-0 h-40 bottom-auto top-0 left-auto md:right-0 md:w-60 md:h-48',
+                    !hoverFrame?.speechDetected && 'hidden',
+                  )}
+                >
+                  <VowelChart
+                    analysisMut={analysisMut}
+                    cursorSec={
+                      timelineState.hoverSec ?? timelineState.cursorSec
+                    }
+                    ref={vowelChartRef}
+                  />
+                </div>
+              )}
+            </Plot>
+          </div>
+          <WelcomeModal
+            open={showWelcome}
+            onStartRecording={startRecording}
+            onOpenFile={openFilePicker}
+          />
         </div>
       </main>
     </>
