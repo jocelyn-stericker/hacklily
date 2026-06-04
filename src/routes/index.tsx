@@ -823,22 +823,23 @@ function App() {
                 liveChunks={liveChunks}
                 ref={speechStripRef}
               />
-              {status.value !== 'recording' && (
-                <div
-                  className={cn(
-                    'absolute z-10 pointer-events-none border border-[#ccccdd] dark:border-[#2a2a3a] right-0 h-40 bottom-auto top-0 left-auto md:right-0 md:w-60 md:h-48',
-                    !hoverFrame?.speechDetected && 'hidden',
-                  )}
-                >
-                  <VowelChart
-                    analysisMut={analysisMut}
-                    cursorSec={
-                      timelineState.hoverSec ?? timelineState.cursorSec
-                    }
-                    ref={vowelChartRef}
-                  />
-                </div>
-              )}
+              {status.value !== 'recording' &&
+                settings.vowelChartAverages !== 'hidden' && (
+                  <div
+                    className={cn(
+                      'absolute z-10 pointer-events-none border border-[#ccccdd] dark:border-[#2a2a3a] right-0 h-40 bottom-auto top-0 left-auto md:right-0 md:w-60 md:h-48',
+                      !hoverFrame?.speechDetected && 'hidden',
+                    )}
+                  >
+                    <VowelChart
+                      analysisMut={analysisMut}
+                      cursorSec={
+                        timelineState.hoverSec ?? timelineState.cursorSec
+                      }
+                      ref={vowelChartRef}
+                    />
+                  </div>
+                )}
             </Plot>
           </div>
           <WelcomeModal
