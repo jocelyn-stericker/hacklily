@@ -22,6 +22,7 @@ import type { RefObject } from 'react'
 
 import type { AnalysisChunk } from '#/lib/AnalysisFrame'
 import { getFrame, totalFrames } from '#/lib/AnalysisFrame'
+import { SPEECH_U32, UNVOICED_U32 } from '#/lib/theme'
 
 import {
   useAmpToY,
@@ -78,11 +79,6 @@ function ensureTiles(
   }
 }
 
-// Assumes little-endian byte order (all browser-targeted CPUs). Each value is
-// the RGBA pixel packed as a Uint32: low byte = R, high byte = A.
-const SPEECH_U32 = ((255 << 24) | (196 << 16) | (205 << 8) | 78) >>> 0 // rgba(78,205,196,1.0)
-const SILENCE_U32 = ((255 << 24) | (140 << 16) | (100 << 8) | 100) >>> 0 // rgba(100,100,140,1.0)
-
 function paintColumnsToOffscreen(
   off: OffscreenState,
   analysis: AnalysisChunk[],
@@ -114,7 +110,7 @@ function paintColumnsToOffscreen(
         0,
         Math.min(canvasHeight, Math.round(ampToY(sample.rms))),
       )
-      const color = sample.speechDetected ? SPEECH_U32 : SILENCE_U32
+      const color = sample.speechDetected ? SPEECH_U32 : UNVOICED_U32
       for (let y = 0; y < canvasHeight; y++) {
         u32[y * TILE_WIDTH + localX] = y >= y0 && y < y1 ? color : bgU32
       }

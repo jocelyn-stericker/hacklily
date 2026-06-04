@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// === Colourmaps ===
+
 // Inferno: black → deep purple → orange → cream-yellow (dark mode)
 // Sourced from matplotlib/_cm_listed.py
 // https://github.com/matplotlib/matplotlib/blob/main/lib/matplotlib/_cm_listed.py
@@ -67,7 +69,7 @@ export const INFERNO_COLOURMAP = [
   252, 157, 250, 253, 161, 252, 255, 164,
 ]
 
-// WYOR (White > Yellow > Orange > REd) colormap
+// WYOR (White > Yellow > Orange > Red) colormap
 // Sourced from
 // https://github.com/holoviz/colorcet/blob/main/assets/CET/linear_wyor_100-45_c55_n256.csv
 // This application uses colorcet, licensed under Creative Commons
@@ -123,3 +125,102 @@ export const WYOR_COLOURMAP = [
   215, 37, 28, 214, 35, 28, 214, 33, 28, 214, 31, 28, 214, 28, 29, 213, 25, 29,
   213, 22, 29, 213, 19, 29, 213, 15, 29,
 ]
+
+// === Colour Primitives ===
+// Define each colour in one place; all derived exports below stay in sync.
+
+const TEAL = { r: 78, g: 205, b: 196 } as const
+const CYAN = { r: 0, g: 229, b: 255 } as const
+const UNVOICED = { r: 100, g: 100, b: 140 } as const
+
+function u32FromRgb(r: number, g: number, b: number): number {
+  return ((255 << 24) | (b << 16) | (g << 8) | r) >>> 0
+}
+
+const CYAN_HEX =
+  `#${CYAN.r.toString(16).padStart(2, '0')}${CYAN.g.toString(16).padStart(2, '0')}${CYAN.b.toString(16).padStart(2, '0')}` as const
+const CYAN_RGB = `${CYAN.r},${CYAN.g},${CYAN.b}` as const
+
+// === Spectrogram Theme ===
+
+export interface SpectrogramTheme {
+  colourmap: Uint32Array
+  bgU32: number
+  bgStyle: string
+}
+
+function buildSpectrogramTheme(isDark: boolean): SpectrogramTheme {
+  const colourmap = new Uint32Array(256)
+  const map = isDark ? INFERNO_COLOURMAP : WYOR_COLOURMAP
+  for (let i = 0; i < 256; i++) {
+    const r = map[i * 3]!
+    const g = map[i * 3 + 1]!
+    const b = map[i * 3 + 2]!
+    colourmap[i] = u32FromRgb(r, g, b)
+  }
+  return {
+    colourmap,
+    bgU32: (isDark ? 0xff000000 : 0xff21f9f0) >>> 0,
+    bgStyle: isDark ? '#000000' : '#ffffff',
+  }
+}
+
+export const SPECTROGRAM_DARK_THEME = buildSpectrogramTheme(true)
+export const SPECTROGRAM_LIGHT_THEME = buildSpectrogramTheme(false)
+
+export const FORMANT_TRACKS = [
+  { key: 'f0' as const, color: '#ffffff' },
+  { key: 'f1' as const, color: CYAN_HEX },
+  { key: 'f2' as const, color: CYAN_HEX },
+]
+
+export const FORMANT_SHADOW_COLOUR = 'rgba(0,0,0,0.8)'
+export const FORMANT_SHADOW_BLUR = 5
+export const FORMANT_LINE_WIDTH = 1.5
+
+// === Vowel Chart Theme ===
+
+export interface VowelChartTheme {
+  bg: string
+  bg100: string
+  guideLine: string
+  vowelCircle: string
+  vowelText: string
+  trailRgb: string
+  dot: string
+  label: string
+}
+
+export const VOWEL_CHART_DARK_THEME: VowelChartTheme = {
+  bg: 'rgba(14,14,20,0.88)',
+  bg100: 'rgba(14,14,20,1.0)',
+  guideLine: 'rgba(200,200,220,0.15)',
+  vowelCircle: 'rgba(180,180,210,0.25)',
+  vowelText: 'rgba(200,200,230,0.65)',
+  trailRgb: CYAN_RGB,
+  dot: CYAN_HEX,
+  label: 'rgba(100,100,120,0.8)',
+}
+
+export const VOWEL_CHART_LIGHT_THEME: VowelChartTheme = {
+  bg: 'rgba(248,248,255,0.92)',
+  bg100: 'rgba(248,248,255,1.0)',
+  guideLine: 'rgba(60,60,100,0.12)',
+  vowelCircle: 'rgba(60,60,130,0.22)',
+  vowelText: 'rgba(40,40,110,0.75)',
+  trailRgb: CYAN_RGB,
+  dot: CYAN_HEX,
+  label: 'rgba(110,110,135,0.9)',
+}
+
+// === Waveform Colours ===
+
+// Assumes little-endian byte order (all browser-targeted CPUs). Each value is
+// the RGBA pixel packed as a Uint32: low byte = R, high byte = A.
+export const SPEECH_U32 = u32FromRgb(TEAL.r, TEAL.g, TEAL.b)
+export const UNVOICED_U32 = u32FromRgb(UNVOICED.r, UNVOICED.g, UNVOICED.b)
+
+// === Speech Strip Colours ===
+
+export const VOICED_FILL = `rgba(${TEAL.r},${TEAL.g},${TEAL.b},1.0)`
+export const UNVOICED_FILL = `rgba(${UNVOICED.r},${UNVOICED.g},${UNVOICED.b},1.0)`

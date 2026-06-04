@@ -27,6 +27,8 @@ import type {
 } from '#/lib/AnalysisFrame'
 import { hzToBark } from '#/lib/bark'
 import { HILLENBRAND } from '#/lib/hillenbrand'
+import { VOWEL_CHART_DARK_THEME, VOWEL_CHART_LIGHT_THEME } from '#/lib/theme'
+import type { VowelChartTheme } from '#/lib/theme'
 
 import { useColourScheme } from './useColourScheme'
 
@@ -53,39 +55,6 @@ const VOWELS: Array<{ label: string; f1: number; f2: number }> = Object.values(
 
 function getVowel(vowelLabel: string) {
   return VOWELS.find((vowel) => vowel.label === vowelLabel)
-}
-
-interface VowelChartTheme {
-  bg: string
-  bg100: string
-  guideLine: string
-  vowelCircle: string
-  vowelText: string
-  trailRgb: string
-  dot: string
-  label: string
-}
-
-const DARK_THEME: VowelChartTheme = {
-  bg: 'rgba(14,14,20,0.88)',
-  bg100: 'rgba(14,14,20,1.0)',
-  guideLine: 'rgba(200,200,220,0.15)',
-  vowelCircle: 'rgba(180,180,210,0.25)',
-  vowelText: 'rgba(200,200,230,0.65)',
-  trailRgb: '00,229,255',
-  dot: '#00e5ff',
-  label: 'rgba(100,100,120,0.8)',
-}
-
-const LIGHT_THEME: VowelChartTheme = {
-  bg: 'rgba(248,248,255,0.92)',
-  bg100: 'rgba(248,248,255,1.0)',
-  guideLine: 'rgba(60,60,100,0.12)',
-  vowelCircle: 'rgba(60,60,130,0.22)',
-  vowelText: 'rgba(40,40,110,0.75)',
-  trailRgb: '00,229,255',
-  dot: '#00e5ff',
-  label: 'rgba(110,110,135,0.9)',
 }
 
 function strokeArrow(
@@ -348,7 +317,8 @@ export function VowelChart({
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
   const { width, height, dpr } = useCanvasSize(canvas)
   const scheme = useColourScheme()
-  const theme = scheme === 'dark' ? DARK_THEME : LIGHT_THEME
+  const theme =
+    scheme === 'dark' ? VOWEL_CHART_DARK_THEME : VOWEL_CHART_LIGHT_THEME
 
   useEffect(() => {
     if (!canvas) return

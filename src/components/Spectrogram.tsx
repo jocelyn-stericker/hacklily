@@ -22,8 +22,16 @@ import type { RefObject } from 'react'
 
 import type { AnalysisChunk, AnalysisFrame } from '#/lib/AnalysisFrame'
 import { frameDbMax, totalFrames } from '#/lib/AnalysisFrame'
+import {
+  SPECTROGRAM_DARK_THEME,
+  SPECTROGRAM_LIGHT_THEME,
+  FORMANT_TRACKS,
+  FORMANT_SHADOW_COLOUR,
+  FORMANT_SHADOW_BLUR,
+  FORMANT_LINE_WIDTH,
+} from '#/lib/theme'
+import type { SpectrogramTheme } from '#/lib/theme'
 
-import { INFERNO_COLOURMAP, WYOR_COLOURMAP } from './colourmap'
 import { InCanvas, usePlotPad, usePlotSize, useTimeToX, useHzToY } from './Plot'
 import { useColourScheme } from './useColourScheme'
 
@@ -37,33 +45,6 @@ export const TILE_WIDTH = 256
 // Narrower than TILE_WIDTH so a single allocation serves all tiles without
 // holding a full tile's worth of pixel data in memory.
 const SCRATCH_WIDTH = 256
-
-interface Theme {
-  // Assumes little-endian byte order (all browser-targeted CPUs). Each entry is
-  // the RGBA pixel packed as a Uint32: low byte = R, high byte = A.
-  colourmap: Uint32Array
-  bgU32: number
-  bgStyle: string
-}
-
-function buildTheme(isDark: boolean): Theme {
-  const colourmap = new Uint32Array(256)
-  const map = isDark ? INFERNO_COLOURMAP : WYOR_COLOURMAP
-  for (let i = 0; i < 256; i++) {
-    const r = map[i * 3]!
-    const g = map[i * 3 + 1]!
-    const b = map[i * 3 + 2]!
-    colourmap[i] = ((255 << 24) | (b << 16) | (g << 8) | r) >>> 0
-  }
-  return {
-    colourmap,
-    bgU32: (isDark ? 0xff000000 : 0xff21f9f0) >>> 0,
-    bgStyle: isDark ? '#000000' : '#ffffff',
-  }
-}
-
-const DARK_THEME = buildTheme(true)
-const LIGHT_THEME = buildTheme(false)
 
 const LN10_10 = 10 / Math.log(10)
 const DB_MAX_DEFAULT = -16
@@ -134,18 +115,6 @@ interface DisplayBufState {
   dirty: boolean
 }
 
-const FORMANT_TRACKS = [
-  { key: 'f0' as const, color: '#ffffff' },
-  { key: 'f1' as const, color: '#00e5ff' },
-  { key: 'f2' as const, color: '#00e5ff' },
-]
-
-// Soft glow behind each formant line for contrast against both light and dark
-// spectrogram regions. shadowBlur is a gaussian spread in device pixels.
-const FORMANT_SHADOW_COLOUR = 'rgba(0,0,0,0.8)'
-const FORMANT_SHADOW_BLUR = 5
-const FORMANT_LINE_WIDTH = 1.5
-
 function buildBinForY(
   numBins: number,
   firstBinHz: number,
@@ -172,7 +141,7 @@ function computeColorsRange(
   state: ChunkColorsState,
   from: number,
   to: number,
-  theme: Theme,
+  theme: SpectrogramTheme,
   dbRange: number,
 ): void {
   const { colorTiles, numBins, dbMax, chunk } = state
@@ -222,7 +191,7 @@ function paintColumnsToOffscreen(
   colors: ChunkColorsState,
   from: number,
   to: number,
-  theme: Theme,
+  theme: SpectrogramTheme,
 ): void {
   if (to <= from) return
   const { tiles, binForY, canvasHeight, scratchData, scratchU32 } = off
@@ -479,7 +448,7 @@ function updateDisplayBufForFrames(
   analysis: AnalysisChunk[],
   fromTimeSec: number,
   toTimeSec: number,
-  theme: Theme,
+  theme: SpectrogramTheme,
 ): void {
   if (!db || isNaN(db.lastSrcTimeSec) || isNaN(db.lastDxPerSec)) return
   const { lastSrcTimeSec, lastDxPerSec, width, height } = db
@@ -522,7 +491,7 @@ function draw(
   formantOffs: (FormantOffscreenState | null)[],
   analysis: AnalysisChunk[],
   timeToX: (timeSec: number) => number,
-  theme: Theme,
+  theme: SpectrogramTheme,
 ): void {
   if (offs.length === 0) {
     mainCtx.fillStyle = theme.bgStyle
@@ -642,7 +611,8 @@ export function Spectrogram({
   const canvasHeight = (height - plotPad.top - plotPad.bottom) * dpr
 
   const scheme = useColourScheme()
-  const theme = scheme === 'dark' ? DARK_THEME : LIGHT_THEME
+  const theme =
+    scheme === 'dark' ? SPECTROGRAM_DARK_THEME : SPECTROGRAM_LIGHT_THEME
 
   const allColorsRef = useRef<ChunkColorsState[]>([])
   const allOffRef = useRef<(OffscreenState | null)[]>([])

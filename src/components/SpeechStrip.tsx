@@ -26,6 +26,7 @@ import {
 import type { ReactNode, RefObject } from 'react'
 
 import type { AnalysisChunk } from '#/lib/AnalysisFrame'
+import { VOICED_FILL, UNVOICED_FILL } from '#/lib/theme'
 
 import {
   InCanvas,
@@ -35,8 +36,6 @@ import {
   useTimeToX,
 } from './Plot'
 import { useColourScheme } from './useColourScheme'
-
-const VOICED_FILL = 'rgba(78,205,196,1.0)'
 
 export interface SpeechStripHandle {
   append: (from: number) => void
@@ -96,11 +95,9 @@ export function SpeechStrip({
         const dxPerSec = timeToX(1) - timeToX(0)
         if (dxPerSec <= 0) return
 
-        // Voiced chunks get a coloured bar. The transcription text itself is
-        // rendered in the DOM (see below) so it can be ellipsised and carry a
-        // tooltip.
+        // Recorded chunks get a coloured bar: teal for voiced, grey for unvoiced.
+        // The space beyond recorded chunks remains bgColor (future/unrecorded).
         for (const chunk of analysisMut) {
-          if (!chunk.voiced) continue
           const timeStepSec = chunk.timeStepSamples / chunk.sampleRate
           const startSec = chunk.startTimeSec
           const endSec = chunk.startTimeSec + chunk.frames.length * timeStepSec
@@ -109,7 +106,7 @@ export function SpeechStrip({
           const cx1 = Math.max(0, x1)
           const cx2 = Math.min(canvasWidth, x2)
           if (cx2 > cx1) {
-            ctx.fillStyle = VOICED_FILL
+            ctx.fillStyle = chunk.voiced ? VOICED_FILL : UNVOICED_FILL
             ctx.fillRect(cx1, 0, cx2 - cx1, canvasHeight)
           }
         }
