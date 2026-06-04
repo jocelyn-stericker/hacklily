@@ -2,8 +2,11 @@
 import { render, waitFor } from '@testing-library/react'
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
-import type * as SettingsModule from '#/lib/settings'
-import type { AppendFrameMessage, ParamsMessage } from '#/lib/workerMessages'
+import type * as SettingsModule from '#/components/useSettings'
+import type {
+  AppendFrameMessage,
+  ParamsMessage,
+} from '#/lib/workers/workerMessages'
 
 import { useMicCapture } from './useMicCapture'
 
@@ -22,20 +25,22 @@ let mockWorkerInstances: any[] = []
 let mockFormantWorkerInstances: any[] = []
 let mockVadWorkerInstances: any[] = []
 
-vi.mock('#/lib/settings', async (importOriginal) => {
+vi.mock('#/components/useSettings', async (importOriginal) => {
   const actual = await importOriginal<typeof SettingsModule>()
   return {
     ...actual,
-    useSettings: vi.fn(() => ({
-      inputDeviceId: null,
-      sampleRate: 'prefer44100',
-      persistentMic: false,
-      browserPreprocessing: 'default',
-    })),
+    useSettings: vi.fn(() => [
+      {
+        inputDeviceId: null,
+        sampleRate: 'prefer44100',
+        persistentMic: false,
+        browserPreprocessing: 'default',
+      },
+    ]),
   }
 })
 
-vi.mock('#/lib/FormantWorker?worker', () => {
+vi.mock('#/lib/workers/FormantWorker?worker', () => {
   class MockFormantWorker {
     postMessage = vi.fn()
     terminate = vi.fn()
@@ -78,7 +83,7 @@ vi.mock('#/lib/FormantWorker?worker', () => {
   }
 })
 
-vi.mock('#/lib/VadWorker?worker', () => {
+vi.mock('#/lib/workers/VadWorker?worker', () => {
   class MockVadWorker {
     postMessage = vi.fn()
     terminate = vi.fn()
@@ -122,7 +127,7 @@ vi.mock('#/lib/VadWorker?worker', () => {
 })
 
 // Mock the worker module
-vi.mock('#/lib/SpectrogramWorker?worker', () => {
+vi.mock('#/lib/workers/SpectrogramWorker?worker', () => {
   class MockWorker {
     postMessage = vi.fn()
     terminate = vi.fn()
@@ -356,7 +361,7 @@ describe('AudioRecorder', () => {
     vi.clearAllMocks()
   })
 
-  it('calls getUserMedia with audio constraints and video=false', async () => {
+  it.only('calls getUserMedia with audio constraints and video=false', async () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()

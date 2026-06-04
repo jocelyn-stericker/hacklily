@@ -33,12 +33,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '#/components/ui/select'
-import { useSettings, updateSettings } from '#/lib/settings'
-import type {
-  SettingsRow,
-  BrowserPreprocessing,
-  SampleRatePref,
-} from '#/lib/settings'
+import { useSettings } from '#/components/useSettings'
+import type { BrowserPreprocessing, SampleRatePref } from '#/lib/settings'
 
 const LOG = '[AudioSettings]'
 
@@ -60,7 +56,7 @@ export function AudioSettingsModal({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
-  const settings: SettingsRow = useSettings()
+  const [settings, updateSettings] = useSettings()
 
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([])
   const [devicesError, setDevicesError] = useState<string | null>(null)

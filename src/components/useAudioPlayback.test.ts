@@ -19,27 +19,28 @@
 import { renderHook } from '@testing-library/react'
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
-import type * as SettingsModule from '#/lib/settings'
+import type * as SettingsModule from '#/components/useSettings'
 
 import { useAudioPlayback } from './useAudioPlayback'
 
 let mockPipelineInstances: any[] = []
 
-vi.mock('#/lib/settings', async (importOriginal) => {
+vi.mock('#/components/useSettings', async (importOriginal) => {
   const actual = await importOriginal<typeof SettingsModule>()
   return {
     ...actual,
-    useSettings: vi.fn(() => ({
-      inputDeviceId: null,
-      sampleRate: 'prefer44100',
-      persistentMic: false,
-      browserPreprocessing: 'default',
-    })),
-    preferredSampleRate: vi.fn(() => 44100),
+    useSettings: vi.fn(() => [
+      {
+        inputDeviceId: null,
+        sampleRate: 'prefer44100',
+        persistentMic: false,
+        browserPreprocessing: 'default',
+      },
+    ]),
   }
 })
 
-vi.mock('#/lib/AudioPlaybackPipeline', () => {
+vi.mock('#/lib/audio/AudioPlaybackPipeline', () => {
   class MockAudioPlaybackPipeline {
     stopSignal: AbortSignal
     private messageListeners: Map<string, Set<(e: any) => void>> = new Map()

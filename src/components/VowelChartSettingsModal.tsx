@@ -32,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '#/components/ui/select'
-import { useSettings, updateSettings } from '#/lib/settings'
+import { useSettings } from '#/components/useSettings'
 import type { VowelChartAverages } from '#/lib/settings'
 
 import { VowelChart } from './VowelChart'
@@ -46,7 +46,7 @@ export function VowelChartSettingsModal({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
-  const settings = useSettings()
+  const [settings, updateSettings] = useSettings()
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

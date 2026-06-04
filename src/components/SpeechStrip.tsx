@@ -25,7 +25,7 @@ import {
 } from 'react'
 import type { ReactNode, RefObject } from 'react'
 
-import type { AnalysisChunk } from '#/lib/AnalysisFrame'
+import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
 import { VOICED_FILL, UNVOICED_FILL } from '#/lib/theme'
 
 import {

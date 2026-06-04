@@ -17,13 +17,13 @@
 
 import { useEffect, useState } from 'react'
 
+import { useDownloadVersion } from '#/components/useModelDownloaded'
 import type { LocalTranscriptionStatus } from '#/lib/browserFeatures'
 import {
   isBrowserTranscriptionAvailable,
   isWebGpuAvailable,
   checkLocalTranscription,
 } from '#/lib/browserFeatures'
-import { useDownloadVersion } from '#/lib/modelDownload'
 
 const LOG = '[BrowserSpeechRecognition]'
 

@@ -20,8 +20,8 @@
 import { useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 
-import type { AnalysisChunk, AnalysisFrame } from '#/lib/AnalysisFrame'
-import { frameDbMax, totalFrames } from '#/lib/AnalysisFrame'
+import type { AnalysisChunk, AnalysisFrame } from '#/lib/analysis/AnalysisFrame'
+import { frameDbMax, totalFrames } from '#/lib/analysis/AnalysisFrame'
 import {
   SPECTROGRAM_DARK_THEME,
   SPECTROGRAM_LIGHT_THEME,

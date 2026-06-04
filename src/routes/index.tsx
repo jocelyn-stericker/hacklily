@@ -31,6 +31,7 @@ import { useAudioImport } from '#/components/useAudioImport'
 import { useAudioPlayback } from '#/components/useAudioPlayback'
 import { useMicCapture } from '#/components/useMicCapture'
 import { usePreemptibleCallback } from '#/components/usePreemptibleCallback'
+import { useSettings } from '#/components/useSettings'
 import { useTimelineState } from '#/components/useTimelineState'
 import { ViewportShade } from '#/components/ViewportShade'
 import { VowelChart } from '#/components/VowelChart'
@@ -42,18 +43,13 @@ import type {
   AnalysisChunk,
   AnalysisFrame,
   AnalysisParams,
-} from '#/lib/AnalysisFrame'
-import { reconcileVoicingAt, totalFrames } from '#/lib/AnalysisFrame'
-import { exportWav } from '#/lib/exportWav'
-import { RopeGainCache } from '#/lib/ropeLoudness'
-import { SabRope } from '#/lib/SabRope'
-import type { SabRopeGrow, SabRopeShare } from '#/lib/SabRope'
-import {
-  isManualTranscription,
-  updateSettings,
-  useSettings,
-} from '#/lib/settings'
-import { consumeBundledCrashFlag } from '#/lib/transcribeBundled'
+} from '#/lib/analysis/AnalysisFrame'
+import { reconcileVoicingAt, totalFrames } from '#/lib/analysis/AnalysisFrame'
+import { exportWav } from '#/lib/audio/exportWav'
+import { SabRope } from '#/lib/audio/SabRope'
+import type { SabRopeGrow, SabRopeShare } from '#/lib/audio/SabRope'
+import { RopeGainCache } from '#/lib/loudness/ropeLoudness'
+import { isManualTranscription, updateSettings } from '#/lib/settings'
 import {
   chunkAudioFromRopes,
   computeSealResolutions,
@@ -68,6 +64,7 @@ import type {
   LiveSpanEntry,
   Viewport,
 } from '#/lib/transcription'
+import { consumeBundledCrashFlag } from '#/lib/transcription/transcribeBundled'
 import { cn } from '#/lib/utils'
 
 export const Route = createFileRoute('/')({
@@ -85,7 +82,7 @@ function App() {
     useState(false)
   const [showVowelChartSettings, setShowVowelChartSettings] = useState(false)
 
-  const settings = useSettings()
+  const [settings] = useSettings()
 
   // Bumped whenever chunk transcriptions change in place (a manual pass
   // progresses, or a model switch clears them). `analysisMut`'s identity is

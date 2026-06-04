@@ -23,7 +23,7 @@ import { useAudioImport } from './useAudioImport'
 
 let mockWorkerInstances: any[] = []
 
-vi.mock('#/lib/ImportWorker?worker', () => {
+vi.mock('#/lib/workers/ImportWorker?worker', () => {
   class MockImportWorker {
     postMessage = vi.fn()
     terminate = vi.fn()

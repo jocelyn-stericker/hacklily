@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { useSyncExternalStore } from 'react'
-
 const LOG = '[Settings]'
 
 export type SampleRatePref = 'auto' | 'prefer48000' | 'prefer44100'
@@ -130,7 +128,7 @@ function readFromStorage(): SettingsRow {
   return { ...DEFAULT_SETTINGS }
 }
 
-function getSnapshot(): SettingsRow {
+export function getSnapshot(): SettingsRow {
   cache ??= readFromStorage()
   return cache
 }
@@ -146,15 +144,11 @@ if (typeof window !== 'undefined') {
   })
 }
 
-function subscribe(callback: () => void): () => void {
+export function subscribe(callback: () => void): () => void {
   listeners.add(callback)
   return () => {
     listeners.delete(callback)
   }
-}
-
-export function useSettings(): SettingsRow {
-  return useSyncExternalStore(subscribe, getSnapshot, () => DEFAULT_SETTINGS)
 }
 
 export async function updateSettings(

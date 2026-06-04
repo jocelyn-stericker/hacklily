@@ -35,7 +35,7 @@
 
 import { useSyncExternalStore } from 'react'
 
-import { downloadWithWorker } from '#/lib/transcribeBundled'
+import { downloadWithWorker } from '#/lib/transcription/transcribeBundled'
 
 const LOG = '[modelDownload]'
 
@@ -53,7 +53,7 @@ export type DownloadState =
   | { status: 'downloading'; loaded: number; total: number }
   | { status: 'failed'; error: string }
 
-const IDLE: DownloadState = { status: 'idle' }
+export const IDLE: DownloadState = { status: 'idle' }
 
 // On-device speech recognition language, matching the feature probes.
 const LANG = 'en-US'
@@ -65,28 +65,20 @@ const LANG = 'en-US'
 const states = new Map<DownloadModel, DownloadState>()
 const stateListeners = new Set<() => void>()
 
-function getState(model: DownloadModel): DownloadState {
+export function getState(model: DownloadModel): DownloadState {
   return states.get(model) ?? IDLE
 }
 
-function setState(model: DownloadModel, next: DownloadState): void {
+export function setState(model: DownloadModel, next: DownloadState): void {
   states.set(model, next)
   for (const fn of stateListeners) fn()
 }
 
-function subscribeState(fn: () => void): () => void {
+export function subscribeState(fn: () => void): () => void {
   stateListeners.add(fn)
   return () => {
     stateListeners.delete(fn)
   }
-}
-
-export function useDownloadState(model: DownloadModel): DownloadState {
-  return useSyncExternalStore(
-    subscribeState,
-    () => getState(model),
-    () => IDLE,
-  )
 }
 
 // ---------------------------------------------------------------------------
@@ -100,14 +92,14 @@ function downloadedKey(model: WorkerDownloadModel): string {
 const downloadedListeners = new Set<() => void>()
 // Incremented whenever any download completes, so consumers (including the
 // browser-availability probe, which can't observe the install otherwise) re-read.
-let downloadedVersion = 0
+export let downloadedVersion = 0
 
 function bumpDownloaded(): void {
   downloadedVersion += 1
   for (const fn of downloadedListeners) fn()
 }
 
-function subscribeDownloaded(fn: () => void): () => void {
+export function subscribeDownloaded(fn: () => void): () => void {
   downloadedListeners.add(fn)
   return () => {
     downloadedListeners.delete(fn)
@@ -135,27 +127,6 @@ export function clearModelDownloaded(model: WorkerDownloadModel): void {
     console.warn(LOG, 'failed to clear download flag:', err)
   }
   bumpDownloaded()
-}
-
-export function useModelDownloaded(model: WorkerDownloadModel): boolean {
-  return useSyncExternalStore(
-    subscribeDownloaded,
-    () => isModelDownloaded(model),
-    () => false,
-  )
-}
-
-/**
- * A counter that increments every time a model finishes downloading. Consumers
- * that can't otherwise observe a completion (notably the browser on-device
- * availability probe) can depend on it to re-run.
- */
-export function useDownloadVersion(): number {
-  return useSyncExternalStore(
-    subscribeDownloaded,
-    () => downloadedVersion,
-    () => 0,
-  )
 }
 
 // ---------------------------------------------------------------------------

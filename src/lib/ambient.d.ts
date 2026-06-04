@@ -18,36 +18,36 @@
 // Ambient declarations for Vite's ?worker import syntax and the AudioWorklet
 // global scope, which TypeScript has no built-in lib for.
 
-declare module '#/lib/SpectrogramWorker?worker' {
-  import type { SpectrogramWorker } from '#/lib/SpectrogramWorker'
+declare module '#/lib/workers/SpectrogramWorker?worker' {
+  import type { SpectrogramWorker } from '#/lib/workers/SpectrogramWorker'
 
   const SpectrogramWorkerConstructor: new () => SpectrogramWorker
   export default SpectrogramWorkerConstructor
 }
 
-declare module '#/lib/FormantWorker?worker' {
-  import type { FormantWorker } from '#/lib/FormantWorker'
+declare module '#/lib/workers/FormantWorker?worker' {
+  import type { FormantWorker } from '#/lib/workers/FormantWorker'
 
   const FormantWorkerConstructor: new () => FormantWorker
   export default FormantWorkerConstructor
 }
 
-declare module '#/lib/VadWorker?worker' {
-  import type { VadWorker } from '#/lib/VadWorker'
+declare module '#/lib/workers/VadWorker?worker' {
+  import type { VadWorker } from '#/lib/workers/VadWorker'
 
   const VadWorkerConstructor: new () => VadWorker
   export default VadWorkerConstructor
 }
 
-declare module '#/lib/ImportWorker?worker' {
-  import type { ImportWorker } from '#/lib/ImportWorker'
+declare module '#/lib/workers/ImportWorker?worker' {
+  import type { ImportWorker } from '#/lib/workers/ImportWorker'
 
   const ImportWorkerConstructor: new () => ImportWorker
   export default ImportWorkerConstructor
 }
 
-declare module '#/lib/TranscribeWorker?worker' {
-  import type { TranscribeWorker } from '#/lib/TranscribeWorker'
+declare module '#/lib/workers/TranscribeWorker?worker' {
+  import type { TranscribeWorker } from '#/lib/workers/TranscribeWorker'
 
   const TranscribeWorkerConstructor: new () => TranscribeWorker
   export default TranscribeWorkerConstructor

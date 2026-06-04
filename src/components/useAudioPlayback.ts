@@ -17,10 +17,11 @@
 
 import { useEffect, useLayoutEffect, useRef } from 'react'
 
-import { AudioPlaybackPipeline } from '#/lib/AudioPlaybackPipeline'
-import type { RopeGainCache } from '#/lib/ropeLoudness'
-import type { SabRope } from '#/lib/SabRope'
-import { useSettings, preferredSampleRate } from '#/lib/settings'
+import { useSettings } from '#/components/useSettings'
+import { AudioPlaybackPipeline } from '#/lib/audio/AudioPlaybackPipeline'
+import type { SabRope } from '#/lib/audio/SabRope'
+import type { RopeGainCache } from '#/lib/loudness/ropeLoudness'
+import { preferredSampleRate } from '#/lib/settings'
 
 export function useAudioPlayback({
   enabled,
@@ -57,7 +58,7 @@ export function useAudioPlayback({
     }
   }, [])
 
-  const audioSettings = useSettings()
+  const [audioSettings] = useSettings()
   const preferredRate = preferredSampleRate(audioSettings)
 
   const playbackRef = useRef<{

@@ -20,8 +20,8 @@
 import { useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 
-import type { AnalysisChunk } from '#/lib/AnalysisFrame'
-import { getFrame, totalFrames } from '#/lib/AnalysisFrame'
+import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
+import { getFrame, totalFrames } from '#/lib/analysis/AnalysisFrame'
 import { SPEECH_U32, UNVOICED_U32 } from '#/lib/theme'
 
 import {

@@ -19,7 +19,7 @@
 import { renderHook, act } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-import type { AnalysisChunk } from '#/lib/AnalysisFrame'
+import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
 
 import { useTimelineState } from './useTimelineState'
 

@@ -26,7 +26,7 @@ import {
   useState,
 } from 'react'
 
-import { hzToBark } from '#/lib/bark'
+import { hzToBark } from '#/lib/dsp/bark'
 import { cn } from '#/lib/utils'
 
 import type { TimelineState } from './useTimelineState'

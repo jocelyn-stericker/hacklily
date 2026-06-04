@@ -33,15 +33,14 @@ import {
   DialogTitle,
 } from '#/components/ui/dialog'
 import { useBrowserSpeechRecognitionAvailable } from '#/components/useBrowserSpeechRecognitionAvailable'
-import type { DownloadModel } from '#/lib/modelDownload'
 import {
-  cancelDownload,
-  startDownload,
   useDownloadState,
   useModelDownloaded,
-} from '#/lib/modelDownload'
+} from '#/components/useModelDownloaded'
+import { useSettings } from '#/components/useSettings'
+import type { DownloadModel } from '#/lib/modelDownload'
+import { cancelDownload, startDownload } from '#/lib/modelDownload'
 import type { TranscriptionMode } from '#/lib/settings'
-import { useSettings, updateSettings } from '#/lib/settings'
 import { resolveSmallEngine } from '#/lib/transcription'
 import { cn } from '#/lib/utils'
 
@@ -224,7 +223,7 @@ export function TranscriptionSettingsModal({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
-  const settings = useSettings()
+  const [settings, updateSettings] = useSettings()
   const availability = useBrowserSpeechRecognitionAvailable()
   const local = availability?.local ?? null
   const webgpu = availability?.webgpu ?? null

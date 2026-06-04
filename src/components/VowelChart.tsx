@@ -20,14 +20,14 @@
 import { useEffect, useImperativeHandle, useMemo, useState } from 'react'
 import type { RefObject } from 'react'
 
+import { useSettings } from '#/components/useSettings'
 import type {
   AnalysisChunk,
   AnalysisFrame,
   VoicedAnalysisFrame,
-} from '#/lib/AnalysisFrame'
-import { hzToBark } from '#/lib/bark'
-import { HILLENBRAND } from '#/lib/hillenbrand'
-import { useSettings } from '#/lib/settings'
+} from '#/lib/analysis/AnalysisFrame'
+import { HILLENBRAND } from '#/lib/analysis/hillenbrand'
+import { hzToBark } from '#/lib/dsp/bark'
 import type { VowelChartAverages } from '#/lib/settings'
 import { VOWEL_CHART_DARK_THEME, VOWEL_CHART_LIGHT_THEME } from '#/lib/theme'
 import type { VowelChartTheme } from '#/lib/theme'
@@ -337,7 +337,7 @@ export function VowelChart({
   const scheme = useColourScheme()
   const theme =
     scheme === 'dark' ? VOWEL_CHART_DARK_THEME : VOWEL_CHART_LIGHT_THEME
-  const settings = useSettings()
+  const [settings] = useSettings()
 
   const group =
     settings.vowelChartAverages === 'hidden'

@@ -16,13 +16,20 @@
  */
 import { useEffect, useLayoutEffect, useRef } from 'react'
 
-import type { AnalysisFrame, AnalysisParams } from '#/lib/AnalysisFrame'
+import { useSettings } from '#/components/useSettings'
+import type {
+  AnalysisFrame,
+  AnalysisParams,
+} from '#/lib/analysis/AnalysisFrame'
 import {
   MicCapturePipeline,
   preInitPersistentStream,
-} from '#/lib/MicCapturePipeline'
-import type { SabRopeGrow, SabRopeSeal, SabRopeShare } from '#/lib/SabRope'
-import { useSettings } from '#/lib/settings'
+} from '#/lib/audio/MicCapturePipeline'
+import type {
+  SabRopeGrow,
+  SabRopeSeal,
+  SabRopeShare,
+} from '#/lib/audio/SabRope'
 
 export function useMicCapture({
   enabled,
@@ -45,7 +52,7 @@ export function useMicCapture({
   onSabRopeShare: (sabRope: SabRopeShare) => void
   onSabRopeSeal: (seal: SabRopeSeal) => void
 }) {
-  const audioSettings = useSettings()
+  const [audioSettings] = useSettings()
 
   // Pre-open the mic when persistentMic is enabled so the connection is warm.
   const { inputDeviceId, sampleRate, persistentMic, browserPreprocessing } =

@@ -17,10 +17,10 @@
 
 import { useCallback, useEffect, useRef } from 'react'
 
-import type { AnalysisChunk } from '#/lib/AnalysisFrame'
-import { totalFrames } from '#/lib/AnalysisFrame'
-import ImportWorker from '#/lib/ImportWorker?worker'
-import { SabRope } from '#/lib/SabRope'
+import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
+import { totalFrames } from '#/lib/analysis/AnalysisFrame'
+import { SabRope } from '#/lib/audio/SabRope'
+import ImportWorker from '#/lib/workers/ImportWorker?worker'
 
 async function importAudioFile(file: File): Promise<{
   analysis: AnalysisChunk[]
