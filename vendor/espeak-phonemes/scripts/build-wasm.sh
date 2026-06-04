@@ -115,17 +115,20 @@ else
 fi
 
 # --- Package the compressed data asset ---
-echo "=== Packaging data asset ==="
+# Only what English g2p needs: the dictionary, phoneme tables, the 8-byte
+# phondata stub, the intonation tunes (the voice file references them and
+# phoneme-table loading fails without them), and the English voice files.
+# The other ~138 languages' voice files are inert here and are dropped —
+# verified to leave g2p output byte-identical.
+echo "=== Packaging data asset (English g2p only) ==="
 STAGE="$(mktemp -d)"
-mkdir -p "$STAGE/espeak-ng-data/lang"
-cp "$DATA_DIR/phondata"    "$STAGE/espeak-ng-data/"
+mkdir -p "$STAGE/espeak-ng-data/lang/gmw"
+cp "$DATA_DIR/phondata"    "$STAGE/espeak-ng-data/"   # 8-byte stub (phonemes-only)
 cp "$DATA_DIR/phonindex"   "$STAGE/espeak-ng-data/"
 cp "$DATA_DIR/phontab"     "$STAGE/espeak-ng-data/"
-cp "$DATA_DIR/intonations" "$STAGE/espeak-ng-data/"
+cp "$DATA_DIR/intonations" "$STAGE/espeak-ng-data/"   # required by the voice's tunes
 cp "$DATA_DIR/en_dict"     "$STAGE/espeak-ng-data/"
-cp -r "$DATA_DIR/lang"     "$STAGE/espeak-ng-data/"
-# keep only the English dictionary
-find "$STAGE/espeak-ng-data" -name '*_dict' ! -name 'en_dict' -delete
+cp "$DATA_DIR"/lang/gmw/en* "$STAGE/espeak-ng-data/lang/gmw/"  # English voices only
 tar -czf "$ROOT/espeak-ng-data.tar.gz" -C "$STAGE" espeak-ng-data
 rm -rf "$STAGE"
 echo "  -> data: $(wc -c < "$ROOT/espeak-ng-data.tar.gz") bytes"
