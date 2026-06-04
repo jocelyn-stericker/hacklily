@@ -1,0 +1,53 @@
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-publish:
+    runs-on: faith
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            git \
+            cmake \
+            ninja-build \
+            build-essential \
+            python3 \
+            nodejs \
+            npm \
+            xz-utils
+          rm -rf /var/lib/apt/lists/*
+
+      - name: Set up Emscripten
+        run: |
+          git clone --depth 1 https://github.com/emscripten-core/emsdk.git "$HOME/emsdk"
+          "$HOME/emsdk/emsdk" install latest
+          "$HOME/emsdk/emsdk" activate latest
+
+      - name: Build (patch espeak-ng, native data, wasm, TypeScript)
+        run: |
+          source "$HOME/emsdk/emsdk_env.sh"
+          npm install
+          npm run build
+
+      - name: Test (golden corpus + smoke + size budget)
+        run: |
+          npm run test:golden
+          npm run test:smoke
+          npm run check-size
+
+      - name: Publish to Forgejo npm registry
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          npm version "0.0.${{ github.run_number }}" --no-git-tag-version
+          npm config set @jocelyn-stericker:registry https://codeberg.org/api/packages/jocelyn-stericker/npm/
+          npm config set -- '//codeberg.org/api/packages/jocelyn-stericker/npm/:_authToken' "${NPM_TOKEN}"
+          npm publish
