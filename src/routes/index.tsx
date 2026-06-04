@@ -83,6 +83,7 @@ function App() {
 
   const [showTranscriptionSettings, setShowTranscriptionSettings] =
     useState(false)
+  const [showVowelChartSettings, setShowVowelChartSettings] = useState(false)
 
   const settings = useSettings()
 
@@ -738,6 +739,8 @@ function App() {
         onCloseAudioSettings={handleOpenAudioSettings}
         showTranscriptionSettings={showTranscriptionSettings}
         onCloseTranscriptionSettings={setShowTranscriptionSettings}
+        showVowelChartSettings={showVowelChartSettings}
+        onCloseVowelChartSettings={setShowVowelChartSettings}
       />
       <main className="h-dvh flex flex-col overflow-hidden">
         <Toolbar
@@ -754,6 +757,7 @@ function App() {
           exportAudioDisabled={exportAudioDisabled}
           onOpenAudioSettings={handleOpenAudioSettings}
           onOpenTranscriptionSettings={() => setShowTranscriptionSettings(true)}
+          onOpenVowelChartSettings={() => setShowVowelChartSettings(true)}
           showTranscribe={showTranscribe}
           onTranscribe={onTranscribeClick}
           transcribeDisabled={transcribeButtonDisabled}

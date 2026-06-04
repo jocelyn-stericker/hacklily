@@ -692,6 +692,7 @@ describe('transcribeChunks', () => {
       persistentMic: false,
       browserPreprocessing: 'default' as const,
       transcriptionMode: 'large' as const,
+      vowelChartAverages: 'hidden' as const,
     } satisfies SettingsRow
 
     // Only the chunk at index 3 (3s..4s) is on-screen.
@@ -764,6 +765,7 @@ describe('transcribeChunks', () => {
       persistentMic: false,
       browserPreprocessing: 'default' as const,
       transcriptionMode: 'large' as const,
+      vowelChartAverages: 'hidden' as const,
     } satisfies SettingsRow
 
     transcribeChunks([chunk1, chunk2], settings, getAudio)

@@ -17,6 +17,7 @@
 
 import { AudioSettingsModal } from '#/components/AudioSettingsModal'
 import { TranscriptionSettingsModal } from '#/components/TranscriptionSettingsModal'
+import { VowelChartSettingsModal } from '#/components/VowelChartSettingsModal'
 
 import { Button } from './ui/button'
 import {
@@ -39,6 +40,8 @@ export function Dialogs({
   onCloseAudioSettings,
   showTranscriptionSettings,
   onCloseTranscriptionSettings,
+  showVowelChartSettings,
+  onCloseVowelChartSettings,
 }: {
   status: Status
   onAcknowledgeError: () => void
@@ -49,6 +52,8 @@ export function Dialogs({
   onCloseAudioSettings: () => void
   showTranscriptionSettings: boolean
   onCloseTranscriptionSettings: (open: boolean) => void
+  showVowelChartSettings: boolean
+  onCloseVowelChartSettings: (open: boolean) => void
 }) {
   return (
     <>
@@ -99,6 +104,10 @@ export function Dialogs({
       <TranscriptionSettingsModal
         open={showTranscriptionSettings}
         onOpenChange={onCloseTranscriptionSettings}
+      />
+      <VowelChartSettingsModal
+        open={showVowelChartSettings}
+        onOpenChange={onCloseVowelChartSettings}
       />
     </>
   )

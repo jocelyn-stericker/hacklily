@@ -17,6 +17,7 @@
 
 import {
   Captions,
+  CircleDot,
   Download,
   FilePlus,
   FolderOpen,
@@ -56,6 +57,7 @@ export function Toolbar({
   exportAudioDisabled,
   onOpenAudioSettings,
   onOpenTranscriptionSettings,
+  onOpenVowelChartSettings,
   showTranscribe,
   onTranscribe,
   transcribeDisabled,
@@ -74,6 +76,7 @@ export function Toolbar({
   exportAudioDisabled: boolean
   onOpenAudioSettings: () => void
   onOpenTranscriptionSettings: () => void
+  onOpenVowelChartSettings: () => void
   // Whether to show the header's Transcribe button. The parent decides what it
   // does: run a manual transcription pass, or — when transcription is off —
   // open the transcription settings (the button is hidden for automatic
@@ -177,6 +180,10 @@ export function Toolbar({
           <DropdownMenuItem onClick={onOpenTranscriptionSettings}>
             <Captions className="size-4" />
             Transcription settings
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={onOpenVowelChartSettings}>
+            <CircleDot className="size-4" />
+            Vowel chart settings
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

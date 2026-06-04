@@ -73,6 +73,7 @@ describe('settings', () => {
         persistentMic: false,
         browserPreprocessing: 'default',
         transcriptionMode: 'small',
+        vowelChartAverages: 'hidden',
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.echoCancellation).toBeUndefined()
@@ -89,6 +90,7 @@ describe('settings', () => {
         persistentMic: false,
         browserPreprocessing: 'minimal',
         transcriptionMode: 'small',
+        vowelChartAverages: 'hidden',
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.echoCancellation).toBe(false)
@@ -104,6 +106,7 @@ describe('settings', () => {
         persistentMic: false,
         browserPreprocessing: 'default',
         transcriptionMode: 'small',
+        vowelChartAverages: 'hidden',
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.deviceId).toEqual({ exact: deviceId })
@@ -116,6 +119,7 @@ describe('settings', () => {
         persistentMic: false,
         browserPreprocessing: 'default',
         transcriptionMode: 'small',
+        vowelChartAverages: 'hidden',
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.sampleRate).toEqual({ ideal: 48000 })
@@ -128,6 +132,7 @@ describe('settings', () => {
         persistentMic: false,
         browserPreprocessing: 'default',
         transcriptionMode: 'small',
+        vowelChartAverages: 'hidden',
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.sampleRate).toEqual({ ideal: 44100 })
@@ -141,6 +146,7 @@ describe('settings', () => {
         persistentMic: true,
         browserPreprocessing: 'minimal',
         transcriptionMode: 'small',
+        vowelChartAverages: 'hidden',
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.echoCancellation).toBe(false)
@@ -159,6 +165,7 @@ describe('settings', () => {
         persistentMic: false,
         browserPreprocessing: 'default',
         transcriptionMode: 'small',
+        vowelChartAverages: 'hidden',
       }
       expect(preferredSampleRate(settings)).toBeUndefined()
     })
@@ -170,6 +177,7 @@ describe('settings', () => {
         persistentMic: false,
         browserPreprocessing: 'default',
         transcriptionMode: 'small',
+        vowelChartAverages: 'hidden',
       }
       expect(preferredSampleRate(settings)).toBe(48000)
     })
@@ -181,6 +189,7 @@ describe('settings', () => {
         persistentMic: false,
         browserPreprocessing: 'default',
         transcriptionMode: 'small',
+        vowelChartAverages: 'hidden',
       }
       expect(preferredSampleRate(settings)).toBe(44100)
     })
@@ -202,6 +211,7 @@ describe('settings', () => {
         persistentMic: true,
         browserPreprocessing: 'minimal',
         transcriptionMode: 'small',
+        vowelChartAverages: 'hidden',
       }
       localStorage.setItem('braat:settings', JSON.stringify(initial))
 
@@ -240,6 +250,7 @@ describe('settings', () => {
       expect(stored).toHaveProperty('sampleRate')
       expect(stored).toHaveProperty('persistentMic')
       expect(stored).toHaveProperty('browserPreprocessing')
+      expect(stored).toHaveProperty('vowelChartAverages')
     })
   })
 
@@ -249,6 +260,7 @@ describe('settings', () => {
       expect(DEFAULT_SETTINGS.sampleRate).toBe('auto')
       expect(DEFAULT_SETTINGS.persistentMic).toBe(false)
       expect(DEFAULT_SETTINGS.browserPreprocessing).toBe('default')
+      expect(DEFAULT_SETTINGS.vowelChartAverages).toBe('hidden')
     })
   })
 })

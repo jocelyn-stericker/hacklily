@@ -22,6 +22,13 @@ const LOG = '[Settings]'
 export type SampleRatePref = 'auto' | 'prefer48000' | 'prefer44100'
 export type BrowserPreprocessing = 'default' | 'minimal'
 
+export type VowelChartAverages =
+  | 'women'
+  | 'men'
+  | 'adults'
+  | 'children'
+  | 'hidden'
+
 // Which speech-to-text tier Braat is allowed to use. A posture rather than a
 // specific engine — each tier resolves to a concrete engine at runtime so there
 // is always a working fallback:
@@ -84,6 +91,7 @@ export type SettingsRow = {
   persistentMic: boolean
   browserPreprocessing: BrowserPreprocessing
   transcriptionMode: TranscriptionMode
+  vowelChartAverages: VowelChartAverages
 }
 
 /** The subset of settings the audio capture path reads. */
@@ -98,6 +106,7 @@ export const DEFAULT_SETTINGS: SettingsRow = {
   persistentMic: false,
   browserPreprocessing: 'default',
   transcriptionMode: 'disabled',
+  vowelChartAverages: 'hidden',
 }
 
 const STORAGE_KEY = 'braat:settings'
