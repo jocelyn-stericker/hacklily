@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Emscripten build: compile the patched espeak-ng into a phonemes-only WASM
-# module plus the compressed English data asset, emitted into the repo root.
+# module plus the English data asset, emitted into the repo root.
 #
 # Prerequisites:
 #   - Emscripten SDK (emsdk) activated in PATH (source emsdk_env.sh)
@@ -10,7 +10,7 @@
 # Output (in repo root):
 #   espeak-phonemes.wasm   - compiled WASM binary
 #   espeak-phonemes.js     - Emscripten JS glue (ES6 module)
-#   espeak-ng-data.tar.gz  - compressed data asset (gzip: DecompressionStream-friendly)
+#   espeak-ng-data.tar     - uncompressed data asset (servers handle transport compression)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -114,7 +114,7 @@ else
   echo "=== wasm-opt not found, skipping ==="
 fi
 
-# --- Package the compressed data asset ---
+# --- Package the data asset ---
 # Only what English g2p needs: the dictionary, phoneme tables, the 8-byte
 # phondata stub, the intonation tunes (the voice file references them and
 # phoneme-table loading fails without them), and the English voice files.
@@ -129,8 +129,11 @@ cp "$DATA_DIR/phontab"     "$STAGE/espeak-ng-data/"
 cp "$DATA_DIR/intonations" "$STAGE/espeak-ng-data/"   # required by the voice's tunes
 cp "$DATA_DIR/en_dict"     "$STAGE/espeak-ng-data/"
 cp "$DATA_DIR"/lang/gmw/en* "$STAGE/espeak-ng-data/lang/gmw/"  # English voices only
-tar -czf "$ROOT/espeak-ng-data.tar.gz" -C "$STAGE" espeak-ng-data
+# Emit an uncompressed tar: HTTP servers apply their own (better) transport
+# compression, and shipping raw bytes avoids dev servers mislabeling a .gz as
+# Content-Encoding: gzip (which makes the browser double-decode the body).
+tar -cf "$ROOT/espeak-ng-data.tar" -C "$STAGE" espeak-ng-data
 rm -rf "$STAGE"
-echo "  -> data: $(wc -c < "$ROOT/espeak-ng-data.tar.gz") bytes"
+echo "  -> data: $(wc -c < "$ROOT/espeak-ng-data.tar") bytes"
 
 echo "=== WASM build complete ==="

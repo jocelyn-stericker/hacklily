@@ -12,9 +12,13 @@ export interface IPAPhonemeOptions {
 export type Compression = "gzip" | "none"
 
 export interface DataAsset {
-  /** Raw bytes of the compressed (or uncompressed) data archive */
+  /** Raw bytes of the (optionally compressed) data archive */
   archive: ArrayBuffer | Uint8Array
-  /** How the archive is compressed.  "none" = raw tar bytes. */
+  /**
+   * How the archive is compressed. Omit (or "none") to read the bytes as a
+   * raw tar archive — the default, since the shipped asset is an uncompressed
+   * `.tar` and HTTP servers handle transport compression themselves.
+   */
   compression?: Compression
 }
 
@@ -32,6 +36,6 @@ export interface CreateESpeakOptions {
    * `{ wasmBinary: bytes }`.
    */
   moduleOverrides?: Record<string, unknown>
-  /** Compressed data archive containing espeak-ng-data/ */
+  /** Data archive containing espeak-ng-data/ (uncompressed tar by default) */
   data: DataAsset
 }

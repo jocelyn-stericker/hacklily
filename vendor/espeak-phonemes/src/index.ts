@@ -23,12 +23,12 @@ async function initSingleton(): Promise<ESpeakWasm> {
   const currentDir = dirname(fileURLToPath(import.meta.url))
   const pkgRoot = resolve(currentDir, "..", "..")
   const modPath = resolve(pkgRoot, "espeak-phonemes.js")
-  const dataPath = resolve(pkgRoot, "espeak-ng-data.tar.gz")
+  const dataPath = resolve(pkgRoot, "espeak-ng-data.tar")
   const ModuleFactory = (await import(modPath)).default
   const archive = readFileSync(dataPath)
   return ESpeakWasm.create({
     moduleFactory: ModuleFactory,
-    data: { archive, compression: "gzip" },
+    data: { archive },
   })
 }
 

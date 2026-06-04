@@ -10,9 +10,12 @@
       "types": "./dist/esm/index.d.ts",
       "import": "./dist/esm/index.js"
     },
-    "./espeak-phonemes.js": "./espeak-phonemes.js",
+    "./espeak-phonemes.js": {
+      "types": "./espeak-phonemes.d.ts",
+      "default": "./espeak-phonemes.js"
+    },
     "./espeak-phonemes.wasm": "./espeak-phonemes.wasm",
-    "./espeak-ng-data.tar.gz": "./espeak-ng-data.tar.gz",
+    "./espeak-ng-data.tar": "./espeak-ng-data.tar",
     "./package.json": "./package.json"
   },
   "files": [
@@ -20,14 +23,15 @@
     "src/",
     "espeak-phonemes.wasm",
     "espeak-phonemes.js",
-    "espeak-ng-data.tar.gz",
+    "espeak-phonemes.d.ts",
+    "espeak-ng-data.tar",
     "LICENSE",
     "README.md"
   ],
   "scripts": {
     "build": "bash scripts/build.sh",
     "build:ts": "tsc -p tsconfig.json",
-    "clean": "rm -rf dist espeak-phonemes.wasm espeak-phonemes.js espeak-ng-data.tar.gz",
+    "clean": "rm -rf dist espeak-phonemes.wasm espeak-phonemes.js espeak-ng-data.tar",
     "test:golden": "node tests/test-golden-corpus.mjs",
     "test:smoke": "node tests/test-smoke.mjs",
     "check-size": "node tests/check-size.mjs"

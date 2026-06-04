@@ -14,7 +14,7 @@ const ipa = await textToIPA("Hello world");
 This repo is **not a fork** of eSpeak NG. It pins upstream as a git submodule,
 applies a small patch (`patches/espeak-ng-phonemes.patch`) that trims the build
 to translation-only and adds a phonemes-only data mode, then cross-compiles a
-~300 KB WASM module plus ~120 KB of compressed English data. See
+~300 KB WASM module plus English data that compresses to ~120 KB over the wire. See
 [Build](#build) and `PORT_PLAN.md`.
 
 ## Install
@@ -54,13 +54,13 @@ a bundler like Vite, the `?url` suffix yields the served asset URL:
 import { createESpeak } from "@jocelyn-stericker/espeak-phonemes";
 import initWasm from "@jocelyn-stericker/espeak-phonemes/espeak-phonemes.js";
 import wasmUrl from "@jocelyn-stericker/espeak-phonemes/espeak-phonemes.wasm?url";
-import dataUrl from "@jocelyn-stericker/espeak-phonemes/espeak-ng-data.tar.gz?url";
+import dataUrl from "@jocelyn-stericker/espeak-phonemes/espeak-ng-data.tar?url";
 
 const resp = await fetch(dataUrl);
 const engine = await createESpeak({
   moduleFactory: initWasm,
   moduleOverrides: { locateFile: () => wasmUrl }, // so the glue finds the .wasm
-  data: { archive: await resp.arrayBuffer(), compression: "gzip" },
+  data: { archive: await resp.arrayBuffer() }, // raw tar; omit `compression`
 });
 
 engine.textToIPA("Hello from the browser!"); // synchronous after init
@@ -104,7 +104,7 @@ npm run test:golden            # parity vs the captured CLI corpus
 2. A **native** build to compile the phonemes-only English data
    (`ESPEAK_PHONEMES_ONLY=1`; the data compiler runs on the host).
 3. `scripts/build-wasm.sh` — emscripten build of the translation-only library,
-   emitting `espeak-phonemes.{wasm,js}` and `espeak-ng-data.tar.gz`.
+   emitting `espeak-phonemes.{wasm,js}` and `espeak-ng-data.tar`.
 4. `tsc` — compiles the TypeScript wrapper to `dist/esm/`.
 
 ### Bumping upstream eSpeak NG
@@ -127,4 +127,4 @@ didn't change pronunciations.
 
 A derivative of [eSpeak NG](https://github.com/espeak-ng/espeak-ng) (GPLv3).
 Copyright (C) 2006–2024 Jonathan Duddington and contributors. The bundled
-`espeak-ng-data.tar.gz` and the WASM binary are built from eSpeak NG source.
+`espeak-ng-data.tar` and the WASM binary are built from eSpeak NG source.

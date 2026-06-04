@@ -37,7 +37,7 @@ cmake -S "$ESPEAK" -B "$ESPEAK/build" \
   -DUSE_ASYNC=OFF
 cmake --build "$ESPEAK/build" -j"$(nproc)"
 
-# 3. Emscripten build → espeak-phonemes.{wasm,js} + espeak-ng-data.tar.gz.
+# 3. Emscripten build → espeak-phonemes.{wasm,js} + espeak-ng-data.tar.
 echo "=== Emscripten build ==="
 bash "$ROOT/scripts/build-wasm.sh"
 
@@ -47,4 +47,4 @@ cd "$ROOT"
 npx tsc -p tsconfig.json
 
 echo "=== Build complete ==="
-ls -lh "$ROOT"/espeak-phonemes.wasm "$ROOT"/espeak-phonemes.js "$ROOT"/espeak-ng-data.tar.gz
+ls -lh "$ROOT"/espeak-phonemes.wasm "$ROOT"/espeak-phonemes.js "$ROOT"/espeak-ng-data.tar

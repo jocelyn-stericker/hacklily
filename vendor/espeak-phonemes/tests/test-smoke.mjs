@@ -9,11 +9,11 @@ const pkgRoot = resolve(__dirname, "..")
 async function main() {
   // --- API 1: Low-level, caller provides assets (browser-compatible) ---
   const initWasm = (await import(resolve(pkgRoot, "espeak-phonemes.js"))).default
-  const archive = readFileSync(resolve(pkgRoot, "espeak-ng-data.tar.gz"))
+  const archive = readFileSync(resolve(pkgRoot, "espeak-ng-data.tar"))
 
   const engine = await createESpeak({
     moduleFactory: initWasm,
-    data: { archive, compression: "gzip" },
+    data: { archive },
   })
 
   console.log("createESpeak → hello:", JSON.stringify(engine.textToIPA("hello")))

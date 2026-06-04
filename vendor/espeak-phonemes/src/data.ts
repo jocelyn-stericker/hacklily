@@ -26,9 +26,10 @@ async function gunzip(bytes: ArrayBuffer | Uint8Array): Promise<Uint8Array> {
 
 async function decompress(
   bytes: ArrayBuffer | Uint8Array,
-  compression: Compression,
+  compression?: Compression,
 ): Promise<Uint8Array> {
   if (compression === "gzip") return gunzip(bytes)
+  // No compression (or unspecified): treat the bytes as a raw tar archive.
   return bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes)
 }
 
@@ -98,7 +99,7 @@ function writeTarToMEMFS(wasm: any, entries: TarEntry[]): void {
 export async function loadTarToMEMFS(
   wasm: any,
   archive: ArrayBuffer | Uint8Array,
-  compression: Compression,
+  compression?: Compression,
 ): Promise<void> {
   const raw = await decompress(archive, compression)
   const entries = parseTar(raw)

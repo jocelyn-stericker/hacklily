@@ -7,7 +7,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const BUDGETS = {
   "wasm-js-gzip":   150, // KB — wasm + JS glue gzip'd
-  "data-gzip":      150, // KB — compressed data asset (tar.gz)
+  "data-gzip":      150, // KB — data asset gzip'd (transport size; shipped as raw tar)
   "total-gzip":     300, // KB — total shipped gzip'd
 }
 
@@ -24,7 +24,7 @@ function main() {
   const pkgRoot = resolve(__dirname, "..")
   const wasmPath = resolve(pkgRoot, "espeak-phonemes.wasm")
   const jsPath   = resolve(pkgRoot, "espeak-phonemes.js")
-  const dataPath = resolve(pkgRoot, "espeak-ng-data.tar.gz")
+  const dataPath = resolve(pkgRoot, "espeak-ng-data.tar")
 
   // Check asset files exist
   for (const p of [wasmPath, jsPath, dataPath]) {
@@ -36,15 +36,18 @@ function main() {
 
   const wasmGzip = gzipSize(wasmPath)
   const jsGzip   = gzipSize(jsPath)
-  const dataRaw  = statSync(dataPath).size
+  // The data asset ships as a raw tar; gzip it here to estimate transport size,
+  // which is what servers send over the wire.
+  const dataGzip = gzipSize(dataPath)
   const codeGzip = wasmGzip + jsGzip
-  const totalGzip = codeGzip + dataRaw // data is already gzip-compressed
+  const totalGzip = codeGzip + dataGzip
 
   console.log("=== Size budget check ===")
   console.log(`  wasm (raw):         ${kib(statSync(wasmPath).size)} KB`)
   console.log(`  js glue (raw):      ${kib(statSync(jsPath).size)} KB`)
+  console.log(`  data (raw tar):     ${kib(statSync(dataPath).size)} KB`)
   console.log(`  wasm+js (gzip'd):   ${kib(codeGzip)} KB (budget: ${BUDGETS["wasm-js-gzip"]} KB)`)
-  console.log(`  data (gzip):        ${kib(dataRaw)} KB (budget: ${BUDGETS["data-gzip"]} KB)`)
+  console.log(`  data (gzip'd):      ${kib(dataGzip)} KB (budget: ${BUDGETS["data-gzip"]} KB)`)
   console.log(`  total (gzip'd):     ${kib(totalGzip)} KB (budget: ${BUDGETS["total-gzip"]} KB)`)
 
   let failed = false
@@ -56,8 +59,8 @@ function main() {
     console.log(`  ✓ wasm+js gzip within budget`)
   }
 
-  if (dataRaw > BUDGETS["data-gzip"] * 1024) {
-    console.error(`FAIL: data gzip ${kib(dataRaw)} KB exceeds budget ${BUDGETS["data-gzip"]} KB`)
+  if (dataGzip > BUDGETS["data-gzip"] * 1024) {
+    console.error(`FAIL: data gzip ${kib(dataGzip)} KB exceeds budget ${BUDGETS["data-gzip"]} KB`)
     failed = true
   } else {
     console.log(`  ✓ data gzip within budget`)

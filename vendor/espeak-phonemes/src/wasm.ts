@@ -11,11 +11,7 @@ export class ESpeakWasm {
     const ModuleFactory = opts.moduleFactory
     const wasm = await ModuleFactory(opts.moduleOverrides)
 
-    await loadTarToMEMFS(
-      wasm,
-      opts.data.archive,
-      opts.data.compression ?? "gzip",
-    )
+    await loadTarToMEMFS(wasm, opts.data.archive, opts.data.compression)
 
     const pathStr = "/data/espeak-ng-data"
     const pathHomeAddr = wasm._path_home
