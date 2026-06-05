@@ -47,7 +47,22 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          npm version "0.0.${{ github.run_number }}" --no-git-tag-version
+          VERSION="0.0.${{ github.run_number }}"
+          npm version "${VERSION}" --no-git-tag-version
           npm config set @jocelyn-stericker:registry https://codeberg.org/api/packages/jocelyn-stericker/npm/
           npm config set -- '//codeberg.org/api/packages/jocelyn-stericker/npm/:_authToken' "${NPM_TOKEN}"
-          npm publish
+          # Forgejo's npm registry has no overwrite: a successful PUT that npm
+          # retries (transient 5xx/429) re-PUTs and gets a spurious 409. Treat
+          # "version already present" as success so the retry can't fail the job.
+          if npm publish --loglevel silly; then
+            echo "published ${VERSION}"
+          elif npm view "@jocelyn-stericker/espeak-phonemes@${VERSION}" version >/dev/null 2>&1; then
+            echo "version ${VERSION} already present (likely a retried PUT) — treating as success"
+          else
+            echo "publish failed and ${VERSION} is not in the registry" >&2
+            exit 1
+          fi
+
+      - name: Dump npm debug log on failure
+        if: failure()
+        run: cat $(ls -t ~/.npm/_logs/*-debug-0.log | head -1)
