@@ -11,6 +11,17 @@ const config = defineConfig({
     tsconfigPaths: true,
     conditions: ['onnxruntime-web-use-extern-wasm'],
   },
+  build: {
+    rollupOptions: {
+      // Multi-page build: each HTML entry boots the same SPA, but ships its own
+      // <head> so the page's metadata is visible before JS runs (we don't SSR).
+      // The host serves /ipa from ipa.html.
+      input: {
+        main: 'index.html',
+        ipa: 'ipa.html',
+      },
+    },
+  },
   server: {
     allowedHosts: ['lily.local'],
     // SharedArrayBuffer requires cross-origin isolation. Production headers set in public/_headers

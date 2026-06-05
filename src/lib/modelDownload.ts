@@ -33,8 +33,6 @@
 
 /// <reference types="@types/dom-speech-recognition" />
 
-import { useSyncExternalStore } from 'react'
-
 import { downloadWithWorker } from '#/lib/transcription/transcribeBundled'
 
 const LOG = '[modelDownload]'

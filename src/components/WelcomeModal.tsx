@@ -15,7 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { FolderOpen, MicVocal } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
+import { ChevronRight, FolderOpen, Languages, MicVocal } from 'lucide-react'
 
 import braatPng from '#/braat.png'
 import { Button } from '#/components/ui/button'
@@ -65,8 +66,21 @@ export function WelcomeModal({
                 Import Audio File
               </Button>
             </div>
+            <div className="flex w-full flex-col gap-1">
+              <span className="text-xs font-medium text-muted-foreground">
+                Other tools
+              </span>
+              <Link
+                to="/ipa"
+                className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted"
+              >
+                <Languages className="size-4 shrink-0 text-muted-foreground" />
+                <span className="flex-1">English to IPA</span>
+                <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+              </Link>
+            </div>
           </div>
-          <div className="text-center text-xs space-y-2 text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground">
+          <div className="text-xs space-y-2 text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground">
             <span className="block">
               Braat shows you the pitch and resonance of your voice in real time
               &mdash; a practice aid for voice training, including trans voice

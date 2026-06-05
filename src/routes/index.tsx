@@ -84,6 +84,12 @@ function App() {
 
   const [settings] = useSettings()
 
+  // Restore the base title on (client-side) navigation back to the app; tool
+  // pages like /ipa set their own document.title and the head isn't reloaded.
+  useEffect(() => {
+    document.title = 'Braat'
+  }, [])
+
   // Bumped whenever chunk transcriptions change in place (a manual pass
   // progresses, or a model switch clears them). `analysisMut`'s identity is
   // stable across those mutations, so derived render values that scan it (the
