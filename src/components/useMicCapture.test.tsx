@@ -361,7 +361,7 @@ describe('AudioRecorder', () => {
     vi.clearAllMocks()
   })
 
-  it.only('calls getUserMedia with audio constraints and video=false', async () => {
+  it('calls getUserMedia with audio constraints and video=false', async () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()
