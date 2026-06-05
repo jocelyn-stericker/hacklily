@@ -804,6 +804,7 @@ function App() {
                         f0: hoverFrame.f0,
                         f1: hoverFrame.f1,
                         f2: hoverFrame.f2,
+                        f3: hoverFrame.f3,
                       }
                     : null,
               }}

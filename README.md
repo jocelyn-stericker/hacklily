@@ -2,7 +2,7 @@
 
 ## What is Braat?
 
-Braat shows you, in real time, the pitch and resonance of your voice as you speak. It's a practice aid aimed at **voice training** — including trans voice training, where pitch (F0) and vowel resonance (F1, F2) are commonly used reference points. It may also be useful for singing practice, accent work, or just exploring how your voice works.
+Braat shows you, in real time, the pitch and resonance of your voice as you speak. It's a practice aid aimed at **voice training** — including trans voice training, where pitch (F0) and vowel resonance (F1-3) are commonly used reference points. It may also be useful for singing practice, accent work, or just exploring how your voice works.
 
 [**Open Braat →**](https://braat.app)
 

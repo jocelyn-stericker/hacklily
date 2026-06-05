@@ -172,6 +172,7 @@ export const FORMANT_TRACKS = [
   { key: 'f0' as const, color: '#ffffff' },
   { key: 'f1' as const, color: CYAN_HEX },
   { key: 'f2' as const, color: CYAN_HEX },
+  { key: 'f3' as const, color: CYAN_HEX },
 ]
 
 export const FORMANT_SHADOW_COLOUR = 'rgba(0,0,0,0.8)'

@@ -40,7 +40,12 @@ interface YAxisFreq {
   type: 'freq'
   fMinHz: number
   fMaxHz: number
-  hover: { f0: number; f1: number | null; f2: number | null } | null
+  hover: {
+    f0: number
+    f1: number | null
+    f2: number | null
+    f3: number | null
+  } | null
 }
 
 interface YAxisAmplitude {
@@ -544,6 +549,13 @@ function YAxisStrip({ gridHzOrAmp }: { gridHzOrAmp: number[] }) {
           {yAxis.hover.f2 ? (
             <YAxisTickAndLabel
               hzOrAmp={yAxis.hover.f2}
+              labelClassName="text-[#00e5ff] bg-white dark:bg-black"
+              tickClassName="bg-[#00e5ff] w-3 h-3 rounded-full"
+            />
+          ) : null}
+          {yAxis.hover.f3 ? (
+            <YAxisTickAndLabel
+              hzOrAmp={yAxis.hover.f3}
               labelClassName="text-[#00e5ff] bg-white dark:bg-black"
               tickClassName="bg-[#00e5ff] w-3 h-3 rounded-full"
             />
