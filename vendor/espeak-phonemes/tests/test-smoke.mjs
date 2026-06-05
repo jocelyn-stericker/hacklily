@@ -35,6 +35,9 @@ async function main() {
   const r5 = await textToIPA("world")
   console.log("textToIPA → reuse:", JSON.stringify(r5))
 
+  const r6 = await textToIPA("judge me", {sep: "|", keepStress: false})
+  console.log("textToIPA → options:", JSON.stringify(r6))
+
   console.log("\nAll smoke tests passed!")
 }
 

@@ -81,10 +81,19 @@ export class ESpeakWasm {
     // insert a tie *within* multi-character phonemes (e.g. "əʊ" -> "ə͡ʊ"),
     // at the phoneme-internal letter boundaries only espeak knows about.
     let phonemeMode = 2
+    if (opts?.tie && opts?.sep) {
+      throw new Error('tie and sep cannot both be set')
+    }
     if (opts?.tie) {
       const tieCp = opts.tie.codePointAt(0)
       if (tieCp !== undefined) {
         phonemeMode |= 0x80 // espeakPHONEMES_TIE
+        phonemeMode |= (tieCp & 0xffff) << 8
+      }
+    }
+    if (opts?.sep) {
+      const tieCp = opts.sep.codePointAt(0)
+      if (tieCp !== undefined) {
         phonemeMode |= (tieCp & 0xffff) << 8
       }
     }
@@ -125,7 +134,7 @@ export class ESpeakWasm {
     // words and between clauses). espeak emits space-separated groups; the
     // default " " leaves them as-is, anything else replaces every run of
     // whitespace so within-clause and between-clause spacing stay consistent.
-    const separator = opts?.separator
+    const separator = opts?.wordSeparator
     if (separator !== undefined && separator !== " ") {
       result = result.split(/\s+/).filter((s) => s.length > 0).join(separator)
     }

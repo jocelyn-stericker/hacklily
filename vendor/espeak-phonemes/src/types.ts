@@ -1,6 +1,7 @@
 export interface IPAPhonemeOptions {
-  /** Character inserted between phoneme groups (default: " ") */
-  separator?: string
+  wordSeparator?: string
+  /** Character inserted between phonemes */
+  sep?: string
   /** Tie character for multi-character phonemes (e.g., U+0361 "◌͡") */
   tie?: string
   /** Keep primary/secondary stress marks (ˈˌ), default: true */
