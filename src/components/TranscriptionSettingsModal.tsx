@@ -15,7 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Check, Loader2 } from 'lucide-react'
+import {
+  CaptionsOff,
+  Check,
+  Cloud,
+  Loader2,
+  Sparkle,
+  Sparkles,
+} from 'lucide-react'
+import type { LucideProps } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -46,6 +54,24 @@ import { cn } from '#/lib/utils'
 
 const LOG = '[TranscriptionSettings]'
 
+function TranscriptIcon({
+  mode,
+  ...props
+}: { mode: TranscriptionMode } & LucideProps) {
+  switch (mode) {
+    case 'cloud':
+      return <Cloud {...props} />
+    case 'large':
+      return <Sparkles {...props} />
+    case 'disabled':
+      return <CaptionsOff {...props} />
+    case 'small':
+      return <Sparkle {...props} />
+    default:
+      return null
+  }
+}
+
 function formatMB(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
@@ -56,15 +82,19 @@ function formatMB(bytes: number): string {
 function DownloadProgress({
   loaded,
   total,
+  label,
 }: {
   loaded: number
   total: number
+  // Names the model being fetched, for when one control downloads several in
+  // turn (Accurate). Omitted for a single-model control.
+  label?: string
 }) {
   if (total <= 0) {
     return (
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Loader2 className="size-4 animate-spin" />
-        <span>Downloading…</span>
+        <span>{label ? `Downloading ${label}…` : 'Downloading…'}</span>
       </div>
     )
   }
@@ -79,6 +109,7 @@ function DownloadProgress({
       </div>
       <div className="flex justify-between text-xs text-muted-foreground tabular-nums">
         <span>
+          {label ? `${label} · ` : ''}
           {formatMB(loaded)} / {formatMB(total)}
         </span>
         <span>{Math.round(percent)}%</span>
@@ -101,13 +132,29 @@ function DownloadControls({
   onDownload: () => void
 }) {
   const state = useDownloadState(model)
+  // The Fast draft model is shared with the Accurate tier, so the same download
+  // can be in flight from the other card. Only the control that actually kicked
+  // it off shows the bar and Cancel; reset when it settles back to idle so a
+  // later download started elsewhere is correctly treated as not-ours.
+  const [startedHere, setStartedHere] = useState(false)
+  useEffect(() => {
+    // FIXME: should be tracked externally
+    // oxlint-disable-next-line react-hooks-js/set-state-in-effect
+    if (state.status === 'idle') setStartedHere(false)
+  }, [state.status])
   // `force` re-downloads ignoring the cache; used by "Try again" so a corrupt
   // cached file (e.g. a truncated weight) can't keep failing the same way.
   const begin = (force = false) => {
     onDownload()
+    setStartedHere(true)
     startDownload(model, { force })
   }
   if (state.status === 'downloading') {
+    // Downloading because of the other card — show a passive note, not a second
+    // bar (and no Cancel; it isn't ours to cancel).
+    if (!startedHere) {
+      return <DownloadProgress loaded={0} total={0} />
+    }
     return (
       <div className="flex flex-col gap-2">
         <DownloadProgress loaded={state.loaded} total={state.total} />
@@ -148,11 +195,117 @@ function DownloadControls({
   )
 }
 
+// Accurate needs two models: the fast draft engine (the same one the Fast tier
+// uses) for the instant rough transcription, and Whisper Turbo for the on-demand
+// sharpen. One button fetches both, one at a time — draft first — so a low-memory
+// device never loads both heavy models at once, surfacing a single progress bar
+// for whichever stage is in flight. Both must land before Accurate can be applied;
+// the modal blocks Save until then and cancels whatever's in flight when it closes.
+function AccurateDownloadControls({
+  draftModel,
+  draftReady,
+  sizeLabel,
+  enabled,
+  onStart,
+}: {
+  draftModel: DownloadModel
+  draftReady: boolean
+  // Combined size still to download, shown on the Download button.
+  sizeLabel: string
+  // False while the modal is closing, so the sequencer doesn't restart a
+  // just-cancelled download on the way out.
+  enabled: boolean
+  onStart: () => void
+}) {
+  const draftState = useDownloadState(draftModel)
+  const whisperState = useDownloadState('whisper')
+
+  // Set once the user kicks the pair off from *this* control. Gating the whole UI
+  // on it keeps a Fast-tier download of the shared draft model from lighting this
+  // up too, and means Whisper only auto-starts after the user began the sequence
+  // here (not on reopen with the draft model already present).
+  const [started, setStarted] = useState(false)
+
+  // The stage currently in flight: the draft model until it's ready, then Whisper.
+  const stageModel = !draftReady ? draftModel : 'whisper'
+  const stageLabel = !draftReady
+    ? draftModel === 'browser'
+      ? 'built-in'
+      : 'Moonshine'
+    : 'Whisper Turbo'
+  const stageState = !draftReady ? draftState : whisperState
+
+  // Advance the sequence: draft first, then Whisper, each only once its
+  // predecessor is ready. Re-runs as each stage settles. A failed stage stops here
+  // (its state is `failed`, not `idle`) until the user retries.
+  useEffect(() => {
+    if (!enabled || !started) return
+    if (stageState.status === 'idle') startDownload(stageModel)
+  }, [enabled, started, stageModel, stageState.status])
+
+  if (started && stageState.status === 'failed') {
+    return (
+      <div className="flex flex-col gap-1">
+        <p className="text-xs text-destructive">{stageState.error}</p>
+        <Button
+          type="button"
+          size="sm"
+          onClick={() => startDownload(stageModel, { force: true })}
+        >
+          Try again
+        </Button>
+      </div>
+    )
+  }
+
+  // Active sequence: one bar for the current stage. `idle` here is the brief gap
+  // between stages (or the frame before the first fetch starts) — render it as the
+  // indeterminate bar rather than flashing the Download button back.
+  if (started) {
+    const loaded = stageState.status === 'downloading' ? stageState.loaded : 0
+    const total = stageState.status === 'downloading' ? stageState.total : 0
+    return (
+      <div className="flex flex-col gap-2">
+        <DownloadProgress loaded={loaded} total={total} label={stageLabel} />
+        <div>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              cancelDownload(stageModel)
+              setStarted(false)
+            }}
+          >
+            Cancel
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <Button
+        type="button"
+        size="sm"
+        onClick={() => {
+          onStart()
+          setStarted(true)
+        }}
+      >
+        Download · {sizeLabel}
+      </Button>
+    </div>
+  )
+}
+
 function ModeCard({
   selected,
   disabled = false,
   onSelect,
   title,
+  icon,
   description,
   badge,
   footer,
@@ -161,6 +314,7 @@ function ModeCard({
   disabled?: boolean
   onSelect: () => void
   title: string
+  icon?: TranscriptionMode
   description?: string
   badge?: ReactNode
   footer?: ReactNode
@@ -204,8 +358,9 @@ function ModeCard({
               {selected && <Check className="size-3" />}
             </span>
             {title}
+            {badge}
           </span>
-          {badge}
+          {icon ? <TranscriptIcon mode={icon} /> : null}
         </div>
         {description ? (
           <p className="pl-6 text-xs text-muted-foreground">{description}</p>
@@ -232,6 +387,18 @@ export function TranscriptionSettingsModal({
   const moonshineDownloaded = useModelDownloaded('moonshine')
   const whisperDownloaded = useModelDownloaded('whisper')
 
+  // Block Save while any model is fetching — the heavy Whisper download in
+  // particular can destabilise low-memory devices, so we keep the modal open
+  // until it settles rather than letting the user apply and navigate away
+  // mid-download (closing the modal cancels the download).
+  const browserState = useDownloadState('browser')
+  const moonshineState = useDownloadState('moonshine')
+  const whisperState = useDownloadState('whisper')
+  const anyDownloading =
+    browserState.status === 'downloading' ||
+    moonshineState.status === 'downloading' ||
+    whisperState.status === 'downloading'
+
   // Small tier resolves to the browser engine (if downloaded/downloadable) or
   // the bundled Moonshine model. `null` while the availability probe is pending.
   const smallEngine = local === null ? null : resolveSmallEngine(local)
@@ -248,6 +415,21 @@ export function TranscriptionSettingsModal({
   // leave it selectable, like the cloud tier.
   const largeAvailable = webgpu !== false
   const largeReady = whisperDownloaded
+
+  // Accurate is "draft engine + Whisper": the small engine supplies the instant
+  // rough transcription and Whisper sharpens it on demand, so the tier isn't
+  // usable until *both* models are present.
+  const accurateReady = smallReady && largeReady
+
+  // What the Accurate download still has to fetch, for the button so the user
+  // knows the commitment up front: Whisper (540 MB) plus the fast draft model
+  // unless it's already present. The browser draft engine reports no size, so we
+  // show an upper bound (matching its standalone "<100 MB" label) in that case.
+  const accurateDownloadLabel = smallReady
+    ? '540 MB'
+    : smallEngine === 'moonshine'
+      ? '610 MB'
+      : '< 640 MB'
 
   // The bundled fallback always works, so the small tier is never unavailable —
   // only "not downloaded yet".
@@ -296,7 +478,7 @@ export function TranscriptionSettingsModal({
   // downloaded yet can't actually be applied — block Save (with an explanatory
   // tooltip) until its weights are present.
   const draftNeedsDownload =
-    (draft === 'small' && !smallReady) || (draft === 'large' && !largeReady)
+    (draft === 'small' && !smallReady) || (draft === 'large' && !accurateReady)
 
   const smallTitle =
     smallEngine === 'moonshine' ? 'Fast (Moonshine)' : 'Fast (built-in)'
@@ -327,6 +509,7 @@ export function TranscriptionSettingsModal({
               <ModeCard
                 selected={draft === 'disabled'}
                 onSelect={() => setDraft('disabled')}
+                icon={'disabled'}
                 title="Don’t transcribe"
               />
             </section>
@@ -345,6 +528,7 @@ export function TranscriptionSettingsModal({
               <ModeCard
                 selected={draft === 'small'}
                 onSelect={() => setDraft('small')}
+                icon={'small'}
                 title={smallTitle}
                 description={smallDescription}
                 badge={
@@ -371,24 +555,30 @@ export function TranscriptionSettingsModal({
                 selected={draft === 'large'}
                 disabled={!largeAvailable}
                 onSelect={() => setDraft('large')}
+                icon={'large'}
                 title="Accurate (Whisper Turbo)"
-                description="Put your MacBook Pro or gaming PC to good use. Requires WebGPU, as well as significant compute and memory. Transcribe on demand, by pressing the Transcribe button in the toolbar"
+                description="A rough draft appears right away; sharpen segments on demand. Needs significant compute and memory"
                 badge={
                   !largeAvailable ? (
                     <Badge variant="outline">Needs WebGPU</Badge>
-                  ) : largeReady ? (
+                  ) : webgpu === null || local === null ? (
+                    <Badge variant="outline">Checking…</Badge>
+                  ) : accurateReady ? (
                     <Badge variant="secondary">Ready</Badge>
                   ) : null
                 }
                 footer={
-                  // Only offer the download once WebGPU is confirmed (webgpu ===
-                  // true), not merely while the probe is pending — no point
-                  // fetching 540 MB the device can't run.
-                  webgpu === true && !largeReady ? (
-                    <DownloadControls
-                      model="whisper"
-                      sizeLabel="540 MB"
-                      onDownload={() => setDraft('large')}
+                  // Only offer the download once WebGPU is confirmed (not merely
+                  // while the probe is pending — no point fetching ~600 MB the
+                  // device can't run) and the draft engine has resolved (local !==
+                  // null), since that decides which draft model to fetch.
+                  webgpu === true && local !== null && !accurateReady ? (
+                    <AccurateDownloadControls
+                      draftModel={smallDownloadModel}
+                      draftReady={smallReady}
+                      sizeLabel={accurateDownloadLabel}
+                      enabled={open}
+                      onStart={() => setDraft('large')}
                     />
                   ) : null
                 }
@@ -411,6 +601,7 @@ export function TranscriptionSettingsModal({
                 disabled={!cloudAvailable}
                 onSelect={() => setDraft('cloud')}
                 title="Cloud transcription"
+                icon={'cloud'}
                 badge={
                   cloudAvailable ? null : (
                     <Badge variant="outline">Unavailable</Badge>
@@ -427,13 +618,19 @@ export function TranscriptionSettingsModal({
             Cancel
           </DialogClose>
           <span
-            title={draftNeedsDownload ? 'Download required' : undefined}
+            title={
+              anyDownloading
+                ? 'Wait for the download to finish'
+                : draftNeedsDownload
+                  ? 'Download required'
+                  : undefined
+            }
             className="inline-flex"
           >
             <Button
               onClick={save}
               className="w-full"
-              disabled={draft === mode || draftNeedsDownload}
+              disabled={draft === mode || draftNeedsDownload || anyDownloading}
             >
               {saveLabel}
             </Button>

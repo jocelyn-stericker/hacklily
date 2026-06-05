@@ -91,8 +91,8 @@ function ensureWorkletModule(context: AudioContext): Promise<void> {
 }
 
 // Browsers generally allow only one active SpeechRecognition session at a time.
-// transcribeChunks already feeds chunks one at a time, but serialize recognition
-// here too so any other caller can't start an overlapping session.
+// Serialize recognition here so overlapping callers can't start competing
+// sessions.
 let recognitionChain: Promise<unknown> = Promise.resolve()
 
 export function transcribeWeb(

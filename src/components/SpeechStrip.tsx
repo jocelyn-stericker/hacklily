@@ -15,18 +15,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { AlertTriangle, Loader2 } from 'lucide-react'
 import {
+  AlertTriangle,
+  CaptionsOff,
+  Cloud,
+  Loader2,
+  Sparkle,
+  Sparkles,
+} from 'lucide-react'
+import {
+  useCallback,
   useEffect,
   useImperativeHandle,
-  useReducer,
   useRef,
   useState,
+  useSyncExternalStore,
 } from 'react'
-import type { ReactNode, RefObject } from 'react'
+import type { RefObject } from 'react'
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
 import { VOICED_FILL, UNVOICED_FILL } from '#/lib/theme'
+import { bestResult } from '#/lib/transcription'
 
 import {
   InCanvas,
@@ -35,24 +44,28 @@ import {
   useSpeechStripHeight,
   useTimeToX,
 } from './Plot'
+import type { TranscriptStore } from './TranscriptStore'
+import { Button } from './ui/button'
 import { useColourScheme } from './useColourScheme'
+import { useSettings } from './useSettings'
 
 export interface SpeechStripHandle {
   append: (from: number) => void
   patch: (from: number, to: number) => void
-  // Re-render the DOM overlay (transcriptions/spinners) after a chunk's
-  // transcription field is mutated in place. Unlike append/patch, this is a
-  // React re-render, not a canvas redraw, since the text lives in the DOM.
-  refreshTranscriptions: () => void
 }
 
 export function SpeechStrip({
   analysisMut,
-  liveChunks,
+  store,
+  onTranscribe,
   ref,
 }: {
   analysisMut: AnalysisChunk[]
-  liveChunks?: Set<AnalysisChunk>
+  // Render source for the DOM overlay: structural changes and per-chunk
+  // transcripts, both subscribed via useSyncExternalStore.
+  store: TranscriptStore
+  // Transcribe a single chunk on demand (the per-chunk button below).
+  onTranscribe?: (chunk: AnalysisChunk) => void
   ref: RefObject<SpeechStripHandle | null>
 }) {
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
@@ -66,15 +79,6 @@ export function SpeechStrip({
 
   const animFrameRef = useRef<number | null>(null)
   const triggerDraw = useRef(() => {})
-
-  // Bumped via the imperative handle when a chunk's transcription is updated in
-  // place. analysisMut is mutated, not replaced, so the React Compiler would
-  // otherwise serve a cached overlay; keying the overlay on this version (below)
-  // makes it a real dependency and re-renders the subtree.
-  const [transcriptionVersion, refreshTranscriptions] = useReducer(
-    (x: number) => x + 1,
-    0,
-  )
 
   const scheme = useColourScheme()
   const bgColor = scheme === 'dark' ? '#000000' : '#ffffff'
@@ -131,9 +135,6 @@ export function SpeechStrip({
       patch(_from: number, _to: number) {
         triggerDraw.current()
       },
-      refreshTranscriptions() {
-        refreshTranscriptions()
-      },
     }),
     [],
   )
@@ -155,30 +156,34 @@ export function SpeechStrip({
         }}
       />
       <SpeechStripDOMOverlay
-        key={transcriptionVersion}
-        analysisMut={analysisMut}
+        store={store}
         stripWidth={stripWidth}
         stripTop={stripTop}
-        liveChunks={liveChunks}
+        onTranscribe={onTranscribe}
       />
     </>
   )
 }
 
 function SpeechStripDOMOverlay({
-  analysisMut,
+  store,
   stripWidth,
   stripTop,
-  liveChunks,
+  onTranscribe,
 }: {
-  analysisMut: AnalysisChunk[]
+  store: TranscriptStore
   stripWidth: number
   stripTop: number
-  liveChunks?: Set<AnalysisChunk>
+  onTranscribe?: (chunk: AnalysisChunk) => void
 }) {
   const plotPad = usePlotPad()
   const speechStripHeight = useSpeechStripHeight()
   const timeToXDom = useTimeToX(InCanvas.No)
+
+  // Render from the store's immutable snapshot. Its identity changes on each
+  // structural change (append / split / merge), which is what drives the
+  // re-render — the live chunks are mutated in place and never change identity.
+  const chunks = useSyncExternalStore(store.subscribeList, store.getChunkList)
 
   return (
     <div
@@ -190,7 +195,7 @@ function SpeechStripDOMOverlay({
         height: speechStripHeight,
       }}
     >
-      {analysisMut.map((chunk, index) => {
+      {chunks.map((chunk, index) => {
         if (!chunk.voiced) return null
         const timeStepSec = chunk.timeStepSamples / chunk.sampleRate
         const startSec = chunk.startTimeSec
@@ -200,13 +205,14 @@ function SpeechStripDOMOverlay({
         if (right < 0 || left > stripWidth) return null
 
         return (
-          <ChunkTranscription
+          <ChunkOverlay
             key={index}
             chunk={chunk}
+            store={store}
             left={left}
-            width={right - left}
+            width={Math.max(right - left, 30)}
             height={speechStripHeight}
-            isLive={liveChunks?.has(chunk) ?? false}
+            onTranscribe={onTranscribe}
           />
         )
       })}
@@ -214,46 +220,131 @@ function SpeechStripDOMOverlay({
   )
 }
 
-// Renders a chunk's transcription (or a spinner while it's pending) clipped to
-// the chunk's on-screen width, with the full text available as a tooltip.
-function ChunkTranscription({
+// One voiced chunk's overlay: a transcribe button plus its transcript once one
+// lands. Subscribes to only this chunk's transcript, so a result re-renders this
+// row alone rather than the whole strip.
+function ChunkOverlay({
   chunk,
+  store,
   left,
   width,
   height,
-  isLive,
+  onTranscribe,
 }: {
   chunk: AnalysisChunk
+  store: TranscriptStore
   left: number
   width: number
   height: number
-  isLive: boolean
+  onTranscribe?: (chunk: AnalysisChunk) => void
 }) {
-  const t = chunk.transcription
+  const [settings] = useSettings()
 
-  let inner: ReactNode = null
-  let title: string | undefined
-  if (t?.status === 'pending') {
-    if (isLive) return null
-    inner = <Loader2 className="size-3 shrink-0 animate-spin" />
-  } else if (t?.status === 'done') {
-    inner = <span className="truncate">{t.text}</span>
-    title = t.text
-  } else if (t?.status === 'error') {
-    inner = <AlertTriangle className="size-3 shrink-0 text-red-700" />
-    title = t.error
-  } else {
-    // Not transcribed yet: nothing to show.
-    return null
-  }
+  const subscribe = useCallback(
+    (onChange: () => void) => store.subscribeChunk(chunk, onChange),
+    [store, chunk],
+  )
+  const getSnapshot = useCallback(
+    () => store.getTranscript(chunk),
+    [store, chunk],
+  )
+  const transcript = useSyncExternalStore(subscribe, getSnapshot)
+  const text = transcript ? bestResult(transcript) : undefined
 
   return (
     <div
-      title={title}
-      className="absolute flex items-center gap-1 overflow-hidden px-1 text-[10px] leading-none text-black/70"
+      className="absolute flex items-center gap-1 overflow-hidden px-1"
       style={{ left, width, top: 0, height }}
     >
-      {inner}
+      {renderIcon()}
+      {text ? (
+        <span
+          className="truncate text-[10px] leading-tight text-black/70 dark:text-white/70"
+          title={text}
+        >
+          {text}
+        </span>
+      ) : null}
+    </div>
+  )
+
+  function renderIcon() {
+    if (transcript?.job?.status === 'error') {
+      return (
+        <StdPadding title={transcript.job.error}>
+          <AlertTriangle className="size-3 shrink-0 text-red-700" />
+        </StdPadding>
+      )
+    }
+
+    if (transcript?.job?.tier) {
+      return (
+        <StdPadding>
+          <Loader2 className="size-3 shrink-0 animate-spin" />
+        </StdPadding>
+      )
+    }
+
+    if (transcript?.results.large) {
+      return (
+        <StdPadding>
+          <Sparkles className="size-3" />
+        </StdPadding>
+      )
+    }
+    if (transcript?.results.cloud) {
+      return (
+        <StdPadding>
+          <Cloud className="size-3" />
+        </StdPadding>
+      )
+    }
+    if (transcript?.results.small) {
+      if (settings.transcriptionMode === 'large') {
+        return (
+          <Button
+            type="button"
+            className="cursor-pointer shrink-0 bg-transparent"
+            title="Improve transcription"
+            variant="outline"
+            size="icon-xs"
+            onClick={(e) => {
+              e.stopPropagation()
+              onTranscribe?.(chunk)
+            }}
+          >
+            <Sparkle className="size-3" />
+          </Button>
+        )
+      } else {
+        return (
+          <StdPadding>
+            <Sparkle className="size-3" />
+          </StdPadding>
+        )
+      }
+    }
+    return (
+      <StdPadding>
+        <CaptionsOff className="size-3" />
+      </StdPadding>
+    )
+  }
+}
+
+function StdPadding({
+  children,
+  title,
+}: {
+  children: React.ReactNode
+  title?: string
+}) {
+  return (
+    <div
+      className="inline-flex items-center justify-center border bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px border-transparent dark:border-input dark:bg-input/30 dark:/50 size-6 rounded-[min(var(--radius-md),10px)] shrink-0 bg-transparent"
+      title={title}
+    >
+      {children}
     </div>
   )
 }

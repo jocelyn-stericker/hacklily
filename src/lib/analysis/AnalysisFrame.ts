@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { TranscriptionState } from '#/lib/transcription'
-
 const LN10_10 = 10 / Math.log(10)
 
 // Parameters shared by all frames within a chunk. Constant across one recording
@@ -59,8 +57,6 @@ export type AnalysisChunk = AnalysisParams & {
   // dB-normalizes within a chunk — so a chunk must never span a recording
   // boundary. `mergeChunkAt` refuses to merge such a chunk into its predecessor.
   recordingStart?: boolean
-  // ASR transcription status/result for this chunk, if requested.
-  transcription?: TranscriptionState
 }
 
 // True if any frame is voiced. Used to set AnalysisChunk.voiced at construction
@@ -196,7 +192,7 @@ export function mergeChunkAt(
 // this isolates that frame and then coalesces it with like-voiced neighbours —
 // an O(local) fix rather than re-splitting the whole timeline. Returns true if
 // the frame's chunk actually changed voicing (so callers can refresh dependent
-// state such as transcription); false for a no-op re-confirmation.
+// state); false for a no-op re-confirmation.
 export function reconcileVoicingAt(
   chunks: AnalysisChunk[],
   globalIndex: number,
