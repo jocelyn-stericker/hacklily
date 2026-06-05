@@ -27,6 +27,7 @@ import {
   Play,
   Settings2,
   SkipBack,
+  Sparkles,
 } from 'lucide-react'
 
 import braatPng from '#/braat.png'
@@ -58,6 +59,9 @@ export function Toolbar({
   onOpenAudioSettings,
   onOpenTranscriptionSettings,
   onOpenVowelChartSettings,
+  showUpgradeAll,
+  onUpgradeAll,
+  upgradeAllDisabled,
 }: {
   openFilePicker: () => void
   onNew: () => void
@@ -73,6 +77,9 @@ export function Toolbar({
   onOpenAudioSettings: () => void
   onOpenTranscriptionSettings: () => void
   onOpenVowelChartSettings: () => void
+  showUpgradeAll: boolean
+  onUpgradeAll: () => void
+  upgradeAllDisabled: boolean
 }) {
   return (
     <header className="flex align-center justify-end gap-1 p-2 flex-wrap">
@@ -80,6 +87,17 @@ export function Toolbar({
         <img src={braatPng} className="h-10" />
       </h1>
       <div className="grow" />
+      {showUpgradeAll && (
+        <Button
+          variant="default"
+          className="h-10 w-10 cursor-pointer"
+          title="Upgrade all visible transcripts (T)"
+          disabled={upgradeAllDisabled}
+          onClick={onUpgradeAll}
+        >
+          <Sparkles className="size-6" />
+        </Button>
+      )}
       <Button
         variant="default"
         className="h-10 w-10 cursor-pointer"

@@ -100,7 +100,7 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
       requestedStartAtSec <= this.#duration - 0.05 ? requestedStartAtSec : 0
     this.#startTimeSec = startAtSec
 
-    const context = new AudioContext({ sampleRate, latencyHint: 'playback' })
+    const context = new AudioContext({ sampleRate, latencyHint: 'interactive' })
     this.#context = context
 
     await context.audioWorklet.addModule(audioWorkletUrl)

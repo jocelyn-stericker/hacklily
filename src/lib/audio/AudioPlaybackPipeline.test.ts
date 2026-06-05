@@ -149,7 +149,7 @@ describe('AudioPlaybackPipeline', () => {
       expect(MockAudioContext.called).toBe(true)
       expect(MockAudioContext.lastOptions).toEqual({
         sampleRate: undefined,
-        latencyHint: 'playback',
+        latencyHint: 'interactive',
       })
     })
 
@@ -165,7 +165,7 @@ describe('AudioPlaybackPipeline', () => {
 
       expect(MockAudioContext.lastOptions).toEqual({
         sampleRate: 48000,
-        latencyHint: 'playback',
+        latencyHint: 'interactive',
       })
     })
 

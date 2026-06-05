@@ -324,9 +324,16 @@ function ChunkOverlay({
         )
       }
     }
+    if (settings.transcriptionMode === 'disabled') {
+      return (
+        <StdPadding>
+          <CaptionsOff className="size-3" />
+        </StdPadding>
+      )
+    }
     return (
       <StdPadding>
-        <CaptionsOff className="size-3" />
+        <span />
       </StdPadding>
     )
   }

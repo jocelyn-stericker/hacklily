@@ -30,6 +30,7 @@ import { Toolbar } from '#/components/Toolbar'
 import { TranscriptStore } from '#/components/TranscriptStore'
 import { useAudioImport } from '#/components/useAudioImport'
 import { useAudioPlayback } from '#/components/useAudioPlayback'
+import { useHasUpgradableVisible } from '#/components/useHasUpgradableVisible'
 import { useMicCapture } from '#/components/useMicCapture'
 import { usePreemptibleCallback } from '#/components/usePreemptibleCallback'
 import { useSettings } from '#/components/useSettings'
@@ -260,6 +261,32 @@ function App() {
       onModelUnavailable: handleModelUnavailable,
     })
 
+  const hasUpgradableVisibleRaw = useHasUpgradableVisible(
+    transcriptStore,
+    timelineState.viewportLeftSec,
+    timelineState.viewportRightSec,
+  )
+  const hasUpgradableVisible =
+    settings.transcriptionMode === 'large' && hasUpgradableVisibleRaw
+
+  const handleUpgradeAll = useCallback(() => {
+    const viewport = viewportRef.current
+    for (const chunk of analysisMutRef.current) {
+      if (!chunk.voiced) continue
+      const durationSec =
+        (chunk.frames.length * chunk.timeStepSamples) / chunk.sampleRate
+      const endSec = chunk.startTimeSec + durationSec
+      if (chunk.startTimeSec >= viewport.rightSec || endSec <= viewport.leftSec)
+        continue
+      const t = transcriptStore.getTranscript(chunk)
+      if (t?.results.small && !t.results.large && !t.results.cloud) {
+        if (!t.job || t.job.status === 'error') {
+          requestTranscription(chunk)
+        }
+      }
+    }
+  }, [requestTranscription, transcriptStore])
+
   const [isExporting, setIsExporting] = useState(false)
 
   const handleExportAudio = useCallback(() => {
@@ -347,9 +374,13 @@ function App() {
     // Seal our copy too, releasing its spare buffer. The shared flag is already
     // set by the producer; this just drops the local reference.
     ropes[ropes.length - 1]!.seal()
+    // Publish the final chunk dimensions: during recording, frames were appended
+    // in place without publishing (to avoid re-rendering every frame). The DOM
+    // overlay needs the updated extent before transcripts arrive.
+    transcriptStore.publishChunkList(analysisMutRef.current)
     // Recording audio is complete: let the queue finish its live spans.
     handleTranscriptionSeal()
-  }, [ropes, handleTranscriptionSeal])
+  }, [ropes, handleTranscriptionSeal, transcriptStore])
 
   const handlePatch = useCallback(
     (from: number, to: number) => {
@@ -506,6 +537,15 @@ function App() {
     },
     [handleOpenAudioSettings],
   )
+  useHotkeys(
+    't',
+    () => {
+      if (settings.transcriptionMode === 'large' && hasUpgradableVisible) {
+        handleUpgradeAll()
+      }
+    },
+    [settings.transcriptionMode, hasUpgradableVisible, handleUpgradeAll],
+  )
 
   const virtualWidthSec =
     Math.floor(timelineState.trackDurationSec / 30 + 1) * 30 +
@@ -545,6 +585,9 @@ function App() {
           onOpenAudioSettings={handleOpenAudioSettings}
           onOpenTranscriptionSettings={() => setShowTranscriptionSettings(true)}
           onOpenVowelChartSettings={() => setShowVowelChartSettings(true)}
+          showUpgradeAll={settings.transcriptionMode === 'large'}
+          onUpgradeAll={handleUpgradeAll}
+          upgradeAllDisabled={!hasUpgradableVisible}
         />
         <div className="relative flex flex-col grow overflow-hidden">
           <Plot
