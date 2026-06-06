@@ -1,0 +1,163 @@
+/* Braat
+ * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
+import type { AudioSpan } from '#/lib/audio/AudioSpan'
+import {
+  ModelUnavailableError,
+  needsTier,
+  runTranscriptionForEngine,
+  tryResolveEngine,
+} from '#/lib/transcription'
+import type {
+  ChunkTranscript,
+  TranscriptTier,
+  TranscriptionEngine,
+} from '#/lib/transcription'
+
+import type { ChunkWork } from './ChunkWorkQueue'
+
+/** The transcript state the job reads and writes (satisfied by TranscriptStore). */
+export interface TranscriptSink {
+  get: (chunk: AnalysisChunk) => ChunkTranscript | undefined
+  set: (chunk: AnalysisChunk, transcript: ChunkTranscript) => void
+}
+
+export type TranscribeJobDeps = {
+  sink: TranscriptSink
+  /** The tier to auto-run, or `null` to transcribe nothing. */
+  autoTier: (highQuality: boolean) => TranscriptTier | null
+  /** Invoked when the resolved engine's model isn't downloaded. */
+  onModelUnavailable: () => void
+}
+
+// The resolved context for one transcription pass: which engine does the work,
+// and which tier the result is stored under.
+type TranscribeCtx = { engine: TranscriptionEngine; tier: TranscriptTier }
+
+/**
+ * The transcription kind for {@link ChunkWorkQueue}: every voiced chunk is
+ * transcribed at the auto tier, plus on-demand upgrades to a higher tier (a
+ * `queued` job in the sink). Runs with live spans so chunks transcribe while
+ * still being recorded.
+ */
+export function createTranscribeJob(deps: TranscribeJobDeps): ChunkWork {
+  return {
+    kind: 'transcribe',
+    liveSpans: true,
+    needsWork: (chunk) => {
+      const t = deps.sink.get(chunk)
+      // A queued job is an explicit upgrade request — always work, at its tier.
+      if (t?.job?.status === 'queued') return true
+      const tier = deps.autoTier(false)
+      return tier !== null && needsTier(t, tier)
+    },
+    resolve: async () => {
+      const auto = await resolveCtx(deps.autoTier(false))
+      if (!auto) return null
+      return (chunk, audio) => transcribeOne(deps, chunk, audio, auto)
+    },
+    onUnavailable: deps.onModelUnavailable,
+  }
+}
+
+/**
+ * Record an on-demand upgrade of `chunk` to the higher-quality tier (the
+ * SpeechStrip button): clear that tier's result and mark it queued. The caller
+ * pokes the queue (`scan`) afterwards; the next pass picks it up like any other
+ * work and runs it at the queued tier.
+ */
+export function requestUpgrade(
+  deps: Pick<TranscribeJobDeps, 'sink' | 'autoTier'>,
+  chunk: AnalysisChunk,
+): void {
+  const tier = deps.autoTier(true)
+  if (!tier) return
+  const results = { ...deps.sink.get(chunk)?.results }
+  delete results[tier]
+  deps.sink.set(chunk, { results, job: { tier, status: 'queued' } })
+}
+
+// Resolve a tier to a concrete engine context, or null to stand down. A null
+// tier (disabled) is silent; a missing model reverts the mode.
+async function resolveCtx(
+  tier: TranscriptTier | null,
+): Promise<TranscribeCtx | null> {
+  if (!tier) return null
+  const engine = await tryResolveEngine(tier)
+  return engine ? { engine, tier } : null
+}
+
+async function transcribeOne(
+  deps: TranscribeJobDeps,
+  chunk: AnalysisChunk,
+  audio: AudioSpan,
+  auto: TranscribeCtx,
+): Promise<void> {
+  // A queued job is an upgrade request to a (possibly higher) tier; otherwise
+  // transcribe at the pass's auto tier.
+  const requested = deps.sink.get(chunk)?.job
+  const tier = requested?.status === 'queued' ? requested.tier : auto.tier
+
+  // Claim the chunk synchronously (before the first await) so a concurrent pass
+  // skips it.
+  const prior = deps.sink.get(chunk)
+  deps.sink.set(chunk, {
+    results: prior?.results ?? {},
+    job: { tier, status: 'transcribing' },
+  })
+
+  try {
+    // Reuse the pass engine when the tier matches; resolve an upgrade tier lazily
+    // (only for the chunk that requested it).
+    let engine = auto.engine
+    if (tier !== auto.tier) {
+      const upgraded = await tryResolveEngine(tier)
+      if (!upgraded) {
+        throw new ModelUnavailableError(
+          'The requested transcription model isn’t available.',
+        )
+      }
+      engine = upgraded
+    }
+    const text = await runTranscriptionForEngine(engine, audio)
+    const cur = deps.sink.get(chunk)
+    deps.sink.set(chunk, { results: { ...cur?.results, [tier]: text } })
+  } catch (err) {
+    if (audio.signal.aborted) {
+      // Cancelled (re-chunked, or too short to be speech): leave untranscribed.
+      const cur = deps.sink.get(chunk)
+      deps.sink.set(chunk, { results: cur?.results ?? {} })
+      return
+    }
+    if (err instanceof ModelUnavailableError) {
+      // Drop the in-flight job; the queue reverts the mode.
+      const cur = deps.sink.get(chunk)
+      deps.sink.set(chunk, { results: cur?.results ?? {} })
+      throw err
+    }
+    const cur = deps.sink.get(chunk)
+    deps.sink.set(chunk, {
+      results: cur?.results ?? {},
+      job: {
+        tier,
+        status: 'error',
+        error: err instanceof Error ? err.message : 'Transcription failed',
+      },
+    })
+  }
+}

@@ -15,24 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Pure scheduling decisions for the transcription queue: which chunk to handle
+// Pure scheduling decisions for a chunk work queue: which voiced chunk to handle
 // next, and how the live-recording spans evolve. No React, no side effects, no
-// audio I/O — everything is a function of the current chunks, ropes, and
-// transcript state. The `TranscriptionQueue` applies the results.
+// audio I/O — everything is a function of the current chunks, ropes, and an
+// injected `needsWork` predicate. The queue applies the results.
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
+import { locateChunkRope } from '#/lib/audio/AudioSpan'
 import type { SabRope } from '#/lib/audio/SabRope'
-
-import { locateChunkRope } from './index'
-import type { ChunkTranscript, TranscriptTier } from './index'
 
 /** A visible time range on the timeline, in seconds. */
 export type Viewport = { leftSec: number; rightSec: number }
 
 /**
- * The deferred end + cancellation for a voiced chunk being transcribed while it's
+ * The deferred end + cancellation for a voiced chunk being worked on while it's
  * still recording. `endTime` resolves once the voiced segment is complete (the
- * recorded span's total duration); aborting abandons the transcription.
+ * recorded span's total duration); aborting abandons the work.
  */
 export type LiveSpanEntry = {
   abortController: AbortController
@@ -40,23 +38,13 @@ export type LiveSpanEntry = {
   resolveEndTime: (endTime: number) => void
 }
 
-/** Look up a chunk's current transcript (from the store), kept pure via injection. */
-export type TranscriptLookup = (
-  chunk: AnalysisChunk,
-) => ChunkTranscript | undefined
-
 /**
- * Whether `chunk` still needs work at `tier`: no result there yet and nothing in
- * flight (a queued or running job). A failed job is eligible to retry.
+ * Whether a chunk still needs work under the current configuration, injected by
+ * the domain queue so the scheduler stays policy-free (transcription asks "no
+ * result at this tier and nothing in flight"; alignment asks "has a transcript
+ * but no alignment yet"). Only ever asked about voiced chunks.
  */
-function needsTier(
-  t: ChunkTranscript | undefined,
-  tier: TranscriptTier,
-): boolean {
-  if (t?.results[tier] !== undefined) return false
-  if (t?.job && t.job.status !== 'error') return false
-  return true
-}
+export type NeedsWork = (chunk: AnalysisChunk) => boolean
 
 /** Whether `chunk`'s time span overlaps `viewport` at all. */
 export function chunkVisible(
@@ -69,28 +57,55 @@ export function chunkVisible(
   return chunk.startTimeSec < viewport.rightSec && endSec > viewport.leftSec
 }
 
+/** A unit of pending work: a `kind` of job to run on a `chunk`. */
+export type CandidateJob = { kind: string; chunk: AnalysisChunk }
+
 /**
- * Pick the next chunk to transcribe at `tier`: the first eligible voiced chunk
- * visible in `viewport`, or — when none is visible — the first eligible one
- * overall (timeline order, so earliest). `attempted` holds chunks already tried
- * this pass (transcribed, skipped for missing audio, or cancelled) so the scan
- * can't loop on them. Returns `null` when nothing is left to do.
+ * Chooses which eligible job runs next, or `null` to end the pass. Pure, so it's
+ * cheap to swap and test — this is the scheduling-policy seam the queue defers to
+ * after every job (re-prioritising as new work appears mid-pass).
  */
-export function selectNextChunk(
-  chunks: readonly AnalysisChunk[],
-  get: TranscriptLookup,
-  attempted: ReadonlySet<AnalysisChunk>,
+export type PickNext = (
+  jobs: readonly CandidateJob[],
   viewport: Viewport | null,
-  tier: TranscriptTier,
-): AnalysisChunk | null {
-  let firstPending: AnalysisChunk | null = null
-  for (const chunk of chunks) {
-    if (attempted.has(chunk) || !chunk.voiced) continue
-    if (!needsTier(get(chunk), tier)) continue
-    if (viewport && chunkVisible(chunk, viewport)) return chunk
-    firstPending ??= chunk
+) => CandidateJob | null
+
+/**
+ * Default policy: lower index in `kindOrder` wins (e.g. `['align', 'transcribe']`
+ * runs alignment before transcription); within a kind, a viewport-visible chunk
+ * beats an off-screen one, then earliest on the timeline. Reorder `kindOrder` to
+ * retune cross-kind priority.
+ */
+export function priorityPickNext(kindOrder: readonly string[]): PickNext {
+  const rank = (kind: string) => {
+    const i = kindOrder.indexOf(kind)
+    return i === -1 ? kindOrder.length : i
   }
-  return firstPending
+  return (jobs, viewport) => {
+    let best: CandidateJob | null = null
+    let bestScore: readonly [number, number, number] | null = null
+    for (const job of jobs) {
+      const visible = viewport && chunkVisible(job.chunk, viewport) ? 0 : 1
+      const score = [rank(job.kind), visible, job.chunk.startTimeSec] as const
+      if (!bestScore || isLess(score, bestScore)) {
+        best = job
+        bestScore = score
+      }
+    }
+    return best
+  }
+}
+
+// Lexicographic compare of equal-length numeric tuples.
+function isLess(
+  a: readonly [number, number, number],
+  b: readonly [number, number, number],
+): boolean {
+  for (let i = 0; i < a.length; i++) {
+    if (a[i]! < b[i]!) return true
+    if (a[i]! > b[i]!) return false
+  }
+  return false
 }
 
 export type ReconcileResult = {
@@ -108,15 +123,14 @@ export type ReconcileResult = {
  *   (split/merged away by re-chunking).
  * - `resolve`: spans whose voiced segment is complete — the chunk is still voiced
  *   but its successor is unvoiced (VAD confirmed the segment ended).
- * - `create`: newly-voiced chunks still needing `tier`, with no span yet (only
- *   while the last rope is unsealed, i.e. still recording).
+ * - `create`: voiced chunks still needing work (`needsWork`), with no span yet
+ *   (only while the last rope is unsealed, i.e. still recording).
  */
 export function reconcileLiveSpans(
   chunks: readonly AnalysisChunk[],
   liveSpans: ReadonlyMap<AnalysisChunk, LiveSpanEntry>,
   ropes: readonly SabRope[],
-  get: TranscriptLookup,
-  tier: TranscriptTier,
+  needsWork: NeedsWork,
 ): ReconcileResult {
   const abort = new Set<AnalysisChunk>()
   const resolve: ReconcileResult['resolve'] = []
@@ -143,11 +157,7 @@ export function reconcileLiveSpans(
   const lastRope = ropes[ropes.length - 1]
   if (lastRope && !lastRope.sealed) {
     for (const chunk of chunks) {
-      if (
-        chunk.voiced &&
-        needsTier(get(chunk), tier) &&
-        !liveSpans.has(chunk)
-      ) {
+      if (chunk.voiced && needsWork(chunk) && !liveSpans.has(chunk)) {
         create.push(chunk)
       }
     }

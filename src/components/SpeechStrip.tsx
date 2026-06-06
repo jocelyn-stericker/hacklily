@@ -301,7 +301,7 @@ function ChunkOverlay({
         return (
           <Button
             type="button"
-            className="cursor-pointer shrink-0 bg-transparent"
+            className="cursor-pointer shrink-0 bg-transparent dark:border-white"
             title="Improve transcription"
             variant="outline"
             size="icon-xs"
@@ -345,7 +345,7 @@ function StdPadding({
 }) {
   return (
     <div
-      className="inline-flex items-center justify-center border bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px border-transparent dark:border-input dark:bg-input/30 dark:/50 size-6 rounded-[min(var(--radius-md),10px)] shrink-0 bg-transparent"
+      className="inline-flex items-center justify-center border bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px border-transparent dark:bg-input/30 dark:/50 size-6 rounded-[min(var(--radius-md),10px)] shrink-0 bg-transparent"
       title={title}
     >
       {children}

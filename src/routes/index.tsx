@@ -30,12 +30,12 @@ import { Toolbar } from '#/components/Toolbar'
 import { TranscriptStore } from '#/components/TranscriptStore'
 import { useAudioImport } from '#/components/useAudioImport'
 import { useAudioPlayback } from '#/components/useAudioPlayback'
+import { useChunkWorkQueue } from '#/components/useChunkWorkQueue'
 import { useHasUpgradableVisible } from '#/components/useHasUpgradableVisible'
 import { useMicCapture } from '#/components/useMicCapture'
 import { usePreemptibleCallback } from '#/components/usePreemptibleCallback'
 import { useSettings } from '#/components/useSettings'
 import { useTimelineState } from '#/components/useTimelineState'
-import { useTranscriptionQueue } from '#/components/useTranscriptionQueue'
 import { ViewportShade } from '#/components/ViewportShade'
 import { VowelChart } from '#/components/VowelChart'
 import type { VowelChartHandle } from '#/components/VowelChart'
@@ -51,9 +51,9 @@ import { reconcileVoicingAt, totalFrames } from '#/lib/analysis/AnalysisFrame'
 import { exportWav } from '#/lib/audio/exportWav'
 import { SabRope } from '#/lib/audio/SabRope'
 import type { SabRopeGrow, SabRopeShare } from '#/lib/audio/SabRope'
+import type { Viewport } from '#/lib/jobs/schedule'
 import { RopeGainCache } from '#/lib/loudness/ropeLoudness'
 import { updateSettings } from '#/lib/settings'
-import type { Viewport } from '#/lib/transcription/schedule'
 import { consumeBundledCrashFlag } from '#/lib/transcription/transcribeBundled'
 import { cn } from '#/lib/utils'
 
@@ -252,7 +252,7 @@ function App() {
   }, [])
 
   const { request: requestTranscription, onSeal: handleTranscriptionSeal } =
-    useTranscriptionQueue({
+    useChunkWorkQueue({
       store: transcriptStore,
       analysisMutRef,
       ropesRef,

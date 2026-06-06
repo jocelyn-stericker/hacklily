@@ -28,9 +28,9 @@
 
 /// <reference types="@types/dom-speech-recognition" />
 
+import type { AudioSpan } from '#/lib/audio/AudioSpan'
 import audioWorkletUrl from '#/lib/audio/SabRopeSourceNode?worker&url'
 import type { SabRopeSourceNode } from '#/lib/audio/SabRopeSourceNode'
-import type { AudioSpan } from '#/lib/transcription'
 
 /** Recognition language. Matches the default used by the feature probes. */
 const TRANSCRIPTION_LANG = 'en-US'

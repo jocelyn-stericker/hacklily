@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { readAudioSpan } from '#/lib/transcription'
-import type { AudioSpan } from '#/lib/transcription'
+import { readAudioSpan } from '#/lib/audio/AudioSpan'
+import type { AudioSpan } from '#/lib/audio/AudioSpan'
 // Runs a transformers.js speech model ("moonshine" or "whisper") in a web worker
 // so inference stays off the UI thread. A worker is created lazily per model on
 // first use; each posted chunk is matched to its result by id. These transcribe

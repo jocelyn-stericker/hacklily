@@ -19,10 +19,13 @@ import { describe, it, expect, vi } from 'vitest'
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
 import { SabRope } from '#/lib/audio/SabRope'
+import type { ChunkTranscript, TranscriptTier } from '#/lib/transcription'
 
-import type { ChunkTranscript } from './index'
-import { TranscriptionQueue } from './TranscriptionQueue'
-import type { TranscriptSink } from './TranscriptionQueue'
+import { ChunkWorkQueue } from './ChunkWorkQueue'
+import { priorityPickNext } from './schedule'
+import type { Viewport } from './schedule'
+import { createTranscribeJob, requestUpgrade } from './transcribeJob'
+import type { TranscribeJobDeps, TranscriptSink } from './transcribeJob'
 
 vi.mock('#/lib/transcription/transcribeBundled', () => ({
   transcribeWithWorker: vi.fn(),
@@ -69,6 +72,26 @@ function makeSink(): TranscriptSink & {
   return { map, get: (c) => map.get(c), set: (c, t) => map.set(c, t) }
 }
 
+type Deps = TranscribeJobDeps & {
+  getChunks: () => readonly AnalysisChunk[]
+  getRopes: () => readonly SabRope[]
+  getViewport: () => Viewport | null
+}
+
+// Build the queue the hook builds: one transcribe kind on the generic queue.
+function makeQueue(deps: Deps): ChunkWorkQueue {
+  const transcribe = createTranscribeJob({
+    sink: deps.sink,
+    autoTier: deps.autoTier,
+    onModelUnavailable: deps.onModelUnavailable,
+  })
+  return new ChunkWorkQueue([transcribe], priorityPickNext(['transcribe']), {
+    getChunks: deps.getChunks,
+    getRopes: deps.getRopes,
+    getViewport: deps.getViewport,
+  })
+}
+
 // Let the serialised pass drain.
 async function settle(predicate: () => boolean): Promise<void> {
   for (let i = 0; i < 100 && !predicate(); i++) {
@@ -76,14 +99,14 @@ async function settle(predicate: () => boolean): Promise<void> {
   }
 }
 
-describe('TranscriptionQueue', () => {
+describe('transcribe kind', () => {
   it('transcribes every voiced chunk at the auto tier', async () => {
     const c0 = chunk(5, true)
     const skip = chunk(3, false)
     const c1 = chunk(2, true)
     const chunks = [c0, skip, c1]
     const sink = makeSink()
-    const queue = new TranscriptionQueue({
+    const queue = makeQueue({
       sink,
       getChunks: () => chunks,
       getRopes: () => [sealedRope(100)],
@@ -108,7 +131,7 @@ describe('TranscriptionQueue', () => {
     c.recordingStart = true
     const chunks = [c]
     const sink = makeSink()
-    const queue = new TranscriptionQueue({
+    const queue = makeQueue({
       sink,
       getChunks: () => chunks,
       getRopes: () => [rope],
@@ -140,7 +163,7 @@ describe('TranscriptionQueue', () => {
     const c0 = chunk(5, true)
     const sink = makeSink()
     sink.set(c0, { results: { cloud: 'already' } })
-    const queue = new TranscriptionQueue({
+    const queue = makeQueue({
       sink,
       getChunks: () => [c0],
       getRopes: () => [sealedRope(100)],
@@ -162,7 +185,7 @@ describe('TranscriptionQueue', () => {
 
     const onModelUnavailable = vi.fn()
     const c0 = chunk(5, true)
-    const queue = new TranscriptionQueue({
+    const queue = makeQueue({
       sink: makeSink(),
       getChunks: () => [c0],
       getRopes: () => [sealedRope(100)],
@@ -175,5 +198,35 @@ describe('TranscriptionQueue', () => {
     await settle(() => onModelUnavailable.mock.calls.length > 0)
 
     expect(onModelUnavailable).toHaveBeenCalled()
+  })
+
+  it('upgrades a chunk to a higher tier on request, keeping the lower result', async () => {
+    const { transcribeWithWorker } =
+      await import('#/lib/transcription/transcribeBundled')
+    vi.mocked(transcribeWithWorker).mockResolvedValueOnce('large text')
+
+    const c0 = chunk(5, true)
+    const sink = makeSink()
+    sink.set(c0, { results: { small: 'small text' } }) // already done at small
+    const autoTier = (highQuality: boolean): TranscriptTier =>
+      highQuality ? 'large' : 'small'
+    const deps: Deps = {
+      sink,
+      getChunks: () => [c0],
+      getRopes: () => [sealedRope(100)],
+      getViewport: () => null,
+      autoTier,
+      onModelUnavailable: () => {},
+    }
+    const queue = makeQueue(deps)
+
+    // The hook's `request`: record a queued upgrade, then poke the queue.
+    requestUpgrade(deps, c0)
+    queue.scan()
+    await settle(() => sink.get(c0)?.results.large !== undefined)
+
+    expect(sink.get(c0)).toEqual({
+      results: { small: 'small text', large: 'large text' },
+    })
   })
 })

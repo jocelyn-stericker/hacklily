@@ -20,10 +20,13 @@ import type { RefObject } from 'react'
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
 import type { SabRope } from '#/lib/audio/SabRope'
+import { ChunkWorkQueue } from '#/lib/jobs/ChunkWorkQueue'
+import { priorityPickNext } from '#/lib/jobs/schedule'
+import type { Viewport } from '#/lib/jobs/schedule'
+import { createTranscribeJob, requestUpgrade } from '#/lib/jobs/transcribeJob'
+import type { TranscriptSink } from '#/lib/jobs/transcribeJob'
 import type { TranscriptionMode } from '#/lib/settings'
 import type { TranscriptTier } from '#/lib/transcription'
-import type { Viewport } from '#/lib/transcription/schedule'
-import { TranscriptionQueue } from '#/lib/transcription/TranscriptionQueue'
 
 import type { TranscriptStore } from './TranscriptStore'
 
@@ -48,12 +51,12 @@ function autoTier(
 }
 
 /**
- * Owns the transcription queue's lifecycle and reactive triggers. The queue is a
+ * Owns the chunk queue's lifecycle and reactive triggers. The queue is a
  * passive machine; this hook decides when to poke it — on structural changes
  * (via the store's list subscription, shared with the overlay), on a mode switch,
  * and on teardown. Returns the imperative handles the route calls.
  */
-export function useTranscriptionQueue({
+export function useChunkWorkQueue({
   store,
   analysisMutRef,
   ropesRef,
@@ -82,39 +85,65 @@ export function useTranscriptionQueue({
     onModelUnavailableRef.current = onModelUnavailable
   }, [onModelUnavailable])
 
-  const [queue] = useState(
-    () =>
-      new TranscriptionQueue({
-        sink: {
-          get: (chunk) => store.getTranscript(chunk),
-          set: (chunk, transcript) => store.setTranscript(chunk, transcript),
-        },
+  // The transcript sink closes over `store` (a prop), not a ref, so it's stable
+  // and safe to share between the queue and the upgrade trigger. The tier/ref
+  // closures stay inline below (the queue invokes them later, off render).
+  const [transcribeSink] = useState(
+    (): TranscriptSink => ({
+      get: (chunk) => store.getTranscript(chunk),
+      set: (chunk, transcript) => store.setTranscript(chunk, transcript),
+    }),
+  )
+
+  const queue = useRef<ChunkWorkQueue>(null)
+  useEffect(() => {
+    queue.current = new ChunkWorkQueue(
+      [
+        createTranscribeJob({
+          sink: transcribeSink,
+          autoTier: (upgrade) => autoTier(modeRef.current, upgrade),
+          onModelUnavailable: () => onModelUnavailableRef.current(),
+        }),
+      ],
+      priorityPickNext(['transcribe']),
+      {
         getChunks: () => analysisMutRef.current,
         getRopes: () => ropesRef.current,
-        getViewport,
-        autoTier: (upgrade: boolean) => autoTier(modeRef.current, upgrade),
-        onModelUnavailable: () => onModelUnavailableRef.current(),
-      }),
-  )
+        getViewport: getViewport,
+      },
+    )
+
+    // Abort live spans on unmount.
+    return () => queue.current?.dispose()
+  }, [transcribeSink, analysisMutRef, ropesRef, getViewport])
 
   // Structural changes (publishChunkList) wake the scheduler. This is the shared
   // notification hub: one `subscribeList`, two consumers (overlay + queue).
-  useEffect(() => store.subscribeList(() => queue.scan()), [store, queue])
+  useEffect(
+    () => store.subscribeList(() => queue.current?.scan()),
+    [store, queue],
+  )
 
   // A mode switch: update the ref first, then supersede the in-flight pass and
   // re-scan under the new tier.
   useEffect(() => {
     modeRef.current = transcriptionMode
-    queue.setTier()
+    queue.current?.invalidate()
   }, [transcriptionMode, queue])
 
-  // Abort live spans on unmount.
-  useEffect(() => () => queue.dispose(), [queue])
-
   const request = useCallback(
-    (chunk: AnalysisChunk) => queue.upgrade(chunk),
-    [queue],
+    (chunk: AnalysisChunk) => {
+      requestUpgrade(
+        {
+          sink: transcribeSink,
+          autoTier: (upgrade) => autoTier(modeRef.current, upgrade),
+        },
+        chunk,
+      )
+      queue.current?.scan()
+    },
+    [transcribeSink, queue],
   )
-  const onSeal = useCallback(() => queue.seal(), [queue])
+  const onSeal = useCallback(() => queue.current?.seal(), [queue])
   return { request, onSeal }
 }
