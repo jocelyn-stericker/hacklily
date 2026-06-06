@@ -21,13 +21,13 @@ implementation, which is itself a port of the original Python pipeline.
 
 Direct, line-by-line ports of upstream BFA code:
 
-| TypeScript file     | Ported from (upstream)                                                                                                                                                                                                         |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `ph66Data.ts`   | `ipamappers/ph66_mapper.py` data tables (auto-generated; see `dump_ph66.py`).                                                                                                                                                      |
-| `ph66Mapper.ts` | `ph66_mapper.py`: `get_compound_phoneme_mapping`, `_try_intelligent_split`, `_score_phoneme_split`, `_collapse_to_single_phoneme`.                                                                                                 |
-| `phonemizer.ts` | `ph66_phonemeizer.py`: `phonemize_sentence` mapping loop + `break_words_alpha` / `break_words_special`.                                                                                                                            |
-| `decoder.ts`    | `cpp_onnx/main.cpp`: `slice_windows`, `stitch_window_predictions_flat`, `calc_spec_len_ext`, `log_softmax_*`, `ViterbiDecoder::viterbi_decode`/`assort_frames`, `decode_alignments_simple`, `_rms_normalize`, `convert_to_ms`.     |
-| `aligner.ts`    | `cpp_onnx/main.cpp`: `CUPEONNXPredictor::predict`, `PhonemeTimestampAligner` (simplified path) and `bfaonnx.py` equivalents.                                                                                                       |
+| TypeScript file | Ported from (upstream)                                                                                                                                                                                                         |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ph66Data.ts`   | `ipamappers/ph66_mapper.py` data tables (auto-generated; see `dump_ph66.py`).                                                                                                                                                  |
+| `ph66Mapper.ts` | `ph66_mapper.py`: `get_compound_phoneme_mapping`, `_try_intelligent_split`, `_score_phoneme_split`, `_collapse_to_single_phoneme`.                                                                                             |
+| `phonemizer.ts` | `ph66_phonemeizer.py`: `phonemize_sentence` mapping loop + `break_words_alpha` / `break_words_special`.                                                                                                                        |
+| `decoder.ts`    | `cpp_onnx/main.cpp`: `slice_windows`, `stitch_window_predictions_flat`, `calc_spec_len_ext`, `log_softmax_*`, `ViterbiDecoder::viterbi_decode`/`assort_frames`, `decode_alignments_simple`, `_rms_normalize`, `convert_to_ms`. |
+| `aligner.ts`    | `cpp_onnx/main.cpp`: `CUPEONNXPredictor::predict`, `PhonemeTimestampAligner` (simplified path) and `bfaonnx.py` equivalents.                                                                                                   |
 
 ## Scope of this port
 
