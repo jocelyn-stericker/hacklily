@@ -253,15 +253,12 @@ function ChunkOverlay({
 
   return (
     <div
-      className="absolute flex items-center gap-1 overflow-hidden px-1"
+      className="absolute flex items-center gap-1 overflow-hidden px-1 text-black"
       style={{ left, width, top: 0, height }}
     >
       {renderIcon()}
       {text ? (
-        <span
-          className="truncate text-[10px] leading-tight text-black/70 dark:text-white/70"
-          title={text}
-        >
+        <span className="truncate text-[10px] leading-tight" title={text}>
           {text}
         </span>
       ) : null}
