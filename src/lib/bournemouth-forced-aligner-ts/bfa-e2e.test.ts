@@ -15,7 +15,6 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { vi } from 'vitest'
 import { describe, it, expect } from 'vitest'
 
 import { loadWavMono } from './helpers'
