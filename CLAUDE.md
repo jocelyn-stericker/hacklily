@@ -14,6 +14,7 @@ npm run check          # Format with oxfmt, fix with oxlint, and typecheck (tsgo
 
 # Testing
 npm run test           # Run tests with Vitest
+npm run e2e            # Run slow end-to-end tests
 ```
 
 ## Tech Stack

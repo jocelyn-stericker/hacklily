@@ -15,6 +15,7 @@ jobs:
       - name: Test
         run: |
           npm run test
+          npm run e2e
       - name: Build
         run: |
           npm run build

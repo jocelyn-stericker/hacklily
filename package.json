@@ -9,7 +9,8 @@
     "dev": "vite dev --port 3000",
     "build": "rm -fr dist; vite build",
     "preview": "vite preview",
-    "test": "vitest run",
+    "test": "vitest run --tags-filter=!e2e",
+    "e2e": "vitest run --tags-filter=e2e",
     "lint": "oxlint && oxfmt --check .",
     "check": "oxfmt . && oxlint --fix"
   },

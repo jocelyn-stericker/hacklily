@@ -11,5 +11,15 @@ export default defineConfig({
     coverage: {
       include: ['src/**/*.{ts,tsx}'],
     },
+    tags: [
+      {
+        name: 'e2e',
+        description: 'Slow, heavy, end-to-end tests',
+        timeout: 120_000,
+      },
+    ],
+    experimental: {
+      preParse: true,
+    },
   },
 })

@@ -68,3 +68,18 @@ This project contains code derived from Praat. That code is:
 Copyright (C) 1992-2008,2011,2012,2015-2020,2022-2024 Paul Boersma
 
 Copyright (C) 1993-2020 David Weenink
+
+This project also contains a TypeScript port of the **Bournemouth Forced
+Aligner (BFA)** for phoneme-level forced alignment, in
+[`src/lib/bournemouth-forced-aligner-ts/`](src/lib/bournemouth-forced-aligner-ts/).
+The upstream BFA is:
+
+Copyright (C) Tabahi <tabahi@duck.com>
+
+The upstream BFA is licensed under GPLv3; this port is distributed under
+AGPL-3.0-or-later. It runs the CUPE acoustic model via onnxruntime-web; the
+model weights are not bundled. See
+[`src/lib/bournemouth-forced-aligner-ts/README.md`](src/lib/bournemouth-forced-aligner-ts/README.md)
+and
+[`ATTRIBUTION.md`](src/lib/bournemouth-forced-aligner-ts/ATTRIBUTION.md)
+for details.
