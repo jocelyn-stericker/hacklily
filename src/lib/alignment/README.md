@@ -193,7 +193,7 @@ byte-faithful:
 
 ```bash
 # from the BFA repo root
-python bournemouth-forced-aligner-ts/dump_ph66.py \
+python alignment/dump_ph66.py \
   --mapper bournemouth_aligner/ipamappers/ph66_mapper.py \
-  --out bournemouth-forced-aligner-ts/ph66Data.ts
+  --out alignment/ph66Data.ts
 ```

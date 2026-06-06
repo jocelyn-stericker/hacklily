@@ -12,6 +12,7 @@ import {
   viterbiDecode,
   assortFrames,
   decodeAlignmentsSimple,
+  calculateConfidences,
   rmsNormalize,
 } from './decoder'
 
@@ -135,7 +136,13 @@ describe('viterbiDecode + assortFrames + decodeAlignmentsSimple', () => {
     const lp = logSoftmaxFrames(logits, T, C)
     const segs = decodeAlignmentsSimple(lp, T, C, [1], blank, true)
     expect(segs).toEqual([
-      { phonemeId: 1, startFrame: 1, endFrame: 3, targetSeqIdx: 0 },
+      {
+        phonemeId: 1,
+        startFrame: 1,
+        endFrame: 3,
+        targetSeqIdx: 0,
+        confidence: 0,
+      },
     ])
   })
 
@@ -145,8 +152,20 @@ describe('viterbiDecode + assortFrames + decodeAlignmentsSimple', () => {
     const idx = new Int32Array([0, 0, ...Array(12).fill(-1), 1, 1])
     const segs = assortFrames(fp, idx, /*blank*/ 2, /*ignoreNoise*/ true)
     expect(segs).toEqual([
-      { phonemeId: 1, startFrame: 0, endFrame: 2, targetSeqIdx: 0 },
-      { phonemeId: 3, startFrame: 14, endFrame: 16, targetSeqIdx: 1 },
+      {
+        phonemeId: 1,
+        startFrame: 0,
+        endFrame: 2,
+        targetSeqIdx: 0,
+        confidence: 0,
+      },
+      {
+        phonemeId: 3,
+        startFrame: 14,
+        endFrame: 16,
+        targetSeqIdx: 1,
+        confidence: 0,
+      },
     ])
   })
 
@@ -171,5 +190,73 @@ describe('viterbiDecode + assortFrames + decodeAlignmentsSimple', () => {
     )
     expect(framePhonemes.length).toBe(T)
     expect(framePhonemesIdx.length).toBe(T)
+  })
+})
+
+describe('calculateConfidences', () => {
+  it('returns high confidence when the target phoneme dominates all frames', () => {
+    const C = 3
+    const T = 4
+    // Class 1 strongly favored at every frame -> log-softmax ~ log(1) = 0
+    const logits = new Float32Array([
+      -10, 10, -10, -10, 10, -10, -10, 10, -10, -10, 10, -10,
+    ])
+    const lp = logSoftmaxFrames(logits, T, C)
+    const fs = [
+      {
+        phonemeId: 1,
+        startFrame: 0,
+        endFrame: 4,
+        targetSeqIdx: 0,
+        confidence: 0,
+      },
+    ]
+    const result = calculateConfidences(lp, T, C, fs)
+    expect(result).toHaveLength(1)
+    expect(result[0]!.confidence).toBeGreaterThan(0.9)
+    expect(result[0]!.endFrame).toBe(4)
+  })
+
+  it('trims endFrame when trailing frames have low probability', () => {
+    const C = 3
+    const T = 6
+    // Class 1 strong in frames 0–2, weak in frames 3–5
+    const logits = new Float32Array([
+      -10, 10, -10, -10, 10, -10, -10, 10, -10, 10, -10, -10, 10, -10, -10, 10,
+      -10, -10,
+    ])
+    const lp = logSoftmaxFrames(logits, T, C)
+    const fs = [
+      {
+        phonemeId: 1,
+        startFrame: 0,
+        endFrame: 6,
+        targetSeqIdx: 0,
+        confidence: 0,
+      },
+    ]
+    const result = calculateConfidences(lp, T, C, fs)
+    expect(result).toHaveLength(1)
+    expect(result[0]!.endFrame).toBeLessThan(6)
+    expect(result[0]!.confidence).toBeGreaterThan(0)
+  })
+
+  it('handles single-frame segments', () => {
+    const C = 2
+    const T = 1
+    const logits = new Float32Array([0, 0])
+    const lp = logSoftmaxFrames(logits, T, C)
+    const fs = [
+      {
+        phonemeId: 0,
+        startFrame: 0,
+        endFrame: 1,
+        targetSeqIdx: 0,
+        confidence: 0,
+      },
+    ]
+    const result = calculateConfidences(lp, T, C, fs)
+    expect(result).toHaveLength(1)
+    expect(result[0]!.confidence).toBeCloseTo(0.5, 1)
   })
 })

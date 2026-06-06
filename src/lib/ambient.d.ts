@@ -53,6 +53,13 @@ declare module '#/lib/workers/TranscribeWorker?worker' {
   export default TranscribeWorkerConstructor
 }
 
+declare module '#/lib/workers/AlignWorker?worker' {
+  import type { AlignWorker } from '#/lib/workers/AlignWorker'
+
+  const AlignWorkerConstructor: new () => AlignWorker
+  export default AlignWorkerConstructor
+}
+
 declare interface AudioParamDescriptor {
   name: string
   automationRate?: AutomationRate

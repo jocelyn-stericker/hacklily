@@ -71,7 +71,7 @@ Copyright (C) 1993-2020 David Weenink
 
 This project also contains a TypeScript port of the **Bournemouth Forced
 Aligner (BFA)** for phoneme-level forced alignment, in
-[`src/lib/bournemouth-forced-aligner-ts/`](src/lib/bournemouth-forced-aligner-ts/).
+[`src/lib/alignment/`](src/lib/alignment/).
 The upstream BFA is:
 
 Copyright (C) Tabahi <tabahi@duck.com>
@@ -79,7 +79,7 @@ Copyright (C) Tabahi <tabahi@duck.com>
 The upstream BFA is licensed under GPLv3; this port is distributed under
 AGPL-3.0-or-later. It runs the CUPE acoustic model via onnxruntime-web; the
 model weights are not bundled. See
-[`src/lib/bournemouth-forced-aligner-ts/README.md`](src/lib/bournemouth-forced-aligner-ts/README.md)
+[`src/lib/alignment/README.md`](src/lib/alignment/README.md)
 and
-[`ATTRIBUTION.md`](src/lib/bournemouth-forced-aligner-ts/ATTRIBUTION.md)
+[`ATTRIBUTION.md`](src/lib/alignment/ATTRIBUTION.md)
 for details.

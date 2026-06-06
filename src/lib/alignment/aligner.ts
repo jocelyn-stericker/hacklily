@@ -26,6 +26,7 @@ import {
   calcSpecLenExt,
   logSoftmaxFrames,
   decodeAlignmentsSimple,
+  calculateConfidences,
 } from './decoder.js'
 import type { FrameStamp } from './decoder.js'
 import { phonemeMappedIndex } from './ph66Data.js'
@@ -167,7 +168,7 @@ export class PhonemeTimestampAligner {
     return { logitsClass: combined, totalFrames, numClasses, spectralLen }
   }
 
-  /** Port of convert_to_ms (simplified: confidence slot carries targetSeqIdx). [upstream: main.cpp:1470 / bfaonnx.py:1601] */
+  /** Port of convert_to_ms. [upstream: main.cpp:1553 convert_to_ms_with_confidence / bfaonnx.py:1601] */
   private convertToMs(
     framestamps: FrameStamp[],
     spectralLength: number,
@@ -188,6 +189,7 @@ export class PhonemeTimestampAligner {
         targetIndex: fs.targetSeqIdx,
         startMs: startSec * 1000.0,
         endMs: endSec * 1000.0,
+        confidence: fs.confidence,
       }
     })
   }
@@ -217,13 +219,23 @@ export class PhonemeTimestampAligner {
     const logProbs = logSoftmaxFrames(logitsClass, totalFrames, numClasses)
 
     // Viterbi runs on the first `spectralLen` valid frames (pred_lens).
-    const framestamps = decodeAlignmentsSimple(
+    const rawFramestamps = decodeAlignmentsSimple(
       logProbs,
       spectralLen,
       numClasses,
       ph66,
       BLANK_CLASS,
       this.ignoreNoise,
+    )
+
+    // Score per-phoneme confidence from the log-prob grid; may trim endFrame.
+    const lpSpectral = new Float32Array(spectralLen * numClasses)
+    lpSpectral.set(logProbs.subarray(0, spectralLen * numClasses))
+    const framestamps = calculateConfidences(
+      lpSpectral,
+      spectralLen,
+      numClasses,
+      rawFramestamps,
     )
 
     const phonemeTimestamps = this.convertToMs(

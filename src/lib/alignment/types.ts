@@ -26,6 +26,14 @@ export interface PhonemeTimestamp {
   startMs: number
   /** End time in milliseconds (offset-adjusted). */
   endMs: number
+  /**
+   * Per-phoneme confidence score (0–1). Computed as the mean softmax
+   * probability of the assigned phoneme over "good" frames within the segment
+   * (frames where P > half-initial-confidence or P > 0.1). The segment's
+   * endFrame may be trimmed inward when trailing frames fall below the
+   * threshold. [upstream: main.cpp:1498 calculate_confidences]
+   */
+  confidence: number
 }
 
 export interface AlignmentResult {

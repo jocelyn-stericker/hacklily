@@ -23,6 +23,7 @@ export interface FrameStamp {
   startFrame: number
   endFrame: number
   targetSeqIdx: number
+  confidence: number
 }
 
 const NEG_INF = -1000.0
@@ -341,6 +342,7 @@ export function assortFrames(
             startFrame: startIdx,
             endFrame: endIdx,
             targetSeqIdx: segIdx,
+            confidence: 0,
           })
         }
       }
@@ -351,6 +353,7 @@ export function assortFrames(
         startFrame: startIdx,
         endFrame: endIdx,
         targetSeqIdx: segIdx,
+        confidence: 0,
       })
     }
   }
@@ -399,4 +402,62 @@ export function decodeAlignmentsSimple(
     bandWidth,
   )
   return assortFrames(framePhonemes, framePhonemesIdx, blankId, ignoreNoise)
+}
+
+/**
+ * Per-phoneme confidence scoring from log-probabilities.
+ * Port of calculate_confidences. [upstream: main.cpp:1498 / bfaonnx.py:_calculate_confidences]
+ * logProbsFlat: flat [T * C] log-probability array.
+ */
+export function calculateConfidences(
+  logProbsFlat: Float32Array,
+  T: number,
+  C: number,
+  framestamps: FrameStamp[],
+): FrameStamp[] {
+  return framestamps.map((fs) => {
+    const startFrame = Math.max(0, fs.startFrame)
+    const endFrame = Math.min(T, fs.endFrame)
+    const phonemeIdx = fs.phonemeId
+
+    let avgConfidence = Math.exp(logProbsFlat[startFrame * C + phonemeIdx]!)
+    let newEndFrame = endFrame
+
+    if (startFrame < endFrame && phonemeIdx >= 0 && phonemeIdx < C) {
+      const halfConfidence = avgConfidence / 2.0
+      let lastGoodFrame = startFrame
+      let totalGoodFrames = 1
+
+      for (let f = startFrame + 1; f < endFrame; f++) {
+        const frameProb = Math.exp(logProbsFlat[f * C + phonemeIdx]!)
+        if (frameProb > halfConfidence || frameProb > 0.1) {
+          avgConfidence += frameProb
+          lastGoodFrame = f
+          totalGoodFrames++
+        }
+      }
+
+      if (totalGoodFrames > 1) {
+        avgConfidence /= totalGoodFrames
+        newEndFrame = Math.min(T, lastGoodFrame + 1)
+
+        let maxConfidence = 0.0
+        for (let f = startFrame; f < newEndFrame; f++) {
+          const p = Math.exp(logProbsFlat[f * C + phonemeIdx]!)
+          if (p > maxConfidence) maxConfidence = p
+        }
+        if (avgConfidence < maxConfidence / 2.0) {
+          avgConfidence = maxConfidence
+        }
+      }
+    }
+
+    return {
+      phonemeId: phonemeIdx,
+      startFrame,
+      endFrame: newEndFrame,
+      targetSeqIdx: fs.targetSeqIdx,
+      confidence: avgConfidence,
+    }
+  })
 }
