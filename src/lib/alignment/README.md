@@ -98,48 +98,6 @@ for (const p of phonemeTimestamps) {
 await aligner.align(audio16k, [29, 10, 58, 9, 43, 56, 23])
 ```
 
-## Usage — Web Worker
-
-`worker.ts` is a ready-made dedicated-worker entry.
-
-```ts
-// main thread
-const worker = new Worker(new URL('bfa-ts/worker', import.meta.url), {
-  type: 'module',
-})
-
-worker.postMessage({
-  type: 'init',
-  model: modelArrayBuffer, // ArrayBuffer | Uint8Array | URL
-  wasmPaths: '/ort/', // forwarded to ort.env.wasm.wasmPaths
-  numThreads: 1,
-  config: { durationMax: 10 },
-})
-
-worker.onmessage = (e) => {
-  if (e.data.type === 'ready') {
-    worker.postMessage(
-      { type: 'align', id: 1, audio: audio16k, transcript: 'b|ʌ|ɾ|ɚ|f|l|aɪ' },
-      [audio16k.buffer], // transfer for zero-copy
-    )
-  } else if (e.data.type === 'result') {
-    console.log(e.data.result.phonemeTimestamps)
-  } else if (e.data.type === 'error') {
-    console.error(e.data.message)
-  }
-}
-```
-
-Message protocol:
-
-| Direction | Message                                                                           |
-| --------- | --------------------------------------------------------------------------------- |
-| → worker  | `{ type: "init", model, config?, wasmPaths?, numThreads?, simd? }`                |
-| → worker  | `{ type: "align", id, audio, transcript? \| ph66?, phonemize?, startOffsetSec? }` |
-| ← worker  | `{ type: "ready" }`                                                               |
-| ← worker  | `{ type: "result", id, result, phonemized? }`                                     |
-| ← worker  | `{ type: "error", id?, message }`                                                 |
-
 ## Output shape
 
 ```ts

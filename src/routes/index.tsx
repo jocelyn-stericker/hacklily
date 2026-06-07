@@ -625,7 +625,7 @@ function App() {
               virtualWidthSec={virtualWidthSec}
               className="flex-1"
               hideScrollBar={isRecording}
-              speechStripHeight={30}
+              speechStripHeight={60}
             >
               <Spectrogram
                 analysisMut={analysisMut}

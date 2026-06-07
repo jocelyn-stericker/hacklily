@@ -6,6 +6,12 @@
  *   CUPEONNXPredictor::predict, PhonemeTimestampAligner::chop_wav /
  *   cupe_prediction / extract_timestamps_from_segment_simplified / convert_to_ms.
  *
+ * By default `align` also runs the two post-processing steps the C++ advanced
+ * pipeline applies after decoding — ensure_target_coverage and
+ * extend_soft_boundaries (see decoder.ts) — so target phonemes the simplified
+ * decode drops are recovered and each phoneme's boundaries widen into adjacent
+ * confident frames. Toggle via AlignerConfig.
+ *
  * Uses onnxruntime-web (wasm backend). The caller supplies an already-created
  * InferenceSession (see worker.ts / createCupeSession) so this module stays
  * agnostic about backend wiring.
@@ -26,6 +32,8 @@ import {
   calcSpecLenExt,
   logSoftmaxFrames,
   decodeAlignmentsSimple,
+  ensureTargetCoverage,
+  extendSoftBoundaries,
   calculateConfidences,
 } from './decoder.js'
 import type { FrameStamp } from './decoder.js'
@@ -37,6 +45,7 @@ import type {
 } from './types.js'
 
 const BLANK_CLASS = phonemeMappedIndex['noise']! // 66
+const SILENCE_CLASS = phonemeMappedIndex['SIL']! // 0
 const SEG_DURATION_MIN = 0.05 // seconds (Python seg_duration_min)
 
 // Reverse label lookup: ph66 id -> label.
@@ -98,6 +107,10 @@ export class PhonemeTimestampAligner {
   private readonly segDurationMinSamples: number
   // Simplified pipeline: ignore_noise=true so long blank runs are dropped.
   private readonly ignoreNoise = true
+  // Post-processing toggles, ported from the C++ advanced-pipeline draft.
+  private readonly ensureCoverage: boolean
+  private readonly softBoundaries: boolean
+  private readonly boundarySoftness: number
 
   constructor(session: ort.InferenceSession, config: AlignerConfig = {}) {
     // Defaults mirror _setup_config. [upstream: main.cpp:1723 / bfaonnx.py:1263]
@@ -112,6 +125,9 @@ export class PhonemeTimestampAligner {
     const durationMax = config.durationMax ?? 10
     this.wavLenMax = Math.floor(durationMax * this.sampleRate)
     this.segDurationMinSamples = Math.floor(SEG_DURATION_MIN * this.sampleRate)
+    this.ensureCoverage = config.ensureTargetCoverage ?? true
+    this.softBoundaries = config.extendSoftBoundaries ?? true
+    this.boundarySoftness = config.boundarySoftness ?? 7
   }
 
   /**
@@ -250,7 +266,7 @@ export class PhonemeTimestampAligner {
     const logProbs = logSoftmaxFrames(logitsClass, totalFrames, numClasses)
 
     // Viterbi runs on the first `spectralLen` valid frames (pred_lens).
-    const rawFramestamps = decodeAlignmentsSimple(
+    let framestamps = decodeAlignmentsSimple(
       logProbs,
       spectralLen,
       numClasses,
@@ -259,14 +275,40 @@ export class PhonemeTimestampAligner {
       this.ignoreNoise,
     )
 
-    // Score per-phoneme confidence from the log-prob grid; may trim endFrame.
+    // Post-processing mirrors the C++ advanced-pipeline draft
+    // (main.cpp:2003-2014): coverage -> soft boundaries -> confidence.
     const lpSpectral = new Float32Array(spectralLen * numClasses)
     lpSpectral.set(logProbs.subarray(0, spectralLen * numClasses))
-    const framestamps = calculateConfidences(
+
+    if (this.ensureCoverage) {
+      // ctcLen upper-bounds inserted frames at the decoded extent.
+      let ctcLen = 0
+      for (const fs of framestamps) ctcLen = Math.max(ctcLen, fs.endFrame)
+      framestamps = ensureTargetCoverage(
+        framestamps,
+        ph66,
+        ctcLen,
+        true,
+        SILENCE_CLASS,
+      )
+    }
+
+    if (this.softBoundaries) {
+      extendSoftBoundaries(
+        framestamps,
+        lpSpectral,
+        spectralLen,
+        numClasses,
+        this.boundarySoftness,
+      )
+    }
+
+    // Score per-phoneme confidence from the log-prob grid; may trim endFrame.
+    framestamps = calculateConfidences(
       lpSpectral,
       spectralLen,
       numClasses,
-      rawFramestamps,
+      framestamps,
     )
 
     const phonemeTimestamps = this.convertToMs(

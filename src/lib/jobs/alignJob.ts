@@ -60,6 +60,7 @@ export function createAlignJob(deps: AlignJobDeps): ChunkWork {
 async function runAlignmentOnWorker(
   audio: AudioSpan,
   transcript: string,
+  startTimeSec: number,
 ): Promise<PhonemeTimestamp[]> {
   const pcm = await readAudioSpan(audio)
 
@@ -85,7 +86,7 @@ async function runAlignmentOnWorker(
       type: 'align',
       pcm,
       sampleRate: audio.rope.sampleRate,
-      startTime: audio.startTime,
+      startTime: startTimeSec,
       transcript,
     })
   })
@@ -120,8 +121,11 @@ async function alignOne(
   })
 
   try {
-    const phonemes = await runAlignmentOnWorker(audio, prior![tier]!.text!)
-    console.log(phonemes)
+    const phonemes = await runAlignmentOnWorker(
+      audio,
+      prior![tier]!.text!,
+      chunk.startTimeSec,
+    )
     const cur = deps.sink.get(chunk)
     deps.sink.set(chunk, {
       ...cur,

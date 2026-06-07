@@ -225,3 +225,11 @@ export const UNVOICED_U32 = u32FromRgb(UNVOICED.r, UNVOICED.g, UNVOICED.b)
 
 export const VOICED_FILL = `rgba(${TEAL.r},${TEAL.g},${TEAL.b},1.0)`
 export const UNVOICED_FILL = `rgba(${UNVOICED.r},${UNVOICED.g},${UNVOICED.b},1.0)`
+
+// Zebra-stripe variants for alignment row: even-indexed phoneme blocks get a
+// 10% lighter fill and odd-indexed get 10% darker (relative to VOICED_FILL).
+function lerp(a: number, b: number, t: number): number {
+  return Math.round(a + (b - a) * t)
+}
+export const VOICED_LIGHTER10 = `rgba(${lerp(TEAL.r, 255, 0.1)},${lerp(TEAL.g, 255, 0.1)},${lerp(TEAL.b, 255, 0.1)},1.0)`
+export const VOICED_DARKER10 = `rgba(${lerp(TEAL.r, 0, 0.1)},${lerp(TEAL.g, 0, 0.1)},${lerp(TEAL.b, 0, 0.1)},1.0)`

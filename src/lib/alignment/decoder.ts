@@ -7,6 +7,11 @@
  *   log_softmax_*, ViterbiDecoder::viterbi_decode / assort_frames,
  *   AlignmentUtils::decode_alignments_simple, _rms_normalize, convert_to_ms.
  *
+ * Also ports the two post-processing steps the C++ advanced pipeline layers on
+ * top of the simplified decode (ensure_target_coverage, extend_soft_boundaries),
+ * which the aligner runs by default — see {@link ensureTargetCoverage} and
+ * {@link extendSoftBoundaries}.
+ *
  * Float32Array is used for log-prob/DP buffers so arithmetic matches the C++
  * float32 reference closely.
  *
@@ -24,6 +29,12 @@ export interface FrameStamp {
   endFrame: number
   targetSeqIdx: number
   confidence: number
+  /**
+   * True when this stamp was synthesized by {@link ensureTargetCoverage} to
+   * cover a target phoneme the decoder dropped, rather than decoded directly.
+   * [upstream: main.cpp:449 FrameStamp::is_estimated]
+   */
+  isEstimated?: boolean
 }
 
 const NEG_INF = -1000.0
@@ -458,6 +469,333 @@ export function calculateConfidences(
       endFrame: newEndFrame,
       targetSeqIdx: fs.targetSeqIdx,
       confidence: avgConfidence,
+      isEstimated: fs.isEstimated,
     }
   })
+}
+
+/**
+ * Insert/clean up framestamps so every target phoneme is represented exactly
+ * once. Faithful port of the C++ advanced-pipeline draft
+ * (main.cpp:2033 ensure_target_coverage), which itself matches
+ * core.py:462 ensure_target_coverage.
+ *
+ * Always: drops stamps whose targetSeqIdx is out of range (e.g. -1), then sorts
+ * by startFrame. When `ensureCompleteness` is true it additionally synthesizes
+ * `isEstimated` stamps for any target the decoder missed, placing them in the
+ * gap between the nearest surviving neighbours (or, for trailing gaps, by
+ * contracting existing stamps to make room).
+ *
+ * `ctcLen` is the inclusive upper bound for inserted frame indices (the C++
+ * draft uses max(endFrame) over the decoded stamps). `silenceClass` is the SIL
+ * phoneme id (ph66 0); trailing SIL targets are skipped rather than inserted.
+ */
+export function ensureTargetCoverage(
+  framestamps: FrameStamp[],
+  targetPhonemeIds: number[],
+  ctcLen: number,
+  ensureCompleteness: boolean,
+  silenceClass: number,
+): FrameStamp[] {
+  if (framestamps.length === 0 || targetPhonemeIds.length === 0)
+    return framestamps
+  const numTargets = targetPhonemeIds.length
+
+  const targetsFound = new Array<number>(numTargets).fill(0)
+  const invalidTargetIndices = new Set<number>()
+  for (const fs of framestamps) {
+    if (fs.targetSeqIdx >= 0 && fs.targetSeqIdx < numTargets)
+      targetsFound[fs.targetSeqIdx]!++
+    else invalidTargetIndices.add(fs.targetSeqIdx)
+  }
+
+  const missingTargets: number[] = []
+  for (let i = 0; i < numTargets; i++)
+    if (targetsFound[i] === 0) missingTargets.push(i)
+
+  let frames = framestamps
+  if (invalidTargetIndices.size > 0)
+    frames = frames.filter((fs) => !invalidTargetIndices.has(fs.targetSeqIdx))
+
+  // Distribute `group` evenly across [gapStart, gapEnd), clamped to the CTC
+  // range, pushing the synthesized stamps onto `frames`. Shared by the three
+  // non-trailing branches below. [upstream: main.cpp:2103-2215]
+  const distribute = (
+    group: number[],
+    gapStart: number,
+    gapEnd: number,
+    targetToFrame: Map<number, FrameStamp>,
+  ): void => {
+    const nMissing = group.length
+    const gapSize = Math.max(gapEnd - gapStart, nMissing)
+    const framesPerPhoneme = gapSize / nMissing
+    for (let i = 0; i < nMissing; i++) {
+      const tidx = group[i]!
+      const estStart = Math.min(
+        Math.trunc(gapStart + i * framesPerPhoneme),
+        Math.max(0, ctcLen - 1),
+      )
+      const estEnd = Math.min(
+        Math.max(
+          Math.trunc(gapStart + (i + 1) * framesPerPhoneme),
+          estStart + 1,
+        ),
+        ctcLen,
+      )
+      const newFs: FrameStamp = {
+        phonemeId: targetPhonemeIds[tidx]!,
+        startFrame: estStart,
+        endFrame: estEnd,
+        targetSeqIdx: tidx,
+        confidence: 0,
+        isEstimated: true,
+      }
+      frames.push(newFs)
+      targetToFrame.set(tidx, newFs)
+    }
+  }
+
+  if (ensureCompleteness && missingTargets.length > 0) {
+    const targetToFrame = new Map<number, FrameStamp>()
+    for (const fs of frames) targetToFrame.set(fs.targetSeqIdx, fs)
+
+    // Group consecutive missing targets so frames are shared within each gap.
+    const missingGroups: number[][] = [[missingTargets[0]!]]
+    for (let i = 1; i < missingTargets.length; i++) {
+      if (missingTargets[i] === missingTargets[i - 1]! + 1)
+        missingGroups[missingGroups.length - 1]!.push(missingTargets[i]!)
+      else missingGroups.push([missingTargets[i]!])
+    }
+
+    for (const group of missingGroups) {
+      const nMissing = group.length
+
+      let prevFrame: FrameStamp | undefined
+      for (let tidx = group[0]! - 1; tidx >= 0; tidx--) {
+        const f = targetToFrame.get(tidx)
+        if (f) {
+          prevFrame = f
+          break
+        }
+      }
+      let nextFrame: FrameStamp | undefined
+      for (let tidx = group[group.length - 1]! + 1; tidx < numTargets; tidx++) {
+        const f = targetToFrame.get(tidx)
+        if (f) {
+          nextFrame = f
+          break
+        }
+      }
+
+      if (prevFrame && nextFrame) {
+        distribute(
+          group,
+          prevFrame.endFrame,
+          nextFrame.startFrame,
+          targetToFrame,
+        )
+      } else if (prevFrame) {
+        // Trailing missing targets: skip SIL, contract existing stamps to free
+        // frames at the end, then append one frame each. [upstream: main.cpp:2123]
+        const nonSilGroup = group.filter(
+          (tidx) => targetPhonemeIds[tidx] !== silenceClass,
+        )
+        if (nonSilGroup.length === 0) continue
+        const nNeeded = nonSilGroup.length
+
+        frames.sort((a, b) => a.startFrame - b.startFrame)
+        let framesFreed = 0
+        // Pass 0 contracts SIL stamps, pass 1 any stamp with span > 1.
+        for (let pass = 0; pass < 2 && framesFreed < nNeeded; pass++) {
+          for (
+            let scanIdx = frames.length - 1;
+            scanIdx >= 0 && framesFreed < nNeeded;
+            scanIdx--
+          ) {
+            const f = frames[scanIdx]!
+            const span = f.endFrame - f.startFrame
+            const isSil = f.phonemeId === silenceClass
+            if (
+              (pass === 0 && isSil && span > 1) ||
+              (pass === 1 && span > 1 && !isSil)
+            ) {
+              const canGive = Math.min(span - 1, nNeeded - framesFreed)
+              f.endFrame -= canGive
+              for (let j = scanIdx + 1; j < frames.length; j++) {
+                frames[j]!.startFrame -= canGive
+                frames[j]!.endFrame -= canGive
+              }
+              framesFreed += canGive
+            }
+          }
+        }
+
+        targetToFrame.clear()
+        for (const fs of frames) targetToFrame.set(fs.targetSeqIdx, fs)
+        let lastEnd = 0
+        for (const fs of frames) lastEnd = Math.max(lastEnd, fs.endFrame)
+
+        for (let i = 0; i < nNeeded; i++) {
+          const tidx = nonSilGroup[i]!
+          const estStart = Math.min(lastEnd + i, Math.max(0, ctcLen - 1))
+          const estEnd = Math.min(estStart + 1, ctcLen)
+          const newFs: FrameStamp = {
+            phonemeId: targetPhonemeIds[tidx]!,
+            startFrame: estStart,
+            endFrame: estEnd,
+            targetSeqIdx: tidx,
+            confidence: 0,
+            isEstimated: true,
+          }
+          frames.push(newFs)
+          targetToFrame.set(tidx, newFs)
+        }
+        continue
+      } else if (nextFrame) {
+        const gapEnd = nextFrame.startFrame
+        distribute(group, Math.max(0, gapEnd - nMissing), gapEnd, targetToFrame)
+      } else {
+        distribute(group, 0, nMissing, targetToFrame)
+      }
+    }
+  }
+
+  frames.sort((a, b) => a.startFrame - b.startFrame)
+  return frames
+}
+
+/**
+ * Widen each phoneme's start/end into adjacent frames that still carry
+ * meaningful probability for that phoneme. Faithful port of the C++
+ * advanced-pipeline draft (main.cpp:2228 extend_soft_boundaries), which matches
+ * core.py:682 extend_soft_boundaries_func. Mutates `framestamps` in place; they
+ * must be sorted by startFrame.
+ *
+ * Four passes: strict start, strict end, lenient start, lenient end. The strict
+ * threshold scales with each phoneme's mean in-segment probability; the lenient
+ * threshold is a flat 10^-boundarySoftness. Passes 1/2 also reproduce the
+ * upstream quirk where the inter-phoneme `max(..)/min(..)` clamps usually leave
+ * interior boundaries untouched, so most widening comes from the lenient passes.
+ *
+ * `logProbsFlat` is the [T * C] log-prob grid; `boundarySoftness` defaults to 7
+ * upstream (lenient threshold 10^-7).
+ */
+export function extendSoftBoundaries(
+  framestamps: FrameStamp[],
+  logProbsFlat: Float32Array,
+  T: number,
+  C: number,
+  boundarySoftness: number,
+): void {
+  if (framestamps.length === 0 || T <= 0 || C <= 0) return
+
+  const probs = new Float32Array(logProbsFlat.length)
+  for (let i = 0; i < logProbsFlat.length; i++)
+    probs[i] = Math.exp(logProbsFlat[i]!)
+
+  // Mean probability of each phoneme over its original (pre-extension) span.
+  const meanProbs = new Float32Array(framestamps.length).fill(0.001)
+  for (let i = 0; i < framestamps.length; i++) {
+    const fs = framestamps[i]!
+    if (
+      fs.startFrame < T &&
+      fs.endFrame <= T &&
+      fs.startFrame < fs.endFrame &&
+      fs.phonemeId >= 0 &&
+      fs.phonemeId < C
+    ) {
+      let sum = 0.0
+      let count = 0
+      for (let f = fs.startFrame; f < fs.endFrame; f++) {
+        sum += probs[f * C + fs.phonemeId]!
+        count++
+      }
+      if (count > 0) meanProbs[i] = sum / count
+    }
+  }
+
+  const boundarySoftnessInitial = Math.max(2, boundarySoftness - 4)
+  const thresh1 = Math.pow(10, -boundarySoftnessInitial)
+  const thresh2 = Math.pow(10, -boundarySoftness)
+  const maxExtensionFactor = 10.0
+
+  // Pass 1: extend start boundaries (strict). [upstream: main.cpp:2263]
+  for (let i = 0; i < framestamps.length; i++) {
+    const fs = framestamps[i]!
+    if (fs.startFrame >= T || fs.phonemeId >= C) continue
+    const originalDuration = fs.endFrame - fs.startFrame
+    let minStart = Math.max(
+      0,
+      Math.trunc(fs.startFrame - originalDuration * maxExtensionFactor),
+    )
+    if (i > 0)
+      minStart = Math.max(
+        minStart,
+        Math.min(framestamps[i - 1]!.endFrame + 10, fs.startFrame),
+      )
+    const startThreshold = Math.min(meanProbs[i]! * thresh1, thresh1)
+    let newStart = fs.startFrame
+    for (let f = fs.startFrame - 1; f >= minStart; f--) {
+      if (probs[f * C + fs.phonemeId]! >= startThreshold) newStart = f
+      else break
+    }
+    fs.startFrame = newStart
+  }
+
+  // Pass 2: extend end boundaries (strict). [upstream: main.cpp:2284]
+  for (let i = 0; i < framestamps.length; i++) {
+    const fs = framestamps[i]!
+    if (fs.startFrame >= T || fs.phonemeId >= C) continue
+    const originalDuration = fs.endFrame - fs.startFrame
+    let maxEnd = Math.min(
+      T,
+      Math.trunc(fs.endFrame + originalDuration * maxExtensionFactor),
+    )
+    if (i + 1 < framestamps.length)
+      maxEnd = Math.min(
+        maxEnd,
+        Math.min(fs.endFrame, framestamps[i + 1]!.startFrame - 10),
+      )
+    const endThreshold = Math.min(meanProbs[i]! * thresh1, thresh1)
+    let newEnd = fs.endFrame
+    for (let f = fs.endFrame; f < maxEnd; f++) {
+      if (probs[f * C + fs.phonemeId]! >= endThreshold) newEnd = f + 1
+      else break
+    }
+    fs.endFrame = newEnd
+  }
+
+  // Pass 3: extend start boundaries (lenient, fills remaining gaps). [upstream: main.cpp:2305]
+  for (let i = 0; i < framestamps.length; i++) {
+    const fs = framestamps[i]!
+    if (fs.startFrame >= T || fs.phonemeId >= C) continue
+    const minStart = i > 0 ? framestamps[i - 1]!.endFrame : 0
+    if (fs.startFrame <= minStart) continue
+    let newStart = fs.startFrame
+    for (let f = fs.startFrame - 1; f >= minStart; f--) {
+      if (probs[f * C + fs.phonemeId]! >= thresh2) newStart = f
+      else break
+    }
+    fs.startFrame = newStart
+  }
+
+  // Pass 4: extend end boundaries (lenient, fills remaining gaps). [upstream: main.cpp:2325]
+  for (let i = 0; i < framestamps.length; i++) {
+    const fs = framestamps[i]!
+    if (fs.startFrame >= T || fs.phonemeId >= C) continue
+    let maxEnd = Math.min(
+      T,
+      Math.trunc(
+        fs.endFrame + (fs.endFrame - fs.startFrame) * maxExtensionFactor,
+      ),
+    )
+    if (i + 1 < framestamps.length)
+      maxEnd = Math.min(maxEnd, framestamps[i + 1]!.startFrame)
+    let newEnd = fs.endFrame
+    for (let f = fs.endFrame; f < maxEnd; f++) {
+      if (probs[f * C + fs.phonemeId]! >= thresh2) newEnd = f + 1
+      else break
+    }
+    fs.endFrame = newEnd
+  }
 }

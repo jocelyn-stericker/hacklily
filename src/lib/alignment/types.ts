@@ -89,4 +89,23 @@ export interface AlignerConfig {
   strideMs?: number
   /** Sample rate; must be 16000 for the shipped CUPE models. */
   sampleRate?: number
+  /**
+   * Post-process the decoded alignment to guarantee every target phoneme is
+   * represented, synthesizing estimated stamps for any the decoder dropped.
+   * Port of the C++ advanced-pipeline `ensure_target_coverage`. Default true.
+   */
+  ensureTargetCoverage?: boolean
+  /**
+   * Widen each phoneme's start/end into adjacent frames that still carry
+   * meaningful probability for it, yielding contiguous coverage instead of the
+   * single-frame cores the simplified decoder emits. Port of the C++
+   * advanced-pipeline `extend_soft_boundaries`. Default true.
+   */
+  extendSoftBoundaries?: boolean
+  /**
+   * Leniency of {@link extendSoftBoundaries}; the lenient passes accept frames
+   * with probability >= 10^-boundarySoftness. Higher = more extension. Default
+   * 7 (upstream default).
+   */
+  boundarySoftness?: number
 }

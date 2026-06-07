@@ -28,15 +28,26 @@ const MODEL = 'cupe_2i_q8.onnx'
 const WAV = 'butterfly.wav'
 const BUTTERFLY_PH66 = [29, 10, 58, 9, 43, 56, 23]
 
-// Python reference (int8dyn.onnx): [phonemeId, startFrame, endFrame, targetIndex, startMs, endMs]
+// Reference golden for the simplified pipeline *with* the extended boundaries
+// (ensure_target_coverage + extend_soft_boundaries, both on by default). Each
+// stamp's start has been widened back to the previous phoneme's end and the
+// final phoneme's end runs to the spectral end, so the cores below are now
+// contiguous coverage rather than the isolated single-frame stamps the bare
+// simplified decoder emits.
+//
+// Produced by the C++ advanced-pipeline draft
+// (bournemouth_aligner/cpp_onnx/main.cpp) running the same simplified decode +
+// ensure_target_coverage + extend_soft_boundaries(softness=7) +
+// calculate_confidences over cupe_2i_q8.onnx.
+// [phonemeId, startFrame, endFrame, targetIndex, startMs, endMs]
 const PY_GOLDEN: [number, number, number, number, number, number][] = [
   [29, 0, 1, 0, 0.0, 16.784],
-  [10, 6, 7, 1, 100.705, 117.489],
-  [58, 8, 9, 2, 134.273, 151.057],
-  [9, 17, 18, 3, 285.331, 302.115],
-  [43, 22, 23, 4, 369.252, 386.036],
-  [56, 31, 32, 5, 520.309, 537.093],
-  [23, 36, 37, 6, 604.23, 621.014],
+  [10, 1, 7, 1, 16.784, 117.489],
+  [58, 7, 9, 2, 117.489, 151.058],
+  [9, 9, 18, 3, 151.058, 302.115],
+  [43, 18, 23, 4, 302.115, 386.036],
+  [56, 23, 32, 5, 386.036, 537.093],
+  [23, 32, 75, 6, 537.093, 1258.813],
 ]
 
 const ASSET_URLS: Record<string, string> = {
@@ -63,7 +74,7 @@ async function downloadAssets() {
 }
 
 describe('end-to-end vs Python (cupe_2i_q8.onnx)', { tags: ['e2e'] }, () => {
-  it('reproduces the butterfly alignment frame-for-frame', async () => {
+  it('reproduces the butterfly alignment with extended boundaries', async () => {
     await downloadAssets()
 
     const { readFileSync } = await import('node:fs')
@@ -93,6 +104,24 @@ describe('end-to-end vs Python (cupe_2i_q8.onnx)', { tags: ['e2e'] }, () => {
       expect(p.startMs, `startMs[${i}]`).toBeCloseTo(startMs, 2)
       expect(p.endMs, `endMs[${i}]`).toBeCloseTo(endMs, 2)
     })
+
+    // The extended boundaries make the stamps contiguous: each phoneme starts
+    // exactly where the previous one ends, and the run spans the whole clip.
+    // Without extend_soft_boundaries the simplified decoder leaves single-frame
+    // cores with gaps between them, so this guards the new behaviour.
+    res.phonemeTimestamps.forEach((p, i) => {
+      if (i === 0) {
+        expect(p.startFrame, 'first start').toBe(0)
+        return
+      }
+      expect(p.startFrame, `contiguous start[${i}]`).toBe(
+        res.phonemeTimestamps[i - 1]!.endFrame,
+      )
+    })
+    expect(
+      res.phonemeTimestamps.at(-1)!.endFrame,
+      'last end reaches spectral end',
+    ).toBe(res.spectralLength)
   })
 
   it('accepts an espeak IPA transcript via the convenience helper', async () => {

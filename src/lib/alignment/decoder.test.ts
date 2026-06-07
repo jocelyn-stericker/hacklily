@@ -13,8 +13,11 @@ import {
   assortFrames,
   decodeAlignmentsSimple,
   calculateConfidences,
+  ensureTargetCoverage,
+  extendSoftBoundaries,
   rmsNormalize,
 } from './decoder'
+import type { FrameStamp } from './decoder'
 
 describe('rmsNormalize', () => {
   it('scales to unit RMS', () => {
@@ -258,5 +261,95 @@ describe('calculateConfidences', () => {
     const result = calculateConfidences(lp, T, C, fs)
     expect(result).toHaveLength(1)
     expect(result[0]!.confidence).toBeCloseTo(0.5, 1)
+  })
+})
+
+const stamp = (
+  phonemeId: number,
+  startFrame: number,
+  endFrame: number,
+  targetSeqIdx: number,
+): FrameStamp => ({
+  phonemeId,
+  startFrame,
+  endFrame,
+  targetSeqIdx,
+  confidence: 0,
+})
+
+describe('ensureTargetCoverage', () => {
+  // targets: ids [10, 20, 30] at sequence indices 0, 1, 2.
+  it('inserts a missing interior target in the gap between its neighbours', () => {
+    const frames = [stamp(10, 0, 5, 0), stamp(30, 10, 15, 2)]
+    const out = ensureTargetCoverage(frames, [10, 20, 30], 15, true, 0)
+    expect(out.map((f) => f.targetSeqIdx)).toEqual([0, 1, 2])
+    const inserted = out[1]!
+    expect(inserted.phonemeId).toBe(20)
+    expect(inserted.isEstimated).toBe(true)
+    // Placed in the [5,10) gap left by the two anchors.
+    expect(inserted.startFrame).toBe(5)
+    expect(inserted.endFrame).toBe(10)
+  })
+
+  it('does not insert when ensureCompleteness is false, but still sorts', () => {
+    const frames = [stamp(30, 10, 15, 2), stamp(10, 0, 5, 0)]
+    const out = ensureTargetCoverage(frames, [10, 20, 30], 15, false, 0)
+    expect(out.map((f) => f.targetSeqIdx)).toEqual([0, 2])
+  })
+
+  it('drops stamps whose target index is out of range', () => {
+    const frames = [
+      stamp(10, 0, 5, 0),
+      stamp(99, 5, 8, -1),
+      stamp(30, 8, 12, 2),
+    ]
+    const out = ensureTargetCoverage(frames, [10, 20, 30], 12, false, 0)
+    // -1 stamp removed; missing target 1 left alone (no completeness).
+    expect(out.map((f) => f.targetSeqIdx)).toEqual([0, 2])
+  })
+
+  it('skips trailing SIL targets rather than inserting them', () => {
+    // target 2 is SIL (id 0) and trailing with no anchor after it.
+    const frames = [stamp(10, 0, 5, 0), stamp(20, 5, 10, 1)]
+    const out = ensureTargetCoverage(frames, [10, 20, 0], 10, true, 0)
+    expect(out.map((f) => f.targetSeqIdx)).toEqual([0, 1])
+  })
+})
+
+describe('extendSoftBoundaries', () => {
+  // Build a [T*C] log-prob grid from per-frame class-1 probabilities.
+  const grid = (p1: number[]): { lp: Float32Array; T: number; C: number } => {
+    const C = 2
+    const T = p1.length
+    const lp = new Float32Array(T * C)
+    for (let f = 0; f < T; f++) {
+      lp[f * C + 0] = Math.log(Math.max(1 - p1[f]!, 1e-12))
+      lp[f * C + 1] = Math.log(Math.max(p1[f]!, 1e-12))
+    }
+    return { lp, T, C }
+  }
+
+  it('widens a single-frame core into adjacent confident frames', () => {
+    const { lp, T, C } = grid([0.5, 0.5, 0.99, 0.5, 0.5])
+    const fs = [stamp(1, 2, 3, 0)]
+    extendSoftBoundaries(fs, lp, T, C, 7)
+    expect(fs[0]!.startFrame).toBe(0)
+    expect(fs[0]!.endFrame).toBe(5)
+  })
+
+  it('stops extending at frames with negligible probability', () => {
+    // frames 0 and 4 carry essentially no probability for class 1.
+    const { lp, T, C } = grid([0, 0.5, 0.99, 0.5, 0])
+    const fs = [stamp(1, 2, 3, 0)]
+    extendSoftBoundaries(fs, lp, T, C, 7)
+    expect(fs[0]!.startFrame).toBe(1)
+    expect(fs[0]!.endFrame).toBe(4)
+  })
+
+  it('does not let neighbouring phonemes overlap', () => {
+    const { lp, T, C } = grid([0.9, 0.9, 0.9, 0.9, 0.9, 0.9])
+    const fs = [stamp(1, 1, 2, 0), stamp(1, 4, 5, 1)]
+    extendSoftBoundaries(fs, lp, T, C, 7)
+    expect(fs[0]!.endFrame).toBeLessThanOrEqual(fs[1]!.startFrame)
   })
 })

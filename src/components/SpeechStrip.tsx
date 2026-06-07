@@ -27,7 +27,12 @@ import { useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
-import { VOICED_FILL, UNVOICED_FILL } from '#/lib/theme'
+import {
+  VOICED_FILL,
+  UNVOICED_FILL,
+  VOICED_DARKER10,
+  VOICED_LIGHTER10,
+} from '#/lib/theme'
 import { bestResult, transcriptIndicator } from '#/lib/transcription'
 
 import {
@@ -149,29 +154,33 @@ export function SpeechStrip({
           height: speechStripHeight,
         }}
       />
-      <SpeechStripDOMOverlay
+      <ChunkOverlayContainer
         store={store}
         stripWidth={stripWidth}
         stripTop={stripTop}
+        height={speechStripHeight}
         onTranscribe={onTranscribe}
       />
     </>
   )
 }
 
-function SpeechStripDOMOverlay({
+// One overlay that renders each voiced chunk's icon, transcript text, and
+// phoneme labels.
+function ChunkOverlayContainer({
   store,
   stripWidth,
   stripTop,
+  height,
   onTranscribe,
 }: {
   store: TranscriptStore
   stripWidth: number
   stripTop: number
+  height: number
   onTranscribe?: (chunk: AnalysisChunk) => void
 }) {
   const plotPad = usePlotPad()
-  const speechStripHeight = useSpeechStripHeight()
   const timeToXDom = useTimeToX(InCanvas.No)
 
   // Render from the store's immutable snapshot. Its identity changes on each
@@ -186,7 +195,7 @@ function SpeechStripDOMOverlay({
         left: plotPad.left,
         width: stripWidth,
         top: stripTop,
-        height: speechStripHeight,
+        height,
       }}
     >
       {chunks.map((chunk, index) => {
@@ -205,7 +214,7 @@ function SpeechStripDOMOverlay({
             store={store}
             left={left}
             width={Math.max(right - left, 30)}
-            height={speechStripHeight}
+            height={height}
             onTranscribe={onTranscribe}
           />
         )
@@ -214,9 +223,9 @@ function SpeechStripDOMOverlay({
   )
 }
 
-// One voiced chunk's overlay: a transcribe button plus its transcript once one
-// lands. Subscribes to only this chunk's transcript, so a result re-renders this
-// row alone rather than the whole strip.
+// One voiced chunk's overlay: a transcribe button, transcript text, and
+// phoneme labels. Subscribes to only this chunk's transcript, so a result
+// re-renders this row alone rather than the whole strip.
 function ChunkOverlay({
   chunk,
   store,
@@ -233,23 +242,56 @@ function ChunkOverlay({
   onTranscribe?: (chunk: AnalysisChunk) => void
 }) {
   const [settings] = useSettings()
+  const plotPad = usePlotPad()
+  const timeToXDom = useTimeToX(InCanvas.No)
 
   const transcript = useTranscript(store, chunk)
   const result = transcript ? bestResult(transcript) : undefined
+  const phonemes = result?.phonemes
 
   return (
     <div
-      className="absolute flex items-center gap-1 overflow-hidden px-1 text-black"
+      className="absolute overflow-hidden text-black"
       style={{ left, width, top: 0, height }}
     >
-      {renderIcon()}
-      {result ? (
-        <span
-          className="truncate text-[10px] leading-tight"
-          title={result.text}
-        >
-          {result.text}
-        </span>
+      <div className="flex items-center gap-1 px-1" style={{ height: '50%' }}>
+        {renderIcon()}
+        {result ? (
+          <span
+            className="truncate text-[10px] leading-tight"
+            title={result.text}
+          >
+            {result.text}
+          </span>
+        ) : null}
+      </div>
+      {phonemes && phonemes.length > 0 ? (
+        <div className="relative" style={{ height: '50%' }}>
+          {phonemes.map((ph, i) => {
+            const phLeft = timeToXDom(ph.startMs / 1000) - plotPad.left - left
+            const phWidth =
+              timeToXDom(ph.endMs / 1000) - timeToXDom(ph.startMs / 1000)
+            if (phWidth <= 0) return null
+
+            return (
+              <div
+                key={i}
+                className="absolute flex items-center justify-center text-[10px] leading-tight overflow-hidden"
+                style={{
+                  left: phLeft,
+                  width: phWidth,
+                  top: 0,
+                  height: '100%',
+                  backgroundColor:
+                    i % 2 === 0 ? VOICED_DARKER10 : VOICED_LIGHTER10,
+                }}
+                title={ph.phonemeLabel}
+              >
+                {ph.phonemeLabel}
+              </div>
+            )
+          })}
+        </div>
       ) : null}
     </div>
   )
