@@ -261,6 +261,17 @@ function App() {
       onModelUnavailable: handleModelUnavailable,
     })
 
+  const handleTranscribeButton = useCallback(
+    (chunk: AnalysisChunk) => {
+      if (settings.transcriptionMode === 'disabled') {
+        setShowTranscriptionSettings(true)
+      } else {
+        requestTranscription(chunk)
+      }
+    },
+    [requestTranscription, settings.transcriptionMode],
+  )
+
   const upgradeVisibleTranscriptions = useUpgradeVisibleTranscriptions(
     transcriptStore,
     timelineState.viewportLeftSec,
@@ -635,7 +646,7 @@ function App() {
               <SpeechStrip
                 analysisMut={analysisMut}
                 store={transcriptStore}
-                onTranscribe={requestTranscription}
+                onTranscribe={handleTranscribeButton}
                 ref={speechStripRef}
               />
               {status.value !== 'recording' &&

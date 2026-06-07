@@ -494,7 +494,8 @@ export function TranscriptionSettingsModal({
         <DialogHeader>
           <DialogTitle>Transcription settings</DialogTitle>
           <DialogDescription>
-            Choose how Braat turns your speech into text.
+            Choose how Braat turns your speech into text. Language features
+            currently rely on <strong>North American English</strong> speech.
           </DialogDescription>
         </DialogHeader>
 

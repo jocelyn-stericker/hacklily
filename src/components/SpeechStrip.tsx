@@ -17,8 +17,8 @@
 
 import {
   AlertTriangle,
-  CaptionsOff,
   Cloud,
+  SpeechIcon,
   Loader2,
   Sparkle,
   Sparkles,
@@ -352,9 +352,19 @@ function ChunkOverlay({
       case 'none':
         if (settings.transcriptionMode === 'disabled') {
           return (
-            <StdPadding>
-              <CaptionsOff className="size-3" />
-            </StdPadding>
+            <Button
+              type="button"
+              className="cursor-pointer shrink-0 bg-transparent dark:border-white"
+              title="Set up transcription"
+              variant="outline"
+              size="icon-xs"
+              onClick={(e) => {
+                e.stopPropagation()
+                onTranscribe?.(chunk)
+              }}
+            >
+              <SpeechIcon className="size-3" />
+            </Button>
           )
         }
         return (
