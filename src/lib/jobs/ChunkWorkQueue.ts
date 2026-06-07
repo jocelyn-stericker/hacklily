@@ -182,15 +182,21 @@ export class ChunkWorkQueue {
     }
   }
 
+  #passQueued = false
   #pump(): void {
-    this.#chain = this.#chain
-      .then(() => this.#pass())
-      .catch((err: unknown) => {
-        console.warn(LOG, 'pass failed', err)
-      })
+    if (!this.#passQueued) {
+      this.#passQueued = true
+
+      this.#chain = this.#chain
+        .then(() => this.#pass())
+        .catch((err: unknown) => {
+          console.warn(LOG, 'pass failed', err)
+        })
+    }
   }
 
   async #pass(): Promise<void> {
+    this.#passQueued = false
     const generation = this.#generation
     // Resolved per kind this pass: a runner, or null once a kind has stood down
     // (resolve returned null, or a run threw ModelUnavailableError).

@@ -58,11 +58,6 @@ export type AlignInMessage = {
   endTime: number
   /** Transcript to align against (plain text, e.g. "butterfly"). */
   transcript: string
-  /**
-   * Optional onnxruntime wasm base URL (directory or wasmPaths map).
-   * Defaults to jsDelivr CDN at the installed ort version.
-   */
-  wasmPaths?: string | Record<string, string>
 }
 
 export type AlignOutMessage =
