@@ -57,6 +57,7 @@ export type AnalysisPatch = Partial<
     | 'f2'
     | 'f3'
     | 'speechProbability'
+    | 'lunaBrightness'
   >
 >
 

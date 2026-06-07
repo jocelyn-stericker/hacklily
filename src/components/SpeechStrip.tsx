@@ -45,6 +45,7 @@ import {
 import { useAnalysisChunks, useTranscript } from './TranscriptStore'
 import type { TranscriptStore } from './TranscriptStore'
 import { Button } from './ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 import { useColourScheme } from './useColourScheme'
 import { useSettings } from './useSettings'
 
@@ -223,6 +224,10 @@ function ChunkOverlayContainer({
   )
 }
 
+function toPercent(value: number): string {
+  return `${Math.round(value * 100)}%`
+}
+
 // One voiced chunk's overlay: a transcribe button, transcript text, and
 // phoneme labels. Subscribes to only this chunk's transcript, so a result
 // re-renders this row alone rather than the whole strip.
@@ -249,6 +254,16 @@ function ChunkOverlay({
   const result = transcript ? bestResult(transcript) : undefined
   const phonemes = result?.phonemes
 
+  const brightness = chunk.frames
+    .map((f) => f.lunaBrightness)
+    .filter((f) => f != null)
+    .reduce((m, a, _, d) => m + a / d.length, 0)
+
+  const topText =
+    brightness > 0
+      ? `${result?.text} (${toPercent(brightness)} bright)`
+      : result?.text
+
   return (
     <div
       className="absolute overflow-hidden text-black"
@@ -257,12 +272,14 @@ function ChunkOverlay({
       <div className="flex items-center gap-1 px-1" style={{ height: '50%' }}>
         {renderIcon()}
         {result ? (
-          <span
-            className="truncate text-[10px] leading-tight"
-            title={result.text}
-          >
-            {result.text}
-          </span>
+          <Tooltip>
+            <TooltipTrigger
+              render={<span className="truncate text-[10px] leading-tight" />}
+            >
+              {topText}
+            </TooltipTrigger>
+            <TooltipContent>{topText}</TooltipContent>
+          </Tooltip>
         ) : null}
       </div>
       {phonemes && phonemes.length > 0 ? (
@@ -274,21 +291,26 @@ function ChunkOverlay({
             if (phWidth <= 0) return null
 
             return (
-              <div
-                key={i}
-                className="absolute flex items-center justify-center text-[10px] leading-tight overflow-hidden"
-                style={{
-                  left: phLeft,
-                  width: phWidth,
-                  top: 0,
-                  height: '100%',
-                  backgroundColor:
-                    i % 2 === 0 ? VOICED_DARKER10 : VOICED_LIGHTER10,
-                }}
-                title={ph.phonemeLabel}
-              >
-                {ph.phonemeLabel}
-              </div>
+              <Tooltip key={i}>
+                <TooltipTrigger
+                  render={
+                    <div
+                      className="absolute flex items-center justify-center text-[10px] leading-tight overflow-hidden"
+                      style={{
+                        left: phLeft,
+                        width: phWidth,
+                        top: 0,
+                        height: '100%',
+                        backgroundColor:
+                          i % 2 === 0 ? VOICED_DARKER10 : VOICED_LIGHTER10,
+                      }}
+                    />
+                  }
+                >
+                  {ph.phonemeLabel}
+                </TooltipTrigger>
+                <TooltipContent>{ph.phonemeLabel}</TooltipContent>
+              </Tooltip>
             )
           })}
         </div>
@@ -307,9 +329,12 @@ function ChunkOverlay({
         )
       case 'error':
         return (
-          <StdPadding title={indicator.error}>
-            <AlertTriangle className="size-3 shrink-0 text-red-700" />
-          </StdPadding>
+          <Tooltip>
+            <TooltipTrigger render={<StdPadding />}>
+              <AlertTriangle className="size-3 shrink-0 text-red-700" />
+            </TooltipTrigger>
+            <TooltipContent>{indicator.error}</TooltipContent>
+          </Tooltip>
         )
       case 'done':
         if (indicator.tier === 'large') {
@@ -329,19 +354,25 @@ function ChunkOverlay({
         // small: offer an on-demand upgrade in large mode, else just mark it.
         if (settings.transcriptionMode === 'large') {
           return (
-            <Button
-              type="button"
-              className="cursor-pointer shrink-0 bg-transparent dark:border-white"
-              title="Improve transcription"
-              variant="outline"
-              size="icon-xs"
-              onClick={(e) => {
-                e.stopPropagation()
-                onTranscribe?.(chunk)
-              }}
-            >
-              <Sparkle className="size-3" />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    type="button"
+                    className="cursor-pointer shrink-0 bg-transparent dark:border-white"
+                    variant="outline"
+                    size="icon-xs"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onTranscribe?.(chunk)
+                    }}
+                  />
+                }
+              >
+                <Sparkle className="size-3" />
+              </TooltipTrigger>
+              <TooltipContent>Improve transcription</TooltipContent>
+            </Tooltip>
           )
         }
         return (
@@ -352,19 +383,25 @@ function ChunkOverlay({
       case 'none':
         if (settings.transcriptionMode === 'disabled') {
           return (
-            <Button
-              type="button"
-              className="cursor-pointer shrink-0 bg-transparent dark:border-white"
-              title="Set up transcription"
-              variant="outline"
-              size="icon-xs"
-              onClick={(e) => {
-                e.stopPropagation()
-                onTranscribe?.(chunk)
-              }}
-            >
-              <SpeechIcon className="size-3" />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    type="button"
+                    className="cursor-pointer shrink-0 bg-transparent dark:border-white"
+                    variant="outline"
+                    size="icon-xs"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onTranscribe?.(chunk)
+                    }}
+                  />
+                }
+              >
+                <SpeechIcon className="size-3" />
+              </TooltipTrigger>
+              <TooltipContent>Set up transcription</TooltipContent>
+            </Tooltip>
           )
         }
         return (
@@ -376,18 +413,9 @@ function ChunkOverlay({
   }
 }
 
-function StdPadding({
-  children,
-  title,
-}: {
-  children: React.ReactNode
-  title?: string
-}) {
+function StdPadding({ children }: { children?: React.ReactNode }) {
   return (
-    <div
-      className="inline-flex items-center justify-center border bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px border-transparent dark:bg-input/30 dark:/50 size-6 rounded-[min(var(--radius-md),10px)] shrink-0 bg-transparent"
-      title={title}
-    >
+    <div className="inline-flex items-center justify-center border bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px border-transparent dark:bg-input/30 dark:/50 size-6 rounded-[min(var(--radius-md),10px)] shrink-0 bg-transparent">
       {children}
     </div>
   )

@@ -40,6 +40,7 @@ export type AnalysisFrame = {
   f1: number | null // null when pitch undetected or formant not detected
   f2: number | null
   f3: number | null
+  lunaBrightness: number | null
 }
 
 export type AnalysisChunk = AnalysisParams & {

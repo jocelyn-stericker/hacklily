@@ -43,6 +43,81 @@ const LOG = '[AlignWorker]'
 const MODEL_URL =
   'https://huggingface.co/jstericker/CUPE-2i-ONNX/resolve/main/onnx/en_libri1000_ua01c_e4_val_GER%3D0.2186_q8.onnx'
 
+// The Cache API store transformers.js uses for model weights (its default
+// `env.cacheKey`). We reuse it so the CUPE weights live alongside — and are
+// managed/evicted together with — the transcription models, keyed by their
+// remote URL exactly as transformers.js keys its own entries.
+const TRANSFORMERS_CACHE_KEY = 'transformers-cache'
+
+// ---------------------------------------------------------------------------
+// Cached model download
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetch the model weights, serving them from (and populating) the shared
+ * transformers.js browser cache. Streams the download so progress can be
+ * reported. Falls back to a plain fetch if the Cache API is unavailable.
+ */
+async function fetchModelCached(
+  url: string,
+  onProgress?: (loaded: number, total: number) => void,
+): Promise<ArrayBuffer> {
+  let cache: Cache | undefined
+  try {
+    if (typeof caches !== 'undefined') {
+      cache = await caches.open(TRANSFORMERS_CACHE_KEY)
+    }
+  } catch (err) {
+    console.warn(`${LOG} cache unavailable`, err)
+  }
+
+  const cached = await cache?.match(url)
+  if (cached) {
+    return cached.arrayBuffer()
+  }
+
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error(
+      `Failed to download alignment model: ${response.status} ${response.statusText}`,
+    )
+  }
+
+  const total = Number(response.headers.get('content-length')) || 0
+  const reader = response.body?.getReader()
+  let bytes: Uint8Array<ArrayBuffer>
+  if (reader) {
+    const chunks: Uint8Array[] = []
+    let loaded = 0
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) break
+      chunks.push(value)
+      loaded += value.length
+      onProgress?.(loaded, total)
+    }
+    bytes = new Uint8Array(loaded)
+    let offset = 0
+    for (const chunk of chunks) {
+      bytes.set(chunk, offset)
+      offset += chunk.length
+    }
+  } else {
+    bytes = new Uint8Array(await response.arrayBuffer())
+    onProgress?.(bytes.length, bytes.length)
+  }
+
+  if (cache) {
+    try {
+      await cache.put(url, new Response(bytes, { headers: response.headers }))
+    } catch (err) {
+      console.warn(`${LOG} failed to cache alignment model`, err)
+    }
+  }
+
+  return bytes.buffer
+}
+
 // ---------------------------------------------------------------------------
 // Message types
 // ---------------------------------------------------------------------------
@@ -88,70 +163,34 @@ export type AlignWorker = Omit<Worker, 'postMessage' | 'onmessage'> & {
 declare function postMessage(message: AlignOutMessage): void
 
 // ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function sendProgress(stage: string, loaded?: number, total?: number): void {
-  postMessage({ type: 'progress', stage, loaded, total })
-}
-
-/** Stream a fetch with progress updates. */
-async function fetchWithProgress(
-  url: string,
-  label: string,
-): Promise<ArrayBuffer> {
-  sendProgress(`downloading-${label}`)
-  const res = await fetch(url)
-  if (!res.ok) {
-    throw new Error(`Failed to download ${url} (${res.status})`)
-  }
-
-  const total = Number(res.headers.get('content-length')) || undefined
-
-  if (!total || !res.body) {
-    const buf = await res.arrayBuffer()
-    sendProgress(`downloaded-${label}`, buf.byteLength, buf.byteLength)
-    return buf
-  }
-
-  const reader = res.body.getReader()
-  const chunks: Uint8Array[] = []
-  let loaded = 0
-  for (;;) {
-    const { done, value } = await reader.read()
-    if (done) break
-    chunks.push(value)
-    loaded += value.length
-    sendProgress(`downloading-${label}`, loaded, total)
-  }
-
-  const combined = new Uint8Array(loaded)
-  let pos = 0
-  for (const chunk of chunks) {
-    combined.set(chunk, pos)
-    pos += chunk.length
-  }
-  sendProgress(`downloaded-${label}`, loaded, total)
-  return combined.buffer
-}
-
-// ---------------------------------------------------------------------------
 // Lazy, cached state
 // ---------------------------------------------------------------------------
 
-let modelBuffer: ArrayBuffer | null = null
-let aligner: PhonemeTimestampAligner | null = null
+let _session: PhonemeTimestampAligner | undefined
+let _sessionPromise: Promise<PhonemeTimestampAligner> | undefined
 
-async function ensureModel(): Promise<void> {
-  if (modelBuffer) return
-
-  modelBuffer = await fetchWithProgress(MODEL_URL, 'model')
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-;(ort.env.wasm as any).wasmPaths = {
-  mjs: `https://cdn.jsdelivr.net/npm/onnxruntime-web@${LAST_GOOD_CPU_ORT_VERSION}/dist/ort-wasm-simd-threaded.mjs`,
-  wasm: `https://cdn.jsdelivr.net/npm/onnxruntime-web@${LAST_GOOD_CPU_ORT_VERSION}/dist/ort-wasm-simd-threaded.wasm`,
+function getSession(): Promise<PhonemeTimestampAligner> {
+  if (_session) return Promise.resolve(_session)
+  if (!_sessionPromise) {
+    // TODO: Obviously, this model parallelizes very well. It would be nice to configure more threads when
+    // the system allows.
+    ort.env.wasm.numThreads = 1
+    ort.env.wasm.wasmPaths = {
+      mjs: `https://cdn.jsdelivr.net/npm/onnxruntime-web@${LAST_GOOD_CPU_ORT_VERSION}/dist/ort-wasm-simd-threaded.mjs`,
+      wasm: `https://cdn.jsdelivr.net/npm/onnxruntime-web@${LAST_GOOD_CPU_ORT_VERSION}/dist/ort-wasm-simd-threaded.wasm`,
+    }
+    _sessionPromise = fetchModelCached(MODEL_URL, (loaded, total) => {
+      postMessage({ type: 'progress', stage: 'download', loaded, total })
+    })
+      .then((model) => createCupeSession(model))
+      .then((sess) => {
+        _session = new PhonemeTimestampAligner(sess, {
+          durationMax: 10,
+        })
+        return _session
+      })
+  }
+  return _sessionPromise
 }
 
 // ---------------------------------------------------------------------------
@@ -162,7 +201,6 @@ async function handleAlign(msg: AlignInMessage): Promise<void> {
   const { pcm, sampleRate, startTime, transcript } = msg
 
   // 1. Phonemize via espeak
-  sendProgress('espeak')
   const espeak = await getESpeak()
   const ipa = espeak.textToIPA(transcript, {
     sep: '|',
@@ -172,29 +210,15 @@ async function handleAlign(msg: AlignInMessage): Promise<void> {
   const phonemized = phonemizeTranscript(ipa)
 
   // 2. Download model
-  sendProgress('model')
   console.time(`${LOG} ensureModel`)
-  await ensureModel()
+  const session = await getSession()
   console.timeEnd(`${LOG} ensureModel`)
 
   // 3. Resample to 16 kHz
-  sendProgress('resampling')
   const audio = resample(pcm, sampleRate, 16000)
 
-  // 4. Configure onnxruntime-wasm and create the CUPE session / aligner
-  if (!aligner) {
-    sendProgress('configuring-ort')
-
-    sendProgress('creating-session')
-    const session = await createCupeSession(new Uint8Array(modelBuffer!))
-    aligner = new PhonemeTimestampAligner(session, {
-      durationMax: 10,
-    })
-  }
-
   // 5. Align (timestamps offset by startTime for absolute times)
-  sendProgress('aligning')
-  const result = await aligner.align(audio, phonemized.ph66, startTime)
+  const result = await session.align(audio, phonemized.ph66, startTime)
 
   postMessage({
     type: 'result',
@@ -213,3 +237,5 @@ self.onmessage = (ev: MessageEvent<AlignInMessage>): void => {
     })
   })
 }
+
+void getSession()

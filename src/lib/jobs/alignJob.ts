@@ -18,6 +18,7 @@
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
 import { readAudioSpan } from '#/lib/audio/AudioSpan'
 import type { AudioSpan } from '#/lib/audio/AudioSpan'
+import { getLunaBrightness } from '#/lib/ipa/acousticGenderSpace'
 import { ModelUnavailableError, TRANSCRIPT_TIERS } from '#/lib/transcription'
 import type { TranscriptResult, TranscriptTier } from '#/lib/transcription'
 import AlignWorkerCtor from '#/lib/workers/AlignWorker?worker'
@@ -135,6 +136,28 @@ async function alignOne(
         job: undefined,
       } satisfies TranscriptResult,
     })
+
+    const timeStepSec = chunk.timeStepSamples / chunk.sampleRate
+    for (let i = 0; i < chunk.frames.length; i++) {
+      const frame = chunk.frames[i]!
+      const frameMs = (chunk.startTimeSec + (i + 0.5) * timeStepSec) * 1000
+      const phoneme = phonemes.find(
+        (p) => p.startMs <= frameMs && frameMs < p.endMs,
+      )
+      if (
+        phoneme &&
+        phoneme.phonemeId !== 0 &&
+        phoneme.phonemeId !== 66 &&
+        frame.f1 !== null &&
+        frame.f2 !== null
+      ) {
+        frame.lunaBrightness = getLunaBrightness(
+          phoneme.phonemeLabel,
+          frame.f1,
+          frame.f2,
+        )
+      }
+    }
   } catch (err) {
     const cur = deps.sink.get(chunk)
     if (audio.signal.aborted) {

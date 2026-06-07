@@ -547,6 +547,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
       f1: data.f1 ?? null,
       f2: data.f2 ?? null,
       f3: data.f3 ?? null,
+      lunaBrightness: data.lunaBrightness ?? null,
     }
     this.#analysis?.frames.push(frame)!
     this.emit('append', { frame })

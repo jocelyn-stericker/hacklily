@@ -23,6 +23,7 @@ import { toast } from 'sonner'
 import { registerSW } from 'virtual:pwa-register'
 
 import { Toaster } from '#/components/ui/sonner'
+import { TooltipProvider } from '#/components/ui/tooltip'
 
 export const Route = createRootRoute({
   component: RootDocument,
@@ -49,9 +50,9 @@ function RootDocument() {
     })
   }, [])
   return (
-    <>
+    <TooltipProvider>
       <Outlet />
       <Toaster invert={true} />
-    </>
+    </TooltipProvider>
   )
 }

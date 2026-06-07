@@ -57,6 +57,7 @@ function makeFrame(
     f1: null,
     f2: null,
     f3: null,
+    lunaBrightness: null,
     rms: 0,
     speechProbability: 0,
     spectrum,

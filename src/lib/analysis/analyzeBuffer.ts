@@ -226,6 +226,7 @@ export async function analyzeBuffer(
       f1: pitchDetected ? latestValidF1 : null,
       f2: pitchDetected ? latestValidF2 : null,
       f3: pitchDetected ? latestValidF3 : null,
+      lunaBrightness: null,
       spectrum: specResult.data[x]!,
       rms,
       speechProbability: frameSpeechProb[x]!,

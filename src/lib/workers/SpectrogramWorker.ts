@@ -136,6 +136,7 @@ export async function runAnalysis(reader: AudioRingReader, sampleRate: number) {
         frameIndex: frameIndex++,
         spectrum: specBuf.slice(),
         rms,
+        lunaBrightness: null,
       } satisfies AppendFrameMessage)
     }
   }
