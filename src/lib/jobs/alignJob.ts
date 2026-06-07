@@ -16,6 +16,7 @@
  */
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
+import { readAudioSpan } from '#/lib/audio/AudioSpan'
 import type { AudioSpan } from '#/lib/audio/AudioSpan'
 import { ModelUnavailableError, TRANSCRIPT_TIERS } from '#/lib/transcription'
 import type { TranscriptResult, TranscriptTier } from '#/lib/transcription'
@@ -60,37 +61,11 @@ async function runAlignmentOnWorker(
   audio: AudioSpan,
   transcript: string,
 ): Promise<PhonemeTimestamp[]> {
-  const endTime = await new Promise<number>((resolve, reject) => {
-    const onAbort = () => {
-      cleanup()
-      reject(audio.signal.reason)
-    }
-    const cleanup = () => {
-      audio.signal.removeEventListener('abort', onAbort)
-    }
-    audio.signal.addEventListener('abort', onAbort)
-    if (audio.signal.aborted) {
-      cleanup()
-      reject(audio.signal.reason)
-      return
-    }
-    audio.endTime.then(
-      (value) => {
-        cleanup()
-        resolve(value)
-      },
-      (err) => {
-        cleanup()
-        reject(err)
-      },
-    )
-  })
+  const pcm = await readAudioSpan(audio)
 
   if (!worker) {
     worker = new AlignWorkerCtor()
   }
-
-  const ropeShare = audio.rope.shareRope()
 
   return new Promise<PhonemeTimestamp[]>((resolve, reject) => {
     const onMessage = (ev: MessageEvent<AlignOutMessage>) => {
@@ -108,9 +83,9 @@ async function runAlignmentOnWorker(
 
     worker!.postMessage({
       type: 'align',
-      rope: ropeShare,
+      pcm,
+      sampleRate: audio.rope.sampleRate,
       startTime: audio.startTime,
-      endTime,
       transcript,
     })
   })

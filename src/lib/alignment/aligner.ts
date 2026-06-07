@@ -92,6 +92,8 @@ export class PhonemeTimestampAligner {
   private readonly sampleRate: number
   private readonly windowSizeMs: number
   private readonly strideMs: number
+  private readonly windowSizeSamples: number
+  private readonly strideSamples: number
   private readonly wavLenMax: number
   private readonly segDurationMinSamples: number
   // Simplified pipeline: ignore_noise=true so long blank runs are dropped.
@@ -103,12 +105,32 @@ export class PhonemeTimestampAligner {
     this.sampleRate = config.sampleRate ?? 16000
     this.windowSizeMs = config.windowSizeMs ?? 120
     this.strideMs = config.strideMs ?? 80
+    this.windowSizeSamples = Math.floor(
+      (this.windowSizeMs * this.sampleRate) / 1000,
+    )
+    this.strideSamples = Math.floor((this.strideMs * this.sampleRate) / 1000)
     const durationMax = config.durationMax ?? 10
     this.wavLenMax = Math.floor(durationMax * this.sampleRate)
     this.segDurationMinSamples = Math.floor(SEG_DURATION_MIN * this.sampleRate)
   }
 
-  /** Port of chop_wav: rms-normalize then pad/truncate to wavLenMax. [upstream: main.cpp:1772 / bfaonnx.py:1291] */
+  /**
+   * Port of chop_wav: rms-normalize then truncate to wavLenMax.
+   * [upstream: main.cpp:1772 / bfaonnx.py:1291]
+   *
+   * Unlike upstream we do NOT zero-pad up to wavLenMax. The CUPE ONNX model has
+   * a dynamic window-count axis (export_cupe_to_onnx.py exports `audio_window`
+   * axis 0 as `batch_size`), so windowing only the real audio avoids running
+   * inference on pure-padding windows whose stitched frames are discarded by the
+   * spectralLen cut anyway. For audio longer than one window the stitched output
+   * is identical to the padded version (the extra windows only ever contribute
+   * to frames >= spectralLen). Very short clips are still padded up to two full
+   * windows so the stitch produces enough frames to cover spectralLen.
+   *
+   * `wavLen` is the real (valid) length — capped at wavLenMax — and continues to
+   * drive spectralLen and timestamp conversion. `wav.length` may exceed it only
+   * for the short-clip padding case.
+   */
   chopWav(audio: Float32Array): { wav: Float32Array; wavLen: number } {
     if (audio.length < this.segDurationMinSamples) {
       throw new Error(
@@ -116,13 +138,18 @@ export class PhonemeTimestampAligner {
       )
     }
     const normalized = rmsNormalize(audio)
-    let wavLen = normalized.length
+    const wavLen = Math.min(normalized.length, this.wavLenMax)
+    // Two full windows guarantee totalFrames >= spectralLen for sub-window clips.
+    const minSamples = this.windowSizeSamples + this.strideSamples
+    const bufLen = Math.min(this.wavLenMax, Math.max(wavLen, minSamples))
+
     let wav: Float32Array
-    if (wavLen > this.wavLenMax) {
-      wav = normalized.slice(0, this.wavLenMax)
-      wavLen = this.wavLenMax
+    if (normalized.length === bufLen) {
+      wav = normalized
+    } else if (normalized.length > bufLen) {
+      wav = normalized.slice(0, bufLen)
     } else {
-      wav = new Float32Array(this.wavLenMax)
+      wav = new Float32Array(bufLen)
       wav.set(normalized, 0)
     }
     return { wav, wavLen }
@@ -147,7 +174,9 @@ export class PhonemeTimestampAligner {
     const { logits, framesPerWindow, numClasses } =
       await this.predictor.predict(windows, numWindows, windowSize)
 
-    const originalAudioLength = wav.length // padded length, matches main.cpp
+    // Buffer length drives the window count for stitching; equals wavLen except
+    // for short clips padded up to two windows (see chopWav).
+    const originalAudioLength = wav.length
     const { combined, totalFrames } = stitchWindowPredictionsFlat(
       logits,
       numWindows,

@@ -16,9 +16,9 @@
  */
 /// <reference lib="webworker" />
 
-// Downloads the CUPE ONNX model from HuggingFace, accepts a rope with a time
-// range and transcript from the main thread, resamples to 16 kHz, and runs the
-// forced-alignment pipeline — all off the UI thread.
+// Downloads the CUPE ONNX model from HuggingFace, accepts PCM audio with a
+// sample rate and transcript from the main thread, resamples to 16 kHz, and runs
+// the forced-alignment pipeline — all off the UI thread.
 
 import {
   createCupeSession,
@@ -31,8 +31,6 @@ import type {
   PhonemizedTranscript,
 } from '#/lib/alignment/types'
 import { resample } from '#/lib/analysis/ResampleProcessor'
-import { SabRope } from '#/lib/audio/SabRope'
-import type { SabRopeShare } from '#/lib/audio/SabRope'
 import { getESpeak } from '#/lib/ipa/espeak'
 
 const LAST_GOOD_CPU_ORT_VERSION = '1.24.3'
@@ -51,12 +49,12 @@ const MODEL_URL =
 
 export type AlignInMessage = {
   type: 'align'
-  /** Shared audio rope containing the recording. */
-  rope: SabRopeShare
-  /** Start time in seconds within the rope. */
+  /** PCM audio data to align. */
+  pcm: Float32Array
+  /** Sample rate of the PCM data. */
+  sampleRate: number
+  /** Start time in seconds for offsetting timestamps. */
   startTime: number
-  /** End time in seconds within the rope. */
-  endTime: number
   /** Transcript to align against (plain text, e.g. "butterfly"). */
   transcript: string
 }
@@ -78,7 +76,7 @@ export type AlignOutMessage =
   | { type: 'error'; message: string }
 
 export type AlignWorker = Omit<Worker, 'postMessage' | 'onmessage'> & {
-  postMessage: (msg: AlignInMessage) => void
+  postMessage: (msg: AlignInMessage, transfer?: Transferable[]) => void
   onmessage: ((ev: MessageEvent<AlignOutMessage>) => unknown) | null
   addEventListener: (
     type: 'message',
@@ -161,7 +159,7 @@ async function ensureModel(): Promise<void> {
 // ---------------------------------------------------------------------------
 
 async function handleAlign(msg: AlignInMessage): Promise<void> {
-  const { rope: ropeShare, startTime, endTime, transcript } = msg
+  const { pcm, sampleRate, startTime, transcript } = msg
 
   // 1. Phonemize via espeak
   sendProgress('espeak')
@@ -179,17 +177,9 @@ async function handleAlign(msg: AlignInMessage): Promise<void> {
   await ensureModel()
   console.timeEnd(`${LOG} ensureModel`)
 
-  // 3. Read audio from rope and resample to 16 kHz
-  sendProgress('reading-audio')
-  const rope = new SabRope(ropeShare)
-  const startSample = Math.round(startTime * rope.sampleRate)
-  const endSample = Math.min(Math.round(endTime * rope.sampleRate), rope.length)
-  const count = Math.max(0, endSample - startSample)
-  const pcm = new Float32Array(count)
-  if (count > 0) rope.read(pcm, startSample, 0, count)
-
+  // 3. Resample to 16 kHz
   sendProgress('resampling')
-  const audio = resample(pcm, rope.sampleRate, 16000)
+  const audio = resample(pcm, sampleRate, 16000)
 
   // 4. Configure onnxruntime-wasm and create the CUPE session / aligner
   if (!aligner) {

@@ -77,7 +77,11 @@ describe('end-to-end vs Python (cupe_2i_q8.onnx)', { tags: ['e2e'] }, () => {
     const res = await aligner.align(audio, BUTTERFLY_PH66)
 
     expect(res.spectralLength).toBe(75)
-    expect(res.totalFrames).toBe(620)
+    // totalFrames now reflects the real-audio frame count rather than the
+    // 10s-padded 620: chopWav no longer zero-pads to wavLenMax, so stitching
+    // only spans the valid windows. The timestamps below are unchanged because
+    // decoding only ever used the first spectralLength (75) frames.
+    expect(res.totalFrames).toBe(75)
     expect(res.phonemeTimestamps).toHaveLength(PY_GOLDEN.length)
 
     res.phonemeTimestamps.forEach((p, i) => {
