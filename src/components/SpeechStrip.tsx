@@ -23,19 +23,12 @@ import {
   Sparkle,
   Sparkles,
 } from 'lucide-react'
-import {
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from 'react'
+import { useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
 import { VOICED_FILL, UNVOICED_FILL } from '#/lib/theme'
-import { bestResult } from '#/lib/transcription'
+import { bestResult, transcriptIndicator } from '#/lib/transcription'
 
 import {
   InCanvas,
@@ -44,6 +37,7 @@ import {
   useSpeechStripHeight,
   useTimeToX,
 } from './Plot'
+import { useAnalysisChunks, useTranscript } from './TranscriptStore'
 import type { TranscriptStore } from './TranscriptStore'
 import { Button } from './ui/button'
 import { useColourScheme } from './useColourScheme'
@@ -183,7 +177,7 @@ function SpeechStripDOMOverlay({
   // Render from the store's immutable snapshot. Its identity changes on each
   // structural change (append / split / merge), which is what drives the
   // re-render — the live chunks are mutated in place and never change identity.
-  const chunks = useSyncExternalStore(store.subscribeList, store.getChunkList)
+  const chunks = useAnalysisChunks(store)
 
   return (
     <div
@@ -240,16 +234,8 @@ function ChunkOverlay({
 }) {
   const [settings] = useSettings()
 
-  const subscribe = useCallback(
-    (onChange: () => void) => store.subscribeChunk(chunk, onChange),
-    [store, chunk],
-  )
-  const getSnapshot = useCallback(
-    () => store.getTranscript(chunk),
-    [store, chunk],
-  )
-  const transcript = useSyncExternalStore(subscribe, getSnapshot)
-  const text = transcript ? bestResult(transcript) : undefined
+  const transcript = useTranscript(store, chunk)
+  const result = transcript ? bestResult(transcript) : undefined
 
   return (
     <div
@@ -257,82 +243,84 @@ function ChunkOverlay({
       style={{ left, width, top: 0, height }}
     >
       {renderIcon()}
-      {text ? (
-        <span className="truncate text-[10px] leading-tight" title={text}>
-          {text}
+      {result ? (
+        <span
+          className="truncate text-[10px] leading-tight"
+          title={result.text}
+        >
+          {result.text}
         </span>
       ) : null}
     </div>
   )
 
   function renderIcon() {
-    if (transcript?.job?.status === 'error') {
-      return (
-        <StdPadding title={transcript.job.error}>
-          <AlertTriangle className="size-3 shrink-0 text-red-700" />
-        </StdPadding>
-      )
-    }
-
-    if (transcript?.job?.tier) {
-      return (
-        <StdPadding>
-          <Loader2 className="size-3 shrink-0 animate-spin" />
-        </StdPadding>
-      )
-    }
-
-    if (transcript?.results.large) {
-      return (
-        <StdPadding>
-          <Sparkles className="size-3" />
-        </StdPadding>
-      )
-    }
-    if (transcript?.results.cloud) {
-      return (
-        <StdPadding>
-          <Cloud className="size-3" />
-        </StdPadding>
-      )
-    }
-    if (transcript?.results.small) {
-      if (settings.transcriptionMode === 'large') {
+    const indicator = transcriptIndicator(transcript)
+    switch (indicator.kind) {
+      case 'transcribing':
         return (
-          <Button
-            type="button"
-            className="cursor-pointer shrink-0 bg-transparent dark:border-white"
-            title="Improve transcription"
-            variant="outline"
-            size="icon-xs"
-            onClick={(e) => {
-              e.stopPropagation()
-              onTranscribe?.(chunk)
-            }}
-          >
-            <Sparkle className="size-3" />
-          </Button>
+          <StdPadding>
+            <Loader2 className="size-3 shrink-0 animate-spin" />
+          </StdPadding>
         )
-      } else {
+      case 'error':
+        return (
+          <StdPadding title={indicator.error}>
+            <AlertTriangle className="size-3 shrink-0 text-red-700" />
+          </StdPadding>
+        )
+      case 'done':
+        if (indicator.tier === 'large') {
+          return (
+            <StdPadding>
+              <Sparkles className="size-3" />
+            </StdPadding>
+          )
+        }
+        if (indicator.tier === 'cloud') {
+          return (
+            <StdPadding>
+              <Cloud className="size-3" />
+            </StdPadding>
+          )
+        }
+        // small: offer an on-demand upgrade in large mode, else just mark it.
+        if (settings.transcriptionMode === 'large') {
+          return (
+            <Button
+              type="button"
+              className="cursor-pointer shrink-0 bg-transparent dark:border-white"
+              title="Improve transcription"
+              variant="outline"
+              size="icon-xs"
+              onClick={(e) => {
+                e.stopPropagation()
+                onTranscribe?.(chunk)
+              }}
+            >
+              <Sparkle className="size-3" />
+            </Button>
+          )
+        }
         return (
           <StdPadding>
             <Sparkle className="size-3" />
           </StdPadding>
         )
-      }
+      case 'none':
+        if (settings.transcriptionMode === 'disabled') {
+          return (
+            <StdPadding>
+              <CaptionsOff className="size-3" />
+            </StdPadding>
+          )
+        }
+        return (
+          <StdPadding>
+            <span />
+          </StdPadding>
+        )
     }
-    if (settings.transcriptionMode === 'disabled') {
-      return (
-        <StdPadding>
-          <CaptionsOff className="size-3" />
-        </StdPadding>
-      )
-    }
-    return (
-      <StdPadding>
-        <span />
-      </StdPadding>
-    )
   }
 }
 

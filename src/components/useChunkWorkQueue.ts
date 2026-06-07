@@ -34,7 +34,7 @@ import type { TranscriptStore } from './TranscriptStore'
  * v1 tier policy: only ever auto-run `small` or `cloud`. `large` falls back to
  * `small` for now (we'll wire on-demand large later); `disabled` runs nothing.
  */
-function autoTier(
+export function autoTier(
   mode: TranscriptionMode,
   upgrade: boolean,
 ): TranscriptTier | null {

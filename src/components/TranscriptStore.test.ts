@@ -96,22 +96,22 @@ describe('TranscriptStore per-chunk transcripts', () => {
     store.subscribeChunk(a, onA)
     store.subscribeChunk(b, onB)
 
-    store.setTranscript(a, { results: { small: 'hello' } })
+    store.setTranscript(a, { small: { text: 'hello' } })
 
     expect(onA).toHaveBeenCalledTimes(1)
     expect(onB).not.toHaveBeenCalled()
-    expect(store.getTranscript(a)).toEqual({ results: { small: 'hello' } })
+    expect(store.getTranscript(a)).toEqual({ small: { text: 'hello' } })
     expect(store.getTranscript(b)).toBeUndefined()
   })
 
   it('returns a stable snapshot reference until the transcript changes', () => {
     const store = new TranscriptStore()
     const a = chunk()
-    store.setTranscript(a, { results: { small: 'one' } })
+    store.setTranscript(a, { small: { text: 'one' } })
     const first = store.getTranscript(a)
     expect(store.getTranscript(a)).toBe(first) // same ref → no spurious re-render
 
-    store.setTranscript(a, { results: { small: 'two' } })
+    store.setTranscript(a, { small: { text: 'two' } })
     expect(store.getTranscript(a)).not.toBe(first)
   })
 
@@ -122,7 +122,7 @@ describe('TranscriptStore per-chunk transcripts', () => {
     const unsubscribe = store.subscribeChunk(a, onA)
 
     unsubscribe()
-    store.setTranscript(a, { results: { small: 'hello' } })
+    store.setTranscript(a, { small: { text: 'hello' } })
 
     expect(onA).not.toHaveBeenCalled()
   })
@@ -135,7 +135,7 @@ describe('TranscriptStore per-chunk transcripts', () => {
     store.subscribeChunk(a, one)
     store.subscribeChunk(a, two)
 
-    store.setTranscript(a, { results: { small: 'hi' } })
+    store.setTranscript(a, { small: { text: 'hi' } })
 
     expect(one).toHaveBeenCalledTimes(1)
     expect(two).toHaveBeenCalledTimes(1)

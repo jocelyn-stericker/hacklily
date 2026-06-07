@@ -118,8 +118,8 @@ describe('transcribe kind', () => {
     queue.scan()
     await settle(() => sink.get(c1) !== undefined)
 
-    expect(sink.get(c0)).toEqual({ results: { cloud: 'cloud text' } })
-    expect(sink.get(c1)).toEqual({ results: { cloud: 'cloud text' } })
+    expect(sink.get(c0)).toEqual({ cloud: { text: 'cloud text' } })
+    expect(sink.get(c1)).toEqual({ cloud: { text: 'cloud text' } })
     expect(sink.get(skip)).toBeUndefined() // unvoiced — never transcribed
   })
 
@@ -144,15 +144,15 @@ describe('transcribe kind', () => {
     // it waits (no result, an in-flight job).
     queue.scan()
     await new Promise((resolve) => setTimeout(resolve, 10))
-    expect(sink.get(c)?.results.cloud).toBeUndefined()
-    expect(sink.get(c)?.job?.status).toBe('transcribing')
+    expect(sink.get(c)?.cloud?.text).toBeUndefined()
+    expect(sink.get(c)?.cloud?.job?.status).toBe('transcribing')
 
     // Pause: seal the rope and let the queue finish its live span.
     rope.seal()
     queue.seal()
-    await settle(() => sink.get(c)?.results.cloud !== undefined)
+    await settle(() => sink.get(c)?.cloud?.text !== undefined)
 
-    expect(sink.get(c)).toEqual({ results: { cloud: 'cloud text' } })
+    expect(sink.get(c)).toEqual({ cloud: { text: 'cloud text' } })
   })
 
   it('does not re-transcribe a chunk already done at the tier', async () => {
@@ -162,7 +162,7 @@ describe('transcribe kind', () => {
 
     const c0 = chunk(5, true)
     const sink = makeSink()
-    sink.set(c0, { results: { cloud: 'already' } })
+    sink.set(c0, { cloud: { text: 'already' } })
     const queue = makeQueue({
       sink,
       getChunks: () => [c0],
@@ -176,7 +176,7 @@ describe('transcribe kind', () => {
     await new Promise((resolve) => setTimeout(resolve, 10))
 
     expect(calls).not.toHaveBeenCalled()
-    expect(sink.get(c0)).toEqual({ results: { cloud: 'already' } })
+    expect(sink.get(c0)).toEqual({ cloud: { text: 'already' } })
   })
 
   it('reverts via onModelUnavailable when the engine model is missing', async () => {
@@ -207,7 +207,7 @@ describe('transcribe kind', () => {
 
     const c0 = chunk(5, true)
     const sink = makeSink()
-    sink.set(c0, { results: { small: 'small text' } }) // already done at small
+    sink.set(c0, { small: { text: 'small text' } }) // already done at small
     const autoTier = (highQuality: boolean): TranscriptTier =>
       highQuality ? 'large' : 'small'
     const deps: Deps = {
@@ -223,10 +223,47 @@ describe('transcribe kind', () => {
     // The hook's `request`: record a queued upgrade, then poke the queue.
     requestUpgrade(deps, c0)
     queue.scan()
-    await settle(() => sink.get(c0)?.results.large !== undefined)
+    await settle(() => sink.get(c0)?.large?.text !== undefined)
 
     expect(sink.get(c0)).toEqual({
-      results: { small: 'small text', large: 'large text' },
+      small: { text: 'small text' },
+      large: { text: 'large text' },
+    })
+  })
+
+  it('runs a queued job at its own tier without redoing a higher one', async () => {
+    const { transcribeWithWorker } =
+      await import('#/lib/transcription/transcribeBundled')
+    const calls = vi.mocked(transcribeWithWorker)
+    calls.mockClear()
+    calls.mockResolvedValueOnce('small text')
+
+    // large is already done, and a small re-transcription got explicitly queued.
+    // The job must pick the (lower) queued tier, matching `needsWork`'s scan,
+    // and leave the existing large result untouched.
+    const c0 = chunk(5, true)
+    const sink = makeSink()
+    sink.set(c0, {
+      large: { text: 'large text' },
+      small: { job: { tier: 'small', status: 'queued' } },
+    })
+    const deps: Deps = {
+      sink,
+      getChunks: () => [c0],
+      getRopes: () => [sealedRope(100)],
+      getViewport: () => null,
+      autoTier: (highQuality) => (highQuality ? 'large' : 'small'),
+      onModelUnavailable: () => {},
+    }
+    const queue = makeQueue(deps)
+
+    queue.scan()
+    await settle(() => sink.get(c0)?.small?.text !== undefined)
+
+    expect(calls).toHaveBeenCalledTimes(1)
+    expect(sink.get(c0)).toEqual({
+      large: { text: 'large text' },
+      small: { text: 'small text' },
     })
   })
 })

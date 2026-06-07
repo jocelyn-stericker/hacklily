@@ -61,7 +61,6 @@ export function Toolbar({
   onOpenVowelChartSettings,
   showUpgradeAll,
   onUpgradeAll,
-  upgradeAllDisabled,
 }: {
   openFilePicker: () => void
   onNew: () => void
@@ -78,8 +77,7 @@ export function Toolbar({
   onOpenTranscriptionSettings: () => void
   onOpenVowelChartSettings: () => void
   showUpgradeAll: boolean
-  onUpgradeAll: () => void
-  upgradeAllDisabled: boolean
+  onUpgradeAll: (() => void) | null
 }) {
   return (
     <header className="flex align-center justify-end gap-1 p-2 flex-wrap">
@@ -92,8 +90,8 @@ export function Toolbar({
           variant="default"
           className="h-10 w-10 cursor-pointer"
           title="Upgrade all visible transcripts (T)"
-          disabled={upgradeAllDisabled}
-          onClick={onUpgradeAll}
+          disabled={!onUpgradeAll}
+          onClick={onUpgradeAll ?? undefined}
         >
           <Sparkles className="size-6" />
         </Button>

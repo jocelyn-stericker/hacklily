@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import type { PhonemeTimestamp } from '#/lib/alignment'
 import type { AudioSpan } from '#/lib/audio/AudioSpan'
 import type { LocalTranscriptionStatus } from '#/lib/browserFeatures'
 import { checkLocalTranscription } from '#/lib/browserFeatures'
@@ -37,38 +38,88 @@ export type TranscriptionEngine = 'cloud' | 'browser' | 'moonshine' | 'whisper'
 export type TranscriptTier = 'small' | 'large' | 'cloud'
 
 /**
- * A transcription job for a chunk: a tier requested beyond whatever is already
- * in `results`. At most one runs per chunk at a time — it's `queued` until it
- * starts, `transcribing` while it runs, and `error` if it fails (the chunk keeps
- * any lower-tier text it already had).
+ * Tiers ordered lowest to highest quality. This order is load-bearing: result
+ * preference and the order tiers are scanned for pending work both walk it.
+ */
+export const TRANSCRIPT_TIERS = ['small', 'cloud', 'large'] as const
+
+/**
+ * A transcription job at a tier: `queued` until it starts, `transcribing` while
+ * it runs, and `error` if it fails. It lives on that tier's `TranscriptResult`,
+ * so a chunk can carry a completed lower tier alongside a job for a higher one.
  */
 export type TranscriptJob =
   | { tier: TranscriptTier; status: 'queued' }
   | { tier: TranscriptTier; status: 'transcribing' }
   | { tier: TranscriptTier; status: 'error'; error: string }
 
-/**
- * A chunk's transcription state.
- *
- * `results` holds the text each completed tier produced. A higher tier is added
- * *alongside* the lower one rather than replacing it, so upgrading from small to
- * large keeps the small text available (e.g. to show while the upgrade runs).
- * `job`, when present, is the tier currently queued, transcribing, or failed.
- *
- * Representable states include:
- *  - small done:                { results: { small } }
- *  - small done, large queued:  { results: { small }, job: { tier: 'large', status: 'queued' } }
- *  - small done, large running: { results: { small }, job: { tier: 'large', status: 'transcribing' } }
- *  - upgraded to large:         { results: { small, large } }
- */
-export type ChunkTranscript = {
-  results: Partial<Record<TranscriptTier, string>>
+export type TranscriptResult = {
   job?: TranscriptJob
+  text?: string
+  phonemes?: PhonemeTimestamp[]
 }
 
-/** Highest-tier result text available, preferring large > cloud > small. */
-export function bestResult(t: ChunkTranscript): string | undefined {
-  return t.results.large ?? t.results.cloud ?? t.results.small
+/**
+ * A chunk's transcription state: each tier independently holds the text it
+ * produced (and, later, phonemes) and/or an in-flight job. A higher tier is
+ * added *alongside* the lower one rather than replacing it, so upgrading from
+ * small to large keeps the small text available (e.g. to show while the
+ * upgrade runs).
+ *
+ * Representable states include:
+ *  - small done:                { small: { text: 'won' } }
+ *  - small done, large queued:  { small: { text: 'won' }, large: { job: { tier: 'large', status: 'queued' } } }
+ *  - small done, large running: { small: { text: 'won' }, large: { job: { tier: 'large', status: 'transcribing' } } }
+ *  - upgraded to large:         { small: { text: 'won' }, large: { text: 'one' } }
+ */
+export type ChunkTranscript = Partial<Record<TranscriptTier, TranscriptResult>>
+
+/** Highest-tier result available, preferring large > cloud > small. */
+export function bestResult(t: ChunkTranscript): TranscriptResult | undefined {
+  if (t.large?.text !== undefined) {
+    return t.large
+  }
+
+  if (t.cloud?.text !== undefined) {
+    return t.cloud
+  }
+
+  if (t.small?.text !== undefined) {
+    return t.small
+  }
+}
+
+/**
+ * The most salient state of a transcript, for picking a status indicator.
+ *
+ * In-flight work takes priority over a failure, so an active higher tier isn't
+ * hidden behind a lower tier's stale error; among in-flight tiers the lowest
+ * wins (it completes first, so its spinner resolves soonest). With nothing in
+ * flight, a failure is surfaced — the highest tier's — otherwise the best
+ * completed tier (matching `bestResult`'s preference), or `none`.
+ */
+export type TranscriptIndicator =
+  | { kind: 'transcribing' }
+  | { kind: 'error'; error: string }
+  | { kind: 'done'; tier: TranscriptTier }
+  | { kind: 'none' }
+
+export function transcriptIndicator(
+  t: ChunkTranscript | undefined,
+): TranscriptIndicator {
+  for (const tier of TRANSCRIPT_TIERS) {
+    const job = t?.[tier]?.job
+    if (job && job.status !== 'error') return { kind: 'transcribing' }
+  }
+  for (let i = TRANSCRIPT_TIERS.length - 1; i >= 0; i -= 1) {
+    const job = t?.[TRANSCRIPT_TIERS[i]!]?.job
+    if (job?.status === 'error') return { kind: 'error', error: job.error }
+  }
+  for (let i = TRANSCRIPT_TIERS.length - 1; i >= 0; i -= 1) {
+    const tier = TRANSCRIPT_TIERS[i]!
+    if (t?.[tier]?.text !== undefined) return { kind: 'done', tier }
+  }
+  return { kind: 'none' }
 }
 
 /**
@@ -80,8 +131,8 @@ export function needsTier(
   t: ChunkTranscript | undefined,
   tier: TranscriptTier,
 ): boolean {
-  if (t?.results[tier] !== undefined) return false
-  if (t?.job && t.job.status !== 'error') return false
+  if (t?.[tier]?.text !== undefined) return false
+  if (t?.[tier]?.job && t[tier].job.status !== 'error') return false
   return true
 }
 

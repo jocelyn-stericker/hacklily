@@ -21,6 +21,7 @@ import {
   ModelUnavailableError,
   needsTier,
   runTranscriptionForEngine,
+  TRANSCRIPT_TIERS,
   tryResolveEngine,
 } from '#/lib/transcription'
 import type {
@@ -62,7 +63,11 @@ export function createTranscribeJob(deps: TranscribeJobDeps): ChunkWork {
     needsWork: (chunk) => {
       const t = deps.sink.get(chunk)
       // A queued job is an explicit upgrade request — always work, at its tier.
-      if (t?.job?.status === 'queued') return true
+      for (const tier of TRANSCRIPT_TIERS) {
+        if (t?.[tier]?.job?.status === 'queued') {
+          return true
+        }
+      }
       const tier = deps.autoTier(false)
       return tier !== null && needsTier(t, tier)
     },
@@ -87,9 +92,10 @@ export function requestUpgrade(
 ): void {
   const tier = deps.autoTier(true)
   if (!tier) return
-  const results = { ...deps.sink.get(chunk)?.results }
-  delete results[tier]
-  deps.sink.set(chunk, { results, job: { tier, status: 'queued' } })
+  deps.sink.set(chunk, {
+    ...deps.sink.get(chunk),
+    [tier]: { job: { tier, status: 'queued' } },
+  })
 }
 
 // Resolve a tier to a concrete engine context, or null to stand down. A null
@@ -108,17 +114,27 @@ async function transcribeOne(
   audio: AudioSpan,
   auto: TranscribeCtx,
 ): Promise<void> {
-  // A queued job is an upgrade request to a (possibly higher) tier; otherwise
-  // transcribe at the pass's auto tier.
-  const requested = deps.sink.get(chunk)?.job
-  const tier = requested?.status === 'queued' ? requested.tier : auto.tier
+  const prior = deps.sink.get(chunk)
+  // What tier should we transcribe at? Take the lowest queued upgrade (it
+  // completes first), matching the order `needsWork` scans; otherwise the pass's
+  // auto tier.
+  // TODO: move this into the scheduler
+  let tier: TranscriptTier | undefined
+  for (const iTier of TRANSCRIPT_TIERS) {
+    if (prior?.[iTier]?.job?.status === 'queued') {
+      tier = iTier
+      break
+    }
+  }
+  tier ??= auto.tier
 
   // Claim the chunk synchronously (before the first await) so a concurrent pass
   // skips it.
-  const prior = deps.sink.get(chunk)
   deps.sink.set(chunk, {
-    results: prior?.results ?? {},
-    job: { tier, status: 'transcribing' },
+    ...prior,
+    [tier]: {
+      job: { tier, status: 'transcribing' },
+    },
   })
 
   try {
@@ -136,28 +152,38 @@ async function transcribeOne(
     }
     const text = await runTranscriptionForEngine(engine, audio)
     const cur = deps.sink.get(chunk)
-    deps.sink.set(chunk, { results: { ...cur?.results, [tier]: text } })
+    deps.sink.set(chunk, { ...cur, [tier]: { text } })
   } catch (err) {
     if (audio.signal.aborted) {
       // Cancelled (re-chunked, or too short to be speech): leave untranscribed.
-      const cur = deps.sink.get(chunk)
-      deps.sink.set(chunk, { results: cur?.results ?? {} })
+      deps.sink.set(chunk, withoutTier(deps.sink.get(chunk), tier))
       return
     }
     if (err instanceof ModelUnavailableError) {
       // Drop the in-flight job; the queue reverts the mode.
-      const cur = deps.sink.get(chunk)
-      deps.sink.set(chunk, { results: cur?.results ?? {} })
+      deps.sink.set(chunk, withoutTier(deps.sink.get(chunk), tier))
       throw err
     }
     const cur = deps.sink.get(chunk)
     deps.sink.set(chunk, {
-      results: cur?.results ?? {},
-      job: {
-        tier,
-        status: 'error',
-        error: err instanceof Error ? err.message : 'Transcription failed',
+      ...cur,
+      [tier]: {
+        job: {
+          tier,
+          status: 'error',
+          error: err instanceof Error ? err.message : 'Transcription failed',
+        },
       },
     })
   }
+}
+
+/** A copy of `t` with `tier` removed entirely (no lingering empty result). */
+function withoutTier(
+  t: ChunkTranscript | undefined,
+  tier: TranscriptTier,
+): ChunkTranscript {
+  const next = { ...t }
+  delete next[tier]
+  return next
 }

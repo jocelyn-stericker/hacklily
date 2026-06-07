@@ -30,12 +30,12 @@ import { Toolbar } from '#/components/Toolbar'
 import { TranscriptStore } from '#/components/TranscriptStore'
 import { useAudioImport } from '#/components/useAudioImport'
 import { useAudioPlayback } from '#/components/useAudioPlayback'
-import { useChunkWorkQueue } from '#/components/useChunkWorkQueue'
-import { useHasUpgradableVisible } from '#/components/useHasUpgradableVisible'
+import { autoTier, useChunkWorkQueue } from '#/components/useChunkWorkQueue'
 import { useMicCapture } from '#/components/useMicCapture'
 import { usePreemptibleCallback } from '#/components/usePreemptibleCallback'
 import { useSettings } from '#/components/useSettings'
 import { useTimelineState } from '#/components/useTimelineState'
+import { useUpgradeVisibleTranscriptions } from '#/components/useUpgradeVisibleTranscriptions'
 import { ViewportShade } from '#/components/ViewportShade'
 import { VowelChart } from '#/components/VowelChart'
 import type { VowelChartHandle } from '#/components/VowelChart'
@@ -261,31 +261,15 @@ function App() {
       onModelUnavailable: handleModelUnavailable,
     })
 
-  const hasUpgradableVisibleRaw = useHasUpgradableVisible(
+  const upgradeVisibleTranscriptions = useUpgradeVisibleTranscriptions(
     transcriptStore,
     timelineState.viewportLeftSec,
     timelineState.viewportRightSec,
+    autoTier(settings.transcriptionMode, true),
+    requestTranscription,
   )
   const hasUpgradableVisible =
-    settings.transcriptionMode === 'large' && hasUpgradableVisibleRaw
-
-  const handleUpgradeAll = useCallback(() => {
-    const viewport = viewportRef.current
-    for (const chunk of analysisMutRef.current) {
-      if (!chunk.voiced) continue
-      const durationSec =
-        (chunk.frames.length * chunk.timeStepSamples) / chunk.sampleRate
-      const endSec = chunk.startTimeSec + durationSec
-      if (chunk.startTimeSec >= viewport.rightSec || endSec <= viewport.leftSec)
-        continue
-      const t = transcriptStore.getTranscript(chunk)
-      if (t?.results.small && !t.results.large && !t.results.cloud) {
-        if (!t.job || t.job.status === 'error') {
-          requestTranscription(chunk)
-        }
-      }
-    }
-  }, [requestTranscription, transcriptStore])
+    settings.transcriptionMode === 'large' && !!upgradeVisibleTranscriptions
 
   const [isExporting, setIsExporting] = useState(false)
 
@@ -541,10 +525,14 @@ function App() {
     't',
     () => {
       if (settings.transcriptionMode === 'large' && hasUpgradableVisible) {
-        handleUpgradeAll()
+        upgradeVisibleTranscriptions()
       }
     },
-    [settings.transcriptionMode, hasUpgradableVisible, handleUpgradeAll],
+    [
+      settings.transcriptionMode,
+      hasUpgradableVisible,
+      upgradeVisibleTranscriptions,
+    ],
   )
 
   const virtualWidthSec =
@@ -586,8 +574,7 @@ function App() {
           onOpenTranscriptionSettings={() => setShowTranscriptionSettings(true)}
           onOpenVowelChartSettings={() => setShowVowelChartSettings(true)}
           showUpgradeAll={settings.transcriptionMode === 'large'}
-          onUpgradeAll={handleUpgradeAll}
-          upgradeAllDisabled={!hasUpgradableVisible}
+          onUpgradeAll={upgradeVisibleTranscriptions}
         />
         <div className="relative flex flex-col grow overflow-hidden">
           <Plot

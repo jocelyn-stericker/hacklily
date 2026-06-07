@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { useCallback, useMemo, useRef, useSyncExternalStore } from 'react'
+
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
 import type { ChunkTranscript } from '#/lib/transcription'
 
@@ -124,4 +126,43 @@ export class TranscriptStore {
     this.#transcripts.delete(chunk)
     for (const cb of this.#chunkSubscribers.get(chunk) ?? []) cb()
   }
+}
+
+export function useAnalysisChunks(store: TranscriptStore) {
+  return useSyncExternalStore(store.subscribeList, store.getChunkList)
+}
+
+export function useTranscript(store: TranscriptStore, chunk: AnalysisChunk) {
+  const chunks = useMemo(() => [chunk], [chunk])
+  return useTranscripts(store, chunks)[0]
+}
+
+export function useTranscripts(
+  store: TranscriptStore,
+  chunks: readonly AnalysisChunk[],
+): (ChunkTranscript | undefined)[] {
+  const subscribe = useCallback(
+    (onChange: () => void) => {
+      const unsubs = chunks.map((c) => store.subscribeChunk(c, onChange))
+      return () => {
+        for (const u of unsubs) u()
+      }
+    },
+    [store, chunks],
+  )
+  const snapshotRef = useRef<(ChunkTranscript | undefined)[] | null>(null)
+  const getSnapshot = useCallback(() => {
+    const next = chunks.map((c) => store.getTranscript(c))
+    const prev = snapshotRef.current
+    if (
+      prev &&
+      prev.length === next.length &&
+      prev.every((v, i) => v === next[i])
+    ) {
+      return prev
+    }
+    snapshotRef.current = next
+    return next
+  }, [store, chunks])
+  return useSyncExternalStore(subscribe, getSnapshot)
 }
