@@ -20,6 +20,7 @@ import type { RefObject } from 'react'
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
 import type { SabRope } from '#/lib/audio/SabRope'
+import { createAlignJob } from '#/lib/jobs/alignJob'
 import { ChunkWorkQueue } from '#/lib/jobs/ChunkWorkQueue'
 import { priorityPickNext } from '#/lib/jobs/schedule'
 import type { Viewport } from '#/lib/jobs/schedule'
@@ -104,8 +105,12 @@ export function useChunkWorkQueue({
           autoTier: (upgrade) => autoTier(modeRef.current, upgrade),
           onModelUnavailable: () => onModelUnavailableRef.current(),
         }),
+        createAlignJob({
+          sink: transcribeSink,
+          onModelUnavailable: () => onModelUnavailableRef.current(),
+        }),
       ],
-      priorityPickNext(['transcribe']),
+      priorityPickNext(['align', 'transcribe']),
       {
         getChunks: () => analysisMutRef.current,
         getRopes: () => ropesRef.current,

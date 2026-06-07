@@ -51,6 +51,7 @@ export const TRANSCRIPT_TIERS = ['small', 'cloud', 'large'] as const
 export type TranscriptJob =
   | { tier: TranscriptTier; status: 'queued' }
   | { tier: TranscriptTier; status: 'transcribing' }
+  | { tier: TranscriptTier; status: 'aligning' }
   | { tier: TranscriptTier; status: 'error'; error: string }
 
 export type TranscriptResult = {

@@ -65,8 +65,10 @@ export class CupeOnnxPredictor {
     framesPerWindow: number
     numClasses: number
   }> {
+    console.time('run')
     const input = new ort.Tensor('float32', windows, [numWindows, windowSize])
     const outputs = await this.session.run({ [INPUT_NAME]: input })
+    console.timeEnd('run')
     const logitsTensor = outputs[PHONEME_LOGITS]
     if (!logitsTensor) {
       throw new Error(

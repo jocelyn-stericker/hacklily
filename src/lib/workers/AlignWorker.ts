@@ -36,6 +36,7 @@ import type { SabRopeShare } from '#/lib/audio/SabRope'
 import { getESpeak } from '#/lib/ipa/espeak'
 
 const LAST_GOOD_CPU_ORT_VERSION = '1.24.3'
+const LOG = '[AlignWorker]'
 
 // ---------------------------------------------------------------------------
 // Assets
@@ -174,7 +175,9 @@ async function handleAlign(msg: AlignInMessage): Promise<void> {
 
   // 2. Download model
   sendProgress('model')
+  console.time(`${LOG} ensureModel`)
   await ensureModel()
+  console.timeEnd(`${LOG} ensureModel`)
 
   // 3. Read audio from rope and resample to 16 kHz
   sendProgress('reading-audio')

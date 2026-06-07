@@ -17,6 +17,13 @@
 
 import { readAudioSpan } from '#/lib/audio/AudioSpan'
 import type { AudioSpan } from '#/lib/audio/AudioSpan'
+import TranscribeWorkerCtor from '#/lib/workers/TranscribeWorker?worker'
+import type {
+  TranscribeWorker,
+  TranscribeWorkerModel,
+  TranscribeWorkerOutMessage,
+} from '#/lib/workers/TranscribeWorker'
+
 // Runs a transformers.js speech model ("moonshine" or "whisper") in a web worker
 // so inference stays off the UI thread. A worker is created lazily per model on
 // first use; each posted chunk is matched to its result by id. These transcribe
@@ -25,12 +32,6 @@ import type { AudioSpan } from '#/lib/audio/AudioSpan'
 // the resident footprint small on memory-constrained devices, idle workers are
 // torn down after a spell of inactivity and rebuilt on the next request (the
 // weights come straight from the browser cache, so the rebuild is download-free).
-import TranscribeWorkerCtor from '#/lib/workers/TranscribeWorker?worker'
-import type {
-  TranscribeWorker,
-  TranscribeWorkerModel,
-  TranscribeWorkerOutMessage,
-} from '#/lib/workers/TranscribeWorker'
 
 const LOG = '[transcribeBundled]'
 

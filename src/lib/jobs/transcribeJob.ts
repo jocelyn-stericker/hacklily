@@ -179,7 +179,7 @@ async function transcribeOne(
 }
 
 /** A copy of `t` with `tier` removed entirely (no lingering empty result). */
-function withoutTier(
+export function withoutTier(
   t: ChunkTranscript | undefined,
   tier: TranscriptTier,
 ): ChunkTranscript {
