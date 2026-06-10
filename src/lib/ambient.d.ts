@@ -38,6 +38,7 @@ declare module '#/lib/workers/ImportWorker?worker' {
 
   const ImportWorkerConstructor: new () => ImportWorker
   export default ImportWorkerConstructor
+  export type { ImportWorker }
 }
 
 declare module '#/lib/workers/TranscribeWorker?worker' {

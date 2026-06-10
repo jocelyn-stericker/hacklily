@@ -234,7 +234,13 @@ export function useTimelineState(analysis: AnalysisChunk[]) {
   const handlePlaybackPositionChanged = useCallback((cursorSec: number) => {
     setTimelineState((old) => {
       const windowSec = old.viewportRightSec - old.viewportLeftSec
-      // TODO: only while recording?
+      // TODO: split this handler into separate playback and recording variants.
+      // During playback, cursorSec is driven by rope.length/sampleRate and can
+      // slightly exceed the analysis-based trackDurationSec, permanently inflating
+      // it. That inflated value then causes recording (which initialises its
+      // cursor from the analysis-based duration) to appear frozen at the start.
+      // Fix: clamp cursorSec to old.trackDurationSec here, and route recording
+      // cursor updates through a dedicated handler that does the Math.max extend.
       const trackDurationSec = Math.max(old.trackDurationSec, cursorSec)
       if (
         trackDurationSec === old.trackDurationSec &&

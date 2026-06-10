@@ -5,15 +5,15 @@
 import { useCallback, useEffect, useRef } from 'react'
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
-import { totalFrames } from '#/lib/analysis/AnalysisFrame'
+import { frameTimeSec, totalFrames } from '#/lib/analysis/AnalysisFrame'
 import { AudioRope } from '#/lib/audio/AudioRope'
 import ImportWorker from '#/lib/workers/ImportWorker?worker'
+import type { ImportWorker as ImportWorkerInstance } from '#/lib/workers/ImportWorker'
 
 async function importAudioFile(file: File): Promise<{
   analysis: AnalysisChunk[]
   ropes: AudioRope[]
 }> {
-  const audioImporter = new ImportWorker()
   console.time('import: decode')
   const arrayBuffer = await file.arrayBuffer()
 
@@ -36,26 +36,39 @@ async function importAudioFile(file: File): Promise<{
   }
   console.timeEnd('import: decode')
 
-  audioImporter.postMessage({ mono, fileSampleRate })
+  return importMonoPcm(mono, fileSampleRate)
+}
+
+// importMonoPcm takes ownership of mono
+export function importMonoPcm(
+  mono: Float32Array,
+  sampleRate: number,
+): Promise<{ analysis: AnalysisChunk[]; ropes: AudioRope[] }> {
   return new Promise((resolve, reject) => {
-    audioImporter.onmessage = ({ data }) => {
-      audioImporter.terminate()
-      if ('ok' in data) {
-        const chunks: AnalysisChunk[] = data.ok
-        const timeStepSamples = chunks[0]?.timeStepSamples ?? 0
-        const analysisSamples = timeStepSamples * totalFrames(chunks)
+    let audioImporter: ImportWorkerInstance | undefined
+    try {
+      audioImporter = new ImportWorker()
+      audioImporter.onerror = ({ message }) => {
+        audioImporter?.terminate()
 
-        // Mirror the mono PCM, trimmed to the analysed length, into a AudioRope --
-        // the single audio representation for playback, export, and
-        // transcription. One rope covers the whole clip; it never grows, so
-        // seal it in one shot (no spare buffer, appends forbidden).
-        const rope = new AudioRope(fileSampleRate)
-        rope.seal(mono.subarray(0, analysisSamples))
-
-        resolve({ analysis: chunks, ropes: [rope] })
-      } else {
-        reject(data.error)
+        reject(new Error(message))
       }
+      audioImporter.onmessage = ({ data }) => {
+        audioImporter?.terminate()
+
+        if ('ok' in data) {
+          resolve({ analysis: data.ok, ropes: [new AudioRope(data.rope)] })
+        } else {
+          reject(data.error)
+        }
+      }
+
+      audioImporter.postMessage({ mono, fileSampleRate: sampleRate }, [
+        mono.buffer,
+      ])
+    } catch (err) {
+      audioImporter?.terminate()
+      throw err
     }
   })
 }
