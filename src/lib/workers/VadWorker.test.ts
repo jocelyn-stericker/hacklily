@@ -20,15 +20,12 @@ const mockVadState = vi.hoisted(() => ({
   durationSec: 0.5,
 }))
 
-vi.mock('#/lib/audio/AudioRingReader', () => {
-  class AudioRingReader {
-    constructor(
-      _sab: SharedArrayBuffer,
-      _bufSamples: number,
-      _quantum: number,
-    ) {}
+vi.mock('#/lib/audio/AudioRopeReader', () => {
+  class AudioRopeReader {
+    constructor(_share: any, _quantum: number) {}
 
-    onOverrun?: (dropped: number) => void
+    grow(_grow: any): void {}
+    seal(): void {}
 
     async *[Symbol.asyncIterator]() {
       const totalChunks = Math.ceil(
@@ -40,7 +37,7 @@ vi.mock('#/lib/audio/AudioRingReader', () => {
     }
   }
 
-  return { AudioRingReader }
+  return { AudioRopeReader }
 })
 
 vi.mock('#/lib/analysis/ResampleProcessor', () => {
@@ -133,8 +130,16 @@ async function testRunAnalysis(
   mockVadState.defaultProb = defaultProb
   mockVadState.shouldFail = false
 
-  const { AudioRingReader } = await import('#/lib/audio/AudioRingReader')
-  const reader = new AudioRingReader(new SharedArrayBuffer(4096), 1024, QUANTUM)
+  const { AudioRopeReader } = await import('#/lib/audio/AudioRopeReader')
+  const reader = new AudioRopeReader(
+    {
+      type: 'sab-rope',
+      buffers: [new SharedArrayBuffer(4096)],
+      ctrlPtr: new SharedArrayBuffer(8),
+      sampleRate: 44100,
+    },
+    QUANTUM,
+  )
 
   const capturedMessages: any[] = []
   const originalPostMessage = globalThis.postMessage
@@ -298,10 +303,14 @@ describe('VadWorker', () => {
 
     it('handles VAD processing error gracefully', async () => {
       mockVadState.shouldFail = true
-      const { AudioRingReader } = await import('#/lib/audio/AudioRingReader')
-      const reader = new AudioRingReader(
-        new SharedArrayBuffer(4096),
-        1024,
+      const { AudioRopeReader } = await import('#/lib/audio/AudioRopeReader')
+      const reader = new AudioRopeReader(
+        {
+          type: 'sab-rope',
+          buffers: [new SharedArrayBuffer(4096)],
+          ctrlPtr: new SharedArrayBuffer(8),
+          sampleRate: 44100,
+        },
         QUANTUM,
       )
 

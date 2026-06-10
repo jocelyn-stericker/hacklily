@@ -28,6 +28,7 @@ function TestRecorder(
 let mockWorkerInstances: any[] = []
 let mockFormantWorkerInstances: any[] = []
 let mockVadWorkerInstances: any[] = []
+let mockRopeWriterWorkerInstances: any[] = []
 
 vi.mock('#/components/useSettings', async (importOriginal) => {
   const actual = await importOriginal<typeof SettingsModule>()
@@ -130,6 +131,49 @@ vi.mock('#/lib/workers/VadWorker?worker', () => {
   }
 })
 
+vi.mock('#/lib/workers/RopeWriterWorker?worker', () => {
+  class MockRopeWriterWorker {
+    postMessage = vi.fn()
+    terminate = vi.fn()
+    messageListeners: ((event: MessageEvent) => void)[] = []
+
+    addEventListener(
+      type: string,
+      listener: (event: any) => void,
+      options?: AddEventListenerOptions,
+    ) {
+      if (type !== 'message') return
+      this.messageListeners.push(listener)
+      options?.signal?.addEventListener('abort', () =>
+        this.removeEventListener(type, listener),
+      )
+    }
+
+    removeEventListener(type: string, listener: (event: any) => void) {
+      if (type !== 'message') return
+      const idx = this.messageListeners.indexOf(listener)
+      if (idx !== -1) this.messageListeners.splice(idx, 1)
+    }
+
+    dispatchMessage(data: any) {
+      const event = new MessageEvent('message', { data })
+      for (const listener of [...this.messageListeners]) {
+        listener(event)
+      }
+    }
+  }
+
+  return {
+    default: class {
+      constructor() {
+        const worker = new MockRopeWriterWorker()
+        mockRopeWriterWorkerInstances.push(worker)
+        return worker
+      }
+    },
+  }
+})
+
 // Mock the worker module
 vi.mock('#/lib/workers/SpectrogramWorker?worker', () => {
   class MockWorker {
@@ -203,16 +247,59 @@ describe('AudioRecorder', () => {
     return mockVadWorkerInstances[mockVadWorkerInstances.length - 1]
   }
 
-  const waitForMockWorker = async () => {
+  const getMockRopeWriterWorker = () => {
+    if (mockRopeWriterWorkerInstances.length === 0) {
+      throw new Error('No mock RopeWriter worker instances created')
+    }
+    return mockRopeWriterWorkerInstances[
+      mockRopeWriterWorkerInstances.length - 1
+    ]
+  }
+
+  const waitForConsumerInit = async () => {
+    await waitFor(() => {
+      const calls = getMockWorker().postMessage.mock.calls
+      const initCall = calls.find((c: any[]) => c[0]?.type === 'init')
+      if (!initCall) throw new Error('Waiting for SpectrogramWorker init')
+    })
+  }
+
+  const waitForMockRopeWriterWorker = async () => {
     await waitFor(
       () => {
-        if (mockWorkerInstances.length === 0) {
-          throw new Error('Waiting for worker creation')
+        if (mockRopeWriterWorkerInstances.length === 0) {
+          throw new Error('Waiting for RopeWriter worker creation')
         }
       },
       { timeout: 2000 },
     )
-    return getMockWorker()
+    return getMockRopeWriterWorker()
+  }
+
+  const dispatchRopeReady = async () => {
+    await waitFor(() => {
+      const ropeWriter = getMockRopeWriterWorker()
+      const calls = ropeWriter.postMessage.mock.calls
+      const initCall = calls.find((c: any[]) => c[0]?.type === 'init')
+      if (!initCall) throw new Error('Waiting for RopeWriter init')
+      const hasListener = ropeWriter.messageListeners?.length > 0
+      if (!hasListener) throw new Error('Waiting for RopeWriter listener')
+    })
+    getMockRopeWriterWorker().dispatchMessage({
+      type: 'rope-ready',
+      rope: {
+        type: 'sab-rope',
+        buffers: [new SharedArrayBuffer(4096)],
+        ctrlPtr: new SharedArrayBuffer(8),
+        sampleRate: 44100,
+      },
+      sampleRate: 44100,
+    })
+    await waitFor(() => {
+      const calls = getMockWorker().postMessage.mock.calls
+      const initCall = calls.find((c: any[]) => c[0]?.type === 'init')
+      if (!initCall) throw new Error('Waiting for SpectrogramWorker init')
+    })
   }
 
   let mockFrameIndex = 0
@@ -220,12 +307,6 @@ describe('AudioRecorder', () => {
     overrides?: Partial<Omit<ParamsMessage, 'type'>>,
   ): ParamsMessage => ({
     type: 'params',
-    rope: {
-      type: 'sab-rope',
-      buffers: [],
-      ctrlPtr: new SharedArrayBuffer(8),
-      sampleRate: 44100,
-    },
     timeStepSamples: 882,
     sampleRate: 44100,
     freqStepHz: 20,
@@ -257,6 +338,7 @@ describe('AudioRecorder', () => {
     mockWorkerInstances = []
     mockFormantWorkerInstances = []
     mockVadWorkerInstances = []
+    mockRopeWriterWorkerInstances = []
     mockFrameIndex = 0
 
     // Mock MediaStreamTrack
@@ -483,8 +565,8 @@ describe('AudioRecorder', () => {
       />,
     )
 
-    await waitForMockWorker()
-    getMockWorker().dispatchMessage(createMockParamsMessage())
+    await waitForMockRopeWriterWorker()
+    await dispatchRopeReady()
 
     await waitFor(() => {
       expect(mockSourceNode.connect).toHaveBeenCalledWith(mockWorkletNode)
@@ -514,12 +596,23 @@ describe('AudioRecorder', () => {
       expect(workletCall?.type).toBe('init')
       expect(workletCall?.sab).toBeInstanceOf(SharedArrayBuffer)
       expect(workletCall?.bufSamples).toBe(8192)
+    })
+
+    await waitForMockRopeWriterWorker()
+    await dispatchRopeReady()
+
+    await waitFor(() => {
+      const ropeWriterCall =
+        getMockRopeWriterWorker().postMessage.mock.calls[0]?.[0]
+      expect(ropeWriterCall?.type).toBe('init')
+      expect(ropeWriterCall?.sab).toBeInstanceOf(SharedArrayBuffer)
+      expect(ropeWriterCall?.sampleRate).toBe(44100)
+      expect(ropeWriterCall?.bufSamples).toBe(8192)
 
       const workerCall = getMockWorker().postMessage.mock.calls[0]?.[0]
       expect(workerCall?.type).toBe('init')
-      expect(workerCall?.sab).toBeInstanceOf(SharedArrayBuffer)
+      expect(workerCall?.rope).toBeDefined()
       expect(workerCall?.sampleRate).toBe(44100)
-      expect(workerCall?.bufSamples).toBe(8192)
     })
   })
 
@@ -541,7 +634,9 @@ describe('AudioRecorder', () => {
       />,
     )
 
-    await waitForMockWorker()
+    await waitForMockRopeWriterWorker()
+    await dispatchRopeReady()
+    await waitForConsumerInit()
 
     getMockWorker().dispatchMessage(createMockParamsMessage())
     const msg = createMockFrameMessage()
@@ -575,7 +670,9 @@ describe('AudioRecorder', () => {
       />,
     )
 
-    await waitForMockWorker()
+    await waitForMockRopeWriterWorker()
+    await dispatchRopeReady()
+    await waitForConsumerInit()
 
     getMockWorker().dispatchMessage(createMockParamsMessage())
     getMockWorker().dispatchMessage(createMockFrameMessage())
@@ -602,7 +699,9 @@ describe('AudioRecorder', () => {
       />,
     )
 
-    await waitForMockWorker()
+    await waitForMockRopeWriterWorker()
+    await dispatchRopeReady()
+    await waitForConsumerInit()
 
     const params = createMockParamsMessage({ timeStepSamples: 441 })
     const msg = createMockFrameMessage()
@@ -634,15 +733,20 @@ describe('AudioRecorder', () => {
       />,
     )
 
-    await waitForMockWorker()
+    await waitForMockRopeWriterWorker()
+    await dispatchRopeReady()
+    await waitForConsumerInit()
 
-    const pcm = new Float32Array([0.1, 0.2, 0.3])
-    getMockWorker().dispatchMessage({ type: 'ended', pcm })
+    getMockWorker().dispatchMessage({ type: 'ended' })
+    getMockFormantWorker().dispatchMessage({ type: 'ended' })
+    getMockVadWorker().dispatchMessage({ type: 'ended' })
+    getMockRopeWriterWorker().dispatchMessage({ type: 'ended' })
 
     await waitFor(() => {
       expect(getMockWorker().terminate).toHaveBeenCalled()
       expect(getMockFormantWorker().terminate).toHaveBeenCalled()
       expect(getMockVadWorker().terminate).toHaveBeenCalled()
+      expect(getMockRopeWriterWorker().terminate).toHaveBeenCalled()
     })
   })
 
@@ -690,8 +794,8 @@ describe('AudioRecorder', () => {
       />,
     )
 
-    await waitForMockWorker()
-    getMockWorker().dispatchMessage(createMockParamsMessage())
+    await waitForMockRopeWriterWorker()
+    await dispatchRopeReady()
     await waitFor(() => {
       expect(mockSourceNode.connect).toHaveBeenCalled()
     })
@@ -724,8 +828,8 @@ describe('AudioRecorder', () => {
       />,
     )
 
-    await waitForMockWorker()
-    getMockWorker().dispatchMessage(createMockParamsMessage())
+    await waitForMockRopeWriterWorker()
+    await dispatchRopeReady()
     await waitFor(() => {
       expect(mockSourceNode.connect).toHaveBeenCalled()
     })
@@ -806,7 +910,9 @@ describe('AudioRecorder', () => {
       />,
     )
 
-    await waitForMockWorker()
+    await waitForMockRopeWriterWorker()
+    await dispatchRopeReady()
+    await waitForConsumerInit()
 
     const onAppend2 = vi.fn()
     const onRecordingComplete2 = vi.fn()
@@ -823,10 +929,8 @@ describe('AudioRecorder', () => {
       />,
     )
 
-    // Wait a tick for the ref updates to happen
     await waitFor(
       () => {
-        // This just waits for the next render cycle
         expect(true).toBe(true)
       },
       { timeout: 100 },
@@ -860,33 +964,38 @@ describe('AudioRecorder', () => {
       />,
     )
 
-    await waitForMockWorker()
+    await waitForMockRopeWriterWorker()
+    await dispatchRopeReady()
+    await waitForConsumerInit()
     getMockWorker().dispatchMessage(createMockParamsMessage())
     getMockWorker().dispatchMessage(createMockFrameMessage())
-    const pcm = new Float32Array([0.1])
-    getMockWorker().dispatchMessage({ type: 'ended', pcm })
+    getMockWorker().dispatchMessage({ type: 'ended' })
 
-    // recordingComplete fires immediately -- before formant/vad 'ended'
     await waitFor(() => {
       expect(onRecordingComplete).toHaveBeenCalled()
     })
 
-    // teardown (terminate) must not have fired yet -- formant and vad are still pending
-    expect(getMockWorker().terminate).toHaveBeenCalled() // spectrogram terminates itself
+    expect(getMockWorker().terminate).toHaveBeenCalled()
     expect(getMockFormantWorker().terminate).not.toHaveBeenCalled()
     expect(getMockVadWorker().terminate).not.toHaveBeenCalled()
+    expect(getMockRopeWriterWorker().terminate).not.toHaveBeenCalled()
 
-    // formant finishes -- teardown still blocked by vad
     getMockFormantWorker().dispatchMessage({ type: 'ended' })
     await waitFor(() => {
       expect(getMockFormantWorker().terminate).toHaveBeenCalled()
     })
     expect(getMockVadWorker().terminate).not.toHaveBeenCalled()
+    expect(getMockRopeWriterWorker().terminate).not.toHaveBeenCalled()
 
-    // vad finishes -- teardown fires
     getMockVadWorker().dispatchMessage({ type: 'ended' })
     await waitFor(() => {
       expect(getMockVadWorker().terminate).toHaveBeenCalled()
+    })
+    expect(getMockRopeWriterWorker().terminate).not.toHaveBeenCalled()
+
+    getMockRopeWriterWorker().dispatchMessage({ type: 'ended' })
+    await waitFor(() => {
+      expect(getMockRopeWriterWorker().terminate).toHaveBeenCalled()
     })
   })
 
@@ -908,15 +1017,20 @@ describe('AudioRecorder', () => {
       />,
     )
 
-    await waitForMockWorker()
+    await waitForMockRopeWriterWorker()
+    await dispatchRopeReady()
+    await waitForConsumerInit()
 
-    const pcm = new Float32Array([])
-    getMockWorker().dispatchMessage({ type: 'ended', pcm })
+    getMockWorker().dispatchMessage({ type: 'ended' })
+    getMockFormantWorker().dispatchMessage({ type: 'ended' })
+    getMockVadWorker().dispatchMessage({ type: 'ended' })
+    getMockRopeWriterWorker().dispatchMessage({ type: 'ended' })
 
     await waitFor(() => {
       expect(getMockWorker().terminate).toHaveBeenCalled()
       expect(getMockFormantWorker().terminate).toHaveBeenCalled()
       expect(getMockVadWorker().terminate).toHaveBeenCalled()
+      expect(getMockRopeWriterWorker().terminate).toHaveBeenCalled()
       expect(onRecordingComplete).not.toHaveBeenCalled()
     })
   })

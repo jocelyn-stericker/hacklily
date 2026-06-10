@@ -5,16 +5,16 @@
 /// <reference lib="webworker" />
 
 import { SpectrogramStreamProcessor } from '#/lib/analysis/SpectrogramProcessor'
-import { AudioRingReader } from '#/lib/audio/AudioRingReader'
-import { SabRope } from '#/lib/audio/SabRope'
-import type { SabRopeGrow, SabRopeSeal } from '#/lib/audio/SabRope'
+import { AudioRopeReader } from '#/lib/audio/AudioRopeReader'
 
 import type {
   AppendFrameMessage,
   ParamsMessage,
   PatchFrameMessage,
   WorkerEndedMessage,
-  SpectrogramInitMessage,
+  RopeConsumerInitMessage,
+  RopeGrowMessage,
+  RopeSealMessage,
 } from './workerMessages'
 
 const LOG = '[SpectrogramWorker]'
@@ -26,15 +26,17 @@ declare function postMessage(
 
 const QUANTUM = 128
 
-export type SpectrogramWorkerInMessage = SpectrogramInitMessage | null
+export type SpectrogramWorkerInMessage =
+  | RopeConsumerInitMessage
+  | RopeGrowMessage
+  | RopeSealMessage
+  | null
 
 export type SpectrogramWorkerOutMessage =
   | ParamsMessage
   | AppendFrameMessage
   | PatchFrameMessage
   | WorkerEndedMessage
-  | SabRopeGrow
-  | SabRopeSeal
 
 export type SpectrogramWorker = Omit<Worker, 'postMessage' | 'onmessage'> & {
   postMessage: (msg: SpectrogramWorkerInMessage) => null
@@ -46,22 +48,24 @@ export type SpectrogramWorker = Omit<Worker, 'postMessage' | 'onmessage'> & {
   ) => void
 }
 
-self.onmessage = async ({ data }: MessageEvent<SpectrogramWorkerInMessage>) => {
-  if (data?.type !== 'init') {
+let ropeReader: AudioRopeReader | null = null
+
+self.onmessage = ({ data }: MessageEvent<SpectrogramWorkerInMessage>) => {
+  if (!data) return
+  if (data.type === 'init') {
+    ropeReader = new AudioRopeReader(data.rope, QUANTUM)
+    void runAnalysis(ropeReader, data.sampleRate).then(() => {
+      postMessage({ type: 'ended' })
+      console.log(LOG, 'complete')
+    })
     return
   }
-
-  const reader = new AudioRingReader(data.sab, data.bufSamples, QUANTUM)
-  reader.onOverrun = (dropped) => {
-    console.warn(LOG, `ring buffer overrun: ${dropped} samples lost`)
-  }
-
-  await runAnalysis(reader, data.sampleRate)
-  postMessage({ type: 'ended' })
-  console.log(LOG, 'complete')
+  if (!ropeReader) return
+  if (data.type === 'rope-grow') ropeReader.grow(data.grow)
+  else ropeReader.seal()
 }
 
-export async function runAnalysis(reader: AudioRingReader, sampleRate: number) {
+export async function runAnalysis(reader: AudioRopeReader, sampleRate: number) {
   const spec = new SpectrogramStreamProcessor(
     {
       effectiveWindowLengthSec: 0.005,
@@ -73,9 +77,6 @@ export async function runAnalysis(reader: AudioRingReader, sampleRate: number) {
     sampleRate,
   )
 
-  const rope = new SabRope(sampleRate)
-  const share = rope.shareRope()
-
   const sp = spec.params
   postMessage({
     type: 'params',
@@ -83,7 +84,6 @@ export async function runAnalysis(reader: AudioRingReader, sampleRate: number) {
     freqStepHz: sp.actualFreqStepHz,
     timeStepSamples: Math.round(sp.actualTimeStepSec * sampleRate),
     sampleRate,
-    rope: share,
   } satisfies ParamsMessage)
   const specBuf = new Float32Array(sp.numFreqs)
 
@@ -92,28 +92,18 @@ export async function runAnalysis(reader: AudioRingReader, sampleRate: number) {
   const preEmphBuf = new Float32Array(QUANTUM)
 
   let frameIndex = 0
-  let bufferLength = share.buffers.length
 
   for await (const inp of reader) {
     console.assert(inp.length === QUANTUM)
-    rope.append(inp)
-    const grow = rope.shareGrowth(bufferLength)
-    if (grow) {
-      bufferLength += grow.buffers.length
-      postMessage(grow)
-    }
 
-    // Pre-emphasise into scratch buffer
     const alpha = preEmphFactor
     const pe = preEmphBuf
     pe[0] = inp[0]! - alpha * preEmphPrev
     for (let i = 1; i < inp.length; i++) pe[i] = inp[i]! - alpha * inp[i - 1]!
     preEmphPrev = inp[inp.length - 1]!
 
-    // Feed pre-emphasised audio to spectrogram
     spec.feed(pe)
 
-    // Emit one AppendFrameMessage per ready spectrogram frame
     let rms = 0
     for (const sample of inp) rms += sample * sample
     rms = Math.sqrt(rms / inp.length)
@@ -128,17 +118,8 @@ export async function runAnalysis(reader: AudioRingReader, sampleRate: number) {
       } satisfies AppendFrameMessage)
     }
   }
-
-  // The recording is done growing: seal locally (dropping our spare buffer) and
-  // tell consumers to drop theirs. Ordered after the last `shareGrowth`, so the
-  // consumer holds every real buffer before it trims.
-  rope.seal()
-  postMessage({ type: 'sab-rope-seal' } satisfies SabRopeSeal)
 }
 
 self.addEventListener('unhandledrejection', function (event) {
-  // the event object has two special properties:
-  // event.promise - the promise that generated the error
-  // event.reason  - the unhandled error object
   throw event.reason
 })

@@ -7,29 +7,25 @@ import type {
   AnalysisParams,
 } from '#/lib/analysis/AnalysisFrame'
 import type { SpeechDecision } from '#/lib/analysis/VadProcessor'
-import type { SabRopeShare } from '#/lib/audio/SabRope'
+import type { SabRopeGrow, SabRopeShare } from '#/lib/audio/SabRope'
 
-export interface SpectrogramInitMessage {
+export interface RopeConsumerInitMessage {
   type: 'init'
-  sab: SharedArrayBuffer
+  rope: SabRopeShare
   sampleRate: number
-  bufSamples: number
 }
 
-// FormantWorker and VadWorker also receive timeStepSamples (forwarded from
-// SpectrogramWorker's ParamsMessage) so they can align their output to frames.
-export type FormantInitMessage = SpectrogramInitMessage & {
-  timeStepSamples: number
+export type RopeGrowMessage = {
+  type: 'rope-grow'
+  grow: SabRopeGrow
 }
 
-export type VadInitMessage = SpectrogramInitMessage & {
-  timeStepSamples: number
+export type RopeSealMessage = {
+  type: 'rope-seal'
 }
 
-// Emitted once per session (or whenever params change) before the first frame.
 export type ParamsMessage = {
   type: 'params'
-  rope: SabRopeShare
 } & AnalysisParams
 
 type AnalysisCore = Pick<AnalysisFrame, 'spectrum' | 'rms'>
@@ -48,25 +44,17 @@ export type AnalysisPatch = Partial<
   >
 >
 
-// Emitted once per spectrogram frame. spectrum/rms are always present;
-// voiced/pitch/formant/vad fields are optional and may arrive later via PatchFrameMessage.
-// frameIndex is session-local (resets to 0 each recording session).
 export type AppendFrameMessage = {
   type: 'frame'
   frameIndex: number
 } & AnalysisCore &
   AnalysisPatch
 
-// Overwrites specific fields of a previously emitted frame.
-// frameIndex is session-local, matching the index in the preceding ParamsMessage's chunk.
 export type PatchFrameMessage = {
   type: 'patch'
   frameIndex: number
 } & AnalysisPatch
 
-// Batched patch covering a contiguous run of frames revised together -- emitted
-// by the VAD worker once per gate push/end, where the gate only ever flips a
-// contiguous run to a single value. `frames` carries one decision per frame.
 export type PatchFramesMessage = {
   type: 'patch'
   frames: SpeechDecision[]

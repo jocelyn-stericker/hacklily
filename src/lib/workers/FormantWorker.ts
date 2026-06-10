@@ -8,13 +8,15 @@ import { FormantStreamProcessor } from '#/lib/analysis/FormantProcessor'
 import type { FormantFrame } from '#/lib/analysis/FormantProcessor'
 import { PitchProcessor } from '#/lib/analysis/PitchProcessor'
 import { ResamplerStreamProcessor } from '#/lib/analysis/ResampleProcessor'
-import { AudioRingReader } from '#/lib/audio/AudioRingReader'
+import { AudioRopeReader } from '#/lib/audio/AudioRopeReader'
 
 import type {
   WorkerEndedMessage,
   ParamsMessage,
   PatchFrameMessage,
-  FormantInitMessage,
+  RopeConsumerInitMessage,
+  RopeGrowMessage,
+  RopeSealMessage,
 } from './workerMessages'
 
 declare function postMessage(
@@ -25,14 +27,17 @@ declare function postMessage(
 const QUANTUM = 128
 const FORMANT_RATE = 11000
 const LOG = '[FormantWorker]'
+const TIME_STEP_SEC = 0.002
 
-// Run pitch every PITCH_INTERVAL quanta and emit patches for frames that
-// have at least PITCH_EMIT_SECS of future audio as Viterbi context.
 const PITCH_INTERVAL = 16
 const PITCH_EMIT_SECS = 0.05
 const PITCH_BUF_SECS = PITCH_EMIT_SECS * 2
 
-export type FormantWorkerInMessage = FormantInitMessage | null
+export type FormantWorkerInMessage =
+  | RopeConsumerInitMessage
+  | RopeGrowMessage
+  | RopeSealMessage
+  | null
 
 export type FormantWorkerOutMessage =
   | ParamsMessage
@@ -49,19 +54,22 @@ export type FormantWorker = Omit<Worker, 'postMessage' | 'onmessage'> & {
   ) => void
 }
 
-self.onmessage = async ({ data }: MessageEvent<FormantWorkerInMessage>) => {
-  if (data?.type !== 'init') {
+let ropeReader: AudioRopeReader | null = null
+
+self.onmessage = ({ data }: MessageEvent<FormantWorkerInMessage>) => {
+  if (!data) return
+  if (data.type === 'init') {
+    ropeReader = new AudioRopeReader(data.rope, QUANTUM)
+    const timeStepSamples = Math.round(TIME_STEP_SEC * data.sampleRate)
+    void runAnalysis(ropeReader, data.sampleRate, timeStepSamples).then(() => {
+      postMessage({ type: 'ended' })
+      console.log(LOG, 'complete')
+    })
     return
   }
-
-  const reader = new AudioRingReader(data.sab, data.bufSamples, QUANTUM)
-  reader.onOverrun = (dropped) => {
-    console.warn(LOG, `ring buffer overrun: ${dropped} samples lost`)
-  }
-
-  await runAnalysis(reader, data.sampleRate, data.timeStepSamples)
-  postMessage({ type: 'ended' })
-  console.log(LOG, 'complete')
+  if (!ropeReader) return
+  if (data.type === 'rope-grow') ropeReader.grow(data.grow)
+  else ropeReader.seal()
 }
 
 interface FrameFormant {
@@ -78,7 +86,7 @@ interface PendingFormant {
 }
 
 export async function runAnalysis(
-  reader: AudioRingReader,
+  reader: AudioRopeReader,
   sampleRate: number,
   timeStepSamples: number,
 ): Promise<void> {
@@ -99,8 +107,6 @@ export async function runAnalysis(
   const pitch = new PitchProcessor({ timeStepSec: 0 }, sampleRate)
   const pitchBufSamples = Math.round(sampleRate * PITCH_BUF_SECS)
   const pitchEmitSamples = Math.round(sampleRate * PITCH_EMIT_SECS)
-  // Rolling buffer; newest QUANTUM samples are appended to the end each iteration.
-  // Starts as zeros -- silence at the beginning is harmless for pitch detection.
   const pitchBuf = new Float32Array(pitchBufSamples)
 
   let quantumCount = 0
@@ -112,17 +118,12 @@ export async function runAnalysis(
   let latestValidF2: number | null = null
   let latestValidF3: number | null = null
 
-  // Per-frame formant state, recorded as frames are counted out
   const frameFormants: FrameFormant[] = []
   const pendingFormants: PendingFormant[] = []
   let formantPtr = 0
 
-  // Run pitch analysis on the current buffer and emit patches for all spec
-  // frames whose midpoint has at least pitchEmitSamples of future context.
-  // Pass finalFlush=true to emit all remaining frames regardless of context.
   function emitPitchPatches(finalFlush: boolean): void {
     const pr = pitch.analyze(pitchBuf)
-    // Absolute sample of the pitch buffer's first sample
     const bufStartSample = totalSamples - pitchBufSamples
     const safeSampleLimit = finalFlush
       ? totalSamples
@@ -133,7 +134,6 @@ export async function runAnalysis(
     )
 
     for (let fi = lastEmittedFrame; fi < safeFrame; fi++) {
-      // Time of this spec frame's midpoint relative to the start of the pitch buffer
       const relTimeSec =
         ((fi + 0.5) * timeStepSamples - bufStartSample) / sampleRate
       let f0 = 0
@@ -160,17 +160,14 @@ export async function runAnalysis(
   }
 
   for await (const inp of reader) {
-    // Maintain rolling pitch buffer: shift left by QUANTUM, append new samples
     pitchBuf.copyWithin(0, QUANTUM)
     pitchBuf.set(inp, pitchBufSamples - QUANTUM)
     totalSamples += inp.length
 
-    // Feed raw audio through resampler -> formant chain
     resampler.feed(inp)
     const nDrain = resampler.drain(drainBuf)
     if (nDrain > 0) formant.feed(drainBuf.subarray(0, nDrain))
 
-    // Buffer formant frames for explicit time-alignment below
     let ff: FormantFrame | null
     while ((ff = formant.readFrame()) !== null) {
       const f1 = ff.formantCount > 0 ? ff.formants[0]!.frequencyHz : null
@@ -207,13 +204,9 @@ export async function runAnalysis(
     }
   }
 
-  // Flush all remaining frames using the full buffer as final context
   emitPitchPatches(true)
 }
 
 self.addEventListener('unhandledrejection', function (event) {
-  // the event object has two special properties:
-  // event.promise - the promise that generated the error
-  // event.reason  - the unhandled error object
   throw event.reason
 })

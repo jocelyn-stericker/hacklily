@@ -24,15 +24,12 @@ const mockState = vi.hoisted(() => ({
   audioChunks: [] as Float32Array[],
 }))
 
-vi.mock('#/lib/audio/AudioRingReader', () => {
-  class AudioRingReader {
-    constructor(
-      _sab: SharedArrayBuffer,
-      _bufSamples: number,
-      _quantum: number,
-    ) {}
+vi.mock('#/lib/audio/AudioRopeReader', () => {
+  class AudioRopeReader {
+    constructor(_share: any, _quantum: number) {}
 
-    onOverrun?: (dropped: number) => void
+    grow(_grow: any): void {}
+    seal(): void {}
 
     async *[Symbol.asyncIterator]() {
       for (const chunk of mockState.audioChunks) {
@@ -41,7 +38,7 @@ vi.mock('#/lib/audio/AudioRingReader', () => {
     }
   }
 
-  return { AudioRingReader }
+  return { AudioRopeReader }
 })
 
 vi.mock('#/lib/analysis/FormantProcessor', () => {
@@ -102,8 +99,16 @@ async function testRunAnalysis(
   mockState.formantFrames = formantFrames
   mockState.pitchResult = pitchResult
 
-  const { AudioRingReader } = await import('#/lib/audio/AudioRingReader')
-  const reader = new AudioRingReader(new SharedArrayBuffer(4096), 1024, 128)
+  const { AudioRopeReader } = await import('#/lib/audio/AudioRopeReader')
+  const reader = new AudioRopeReader(
+    {
+      type: 'sab-rope',
+      buffers: [new SharedArrayBuffer(4096)],
+      ctrlPtr: new SharedArrayBuffer(8),
+      sampleRate: 44100,
+    },
+    128,
+  )
 
   // Mock the global postMessage to capture calls from runAnalysis
   const capturedMessages: any[] = []

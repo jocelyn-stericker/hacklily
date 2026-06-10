@@ -5,6 +5,13 @@
 // Ambient declarations for Vite's ?worker import syntax and the AudioWorklet
 // global scope, which TypeScript has no built-in lib for.
 
+declare module '#/lib/workers/RopeWriterWorker?worker' {
+  import type { RopeWriterWorker } from '#/lib/workers/RopeWriterWorker'
+
+  const RopeWriterWorkerConstructor: new () => RopeWriterWorker
+  export default RopeWriterWorkerConstructor
+}
+
 declare module '#/lib/workers/SpectrogramWorker?worker' {
   import type { SpectrogramWorker } from '#/lib/workers/SpectrogramWorker'
 

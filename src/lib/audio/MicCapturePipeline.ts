@@ -26,6 +26,8 @@ import {
 import { TypedEventTarget } from '#/lib/TypedEventTarget'
 import FormantWorker from '#/lib/workers/FormantWorker?worker'
 import type { FormantWorkerOutMessage } from '#/lib/workers/FormantWorker'
+import RopeWriterWorker from '#/lib/workers/RopeWriterWorker?worker'
+import type { RopeWriterWorkerOutMessage } from '#/lib/workers/RopeWriterWorker'
 import SpectrogramWorker from '#/lib/workers/SpectrogramWorker?worker'
 import type { SpectrogramWorkerOutMessage } from '#/lib/workers/SpectrogramWorker'
 import VadWorker from '#/lib/workers/VadWorker?worker'
@@ -37,8 +39,6 @@ import type {
   PatchFramesMessage,
 } from '#/lib/workers/workerMessages'
 
-// Must be a pow of 2 due to bit masking hack for efficient circular buffer
-// About 0.2sec at 44100 Hz.
 const SAB_BUF_SAMPLES = 8192
 
 type MicCaptureOutEvents = {
@@ -52,8 +52,6 @@ type MicCaptureOutEvents = {
   sabRopeSeal: CustomEvent<SabRopeSeal>
 }
 
-// Cached persistent stream -- key tracks the settings it was opened with so we
-// can invalidate it when settings change.
 let STREAM: MediaStream | null = null
 let STREAM_KEY: string | null = null
 
@@ -93,9 +91,6 @@ async function fixSettingsConstraint(
   return false
 }
 
-/**
- * Pre-open the mic stream if persistentMic is enabled.
- */
 export async function preInitPersistentStream(
   settings: AudioCaptureSettings,
 ): Promise<void> {
@@ -137,11 +132,7 @@ export async function preInitPersistentStream(
     })
     STREAM_KEY = key
     const trackSettings = STREAM.getTracks()[0]?.getSettings()
-    console.log(
-      LOG,
-      'preInit: persistent stream opened; track settings:',
-      trackSettings,
-    )
+    console.log(LOG, 'preInit: persistent stream settings:', trackSettings)
   } catch (err) {
     const fixed = await fixSettingsConstraint(settings, err)
     if (!fixed) {
@@ -151,24 +142,14 @@ export async function preInitPersistentStream(
   }
 }
 
-/**
- * `MicCapturePipeline` orchestrates the live recording path:
- *
- * - An **AudioWorklet** (`AudioRingWriter`) writes PCM into a SAB ring buffer with minimal latency.
- * - Two parallel **Web Workers** both read from the same SAB:
- *   - **SpectrogramWorker** -- generates spectrogram frames, accumulates PCM for playback, and sends a `params` message that also triggers `FormantWorker` initialization.
- *   - **FormantWorker** -- runs pitch (F0) and formant (F1-F3) analysis, patching earlier frames via `patch` messages.
- *
- * **Stop protocol**: the SAB sentinel (`ctrl[1] = 1`) is written _after_ `AudioContext.close()` resolves, guaranteeing all worklet writes have landed before workers exit their read loops.
- */
 export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
   #analysis: AnalysisChunk | null = null
-  // Patches that arrived before their frame; keyed by session-local frameIndex.
   #pendingPatches = new Map<number, PatchFrameMessage>()
 
   #context: AudioContext | null = null
   #sourceNode: MediaStreamAudioSourceNode | null = null
   #workletNode: AudioRingWriterNode | null = null
+  #ropeWriterWorker: InstanceType<typeof RopeWriterWorker> | null = null
   #spectrogramWorker: InstanceType<typeof SpectrogramWorker> | null = null
   #formantWorker: InstanceType<typeof FormantWorker> | null = null
   #vadWorker: InstanceType<typeof VadWorker> | null = null
@@ -213,6 +194,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
         persistentMic: settings.persistentMic,
       })
 
+      this.#ropeWriterWorker = new RopeWriterWorker()
       this.#spectrogramWorker = new SpectrogramWorker()
       this.#formantWorker = new FormantWorker()
       this.#vadWorker = new VadWorker()
@@ -236,7 +218,6 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
       const constraints = buildAudioConstraints(settings)
       console.log(LOG, 'start: requested audio constraints:', constraints)
 
-      // Reuse the persistent stream only if it matches current settings and is active.
       if (
         settings.persistentMic &&
         STREAM &&
@@ -281,15 +262,14 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
 
       this.#sourceNode = this.#context.createMediaStreamSource(this.#stream)
 
-      // The worklet is realtime. It writes audio data to a shared audio buffer with a
-      // strict time budget. The live worker consumes and processes it.
       this.#sab = new SharedArrayBuffer(8 + SAB_BUF_SAMPLES * 4)
       this.#workletNode.port.postMessage({
         type: 'init',
         sab: this.#sab,
         bufSamples: SAB_BUF_SAMPLES,
       })
-      this.#spectrogramWorker.postMessage({
+
+      this.#ropeWriterWorker.postMessage({
         type: 'init',
         sab: this.#sab,
         sampleRate: this.#sampleRate,
@@ -297,13 +277,22 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
       })
       this.#pendingWorkers++
 
+      this.#ropeWriterWorker.addEventListener(
+        'error',
+        this.#handleRopeWriterWorkerError,
+        { signal: this.destroyed, once: true },
+      )
+
+      this.#ropeWriterWorker.addEventListener(
+        'message',
+        this.#handleRopeWriterWorkerOutMessage,
+        { signal: this.destroyed },
+      )
+
       this.#spectrogramWorker.addEventListener(
         'error',
         this.#handleSpectrogramWorkerError,
-        {
-          signal: this.destroyed,
-          once: true,
-        },
+        { signal: this.destroyed, once: true },
       )
 
       this.#spectrogramWorker.addEventListener(
@@ -311,10 +300,32 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
         this.#handleSpectrogramWorkerOutMessage,
         { signal: this.destroyed },
       )
+
+      this.#formantWorker.addEventListener(
+        'error',
+        this.#handleFormantWorkerError,
+        { signal: this.destroyed, once: true },
+      )
+
+      this.#formantWorker.addEventListener(
+        'message',
+        this.#handleFormantWorkerOutMessage,
+        { signal: this.destroyed },
+      )
+
+      this.#vadWorker.addEventListener('error', this.#handleVadWorkerError, {
+        signal: this.destroyed,
+        once: true,
+      })
+
+      this.#vadWorker.addEventListener(
+        'message',
+        this.#handleVadWorkerOutMessage,
+        { signal: this.destroyed },
+      )
     } catch (err) {
       const settingsChanged = await fixSettingsConstraint(settings, err)
       if (settingsChanged) {
-        // The pipeline will be re-triggered.
         return
       }
 
@@ -323,11 +334,12 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
       })
     }
 
-    // Resolves on success or failure.
     this.#resolveInitComplete()
   }
 
   #teardown() {
+    this.#ropeWriterWorker?.terminate()
+    this.#ropeWriterWorker = null
     this.#spectrogramWorker?.terminate()
     this.#spectrogramWorker = null
     this.#formantWorker?.terminate()
@@ -341,6 +353,16 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
     if (--this.#pendingWorkers === 0) {
       this.#teardown()
     }
+  }
+
+  #handleRopeWriterWorkerError = ({ error }: ErrorEvent) => {
+    if (!this.#ropeWriterWorker) return
+    this.emit('error', {
+      error: error instanceof Error ? error.message : String(error),
+    })
+    this.#ropeWriterWorker.terminate()
+    this.#ropeWriterWorker = null
+    this.#onWorkerDone()
   }
 
   #handleSpectrogramWorkerError = ({ error }: ErrorEvent) => {
@@ -373,15 +395,83 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
     this.#onWorkerDone()
   }
 
+  #initConsumerWorkers(rope: SabRopeShare, sampleRate: number) {
+    this.#spectrogramWorker?.postMessage({
+      type: 'init',
+      rope,
+      sampleRate,
+    })
+    this.#pendingWorkers++
+
+    this.#formantWorker?.postMessage({
+      type: 'init',
+      rope,
+      sampleRate,
+    })
+    this.#pendingWorkers++
+
+    this.#vadWorker?.postMessage({
+      type: 'init',
+      rope,
+      sampleRate,
+    })
+    this.#pendingWorkers++
+
+    if (this.#workletNode) {
+      this.#sourceNode?.connect(this.#workletNode)
+    }
+  }
+
+  #forwardRopeGrow(grow: SabRopeGrow) {
+    this.#spectrogramWorker?.postMessage({ type: 'rope-grow', grow })
+    this.#formantWorker?.postMessage({ type: 'rope-grow', grow })
+    this.#vadWorker?.postMessage({ type: 'rope-grow', grow })
+    this.emit('sabRopeGrow', grow)
+  }
+
+  #forwardRopeSeal() {
+    this.#spectrogramWorker?.postMessage({ type: 'rope-seal' })
+    this.#formantWorker?.postMessage({ type: 'rope-seal' })
+    this.#vadWorker?.postMessage({ type: 'rope-seal' })
+    this.emit('sabRopeSeal', { type: 'sab-rope-seal' })
+  }
+
+  #handleRopeWriterWorkerOutMessage = ({
+    data,
+  }: MessageEvent<RopeWriterWorkerOutMessage>) => {
+    switch (data.type) {
+      case 'rope-ready': {
+        this.#initConsumerWorkers(data.rope, data.sampleRate)
+        this.emit('sabRopeShare', data.rope)
+        return
+      }
+
+      case 'sab-rope-grow': {
+        this.#forwardRopeGrow(data)
+        return
+      }
+
+      case 'sab-rope-seal': {
+        this.#forwardRopeSeal()
+        return
+      }
+
+      case 'ended': {
+        if (!this.#ropeWriterWorker) return
+        this.#ropeWriterWorker.terminate()
+        this.#ropeWriterWorker = null
+        this.#onWorkerDone()
+        return
+      }
+    }
+  }
+
   #handleSpectrogramWorkerOutMessage = ({
     data,
   }: MessageEvent<SpectrogramWorkerOutMessage>) => {
     switch (data.type) {
       case 'ended': {
         if (!this.#spectrogramWorker) return
-        // The session's PCM lives in its SabRope (published via sabRopeShare /
-        // sabRopeGrow); recordingComplete just signals that the session finished
-        // so the timeline can settle. Skip it when no frames were produced.
         if ((this.#analysis?.frames.length ?? 0) > 0) {
           this.emit('recordingComplete')
         }
@@ -405,65 +495,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
           voiced: false,
         }
         this.#pendingPatches.clear()
-
-        if (this.#formantWorker && this.#sab) {
-          this.#formantWorker.postMessage({
-            type: 'init',
-            sab: this.#sab,
-            sampleRate: data.sampleRate,
-            bufSamples: SAB_BUF_SAMPLES,
-            timeStepSamples: data.timeStepSamples,
-          })
-          this.#pendingWorkers++
-
-          this.#formantWorker.addEventListener(
-            'error',
-            this.#handleFormantWorkerError,
-            {
-              signal: this.destroyed,
-              once: true,
-            },
-          )
-
-          this.#formantWorker.addEventListener(
-            'message',
-            this.#handleFormantWorkerOutMessage,
-            { signal: this.destroyed },
-          )
-        }
-
-        if (this.#vadWorker && this.#sab) {
-          this.#vadWorker.postMessage({
-            type: 'init',
-            sab: this.#sab,
-            sampleRate: data.sampleRate,
-            bufSamples: SAB_BUF_SAMPLES,
-            timeStepSamples: data.timeStepSamples,
-          })
-          this.#pendingWorkers++
-
-          this.#vadWorker.addEventListener(
-            'error',
-            this.#handleVadWorkerError,
-            {
-              signal: this.destroyed,
-              once: true,
-            },
-          )
-
-          this.#vadWorker.addEventListener(
-            'message',
-            this.#handleVadWorkerOutMessage,
-            { signal: this.destroyed },
-          )
-        }
-
-        if (this.#workletNode) {
-          this.#sourceNode?.connect(this.#workletNode)
-        }
-
         this.emit('chunkStart', { params })
-        this.emit('sabRopeShare', data.rope)
         return
       }
 
@@ -473,14 +505,6 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
 
       case 'patch':
         this.#handlePatch(data)
-        return
-
-      case 'sab-rope-grow':
-        this.emit('sabRopeGrow', data)
-        return
-
-      case 'sab-rope-seal':
-        this.emit('sabRopeSeal', data)
         return
     }
   }
@@ -577,9 +601,6 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
     }
   }
 
-  // VAD emits one batch per gate push/end covering a contiguous run of frames
-  // flipped to a single value. Apply every frame first, then emit a single
-  // patch event spanning [from, to) so the route reconciles and repaints once.
   #handlePatchFrames = (data: PatchFramesMessage) => {
     let from = Infinity
     let to = -Infinity
@@ -590,8 +611,6 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
         if (decision.frameIndex < from) from = decision.frameIndex
         if (decision.frameIndex + 1 > to) to = decision.frameIndex + 1
       } else {
-        // Frame not appended yet (VAD normally lags the spectrogram, so this is
-        // rare): stash it to be applied -- and patched individually -- on append.
         this.#pendPatch({ type: 'patch', ...decision })
       }
     }
@@ -610,15 +629,11 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
     this.#sourceNode?.disconnect()
     this.#workletNode?.disconnect()
     await this.#context?.close()
-    // Write the stop sentinel after the audio context is fully closed so all
-    // worklet writes are guaranteed to have landed before workers see it.
     if (this.#sab) {
       const ctrl = new Int32Array(this.#sab, 0, 2)
       Atomics.store(ctrl, 1, 1)
       Atomics.notify(ctrl, 0)
     } else {
-      // Workers were never started (e.g. getUserMedia failed); terminate any
-      // workers that were allocated before the failure and abort listeners.
       this.#teardown()
     }
     if (!this.#settings.persistentMic) {

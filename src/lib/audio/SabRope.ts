@@ -125,6 +125,10 @@ export class SabRope {
     )
   }
 
+  waitForLength(expected: number) {
+    return Atomics.waitAsync(this.#ctrlView, CTRL_LENGTH, expected)
+  }
+
   append(data: Float32Array) {
     if (this.sealed) {
       throw new Error('cannot append to a sealed rope')
