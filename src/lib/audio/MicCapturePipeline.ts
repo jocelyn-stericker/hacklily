@@ -142,6 +142,12 @@ export async function preInitPersistentStream(
   }
 }
 
+export type MicCaptureFeatures = {
+  spectrogram?: boolean
+  formant?: boolean
+  vad?: boolean
+}
+
 export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
   #analysis: AnalysisChunk | null = null
 
@@ -158,9 +164,11 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
   #started: Promise<void>
   #destroyed: AbortController = new AbortController()
   #settings: AudioCaptureSettings
+  #features: Required<MicCaptureFeatures>
   #sab: SharedArrayBuffer | null = null
   #pendingWorkers = 0
   #numFreqs = 0
+  #recordingCompleteEmitted = false
 
   get destroyed(): AbortSignal {
     return this.#destroyed.signal
@@ -169,12 +177,20 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
   constructor({
     signal,
     settings = DEFAULT_SETTINGS,
+    features = {},
   }: {
     signal: AbortSignal
     settings?: AudioCaptureSettings
+    features?: MicCaptureFeatures
   }) {
     super()
     this.#settings = settings
+    this.#features = {
+      spectrogram: true,
+      formant: true,
+      vad: true,
+      ...features,
+    }
     this.#started = new Promise<void>((resolve) => {
       this.#resolveInitComplete = resolve
     })
@@ -195,9 +211,10 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
       })
 
       this.#ropeWriterWorker = new RopeWriterWorker()
-      this.#spectrogramWorker = new SpectrogramWorker()
-      this.#formantWorker = new FormantWorker()
-      this.#vadWorker = new VadWorker()
+      if (this.#features.spectrogram)
+        this.#spectrogramWorker = new SpectrogramWorker()
+      if (this.#features.formant) this.#formantWorker = new FormantWorker()
+      if (this.#features.vad) this.#vadWorker = new VadWorker()
 
       const preferredRate = preferredSampleRate(settings)
       console.log(
@@ -289,40 +306,43 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
         { signal: this.destroyed },
       )
 
-      this.#spectrogramWorker.addEventListener(
-        'error',
-        this.#handleSpectrogramWorkerError,
-        { signal: this.destroyed, once: true },
-      )
+      if (this.#spectrogramWorker) {
+        this.#spectrogramWorker.addEventListener(
+          'error',
+          this.#handleSpectrogramWorkerError,
+          { signal: this.destroyed, once: true },
+        )
+        this.#spectrogramWorker.addEventListener(
+          'message',
+          this.#handleSpectrogramWorkerOutMessage,
+          { signal: this.destroyed },
+        )
+      }
 
-      this.#spectrogramWorker.addEventListener(
-        'message',
-        this.#handleSpectrogramWorkerOutMessage,
-        { signal: this.destroyed },
-      )
+      if (this.#formantWorker) {
+        this.#formantWorker.addEventListener(
+          'error',
+          this.#handleFormantWorkerError,
+          { signal: this.destroyed, once: true },
+        )
+        this.#formantWorker.addEventListener(
+          'message',
+          this.#handleFormantWorkerOutMessage,
+          { signal: this.destroyed },
+        )
+      }
 
-      this.#formantWorker.addEventListener(
-        'error',
-        this.#handleFormantWorkerError,
-        { signal: this.destroyed, once: true },
-      )
-
-      this.#formantWorker.addEventListener(
-        'message',
-        this.#handleFormantWorkerOutMessage,
-        { signal: this.destroyed },
-      )
-
-      this.#vadWorker.addEventListener('error', this.#handleVadWorkerError, {
-        signal: this.destroyed,
-        once: true,
-      })
-
-      this.#vadWorker.addEventListener(
-        'message',
-        this.#handleVadWorkerOutMessage,
-        { signal: this.destroyed },
-      )
+      if (this.#vadWorker) {
+        this.#vadWorker.addEventListener('error', this.#handleVadWorkerError, {
+          signal: this.destroyed,
+          once: true,
+        })
+        this.#vadWorker.addEventListener(
+          'message',
+          this.#handleVadWorkerOutMessage,
+          { signal: this.destroyed },
+        )
+      }
     } catch (err) {
       const settingsChanged = await fixSettingsConstraint(settings, err)
       if (settingsChanged) {
@@ -351,6 +371,13 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
 
   #onWorkerDone() {
     if (--this.#pendingWorkers === 0) {
+      // Final fallback: if no consumer worker emitted recordingComplete (e.g.
+      // all features disabled, or zero-frame recording), emit it now so callers
+      // are never left waiting.
+      if (!this.#recordingCompleteEmitted) {
+        this.#recordingCompleteEmitted = true
+        this.emit('recordingComplete')
+      }
       this.#teardown()
     }
   }
@@ -427,26 +454,20 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
     this.#numFreqs = sp.numFreqs
     this.emit('chunkStart', { params })
 
-    this.#spectrogramWorker?.postMessage({
-      type: 'init',
-      rope,
-      sampleRate,
-    })
-    this.#pendingWorkers++
+    if (this.#spectrogramWorker) {
+      this.#spectrogramWorker.postMessage({ type: 'init', rope, sampleRate })
+      this.#pendingWorkers++
+    }
 
-    this.#formantWorker?.postMessage({
-      type: 'init',
-      rope,
-      sampleRate,
-    })
-    this.#pendingWorkers++
+    if (this.#formantWorker) {
+      this.#formantWorker.postMessage({ type: 'init', rope, sampleRate })
+      this.#pendingWorkers++
+    }
 
-    this.#vadWorker?.postMessage({
-      type: 'init',
-      rope,
-      sampleRate,
-    })
-    this.#pendingWorkers++
+    if (this.#vadWorker) {
+      this.#vadWorker.postMessage({ type: 'init', rope, sampleRate })
+      this.#pendingWorkers++
+    }
 
     if (this.#workletNode) {
       this.#sourceNode?.connect(this.#workletNode)
@@ -497,15 +518,23 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
     }
   }
 
+  #maybeEmitRecordingComplete() {
+    if (
+      !this.#recordingCompleteEmitted &&
+      (this.#analysis?.frames.length ?? 0) > 0
+    ) {
+      this.#recordingCompleteEmitted = true
+      this.emit('recordingComplete')
+    }
+  }
+
   #handleSpectrogramWorkerOutMessage = ({
     data,
   }: MessageEvent<SpectrogramWorkerOutMessage>) => {
     switch (data.type) {
       case 'ended': {
         if (!this.#spectrogramWorker) return
-        if ((this.#analysis?.frames.length ?? 0) > 0) {
-          this.emit('recordingComplete')
-        }
+        this.#maybeEmitRecordingComplete()
         this.#spectrogramWorker.terminate()
         this.#spectrogramWorker = null
         this.#onWorkerDone()
@@ -528,6 +557,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
       }
       case 'ended': {
         if (!this.#formantWorker) break
+        this.#maybeEmitRecordingComplete()
         this.#formantWorker.terminate()
         this.#formantWorker = null
         this.#onWorkerDone()
@@ -546,6 +576,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
       }
       case 'ended': {
         if (!this.#vadWorker) break
+        this.#maybeEmitRecordingComplete()
         this.#vadWorker.terminate()
         this.#vadWorker = null
         this.#onWorkerDone()
@@ -622,11 +653,15 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
         if (decision.frameIndex + 1 > patchTo) patchTo = decision.frameIndex + 1
       }
     }
+    // Patch before append: at speech onset the batch contains pre-roll patch
+    // frames (existing, now voiced) AND the new onset frame (voiced). If append
+    // fired first, handleAppend's `voiced ||= true` would mark the whole chunk
+    // voiced before reconcileVoicingAt can split it at the pre-roll boundary.
+    if (patchTo > patchFrom)
+      this.emit('patch', { from: patchFrom, to: patchTo })
     for (let i = appendFrom; i < appendTo; i++) {
       this.emit('append', { frame: this.#analysis!.frames[i]! })
     }
-    if (patchTo > patchFrom)
-      this.emit('patch', { from: patchFrom, to: patchTo })
   }
 
   #stop = async () => {

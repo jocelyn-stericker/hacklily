@@ -411,6 +411,11 @@ function App() {
     onAudioRopeGrow: handleAudioRopeGrow,
     onAudioRopeShare: handleAudioRopeShare,
     onAudioRopeSeal: handleAudioRopeSeal,
+    features: {
+      spectrogram: true,
+      formant: true,
+      vad: true,
+    },
   })
 
   useAudioPlayback({

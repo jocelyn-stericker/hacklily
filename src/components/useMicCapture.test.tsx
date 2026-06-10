@@ -1057,7 +1057,9 @@ describe('AudioRecorder', () => {
       expect(getMockFormantWorker().terminate).toHaveBeenCalled()
       expect(getMockVadWorker().terminate).toHaveBeenCalled()
       expect(getMockRopeWriterWorker().terminate).toHaveBeenCalled()
-      expect(onRecordingComplete).not.toHaveBeenCalled()
+      // recordingComplete fires as a final fallback even with no frames,
+      // so callers are never left waiting for a transition that will never come.
+      expect(onRecordingComplete).toHaveBeenCalled()
     })
   })
 })

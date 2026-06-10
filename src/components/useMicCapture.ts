@@ -18,9 +18,11 @@ import {
   MicCapturePipeline,
   preInitPersistentStream,
 } from '#/lib/audio/MicCapturePipeline'
+import type { MicCaptureFeatures } from '#/lib/audio/MicCapturePipeline'
 
 export function useMicCapture({
   enabled,
+  features,
   onAppend,
   onChunkStart,
   onPatch,
@@ -31,6 +33,7 @@ export function useMicCapture({
   onAudioRopeSeal,
 }: {
   enabled: boolean
+  features?: MicCaptureFeatures
   onAppend: (frame: AnalysisFrame) => void
   onChunkStart?: (params: AnalysisParams) => void
   onPatch?: (from: number, to: number) => void
@@ -45,6 +48,9 @@ export function useMicCapture({
   // Pre-open the mic when persistentMic is enabled so the connection is warm.
   const { inputDeviceId, sampleRate, persistentMic, browserPreprocessing } =
     audioSettings
+  const spectrogramEnabled = features?.spectrogram ?? true
+  const formantEnabled = features?.formant ?? true
+  const vadEnabled = features?.vad ?? true
   useEffect(() => {
     void preInitPersistentStream({
       inputDeviceId,
@@ -84,6 +90,11 @@ export function useMicCapture({
         sampleRate,
         persistentMic,
         browserPreprocessing,
+      },
+      features: {
+        spectrogram: spectrogramEnabled,
+        formant: formantEnabled,
+        vad: vadEnabled,
       },
     })
     pipeline.addEventListener(
@@ -129,5 +140,14 @@ export function useMicCapture({
       { signal: pipeline.destroyed },
     )
     return () => ctrl.abort()
-  }, [enabled, inputDeviceId, sampleRate, persistentMic, browserPreprocessing])
+  }, [
+    enabled,
+    inputDeviceId,
+    sampleRate,
+    persistentMic,
+    browserPreprocessing,
+    spectrogramEnabled,
+    formantEnabled,
+    vadEnabled,
+  ])
 }
