@@ -1,10 +1,9 @@
-/*
- * Part of a TypeScript port of the Bournemouth Forced Aligner (BFA).
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>.
- * Copyright (C) Tabahi <tabahi@duck.com>.
- * Licensed under the GNU Affero General Public License v3.0 or later.
- * See the LICENSE at the repository root and ATTRIBUTION.md.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Part of a TypeScript port of the Bournemouth Forced Aligner (BFA).
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>.
+// Copyright (C) Tabahi <tabahi@duck.com>.
+// See ATTRIBUTION.md.
 
 /** A single aligned phoneme produced by the simplified pipeline. */
 export interface PhonemeTimestamp {
@@ -27,7 +26,7 @@ export interface PhonemeTimestamp {
   /** End time in milliseconds (offset-adjusted). */
   endMs: number
   /**
-   * Per-phoneme confidence score (0–1). Computed as the mean softmax
+   * Per-phoneme confidence score (0-1). Computed as the mean softmax
    * probability of the assigned phoneme over "good" frames within the segment
    * (frames where P > half-initial-confidence or P > 0.1). The segment's
    * endFrame may be trimmed inward when trailing frames fall below the
@@ -64,7 +63,7 @@ export interface PhonemizeOptions {
   /**
    * Separator between phonemes *within a word* (one espeak phoneme per token).
    * Default '|'. NOTE: the '|' is inserted upstream by the `phonemizer`
-   * library's Separator(phone='|'), not by espeak-ng's raw `--ipa` output —
+   * library's Separator(phone='|'), not by espeak-ng's raw `--ipa` output --
    * feed separated, stress-free tokens for parity with BFA. A word with no
    * separator falls back to lossy greedy segmentation (discouraged). Set this
    * if your espeak frontend emits a different delimiter. See the README
@@ -81,7 +80,7 @@ export interface PhonemizeOptions {
 }
 
 export interface AlignerConfig {
-  /** Max segment duration in seconds (Python default 10) → wavLenMax samples. */
+  /** Max segment duration in seconds (Python default 10) -> wavLenMax samples. */
   durationMax?: number
   /** Analysis window in ms (Python `_setup_config` default 120). */
   windowSizeMs?: number
@@ -103,7 +102,7 @@ export interface AlignerConfig {
    */
   extendSoftBoundaries?: boolean
   /**
-   * Leniency of {@link extendSoftBoundaries}; the lenient passes accept frames
+   * Leniency of `extendSoftBoundaries`; the lenient passes accept frames
    * with probability >= 10^-boundarySoftness. Higher = more extension. Default
    * 7 (upstream default).
    */

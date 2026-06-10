@@ -1,27 +1,14 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 // === Colourmaps ===
 
-// Inferno: black → deep purple → orange → cream-yellow (dark mode)
+// Inferno: black -> deep purple -> orange -> cream-yellow (dark mode)
 // Sourced from matplotlib/_cm_listed.py
 // https://github.com/matplotlib/matplotlib/blob/main/lib/matplotlib/_cm_listed.py
-// BSD-licensed. Values converted to uint8 (×255, rounded).
-// Each entry is [R, G, B] packed as a flat array of 256 × 3 bytes.
+// BSD-licensed. Values converted to uint8 (x255, rounded).
+// Each entry is [R, G, B] packed as a flat array of 256 x 3 bytes.
 export const INFERNO_COLOURMAP = [
   0, 0, 4, 1, 0, 5, 1, 1, 6, 1, 1, 8, 2, 1, 10, 2, 2, 12, 2, 2, 14, 3, 2, 16, 4,
   3, 18, 4, 3, 20, 5, 4, 23, 6, 4, 25, 7, 5, 27, 8, 5, 29, 9, 6, 31, 10, 7, 34,

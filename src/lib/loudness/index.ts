@@ -1,20 +1,8 @@
-/* Braat, ITU-R BS.1770 loudness ported from jiixyj/libebur128 (ebur128/ebur128.c)
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- * Copyright (c) 2011 Jan Kokemüller (libebur128, MIT)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Braat, ITU-R BS.1770 loudness ported from jiixyj/libebur128 (ebur128/ebur128.c)
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
+// Copyright (c) 2011 Jan Kokemüller (libebur128, MIT)
 
 /**
  * Single-channel integrated loudness (LUFS) and peak measurement per
@@ -83,7 +71,7 @@ export function measureLoudness(
   }
 }
 
-// ebur128.c:687 — energy (mean K-weighted square) to LUFS.
+// ebur128.c:687 -- energy (mean K-weighted square) to LUFS.
 function energyToLoudness(energy: number): number {
   return 10 * Math.log10(energy) - 0.691
 }
@@ -256,11 +244,11 @@ export class LoudnessAnalyzer {
 
   constructor(sampleRate: number) {
     this.#filter = new KWeightFilter(sampleRate)
-    // ebur128.c:347-352 — 4x for rates below 96 kHz; above that we skip true
+    // ebur128.c:347-352 -- 4x for rates below 96 kHz; above that we skip true
     // peak and fall back to the sample peak.
     this.#interp = sampleRate < 96000 ? new Interpolator(49, 4) : null
 
-    // ebur128.c:449,458-463,994 — 100 ms hop, 400 ms gating block, ring sized
+    // ebur128.c:449,458-463,994 -- 100 ms hop, 400 ms gating block, ring sized
     // to the block and rounded to a whole number of hops.
     this.#hopFrames = Math.floor((sampleRate + 5) / 10)
     this.#blockFrames = this.#hopFrames * 4
@@ -310,7 +298,7 @@ export class LoudnessAnalyzer {
     }
   }
 
-  // ebur128.c:708-779 — mean square over the last 400 ms; keep if above the
+  // ebur128.c:708-779 -- mean square over the last 400 ms; keep if above the
   // absolute gate. The split handles the ring wrapping past its end.
   #calcGatingBlock(): void {
     let sum = 0
@@ -340,7 +328,7 @@ export class LoudnessAnalyzer {
     return this.#interp ? this.#truePeak : this.#samplePeak
   }
 
-  // ebur128.c:1085-1149 — two-stage gating: relative threshold from the mean of
+  // ebur128.c:1085-1149 -- two-stage gating: relative threshold from the mean of
   // absolute-gated blocks, then the mean of blocks at or above it.
   get integratedLoudness(): number | null {
     const blocks = this.#blockEnergies

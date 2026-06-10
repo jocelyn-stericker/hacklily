@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import { describe, it, expect } from 'vitest'
 
@@ -64,7 +51,7 @@ function makeRope(length: number, sampleRate = 100): SabRope {
 
 describe('chunkAudioFromRopes', () => {
   it('spans consecutive chunks from a single (import-style) rope', async () => {
-    // No recordingStart markers — one rope holds the whole timeline.
+    // No recordingStart markers -- one rope holds the whole timeline.
     const c0 = chunk({ frames: 5 }) // offset 0, length 50
     const c1 = chunk({ frames: 3 }) // offset 50, length 30
     const chunks = [c0, c1]
@@ -88,7 +75,7 @@ describe('chunkAudioFromRopes', () => {
     // Session 0: a recordingStart chunk plus a like-session sub-chunk.
     const s0a = chunk({ frames: 4, recordingStart: true }) // rope0, offset 0
     const s0b = chunk({ frames: 3 }) // rope0, offset 40
-    // Session 1: a fresh recordingStart chunk → rope1, offset resets to 0.
+    // Session 1: a fresh recordingStart chunk -> rope1, offset resets to 0.
     const s1 = chunk({ frames: 2, recordingStart: true }) // rope1, offset 0
     const chunks = [s0a, s0b, s1]
     const ropes = [rampRope(70), rampRope(20)]

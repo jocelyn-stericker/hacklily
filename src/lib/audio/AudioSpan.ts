@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import type { AnalysisChunk } from '../analysis/AnalysisFrame'
 import type { SabRope } from './SabRope'
@@ -129,8 +116,8 @@ export function locateChunkRope(
 /**
  * Locate the recorded audio spanning `chunk` within the `SabRope` that holds its
  * recording session, or `null` if that audio isn't available. `chunks` is the
- * full analysis timeline — needed to locate which session `chunk` belongs to and
- * its frame offset within it — and `ropes` are the per-session PCM buffers in
+ * full analysis timeline -- needed to locate which session `chunk` belongs to and
+ * its frame offset within it -- and `ropes` are the per-session PCM buffers in
  * `recordingStart` order: rope N holds session N. The returned span's `endTime`
  * resolves immediately to the audio recorded so far, clamped to the rope's
  * length.

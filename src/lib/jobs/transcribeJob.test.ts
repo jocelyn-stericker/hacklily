@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import { describe, it, expect, vi } from 'vitest'
 
@@ -120,7 +107,7 @@ describe('transcribe kind', () => {
 
     expect(sink.get(c0)).toEqual({ cloud: { text: 'cloud text' } })
     expect(sink.get(c1)).toEqual({ cloud: { text: 'cloud text' } })
-    expect(sink.get(skip)).toBeUndefined() // unvoiced — never transcribed
+    expect(sink.get(skip)).toBeUndefined() // unvoiced -- never transcribed
   })
 
   it('transcribes a still-voiced last chunk when the recording seals', async () => {
@@ -190,7 +177,7 @@ describe('transcribe kind', () => {
       getChunks: () => [c0],
       getRopes: () => [sealedRope(100)],
       getViewport: () => null,
-      autoTier: () => 'large', // whisper → checks isModelDownloaded
+      autoTier: () => 'large', // whisper -> checks isModelDownloaded
       onModelUnavailable,
     })
 

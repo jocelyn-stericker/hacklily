@@ -1,30 +1,15 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
-// Web Speech API recognition for transcribing recorded audio chunks.
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
+
+// Web Speech API transcription for recorded audio chunks.
 //
-// We use the browser's `SpeechRecognition`. The modern (unprefixed) constructor
-// can recognize a `MediaStreamTrack` passed to `start()` and honours
-// `processLocally`; the legacy prefixed `webkitSpeechRecognition` only listens
-// to the live microphone. Since we transcribe recorded chunks (not the live
-// mic), we play each chunk's PCM through a `MediaStreamAudioDestinationNode` and
-// hand recognition the resulting live track.
+// The unprefixed `SpeechRecognition` can recognize a `MediaStreamTrack` and
+// honours `processLocally`; the legacy `webkitSpeechRecognition` only listens
+// to the live mic. We play recorded PCM through a MediaStreamAudioDestinationNode
+// and pass the resulting track to recognition.
 //
-// These shapes aren't all in the DOM lib yet, so we declare what we use.
+// Some shapes aren't in the DOM lib yet, so we declare what we use.
 
 /// <reference types="@types/dom-speech-recognition" />
 
@@ -34,9 +19,8 @@ import type { SabRopeSourceNode } from '#/lib/audio/SabRopeSourceNode'
 
 /** Recognition language. Matches the default used by the feature probes. */
 const TRANSCRIPTION_LANG = 'en-US'
-// Silence let through after the span's audio so the endpointer can promote the
-// last interim to a final. The node keeps emitting zeros once it stops, so this
-// is just how long we wait past the reported end before stopping recognition.
+// Wait this long past the playout end before stopping recognition, so the
+// endpointer can promote the last interim to a final result.
 const TRAILING_SILENCE_SEC = 0.3
 const LOG = '[transcribeWeb]'
 
@@ -68,11 +52,8 @@ function recognitionErrorMessage(error: SpeechRecognitionErrorCode): string {
   }
 }
 
-// A single AudioContext is shared across all recognition calls. Creating one per
-// chunk is expensive (each spins up an audio thread); the context is lightweight
-// and its nodes (buffer sources, stream destinations) are cheap to create and
-// garbage-collect. We lazily create it on first use and keep it open for the
-// page's lifetime — closing it between calls would defeat the purpose.
+// Shared across all recognition calls: creating one per chunk is expensive
+// (audio thread spin-up). Lazily created and kept open for the page's lifetime.
 let sharedAudioContext: AudioContext | null = null
 
 function getAudioContext(): AudioContext {
@@ -80,9 +61,7 @@ function getAudioContext(): AudioContext {
   return sharedAudioContext
 }
 
-// The SabRopeSourceNode worklet module is added to the shared context once and
-// reused across recognition calls. Cached against the singleton context, which
-// lives for the page's lifetime.
+// Added once to the shared context; reused across all recognition calls.
 let workletModulePromise: Promise<void> | null = null
 
 function ensureWorkletModule(context: AudioContext): Promise<void> {
@@ -90,9 +69,7 @@ function ensureWorkletModule(context: AudioContext): Promise<void> {
   return workletModulePromise
 }
 
-// Browsers generally allow only one active SpeechRecognition session at a time.
-// Serialize recognition here so overlapping callers can't start competing
-// sessions.
+// Browsers allow only one active SpeechRecognition at a time; serialize here.
 let recognitionChain: Promise<unknown> = Promise.resolve()
 
 export function transcribeWeb(
@@ -110,20 +87,14 @@ export function transcribeWeb(
 }
 
 /**
- * Recognize a single recorded audio span with the Web Speech API and resolve
- * with the joined final transcript (possibly empty if nothing was recognized).
+ * Recognize a recorded audio span with the Web Speech API; resolves with the
+ * joined transcript (empty if nothing recognized).
  *
- * The span's audio is played in real time by a `SabRopeSourceNode` — reading
- * straight from the (possibly still-growing) rope — into a MediaStream, whose
- * live audio track is handed to `recognition.start()`. `processLocally` forces
- * on-device recognition (the "browser" posture); leaving it false lets the user
- * agent fall back to its remote service (the "cloud" posture).
+ * Audio is played in real time via `SabRopeSourceNode` into a MediaStream
+ * handed to `recognition.start()`. `processLocally` forces on-device recognition.
  *
- * Playback starts as soon as the audio that has landed so far, rather than
- * waiting for `endTime`: we snapshot the rope, forward every subsequent grow
- * (and the seal) to the node so it keeps reading as the recording grows, and
- * post the stop boundary once `endTime` resolves. With a finished recording the
- * end is known up front, so that boundary lands immediately.
+ * Playback starts immediately from whatever audio has landed, forwarding later
+ * grows and the seal; the stop boundary is posted once `endTime` resolves.
  */
 export async function recognizePcm(
   audio: AudioSpan,
@@ -144,10 +115,8 @@ export async function recognizePcm(
     }
     await ensureWorkletModule(audioContext)
 
-    // The node plays the rope from `startTime` into a MediaStream; the resampler
-    // matches the rope's rate to the context's. It keeps emitting silence after
-    // it stops, which gives the endpointer its end-of-speech silence — see
-    // `TRAILING_SILENCE_SEC`.
+    // Plays from `startTime` into a MediaStream; resamples to the context rate.
+    // Emits silence after stopping, giving the endpointer its trailing pause.
     const node: SabRopeSourceNode = new AudioWorkletNode(
       audioContext,
       'sab-rope-source-node',
@@ -168,18 +137,15 @@ export async function recognizePcm(
     recognition.maxAlternatives = 1
 
     return await new Promise<string>((resolve, reject) => {
-      // Latest transcript per result index (interim or final). `onresult` fires
-      // repeatedly as recognition refines each utterance; overwriting by index
-      // collapses duplicates and lets a late `isFinal` simply replace its interim.
+      // Latest transcript per result index; overwriting by index collapses
+      // duplicates and lets a late `isFinal` replace its interim.
       const transcripts: string[] = []
       let settled = false
-      // Armed when the node reports the playout end; stops recognition once the
-      // trailing silence has flowed through.
+      // Armed after playout end; stops recognition once trailing silence flows through.
       let stopTimer: ReturnType<typeof setTimeout> | null = null
-      // Armed once `endTime` resolves (we don't know the span length before
-      // then); backstops a recognition that never fires `onend`.
+      // Armed once `endTime` resolves; backstops a recognition that never fires `onend`.
       let watchdog: ReturnType<typeof setTimeout> | null = null
-      // Forward future growth/seal of the rope to the node; torn down on cleanup.
+      // Forward rope growth/seal to the node; torn down on cleanup.
       let unsubGrow: (() => void) | null = null
       let unsubSeal: (() => void) | null = null
 
@@ -201,9 +167,8 @@ export async function recognizePcm(
         node.disconnect()
       }
 
-      // Cancellation (e.g. the buffer was too short to be speech): tear the graph
-      // down and reject so `transcribeChunk` leaves the chunk untranscribed. Can
-      // fire any time — before playback, mid-recognition, or while draining.
+      // Abort: tear down and reject. Can fire before playback, mid-recognition,
+      // or while draining.
       const onAbort = () => {
         if (settled) return
         settled = true
@@ -238,10 +203,8 @@ export async function recognizePcm(
         resolve(joinTranscripts())
       }
 
-      // The node renders ahead of the audible clock and reports the context time
-      // its final sample plays out. Wait until that time plus the trailing
-      // silence has actually elapsed before stopping recognition, so the last
-      // syllables aren't clipped.
+      // Node reports the context time its final sample plays out. Delay stopping
+      // until then plus trailing silence, so the last syllables aren't clipped.
       node.port.onmessage = ({ data }) => {
         if (data.type !== 'end') return
         const delayMs = Math.max(
@@ -258,8 +221,7 @@ export async function recognizePcm(
         }, delayMs)
       }
 
-      // Listeners added after an abort never fire, so handle an abort that landed
-      // during the awaits above explicitly.
+      // Handle an abort that landed during the awaits above.
       audio.signal.addEventListener('abort', onAbort)
       if (audio.signal.aborted) {
         onAbort()
@@ -279,10 +241,8 @@ export async function recognizePcm(
         return
       }
 
-      // Snapshot and subscribe with no `await` between them, so the node starts
-      // at the rope's current buffer count and every later grow lines up (its
-      // `oldBufferCount` matches). Recognition is already listening, so playback
-      // is captured from the first sample.
+      // No `await` between snapshot and subscribe so the node starts at the
+      // current buffer count and every subsequent grow's `oldBufferCount` matches.
       const share = audio.rope.shareRope()
       unsubGrow = audio.rope.onGrow((grow) => {
         try {
@@ -305,10 +265,8 @@ export async function recognizePcm(
       })
       node.port.postMessage({ type: 'start', timeSec: audio.startTime })
 
-      // Stop the node at the span boundary once the recording of the span is
-      // complete. `end` bounds playback even when the rope extends past it (one
-      // rope can hold several chunks). With a finished recording this resolves
-      // right away.
+      // Stop at the span boundary once recording is complete. `end` bounds
+      // playback even if the rope extends past it (multiple chunks per rope).
       audio.endTime.then(
         (endTime) => {
           if (settled) return
@@ -330,8 +288,7 @@ export async function recognizePcm(
           node.port.postMessage({ type: 'end', timeSec: endTime })
         },
         (err) => {
-          // The span's recording was abandoned before its end was known. Stop
-          // recognition and resolve with whatever has been recognized so far.
+          // Recording abandoned before end was known; resolve with what we have.
           if (settled) return
           console.warn(LOG, 'endTime rejected:', err)
           try {
@@ -347,8 +304,7 @@ export async function recognizePcm(
       )
     })
   } finally {
-    // Note that this can't be faster than realtime due to the fact that the API supports a media stream.
-    // We work with what we can get.
+    // MediaStream API limits speed to realtime.
     console.timeEnd(LOG + ' recognizePcm')
   }
 }

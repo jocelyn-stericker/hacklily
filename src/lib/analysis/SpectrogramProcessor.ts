@@ -1,20 +1,8 @@
-/* Braat, adapted from Praat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- * Copyright (C) 1992-2008,2011,2012,2015-2020,2022-2024 Paul Boersma
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Braat, adapted from Praat
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
+// Copyright (C) 1992-2008,2011,2012,2015-2020,2022-2024 Paul Boersma
 
 import { complexFFTForward, FftTables } from '#/lib/dsp/fft'
 import { nextPow2 } from '#/lib/dsp/mathUtils'
@@ -63,9 +51,9 @@ export interface SpectrogramConfig {
 export interface ResolvedSpectrogramParams {
   sampleRate: number
   nsampWindow: number // samples per analysis window (always even)
-  halfNsampWindow: number // nsampWindow / 2
-  nFFT: number // FFT size (power of 2, ≥ nsampWindow)
-  halfNFFT: number // nFFT / 2
+  halfNsampWindow: number
+  nFFT: number // FFT size (power of 2, >= nsampWindow)
+  halfNFFT: number
   numFreqs: number // output frequency bins
   binWidthSamples: number // FFT bins summed per output bin
   binWidthHz: number // FFT bin spacing = sampleRate / nFFT
@@ -80,10 +68,10 @@ export interface ResolvedSpectrogramParams {
  * Output of spectrogram analysis.
  *
  * `z` is the 2-D power spectral density array stored row-major:
- *   z[iFreq * numFrames + iFrame]   (Pa²/Hz)
+ *   z[iFreq * numFrames + iFrame]   (Pa^2/Hz)
  *
  * To convert to dB (matching Praat's display):
- *   dB = 10 / ln(10) * ln(z_value / 4e-10)   (reference PSD: 4*10⁻¹⁰ Pa²/Hz)
+ *   dB = 10 / ln(10) * ln(z_value / 4e-10)   (reference PSD: 4*10^(-10) Pa^2/Hz)
  */
 export interface SpectrogramResult {
   numFrames: number
@@ -140,7 +128,7 @@ function resolveSpectrogramParams(
       'No frequency bins: increase maxFrequencyHz or decrease freqStepHz.',
     )
 
-  // FFT size: smallest power-of-2 ≥ max(nsampWindow, required for freq resolution)
+  // FFT size: smallest power-of-2 >= max(nsampWindow, required for freq resolution)
   const nFFT = nextPow2(
     Math.max(nsampWindow, Math.ceil(2 * numFreqs * (nyquist / fmax))),
   )
@@ -336,7 +324,7 @@ export class SpectrogramProcessor {
       1 + Math.floor((physDur - p.physicalWindowLengthSec) / timeStep),
     )
 
-    // Centre the frame grid over the signal (Praat: t1 = x1 + 0.5*((nx-1)*dx − (nFrames-1)*dt_frame))
+    // Centre the frame grid over the signal (Praat: t1 = x1 + 0.5*((nx-1)*dx - (nFrames-1)*dt_frame))
     const x1 = 0.5 * dt // centre of first sample
     const t1 = x1 + 0.5 * ((nSamples - 1) * dt - (nFrames - 1) * timeStep)
 
@@ -347,7 +335,7 @@ export class SpectrogramProcessor {
       // Praat: leftSample = floor((t - x1) / dt)  [0-indexed equivalent]
       const leftSample = Math.floor(t * p.sampleRate - 0.5)
       const startSample = leftSample + 1 - p.halfNsampWindow
-      // Safety clamp — should not be needed when t1 is computed correctly
+      // Safety clamp -- should not be needed when t1 is computed correctly
       const clampedStart = Math.max(
         0,
         Math.min(startSample, nSamples - p.nsampWindow),
@@ -508,7 +496,7 @@ export class SpectrogramStreamProcessor {
   }
 
   /**
-   * Copies the oldest completed PSD frame into `out[0..numFreqs-1]` (Pa²/Hz)
+   * Copies the oldest completed PSD frame into `out[0..numFreqs-1]` (Pa^2/Hz)
    * and advances the queue.  Returns false if no frame is available.
    */
   readFrame(out: Float32Array): boolean {

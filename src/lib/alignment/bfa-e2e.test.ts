@@ -1,3 +1,9 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Part of a TypeScript port of the Bournemouth Forced Aligner (BFA).
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>.
+// Copyright (C) Tabahi <tabahi@duck.com>.
+
 /*
  * End-to-end parity test: run the simplified pipeline on the "butterfly" sample
  * through the real CUPE int8 ONNX model (onnxruntime-web / wasm under Node) and

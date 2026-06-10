@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>.
+
 // @vitest-environment jsdom
 import {
   RouterProvider,
@@ -16,7 +20,7 @@ const { getESpeak, textToIPA } = vi.hoisted(() => {
   // Mirror the real eSpeak engine: a large object graph with a cyclic reference
   // (the emscripten Module). If this object is ever passed across a component
   // boundary as a prop, React's dev-mode traversal recurses through the cycle
-  // and hangs — this test would then time out. The component must only hand
+  // and hangs -- this test would then time out. The component must only hand
   // derived primitives to children (see IpaTranscriber).
   const engine: Record<string, unknown> = { textToIPA: fn }
   engine.module = { engine, heap: new Array(1000).fill(0) }

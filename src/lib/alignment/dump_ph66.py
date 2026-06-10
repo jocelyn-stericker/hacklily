@@ -34,7 +34,7 @@ def js(obj):
 
 
 HEADER = """/*
- * AUTO-GENERATED — do not edit by hand.
+ * AUTO-GENERATED -- do not edit by hand.
  * Source: bournemouth_aligner/ipamappers/ph66_mapper.py  (BFA v1.1.4)
  * Regenerate with dump_ph66.py.
  *

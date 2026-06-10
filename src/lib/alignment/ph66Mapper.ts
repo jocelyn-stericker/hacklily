@@ -1,15 +1,16 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Part of a TypeScript port of the Bournemouth Forced Aligner (BFA).
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>.
+// Copyright (C) Tabahi <tabahi@duck.com>.
+// See ATTRIBUTION.md.
+
 /*
  * IPA -> ph66 base-phoneme mapping.
  *
  * Faithful TypeScript port of bournemouth_aligner/ipamappers/ph66_mapper.py
  * (functions get_compound_phoneme_mapping / _try_intelligent_split /
  *  _score_phoneme_split / _collapse_to_single_phoneme).
- *
- * Part of a TypeScript port of the Bournemouth Forced Aligner (BFA).
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>.
- * Copyright (C) Tabahi <tabahi@duck.com>.
- * Licensed under the GNU Affero General Public License v3.0 or later.
- * See the LICENSE at the repository root and ATTRIBUTION.md.
  */
 
 import { phonemeMappingRaw, compoundPhonemeMappingRaw } from './ph66Data.js'

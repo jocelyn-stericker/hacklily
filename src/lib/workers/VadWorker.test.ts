@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 // @vitest-environment jsdom
 
@@ -291,7 +278,7 @@ describe('VadWorker', () => {
       expect(final[10]).toBe(true) // inside the speech segment
       expect(final[final.length - 1]).toBe(false) // deep in the trailing silence
       const speechFrames = final.filter((s) => s).length
-      expect(speechFrames).toBeGreaterThan(200) // kept (≥ MIN_SPEECH_MS)
+      expect(speechFrames).toBeGreaterThan(200) // kept (>= MIN_SPEECH_MS)
       expect(speechFrames).toBeLessThan(final.length) // but not the whole recording
     })
   })
@@ -388,7 +375,7 @@ describe('VadWorker', () => {
 
     it('bridges a short gap between two speech segments', async () => {
       mockVadState.durationSec = 2
-      // speech · short gap (< REDEMPTION_MS ≈ 2.5 chunks) · speech, then silence.
+      // speech * short gap (< REDEMPTION_MS = ~2.5 chunks) * speech, then silence.
       const probs = [
         ...Array(20).fill(0.5),
         ...Array(2).fill(0),

@@ -1,20 +1,8 @@
-/* Braat, adapted from Praat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- * Copyright (C) 1997-2011,2025 David Weenink, Paul Boersma 2016-2018,2020
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Braat, adapted from Praat
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
+// Copyright (C) 1997-2011,2025 David Weenink, Paul Boersma 2016-2018,2020
 
 import { burgLpc, findLpcRoots, fixIntoUnitCircle } from '#/lib/dsp/burgLpc'
 import { nextPow2 } from '#/lib/dsp/mathUtils'
@@ -24,7 +12,7 @@ import { buildFormantGaussianWindow } from '#/lib/dsp/windowFn'
 /**
  * Formant analysis configuration for Burg's method.
  *
- * IMPORTANT — resampling:
+ * IMPORTANT -- resampling:
  *   Praat resamples the input to 2 * maxFrequencyHz before analysis so the
  *   LPC's Nyquist equals the formant ceiling.  This port does NOT resample.
  *   The caller must supply audio already at 2 * maxFrequencyHz Hz.
@@ -33,14 +21,14 @@ import { buildFormantGaussianWindow } from '#/lib/dsp/windowFn'
 export interface FormantConfig {
   /**
    * Maximum number of formants to detect.
-   * Sets LPC order = 2 * maxFormants (e.g. 5 formants → order 10).
+   * Sets LPC order = 2 * maxFormants (e.g. 5 formants -> order 10).
    * Default: 5.
    */
   maxFormants: number
 
   /**
    * Formant ceiling frequency in Hz.  Must equal sampleRate / 2.
-   * Used in the root → frequency / bandwidth conversion.
+   * Used in the root -> frequency / bandwidth conversion.
    * Default: 5500 Hz.
    */
   maxFrequencyHz: number
@@ -53,13 +41,13 @@ export interface FormantConfig {
 
   /**
    * Time step between frames in seconds.
-   * 0 = auto → halfWindowLengthSec / 4 (4x oversampling, matching Praat).
+   * 0 = auto -> halfWindowLengthSec / 4 (4x oversampling, matching Praat).
    */
   timeStepSec: number
 
   /**
    * Pre-emphasis high-pass cutoff in Hz.
-   * Applies s[i] −= exp(−2π f dt) * s[i−1] backwards through the signal.
+   * Applies s[i] -= exp(-2PI f dt) * s[i-1] backwards through the signal.
    * Default: 50 Hz.
    */
   preEmphasisHz: number
@@ -92,7 +80,7 @@ export interface FormantFrame {
   /**
    * Number of valid formants in `formants[0..formantCount-1]`.
    * 0 for silent frames. For stream frames, `formants` may be longer than
-   * `formantCount` due to pre-allocation — always use this field, not
+   * `formantCount` due to pre-allocation -- always use this field, not
    * `formants.length`, to determine how many formants are present.
    */
   formantCount: number
@@ -117,8 +105,8 @@ export interface FormantResult {
  * @param nyquistHz sampleRate / 2.  Also equals maxFrequencyHz when properly resampled.
  * @param order     LPC order (= 2 * maxFormants).
  * @param safetyHz  Safety margin in Hz.
- * @param outFreqs  Output: formant frequencies in Hz, length ≥ order/2.
- * @param outBWs    Output: formant bandwidths in Hz, length ≥ order/2.
+ * @param outFreqs  Output: formant frequencies in Hz, length >= order/2.
+ * @param outBWs    Output: formant bandwidths in Hz, length >= order/2.
  * @param coeffs, b1, b2, aa, rootsRe, rootsIm, peval  Scratch arrays (see burgLpc / findLpcRoots).
  * @returns  Number of formants written.
  */
@@ -144,18 +132,18 @@ function analyzeFormantFrame(
 
   let n = 0
   for (let i = 0; i < order; i++) {
-    if (rootsIm[i]! < 0) continue // conjugate pairs — keep upper half-plane only
+    if (rootsIm[i]! < 0) continue // conjugate pairs -- keep upper half-plane only
     const f =
       (Math.abs(Math.atan2(rootsIm[i]!, rootsRe[i]!)) * nyquistHz) / Math.PI
     if (f < safetyHz || f > nyquistHz - safetyHz) continue
-    // Bandwidth: −log(|z|²) * nyquist / π  (std::norm returns |z|², so this matches Praat)
+    // Bandwidth: -log(|z|^2) * nyquist / PI  (std::norm returns |z|^2, so this matches Praat)
     const norm2 = rootsRe[i]! * rootsRe[i]! + rootsIm[i]! * rootsIm[i]!
     outFreqs[n] = f
     outBWs[n] = (-Math.log(norm2) * nyquistHz) / Math.PI
     n++
   }
 
-  // Sort by ascending frequency (selection sort — n ≤ order/2, typically ≤ 10)
+  // Sort by ascending frequency (selection sort -- n <= order/2, typically <= 10)
   for (let i = 0; i < n - 1; i++) {
     let m = i
     for (let j = i + 1; j < n; j++) if (outFreqs[j]! < outFreqs[m]!) m = j
@@ -452,7 +440,7 @@ export class FormantStreamProcessor {
     this.outFreqs = new Float32Array(Math.ceil(this.order / 2))
     this.outBWs = new Float32Array(Math.ceil(this.order / 2))
 
-    // Pre-allocate all frame slots AND their formant arrays — zero allocation in the hot path.
+    // Pre-allocate all frame slots AND their formant arrays -- zero allocation in the hot path.
     const maxF = Math.ceil(this.order / 2)
     this.queue = Array.from({ length: this.QUEUE }, () => ({
       timeSec: 0,
@@ -541,7 +529,7 @@ export class FormantStreamProcessor {
           rootsIm,
           peval,
         )
-        // Write directly into pre-allocated Formant objects — no allocation.
+        // Write directly into pre-allocated Formant objects -- no allocation.
         for (let k = 0; k < nF; k++) {
           slot.formants[k]!.frequencyHz = outFreqs[k]!
           slot.formants[k]!.bandwidthHz = outBWs[k]!
@@ -562,7 +550,7 @@ export class FormantStreamProcessor {
   /**
    * Returns a reference to the oldest completed FormantFrame, or null.
    * The returned object is owned by the queue and will be overwritten on a
-   * future `readFrame()` call — copy its contents if you need to hold it longer.
+   * future `readFrame()` call -- copy its contents if you need to hold it longer.
    * Read `frame.formants[0..frame.formantCount-1]`; slots beyond `formantCount`
    * are pre-allocated padding and should be ignored.
    */

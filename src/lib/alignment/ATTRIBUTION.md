@@ -31,12 +31,12 @@ Direct, line-by-line ports of upstream BFA code:
 
 ## Scope of this port
 
-- **Simplified pipeline only**: CUPE → log-softmax → CTC Viterbi → assort →
+- **Simplified pipeline only**: CUPE -> log-softmax -> CTC Viterbi -> assort ->
   millisecond timestamps. The advanced pipeline (target boosting, minimum-
   probability enforcement, silence anchoring, segmented Viterbi, confidence
   scoring) is intentionally **not** ported.
 - **Phonemization input** is an espeak-ng IPA _transcript_ string. espeak-ng
-  itself is **not** in this folder. The ph66 mapping (IPA → 66-class indices)
+  itself is **not** in this folder. The ph66 mapping (IPA -> 66-class indices)
   is ported and runs in-process.
 
 ## Third-party runtime dependency

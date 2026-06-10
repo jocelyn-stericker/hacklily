@@ -1,21 +1,9 @@
-/* Braat, adapted from Praat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- * Copyright (C) 1997-2011,2025 David Weenink, Paul Boersma 2016-2018,2020
- * Copyright (C) 1992-2005,2007-2012,2014-2020,2023-2025 Paul Boersma
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Braat, adapted from Praat
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
+// Copyright (C) 1997-2011,2025 David Weenink, Paul Boersma 2016-2018,2020
+// Copyright (C) 1992-2005,2007-2012,2014-2020,2023-2025 Paul Boersma
 
 import { interpolateSinc } from '#/lib/analysis/ResampleProcessor'
 import { complexFFTForward, complexFFTInverse, FftTables } from '#/lib/dsp/fft'
@@ -23,53 +11,38 @@ import { nextPow2 } from '#/lib/dsp/mathUtils'
 
 /**
  * Configuration for Praat's "Sound: To Pitch (filtered autocorrelation)..." algorithm.
- *
- * The "filtered" step applies a Gaussian low-pass filter to the entire signal
- * (cutoff ≈ pitchCeilingHz / 2.1 for the default attenuationAtTop = 0.1) before the
- * per-frame autocorrelation analysis.  This suppresses upper harmonics and greatly
- * reduces octave errors compared to the plain autocorrelation method.
+ * Pre-filter: Gaussian low-pass (cutoff = ~pitchCeilingHz / 2.1 for attenuationAtTop = 0.1)
+ * applied before per-frame autocorrelation to suppress upper harmonics and reduce octave errors.
  */
 export interface PitchConfig {
-  /**
-   * Time step between analysis frames, seconds.  0 = auto-> 3 / pitchFloorHz / 4
-   * (4x oversampling of the analysis window, matching Praat).  Default: 0.
-   */
+  /** Time step between frames, seconds.  0 = auto = 3 / pitchFloorHz / 4 (Praat 4x oversampling).  Default: 0. */
   timeStepSec: number
 
-  /**
-   * Lower pitch bound in Hz.  Also determines the analysis window length
-   * (3 periods at pitchFloorHz).  Default: 75.
-   */
+  /** Lower pitch bound in Hz; determines analysis window length (3 periods at pitchFloorHz).  Default: 75. */
   pitchFloorHz: number
 
   /** Upper pitch bound in Hz.  Default: 600. */
   pitchCeilingHz: number
 
   /**
-   * Maximum number of autocorrelation-peak candidates retained per frame.
-   * Raised to ceil(pitchCeilingHz / pitchFloorHz) automatically if that is larger.
+   * Max AC-peak candidates per frame; auto-raised to ceil(pitchCeilingHz / pitchFloorHz).
    * Default: 15.
    */
   maxCandidates: number
 
   /**
-   * Gaussian low-pass pre-filter attenuation factor at pitchCeilingHz.
-   * Set to 0 to disable the filter (equivalent to the plain ac method).
-   * Default: 0.1 (−20 dB at ceiling, matching Praat's filteredAc default).
+   * Gaussian pre-filter attenuation at pitchCeilingHz.  0 = disable (plain ac).
+   * Default: 0.1 (-20 dB at ceiling).
    */
   attenuationAtTop: number
 
   /**
-   * Silence threshold.  Frames whose local peak amplitude is below
-   * silenceThreshold / (1 + voicingThreshold) * globalPeak are treated as silence
-   * and strongly prefer the unvoiced candidate.  Default: 0.03.
+   * Frames with local peak < silenceThreshold / (1 + voicingThreshold) * globalPeak
+   * are treated as silence and strongly prefer the unvoiced candidate.  Default: 0.03.
    */
   silenceThreshold: number
 
-  /**
-   * Minimum normalized autocorrelation peak required for a frame to be considered
-   * voiced.  Also the base strength of the unvoiced candidate.  Default: 0.45.
-   */
+  /** Min normalized AC peak for a voiced frame; also the unvoiced candidate's base strength.  Default: 0.45. */
   voicingThreshold: number
 
   /** Cost per octave that penalises high-frequency pitch (biases toward lower pitch). Default: 0.01. */
@@ -77,32 +50,29 @@ export interface PitchConfig {
 
   /**
    * Cost per octave of pitch jump between adjacent frames.
-   * Scaled internally by 0.01 / timeStep for time-step independence (Praat convention).
-   * Default: 0.35.
+   * Scaled by 0.01 / timeStep for time-step independence.  Default: 0.35.
    */
   octaveJumpCost: number
 
   /**
-   * Cost of a voiced ↔ unvoiced transition.
+   * Cost of a voiced <-> unvoiced transition.
    * Also scaled by 0.01 / timeStep internally.  Default: 0.14.
    */
   voicedUnvoicedCost: number
 }
 
-/** A single pitch analysis output frame. */
 export interface PitchFrame {
   /** Time at centre of frame (seconds from start of signal). */
   timeSec: number
   /** Fundamental frequency in Hz.  0 means the frame is unvoiced. */
   frequencyHz: number
   /**
-   * Normalized autocorrelation at the selected lag (approximately 0–1).
+   * Normalized autocorrelation at the selected lag (approximately 0-1).
    * 0 for unvoiced frames.
    */
   strength: number
 }
 
-/** Result of pitch analysis over a signal. */
 export interface PitchResult {
   frames: PitchFrame[]
   timeStepSec: number
@@ -111,9 +81,8 @@ export interface PitchResult {
 }
 
 /**
- * Golden-section maximization of a unimodal function on [a, b].
- * Returns [xBest, yBest].  Matches Praat's NUMminimize_brent usage in
- * NUMimproveMaximum (melder/NUMinterpol.cpp).
+ * Golden-section maximization of a unimodal function on [a, b]; returns [xBest, yBest].
+ * Matches Praat's NUMimproveMaximum (melder/NUMinterpol.cpp).
  */
 function _goldenSectionMax(
   f: (x: number) => number,
@@ -121,7 +90,7 @@ function _goldenSectionMax(
   b: number,
   tol: number,
 ): [number, number] {
-  const phi = (Math.sqrt(5) - 1) * 0.5 // 0.6180339…
+  const phi = (Math.sqrt(5) - 1) * 0.5 // 0.6180339...
   let x0 = a,
     x3 = b
   let x1 = x3 - phi * (x3 - x0)
@@ -148,15 +117,14 @@ function _goldenSectionMax(
 
 /**
  * Analyses a mono audio signal and returns a pitch (F0) track.
- *
  * Implements Praat's "Sound: To Pitch (filtered autocorrelation)..." algorithm:
- *   1. Gaussian low-pass pre-filter (the "filtered" step).
- *   2. Per-frame: DC removal → Hanning window → FFT autocorrelation → window-AC
- *      normalisation → sinc-interpolated peak candidates.
+ *   1. Gaussian low-pass pre-filter.
+ *   2. Per-frame: DC removal -> Hanning window -> FFT autocorrelation -> window-AC
+ *      normalisation -> sinc-interpolated peak candidates.
  *   3. Viterbi path finder to select the smoothest voiced/unvoiced trajectory.
  *
- * All scratch buffers are allocated at construction; `analyze()` only allocates
- * the output array and the per-run candidate / DP tables.
+ * Scratch buffers are allocated at construction; `analyze()` only allocates
+ * the output array and per-run candidate / DP tables.
  *
  * Example:
  * ```ts
@@ -175,8 +143,8 @@ export class PitchProcessor {
   private readonly nsampPeriod: number // floor(sampleRate / pitchFloor)
   private readonly nsampWindow: number // analysis window length (even)
   private readonly halfNsampWindow: number
-  private readonly nsampFFT: number // next-pow-2 ≥ nsampWindow * 1.5
-  private readonly brentIxmax: number // floor(nsampWindow * 0.5) — max useful lag
+  private readonly nsampFFT: number // next-pow-2 >= nsampWindow * 1.5
+  private readonly brentIxmax: number // floor(nsampWindow * 0.5) -- max useful lag
   private readonly minimumLag: number // max(2, floor(sampleRate / pitchCeiling))
   private readonly maximumLag: number // min(floor(nsampWindow/3)+2, nsampWindow)
   private readonly timeStep: number // resolved time step, seconds
@@ -186,7 +154,7 @@ export class PitchProcessor {
   private readonly fftTables: FftTables
   private readonly fftRe: Float32Array // [nsampFFT]
   private readonly fftIm: Float32Array // [nsampFFT]
-  // Symmetric r-buffer: index (brentIxmax + k) = r[k], (brentIxmax − k) = r[−k] = r[k].
+  // Symmetric r-buffer: index (brentIxmax + k) = r[k], (brentIxmax - k) = r[-k] = r[k].
   // This layout lets interpolateSinc read across lag=0 without special-casing.
   private readonly rBuf: Float32Array // [2 * brentIxmax + 1]
 
@@ -218,7 +186,7 @@ export class PitchProcessor {
 
     this.nsampPeriod = Math.floor(1.0 / dt / cfg.pitchFloorHz)
 
-    // Praat: halfnsamp = floor(nsampApprox/2) − 1; nsampWindow = halfnsamp * 2 (forced even)
+    // Praat: halfnsamp = floor(nsampApprox/2) - 1; nsampWindow = halfnsamp * 2 (forced even)
     const nsampApprox = Math.floor(periodsPerWindow / cfg.pitchFloorHz / dt)
     const halfNsamp = Math.floor(nsampApprox / 2) - 1
     if (halfNsamp < 2)
@@ -235,7 +203,7 @@ export class PitchProcessor {
       this.nsampWindow,
     )
 
-    // AC_HANNING: interpolation_depth = 0.5 → nsampFFT ≥ nsampWindow * 1.5
+    // AC_HANNING: interpolation_depth = 0.5 -> nsampFFT >= nsampWindow * 1.5
     this.nsampFFT = nextPow2(Math.ceil(this.nsampWindow * 1.5))
     this.brentIxmax = Math.floor(this.nsampWindow * 0.5)
 
@@ -244,7 +212,7 @@ export class PitchProcessor {
         ? cfg.timeStepSec
         : periodsPerWindow / cfg.pitchFloorHz / 4.0
 
-    // Hanning window (Praat 1-indexed formula: w[i] = 0.5 − 0.5·cos(2π·i/(N+1)), i=1..N)
+    // Hanning window (Praat 1-indexed formula: w[i] = 0.5 - 0.5*cos(2PI*i/(N+1)), i=1..N)
     this.window = new Float32Array(this.nsampWindow)
     for (let i = 0; i < this.nsampWindow; i++)
       this.window[i] =
@@ -289,13 +257,8 @@ export class PitchProcessor {
   }
 
   /**
-   * Gaussian low-pass pre-filter applied to the whole signal.
-   *
-   * The "filtered" in "filtered autocorrelation": attenuates harmonics above
-   * pitchCeilingHz by applying a Gaussian spectral envelope.  The cutoff is
-   * `pitchCeilingHz / sqrt(−2·ln(attenuationAtTop))` ≈ pitchCeiling / 2.1 for
-   * attenuationAtTop = 0.1.
-   *
+   * Gaussian low-pass pre-filter for the whole signal.
+   * Cutoff = `pitchCeilingHz / sqrt(-2*ln(attenuationAtTop))` = ~pitchCeiling / 2.1 for default.
    * Source: Sound_to_Pitch_filteredAc in fon/Sound_to_Pitch.cpp.
    */
   #lowPassFilter(samples: Float32Array): Float32Array {
@@ -327,12 +290,7 @@ export class PitchProcessor {
     return out
   }
 
-  /**
-   * Analyses `samples` (mono, at the sample rate given at construction) and returns
-   * a pitch track.
-   *
-   * The input signal is not modified.
-   */
+  /** Analyses `samples` (mono, at the sample rate given at construction).  Input is not modified. */
   analyze(samples: Float32Array): PitchResult {
     const {
       sampleRate,
@@ -355,13 +313,13 @@ export class PitchProcessor {
     const n = samples.length
     const dt = 1 / sampleRate
 
-    // ── Gaussian low-pass pre-filter ──────────────────────────────────────────
+    // -- Gaussian low-pass pre-filter ----
     const signal =
       cfg.attenuationAtTop > 0 && cfg.attenuationAtTop < 1
         ? this.#lowPassFilter(samples)
         : samples
 
-    // ── Global mean and peak (computed on filtered signal, matching Praat) ────
+    // -- Global mean and peak (computed on filtered signal, matching Praat) ----
     let globalMean = 0
     for (let i = 0; i < n; i++) globalMean += signal[i]!
     globalMean /= n
@@ -372,14 +330,14 @@ export class PitchProcessor {
     }
     if (globalPeak === 0) return { frames: [], timeStepSec: timeStep, t1Sec: 0 }
 
-    // ── Frame grid (Praat: Sampled_shortTermAnalysis with dt_window = nsampWindow·dt) ──
+    // -- Frame grid (Praat: Sampled_shortTermAnalysis with dt_window = nsampWindow*dt) ----
     const physDur = n * dt
     const dtWindow = nsampWindow * dt
     const nFrames = Math.max(1, 1 + Math.floor((physDur - dtWindow) / timeStep))
     const x1 = 0.5 * dt
     const t1 = x1 + 0.5 * ((n - 1) * dt - (nFrames - 1) * timeStep)
 
-    // ── Per-frame candidate storage ───────────────────────────────────────────
+    // -- Per-frame candidate storage ----
     // One extra slot per frame for the unvoiced candidate (always present).
     const MAX_CANDS = cfg.maxCandidates + 1
     const candFreqs = new Float32Array(nFrames * MAX_CANDS)
@@ -412,8 +370,8 @@ export class PitchProcessor {
         fftRe[j] = s * window[j]!
       }
 
-      // Local peak for intensity: central ±halfNsampPeriod of the windowed frame
-      // (Praat: halfnsamp_window ± halfnsamp_period, 1-indexed → 0-indexed here)
+      // Local peak for intensity: central +/-halfNsampPeriod of the windowed frame
+      // (Praat: halfnsamp_window +/- halfnsamp_period, 1-indexed -> 0-indexed here)
       const peakStart = Math.max(0, halfNsampWindow - halfNsampPeriod)
       const peakEnd = Math.min(
         nsampWindow - 1,
@@ -426,7 +384,6 @@ export class PitchProcessor {
       }
       frameIntensities[iframe] = localPeak / globalPeak
 
-      // FFT autocorrelation: forward FFT → power spectrum → backward FFT
       complexFFTForward(fftRe, fftIm, fftTables)
       for (let k = 0; k < nsampFFT; k++) {
         const re = fftRe[k]!,
@@ -447,9 +404,9 @@ export class PitchProcessor {
         continue
       }
 
-      // Normalized r[k] = ac[k] / (ac[0] * windowAC[k]) — matching Praat:
+      // Normalized r[k] = ac[k] / (ac[0] * windowAC[k]) -- matching Praat:
       // r[i] = ac[i+1] / (ac[1] * windowR[i+1])  (Praat 1-indexed)
-      // Build symmetric rBuf[brentIxmax ± k] = r[k] for sinc interpolation across lag=0
+      // Build symmetric rBuf[brentIxmax +/- k] = r[k] for sinc interpolation across lag=0
       rBuf[brentIxmax] = 1.0
       for (let k = 1; k <= brentIxmax; k++) {
         const rk = windowAC[k]! > 0 ? fftRe[k]! / (ac0 * windowAC[k]!) : 0
@@ -457,7 +414,7 @@ export class PitchProcessor {
         rBuf[brentIxmax - k] = rk // autocorrelation is even
       }
 
-      // ── First-pass: parabolic interpolation + 30-point sinc strength ─────
+      // -- First-pass: parabolic interpolation + 30-point sinc strength ----
       let nVoiced = 0
       for (let lag = minimumLag; lag < maximumLag && lag < brentIxmax; lag++) {
         const rm1 = rBuf[brentIxmax + lag - 1]!
@@ -468,14 +425,14 @@ export class PitchProcessor {
 
         // Parabolic interpolation (Praat 2025-04-18 numerically-stable form)
         const dr = 0.5 * (rp1 - rm1)
-        const d2r = r0 - rm1 + (r0 - rp1) // = 2·r0 − rm1 − rp1
+        const d2r = r0 - rm1 + (r0 - rp1) // = 2*r0 - rm1 - rp1
         const lagEst = d2r > 0 ? lag + dr / d2r : lag
 
         // 30-point sinc interpolation for strength at first estimate
         let strEst = interpolateSinc(rBuf, brentIxmax + lagEst, 30)
         if (strEst > 1.0) strEst = 1.0 / strEst // "high values due to short windows" (Praat)
 
-        // ── Second pass: golden-section search with 70-point sinc (NUMimproveMaximum)
+        // -- Second pass: golden-section search with 70-point sinc (NUMimproveMaximum) ----
         const [lagFinal, strRaw] = _goldenSectionMax(
           (x) => interpolateSinc(rBuf, brentIxmax + x, 70),
           lagEst - 1.0,
@@ -492,7 +449,7 @@ export class PitchProcessor {
           candStrs[base + nVoiced] = strFinal
           nVoiced++
         } else {
-          // Find weakest by local strength (strength − octaveCost·log2(floor/freq))
+          // Find weakest by local strength (strength - octaveCost*log2(floor/freq))
           let weakIdx = 0
           let weakLS =
             candStrs[base]! -
@@ -522,7 +479,7 @@ export class PitchProcessor {
       candCounts[iframe] = nVoiced + 1
     }
 
-    // ── Viterbi path finder (Pitch_pathFinder in fon/Pitch.cpp) ─────────────
+    // -- Viterbi path finder (Pitch_pathFinder in fon/Pitch.cpp) ----
     // Transition costs are scaled by 0.01 / timeStep for time-step independence.
     const tsC = 0.01 / timeStep
     const oc_s = cfg.octaveJumpCost * tsC
@@ -586,7 +543,6 @@ export class PitchProcessor {
       }
     }
 
-    // Backtrack from the best end state
     const lastBase = (nFrames - 1) * MAX_CANDS
     let bestC = 0,
       bestScore = delta[lastBase]!
@@ -601,7 +557,6 @@ export class PitchProcessor {
     for (let iframe = nFrames - 1; iframe > 0; iframe--)
       path[iframe - 1] = psi[iframe * MAX_CANDS + path[iframe]!]!
 
-    // Build output frames
     const frames: PitchFrame[] = new Array(nFrames)
     for (let iframe = 0; iframe < nFrames; iframe++) {
       const c = path[iframe]!

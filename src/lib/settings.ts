@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 const LOG = '[Settings]'
 
@@ -28,7 +15,7 @@ export type VowelChartAverages =
   | 'hidden'
 
 // Which speech-to-text tier Braat is allowed to use. A posture rather than a
-// specific engine — each tier resolves to a concrete engine at runtime so there
+// specific engine -- each tier resolves to a concrete engine at runtime so there
 // is always a working fallback:
 //   disabled - do not transcribe
 //   small    - the lightweight on-device option: the browser's own on-device
@@ -41,7 +28,7 @@ export type VowelChartAverages =
 export type TranscriptionMode = 'disabled' | 'small' | 'large' | 'cloud'
 
 // localStorage flag recording that the bundled Moonshine weights finished
-// downloading — see modelDownload.ts. Mirrored here so the legacy-settings
+// downloading -- see modelDownload.ts. Mirrored here so the legacy-settings
 // migration can seed it for users who already had the old "bundled" mode.
 const MOONSHINE_DOWNLOADED_KEY = 'braat:model-downloaded:moonshine'
 
@@ -57,7 +44,7 @@ function normalizeTranscriptionMode(value: unknown): TranscriptionMode {
       return value
     case 'bundled':
       // The bundled engine was Moonshine, which a "small"-tier user can keep
-      // using offline — seed its downloaded flag so we don't re-prompt.
+      // using offline -- seed its downloaded flag so we don't re-prompt.
       try {
         localStorage.setItem(MOONSHINE_DOWNLOADED_KEY, '1')
       } catch {

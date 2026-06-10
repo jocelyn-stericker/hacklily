@@ -1,5 +1,11 @@
-/*
- * Pure DSP + CTC Viterbi decoding for the BFA *simplified* pipeline.
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Part of a TypeScript port of the Bournemouth Forced Aligner (BFA).
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>.
+// Copyright (C) Tabahi <tabahi@duck.com>.
+// See ATTRIBUTION.md.
+
+/* Pure DSP + CTC Viterbi decoding for the BFA *simplified* pipeline.
  *
  * Faithful TypeScript port of the corresponding routines in
  * bournemouth_aligner/cpp_onnx/main.cpp (itself a port of bfaonnx.py):
@@ -9,17 +15,11 @@
  *
  * Also ports the two post-processing steps the C++ advanced pipeline layers on
  * top of the simplified decode (ensure_target_coverage, extend_soft_boundaries),
- * which the aligner runs by default — see {@link ensureTargetCoverage} and
- * {@link extendSoftBoundaries}.
+ * which the aligner runs by default -- see `ensureTargetCoverage` and
+ * `extendSoftBoundaries`.
  *
  * Float32Array is used for log-prob/DP buffers so arithmetic matches the C++
  * float32 reference closely.
- *
- * Part of a TypeScript port of the Bournemouth Forced Aligner (BFA).
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>.
- * Copyright (C) Tabahi <tabahi@duck.com>.
- * Licensed under the GNU Affero General Public License v3.0 or later.
- * See the LICENSE at the repository root and ATTRIBUTION.md.
  */
 
 /** Segment record. [upstream: main.cpp:443 struct FrameStamp] */
@@ -30,7 +30,7 @@ export interface FrameStamp {
   targetSeqIdx: number
   confidence: number
   /**
-   * True when this stamp was synthesized by {@link ensureTargetCoverage} to
+   * True when this stamp was synthesized by `ensureTargetCoverage` to
    * cover a target phoneme the decoder dropped, rather than decoded directly.
    * [upstream: main.cpp:449 FrameStamp::is_estimated]
    */

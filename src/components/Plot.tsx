@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 // Generic plot container.
 
@@ -269,8 +256,8 @@ function ampToY({
   ampMaxNorm: number
   plotPad: Padding
 }): number {
-  // Amplitude is centered: 0 is at mid-height, ±ampMaxNorm at top/bottom.
-  // frac = 0.5 ± (ampNorm / 2*ampMaxNorm) maps [0..ampMaxNorm] to [0.5..1] and [-ampMaxNorm..0] to [0..0.5].
+  // Amplitude is centered: 0 is at mid-height, +/- ampMaxNorm at top/bottom.
+  // frac = 0.5 +/- (ampNorm / 2*ampMaxNorm) maps [0..ampMaxNorm] to [0.5..1] and [-ampMaxNorm..0] to [0..0.5].
   const frac = ampNorm / ampMaxNorm / 2 + 0.5
   return (
     plotPad.top * dpr +
@@ -324,7 +311,7 @@ function timeToX({
   return plotPad.left * dpr + (timeSec - tMinSec) / secPerPx
 }
 
-// ── Context ───────────────────────────────────────────────────────────────────
+// -- Context ----
 
 interface PlotContextValue {
   plotPad: Padding
@@ -347,7 +334,7 @@ function usePlot(): PlotContextValue {
   return ctx
 }
 
-// ── Conversion hooks ──────────────────────────────────────────────────────────
+// -- Conversion hooks ----
 
 export function usePlotPad(): Padding {
   return usePlot().plotPad
@@ -454,7 +441,7 @@ function useToY(inCanvas: InCanvas): (value: number) => number {
   )
 }
 
-// ── Internal sub-components ───────────────────────────────────────────────────
+// -- Internal sub-components ----
 
 function YAxisTickAndLabel({
   hzOrAmp,
@@ -509,7 +496,7 @@ function YAxisStrip({ gridHzOrAmp }: { gridHzOrAmp: number[] }) {
       {/* Dark background strip */}
       <div className="absolute inset-0 bg-white dark:bg-[#0e0e14]" />
 
-      {/* Right-edge vertical border — extends through SpeechStrip to meet x-axis */}
+      {/* Right-edge vertical border -- extends through SpeechStrip to meet x-axis */}
       <div
         className="absolute right-0 bg-[#2a2a3a]"
         style={{

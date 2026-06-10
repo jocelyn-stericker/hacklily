@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import { createFileRoute } from '@tanstack/react-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -340,7 +327,7 @@ function App() {
       vowelChartRef.current?.append(globalIndex)
       speechStripRef.current?.append(globalIndex)
       // Only a structural change needs a publish: a chunk turning voiced adds a
-      // button. Pure growth of an already-voiced chunk doesn't — the snapshot
+      // button. Pure growth of an already-voiced chunk doesn't -- the snapshot
       // holds the live chunk objects, so the next render (e.g. the viewport
       // auto-scrolling) already reads the new extent. Skipping it avoids a
       // redundant overlay re-render on every recorded frame.
@@ -383,7 +370,7 @@ function App() {
       const absTo = recordingStartIndexRef.current + to
 
       // Re-chunk around each patched frame so every chunk stays uniformly
-      // voiced/unvoiced (a VAD patch may flip frames — onset, redemption revert,
+      // voiced/unvoiced (a VAD patch may flip frames -- onset, redemption revert,
       // or min-speech discard). The VAD revises the tail on nearly every frame,
       // but the chunk structure rarely changes, so only publish when it does.
       let voicingChanged = false

@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 // Plots F1/F2 formant pairs on a vowel chart for vowel space visualization.
 
@@ -99,7 +86,7 @@ function f1ToY(f1: number, h: number, dpr: number): number {
   return pad + frac * (h - 2 * pad)
 }
 
-// High F2 → left (front vowels), low F2 → right (back vowels)
+// High F2 -> left (front vowels), low F2 -> right (back vowels)
 function f2ToX(f2: number, w: number, dpr: number): number {
   const pad = PAD * dpr
   const frac = 1 - (hzToBark(f2) - BARK_F2_MIN) / (BARK_F2_MAX - BARK_F2_MIN)

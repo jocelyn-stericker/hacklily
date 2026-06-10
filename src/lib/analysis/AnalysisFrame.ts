@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 const LN10_10 = 10 / Math.log(10)
 
@@ -49,13 +36,13 @@ export type AnalysisChunk = AnalysisParams & {
   startTimeSec: number
   // The chunk's single speech-detected value. Chunks are split at voicing
   // boundaries, so every frame in a chunk shares this value (invariant), and
-  // `voiced` is that value — equivalently `framesVoiced(frames)`. Maintained in
+  // `voiced` is that value -- equivalently `framesVoiced(frames)`. Maintained in
   // batch by `framesToChunks` (offline) and incrementally by `reconcileVoicingAt`
   // (realtime patches).
   voiced: boolean
   // True for the first chunk of a recording session. Recordings are independent
-  // — they may use different sample rates / analysis params, and the spectrogram
-  // dB-normalizes within a chunk — so a chunk must never span a recording
+  // -- they may use different sample rates / analysis params, and the spectrogram
+  // dB-normalizes within a chunk -- so a chunk must never span a recording
   // boundary. `mergeChunkAt` refuses to merge such a chunk into its predecessor.
   recordingStart?: boolean
 }
@@ -154,7 +141,7 @@ function chunkContaining(
 // Merge the chunk that begins exactly at globalIndex into the preceding chunk,
 // keeping `voiced` in sync. No-op (returns false) if no chunk starts there, it
 // is the first chunk, it begins a recording session, or the two chunks' time
-// base differs — in those cases the boundary is meaningful and must be kept.
+// base differs -- in those cases the boundary is meaningful and must be kept.
 // Frames keep their order, so the merged chunk stays time-contiguous under the
 // preceding chunk's clock.
 export function mergeChunkAt(
@@ -190,7 +177,7 @@ export function mergeChunkAt(
 // changed its speechDetected value (e.g. a VAD patch): every chunk holds frames
 // of a single speechDetected value, and chunk.voiced equals that value. Only the
 // boundaries immediately before and after the changed frame can be affected, so
-// this isolates that frame and then coalesces it with like-voiced neighbours —
+// this isolates that frame and then coalesces it with like-voiced neighbours --
 // an O(local) fix rather than re-splitting the whole timeline. Returns true if
 // the frame's chunk actually changed voicing (so callers can refresh dependent
 // state); false for a no-op re-confirmation.

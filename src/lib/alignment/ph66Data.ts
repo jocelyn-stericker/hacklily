@@ -1,13 +1,13 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Part of a TypeScript port of the Bournemouth Forced Aligner (BFA).
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>.
+// Copyright (C) Tabahi <tabahi@duck.com>.
+
 /*
- * AUTO-GENERATED — do not edit by hand.
+ * AUTO-GENERATED -- do not edit by hand.
  * Source: bournemouth_aligner/ipamappers/ph66_mapper.py  (BFA v1.1.4)
  * Regenerate with dump_ph66.py.
- *
- * Part of a TypeScript port of the Bournemouth Forced Aligner (BFA).
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>.
- * Copyright (C) Tabahi <tabahi@duck.com>.
- * Licensed under the GNU Affero General Public License v3.0 or later.
- * See the LICENSE at the repository root and ATTRIBUTION.md.
  */
 
 /* eslint-disable */

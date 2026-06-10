@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import { describe, expect, it } from 'vitest'
 
@@ -43,7 +30,7 @@ describe('measureLoudness vs libebur128 reference', () => {
     it(`sine ${freq}Hz amp ${amp} @ ${sr}Hz`, () => {
       const r = measureLoudness(sine(freq, amp, 3, sr), sr)
       expect(r.lufs).not.toBeNull()
-      // Tolerance well within EBU Tech 3341's ±0.1 LU compliance band.
+      // Tolerance well within EBU Tech 3341's +/-0.1 LU compliance band.
       expect(r.lufs!).toBeCloseTo(lufs, 2)
       expect(r.truePeak).toBeCloseTo(tp, 4)
       expect(r.samplePeak).toBeCloseTo(amp, 3)

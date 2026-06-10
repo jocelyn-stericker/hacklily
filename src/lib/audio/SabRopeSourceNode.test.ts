@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import { describe, it, expect, vi } from 'vitest'
 
@@ -261,7 +248,7 @@ describe('SabRopeSourceNode', () => {
       expect(q1[100]).toBe(0) // starved
       expect(q1[127]).toBe(0)
 
-      // Append more (same segment → instantly visible via the shared length).
+      // Append more (same segment -> instantly visible via the shared length).
       producer.append(ramp(50, 100))
       const q2 = quantum(node)[0]!
       expect(q2[0]).toBe(100)
@@ -487,11 +474,11 @@ describe('SabRopeSourceNode', () => {
       producer.append(ramp(2000, 1)) // values 1..2000 (all non-zero)
       setBuffer(node, producer)
       send(node, { type: 'start', timeSec: 0 })
-      // End ~halfway through the source → ~2000 output samples.
+      // End ~halfway through the source -> ~2000 output samples.
       send(node, { type: 'end', timeSec: 1000 / 24000 })
 
       const out = collect(node, 3000, 128)
-      // out[j] ≈ source[j / 2] = j / 2 + 1 in steady state.
+      // out[j] = ~source[j / 2] = j / 2 + 1 in steady state.
       expect(Math.abs(out[1000]! - 501)).toBeLessThan(1)
       // Stopped well before the rope's natural end (4000 output samples).
       expect(out[2900]).toBe(0)
@@ -528,7 +515,7 @@ describe('SabRopeSourceNode', () => {
       send(node, { type: 'end', timeSec: 1000 / 24000 })
 
       const out = collect(node, 3000, 128)
-      // out[j] ≈ source[j / 2]; frame 950 sits safely before the end.
+      // out[j] = ~source[j / 2]; frame 950 sits safely before the end.
       expect(Math.abs(out[1900]! - 950)).toBeLessThan(5)
     })
 
@@ -591,7 +578,7 @@ describe('SabRopeSourceNode', () => {
 
       const out = collect(node, 500, 100)
       expect(out[199]).toBe(199) // tail of rope a
-      expect(out[200]).toBe(1000) // head of rope b — played through the join
+      expect(out[200]).toBe(1000) // head of rope b -- played through the join
       expect(out[399]).toBe(1199) // tail of rope b
       expect(out[400]).toBe(0) // silent past the end
       expect(endEvents(node)).toHaveLength(1)
@@ -643,7 +630,7 @@ describe('SabRopeSourceNode', () => {
 
     it('does not anchor until the resampler warm-up is discarded', () => {
       const node = makeNode(48000)
-      const producer = new SabRope(24000) // 2x upsample → primed with warm-up
+      const producer = new SabRope(24000) // 2x upsample -> primed with warm-up
       producer.append(ramp(2000, 1))
       setBuffer(node, producer)
       send(node, { type: 'start', timeSec: 0 })

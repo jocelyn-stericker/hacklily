@@ -1,23 +1,10 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 // Pure scheduling decisions for a chunk work queue: which voiced chunk to handle
 // next, and how the live-recording spans evolve. No React, no side effects, no
-// audio I/O — everything is a function of the current chunks, ropes, and an
+// audio I/O -- everything is a function of the current chunks, ropes, and an
 // injected `needsWork` predicate. The queue applies the results.
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
@@ -62,7 +49,7 @@ export type CandidateJob = { kind: string; chunk: AnalysisChunk }
 
 /**
  * Chooses which eligible job runs next, or `null` to end the pass. Pure, so it's
- * cheap to swap and test — this is the scheduling-policy seam the queue defers to
+ * cheap to swap and test -- this is the scheduling-policy seam the queue defers to
  * after every job (re-prioritising as new work appears mid-pass).
  */
 export type PickNext = (
@@ -115,13 +102,13 @@ export type ReconcileResult = {
 }
 
 /**
- * Compute how the live spans should change against the current timeline. Pure —
+ * Compute how the live spans should change against the current timeline. Pure --
  * the queue applies the side effects (aborting controllers, resolving endTimes,
  * creating entries).
  *
  * - `abort`: spans whose chunk is no longer voiced, or no longer in the array
  *   (split/merged away by re-chunking).
- * - `resolve`: spans whose voiced segment is complete — the chunk is still voiced
+ * - `resolve`: spans whose voiced segment is complete -- the chunk is still voiced
  *   but its successor is unvoiced (VAD confirmed the segment ended).
  * - `create`: voiced chunks still needing work (`needsWork`), with no span yet
  *   (only while the last rope is unsealed, i.e. still recording).
@@ -168,7 +155,7 @@ export function reconcileLiveSpans(
 
 /**
  * Compute endTime resolutions for all pending live spans when the recording rope
- * is sealed. Each span's endTime is clamped to the rope's actual length. Pure —
+ * is sealed. Each span's endTime is clamped to the rope's actual length. Pure --
  * the queue applies the resolutions.
  */
 export function computeSealResolutions(

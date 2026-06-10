@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
@@ -93,7 +80,7 @@ describe('analyzeBuffer', () => {
         SAMPLE_RATE,
       )
 
-      // Pure silence is uniformly unvoiced → a single chunk.
+      // Pure silence is uniformly unvoiced -> a single chunk.
       expect(result.length).toBe(1)
       const chunk = result[0]!
       expect(chunk.sampleRate).toBe(SAMPLE_RATE)
@@ -252,7 +239,7 @@ describe('analyzeBuffer', () => {
       const speechCount = allFrames(result).filter(
         (f) => f.speechDetected,
       ).length
-      // All frames with prob=0.5 (onset on first chunk) → speaking = true for all
+      // All frames with prob=0.5 (onset on first chunk) -> speaking = true for all
       expect(speechCount).toBe(allFrames(result).length)
     })
 
@@ -279,7 +266,7 @@ describe('analyzeBuffer', () => {
         SAMPLE_RATE,
       )
 
-      // Frames in the middle of the between-threshold region (chunks 22–27)
+      // Frames in the middle of the between-threshold region (chunks 22-27)
       const regionStart = Math.floor((22 * VAD_CHUNK_DUR_SEC) / TIME_STEP_SEC)
       const regionEnd = Math.floor((27 * VAD_CHUNK_DUR_SEC) / TIME_STEP_SEC)
 
@@ -298,7 +285,7 @@ describe('analyzeBuffer', () => {
         SAMPLE_RATE,
       )
 
-      // Frames well into the silent region (chunks 15–25), clear of any preroll
+      // Frames well into the silent region (chunks 15-25), clear of any preroll
       const silentStart = Math.floor((15 * VAD_CHUNK_DUR_SEC) / TIME_STEP_SEC)
       const silentEnd = Math.floor((25 * VAD_CHUNK_DUR_SEC) / TIME_STEP_SEC)
 
@@ -311,7 +298,7 @@ describe('analyzeBuffer', () => {
   describe('VAD pre-roll', () => {
     it(`marks ${PREROLL_FRAMES} frames before a speech onset as speechDetected`, async () => {
       // Chunks 0-19: silence; chunk 20+: speech
-      // Onset at chunk 20 → frame ~320; preroll covers frames ~295–319.
+      // Onset at chunk 20 -> frame ~320; preroll covers frames ~295-319.
       for (let i = 0; i < 20; i++) mockVadState.probsByChunk.push(0)
       mockVadState.defaultProb = 0.5
 
@@ -321,11 +308,11 @@ describe('analyzeBuffer', () => {
       )
 
       // Onset frame: first frame whose tMid falls in chunk 20 (t >= 20 * 0.032 = 0.64 s)
-      // tMid = (x + 0.5) * 0.002 >= 0.64 → x >= 319.5 → x = 320
+      // tMid = (x + 0.5) * 0.002 >= 0.64 -> x >= 319.5 -> x = 320
       const onsetFrame = 320
 
       // Frames in the preroll window should be speechDetected
-      const prerollStart = onsetFrame - PREROLL_FRAMES // 295
+      const prerollStart = onsetFrame - PREROLL_FRAMES
       for (let x = prerollStart; x < onsetFrame; x++) {
         expect(allFrames(result)[x]?.speechDetected).toBe(true)
       }
@@ -335,8 +322,8 @@ describe('analyzeBuffer', () => {
     })
 
     it('frames well before the preroll window remain speechDetected=false', async () => {
-      // Same setup: speech starts at chunk 20 (frame ~320), preroll covers frames 295–319.
-      // Frames 0–270 are safely outside the preroll region.
+      // Same setup: speech starts at chunk 20 (frame ~320), preroll covers frames 295-319.
+      // Frames 0-270 are safely outside the preroll region.
       for (let i = 0; i < 20; i++) mockVadState.probsByChunk.push(0)
       mockVadState.defaultProb = 0.5
 

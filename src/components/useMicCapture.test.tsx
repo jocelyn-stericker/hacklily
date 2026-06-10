@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>.
+
 // @vitest-environment jsdom
 import { render, waitFor } from '@testing-library/react'
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
@@ -862,24 +866,24 @@ describe('AudioRecorder', () => {
     const pcm = new Float32Array([0.1])
     getMockWorker().dispatchMessage({ type: 'ended', pcm })
 
-    // recordingComplete fires immediately — before formant/vad 'ended'
+    // recordingComplete fires immediately -- before formant/vad 'ended'
     await waitFor(() => {
       expect(onRecordingComplete).toHaveBeenCalled()
     })
 
-    // teardown (terminate) must not have fired yet — formant and vad are still pending
+    // teardown (terminate) must not have fired yet -- formant and vad are still pending
     expect(getMockWorker().terminate).toHaveBeenCalled() // spectrogram terminates itself
     expect(getMockFormantWorker().terminate).not.toHaveBeenCalled()
     expect(getMockVadWorker().terminate).not.toHaveBeenCalled()
 
-    // formant finishes — teardown still blocked by vad
+    // formant finishes -- teardown still blocked by vad
     getMockFormantWorker().dispatchMessage({ type: 'ended' })
     await waitFor(() => {
       expect(getMockFormantWorker().terminate).toHaveBeenCalled()
     })
     expect(getMockVadWorker().terminate).not.toHaveBeenCalled()
 
-    // vad finishes — teardown fires
+    // vad finishes -- teardown fires
     getMockVadWorker().dispatchMessage({ type: 'ended' })
     await waitFor(() => {
       expect(getMockVadWorker().terminate).toHaveBeenCalled()

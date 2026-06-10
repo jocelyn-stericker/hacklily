@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import { useEffect, useLayoutEffect, useRef } from 'react'
 
@@ -66,7 +53,7 @@ export function useAudioPlayback({
     // Furthest-forward cursor we've accepted as the display catching up to the
     // playhead. Echoes are monotonic, so a cursor behind this is a backward seek.
     lastEchoed: number
-    // Highest position the pipeline has reported — its authoritative playhead.
+    // Highest position the pipeline has reported -- its authoritative playhead.
     // Updated synchronously each frame, so it's always at or ahead of the
     // cursor value a (necessarily lagging) re-render is committing.
     reportedHighWater: number
@@ -83,12 +70,12 @@ export function useAudioPlayback({
     // live playhead. The pipeline owns position while playing: it only moves
     // forward, from startAtSec up to reportedHighWater. So a cursor that lands
     // forward of our last echo and at-or-behind the high-water mark is the
-    // display falling behind — not a seek — and must not tear down the graph.
+    // display falling behind -- not a seek -- and must not tear down the graph.
     // A cursor behind lastEchoed (scrub back) or ahead of the high-water mark
     // (scrub forward past what's played) is a genuine seek and rebuilds.
     //
     // TODO: this infers seek-vs-echo because cursorSec has two writers (the
-    // playhead and the user) with no source tag — same root issue as the scroll
+    // playhead and the user) with no source tag -- same root issue as the scroll
     // area. The proper fix is to make the playhead display-only and route user
     // seeks through their own signal in useTimelineState, so the effect restarts
     // only on a real seek and nothing has to be inferred. Until then this
@@ -157,7 +144,7 @@ export function useAudioPlayback({
     )
   }, [enabled, ropes, gainCache, preferredRate, cursorSec])
 
-  // Unmount cleanup — the main effect intentionally has no cleanup return
+  // Unmount cleanup -- the main effect intentionally has no cleanup return
   // so the pipeline survives across cursorSec feedback-loop re-runs.
   useEffect(() => {
     return () => {

@@ -1,21 +1,9 @@
-/* Braat, adapted from Praat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- * Copyright (C) 1992-2008,2010-2012,2014-2021,2024-2026 Paul Boersma
- * Copyright (C) 1993-2020 David Weenink
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Braat, adapted from Praat
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
+// Copyright (C) 1992-2008,2010-2012,2014-2021,2024-2026 Paul Boersma
+// Copyright (C) 1993-2020 David Weenink
 
 /**
  * Burg's method for autoregressive (LPC) coefficient estimation.
@@ -24,17 +12,17 @@
  * IEEE Press, 1978, pp. 252-255.  Ported from dwsys/NUM2.cpp VECburg().
  *
  * The resulting analysis polynomial is:
- *   P(z) = z^order − coeffs[0]·z^(order−1) − coeffs[1]·z^(order−2) − ⋯ − coeffs[order−1]
+ *   P(z) = z^order - coeffs[0]*z^(order-1) - coeffs[1]*z^(order-2) - ... - coeffs[order-1]
  * Its roots are the LPC poles; formant frequencies come from poles with positive
- * imaginary part and angle in [safetyHz, nyquist − safetyHz].
+ * imaginary part and angle in [safetyHz, nyquist - safetyHz].
  *
  * @param frame    Windowed, pre-emphasised mono samples, 0-indexed, length `frameLen`.
  * @param frameLen Number of valid samples in `frame`.
  * @param order    LPC order (= 2 * maxFormants).
  * @param coeffs   Output: LPC prediction coefficients, length = order. Overwritten.
- * @param b1       Scratch: forward prediction errors, length ≥ frameLen.
- * @param b2       Scratch: backward prediction errors, length ≥ frameLen.
- * @param aa       Scratch: previous Levinson coefficients, length ≥ order.
+ * @param b1       Scratch: forward prediction errors, length >= frameLen.
+ * @param b2       Scratch: backward prediction errors, length >= frameLen.
+ * @param aa       Scratch: previous Levinson coefficients, length >= order.
  * @returns        Residual mean-square power. 0 if ill-conditioned or silent.
  */
 export function burgLpc(
@@ -85,7 +73,7 @@ export function burgLpc(
     xms *= 1.0 - coeffs[ii]! * coeffs[ii]!
 
     // (5) Levinson recursion: update lower-order coefficients
-    //   a[j] = aa[j] − a[ii] * aa[ii−1−j]  for j = 0 .. ii−1
+    //   a[j] = aa[j] - a[ii] * aa[ii-1-j]  for j = 0 .. ii-1
     for (let j = 0; j < ii; j++)
       coeffs[j] = aa[j]! - coeffs[ii]! * aa[ii - 1 - j]!
 
@@ -97,7 +85,7 @@ export function burgLpc(
       const bound = active - 1
       for (let j = 0; j < bound; j++) {
         b1[j]! -= rc * b2[j]!
-        b2[j] = b2[j + 1]! - rc * b1[j + 1]! // b1[j+1] is the old value — correct since j+1 > j
+        b2[j] = b2[j + 1]! - rc * b1[j + 1]! // b1[j+1] is the old value -- correct since j+1 > j
       }
     }
   }
@@ -107,7 +95,7 @@ export function burgLpc(
 /**
  * Evaluates the LPC analysis polynomial and its derivative at complex z using Horner's method.
  *
- * Polynomial: P(z) = z^n − c[0]·z^(n−1) − c[1]·z^(n−2) − ⋯ − c[n−1]
+ * Polynomial: P(z) = z^n - c[0]*z^(n-1) - c[1]*z^(n-2) - ... - c[n-1]
  * where c = `lpcCoeffs` (output of burgLpc).
  *
  * Writes [P.re, P.im, P'.re, P'.im] into `out[0..3]`.
@@ -124,12 +112,12 @@ function evalLpcPoly(
     dpRe = 0.0,
     dpIm = 0.0
   for (let k = 0; k < order; k++) {
-    // P' = P'·z + P  (before updating P)
+    // P' = P'*z + P  (before updating P)
     const ndpRe = dpRe * zRe - dpIm * zIm + pRe
     const ndpIm = dpRe * zIm + dpIm * zRe + pIm
     dpRe = ndpRe
     dpIm = ndpIm
-    // P = P·z − c[k]
+    // P = P*z - c[k]
     const npRe = pRe * zRe - pIm * zIm - lpcCoeffs[k]!
     const npIm = pRe * zIm + pIm * zRe
     pRe = npRe
@@ -149,9 +137,9 @@ function evalLpcPoly(
  *
  * @param lpcCoeffs  LPC coefficients from burgLpc(), length = order.
  * @param order      Polynomial degree (LPC order = 2 * maxFormants).
- * @param rootsRe    Output: root real parts, length ≥ order. Overwritten.
- * @param rootsIm    Output: root imaginary parts, length ≥ order. Overwritten.
- * @param peval      Scratch: [pRe, pIm, dpRe, dpIm], length ≥ 4.
+ * @param rootsRe    Output: root real parts, length >= order. Overwritten.
+ * @param rootsIm    Output: root imaginary parts, length >= order. Overwritten.
+ * @param peval      Scratch: [pRe, pIm, dpRe, dpIm], length >= 4.
  * @returns          true if Durand-Kerner converged within iteration limit.
  */
 export function findLpcRoots(
@@ -174,7 +162,7 @@ export function findLpcRoots(
     let maxStep2 = 0
     for (let k = 0; k < order; k++) {
       evalLpcPoly(rootsRe[k]!, rootsIm[k]!, lpcCoeffs, order, peval)
-      // Denominator = ∏_{j≠k} (z[k] − z[j])
+      // Denominator = R_{j!=k} (z[k] - z[j])
       let denRe = 1.0,
         denIm = 0.0
       for (let j = 0; j < order; j++) {
@@ -225,7 +213,7 @@ export function findLpcRoots(
 }
 
 /**
- * Projects roots outside the unit circle to their inverse: z → 1/conj(z).
+ * Projects roots outside the unit circle to their inverse: z -> 1/conj(z).
  * Source: Roots.cpp Roots_fixIntoUnitCircle()
  */
 export function fixIntoUnitCircle(

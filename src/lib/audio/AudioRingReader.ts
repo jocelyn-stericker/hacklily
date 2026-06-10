@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import { isPowerOfTwo } from '#/lib/dsp/mathUtils'
 
@@ -22,8 +9,8 @@ import { isPowerOfTwo } from '#/lib/dsp/mathUtils'
  * by AudioRingWriter. Intended for use inside dedicated workers.
  *
  * SAB layout (must match AudioRingWriter):
- *   Bytes 0–3:  Int32 writePos — Atomics wait/notify target
- *   Bytes 4–7:  Int32 reserved
+ *   Bytes 0-3:  Int32 writePos -- Atomics wait/notify target
+ *   Bytes 4-7:  Int32 reserved
  *   Bytes 8+:   Float32[bufSamples] ring buffer
  */
 export class AudioRingReader {

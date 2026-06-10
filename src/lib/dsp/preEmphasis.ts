@@ -1,27 +1,15 @@
-/* Braat, adapted from Praat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- * Copyright (C) 1992-2025 Paul Boersma
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Braat, adapted from Praat
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
+// Copyright (C) 1992-2025 Paul Boersma
 
 /**
  * First-order high-pass pre-emphasis filter, applied backwards through the signal.
  *
- * Filter: s[i] −= exp(−2π * cutoffHz / sampleRate) * s[i−1]
+ * Filter: s[i] -= exp(-2PI * cutoffHz / sampleRate) * s[i-1]
  *
- * The backward scan (high index → low) matches Praat's implementation, ensuring
+ * The backward scan (high index -> low) matches Praat's implementation, ensuring
  * each sample is modified using the original value of its predecessor.
  *
  * Source: fon/Sound.cpp Sound_preEmphasize_inplace()

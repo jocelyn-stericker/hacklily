@@ -1,35 +1,16 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
-// Single source of truth for explicitly downloading the on-device transcription
-// models, driven entirely by the transcription settings modal — nothing else may
-// start a download. Three things can be downloaded:
-//   - "browser":   the browser's own on-device speech model, via the Web Speech
-//                  `SpeechRecognition.install()` API (no byte progress).
-//   - "moonshine"/"whisper": transformers.js models, fetched through the shared
-//                  TranscribeWorker pool (see transcribeBundled.ts) so the warmed
-//                  worker is reused for transcription (byte progress, cancelable
-//                  by terminating the worker).
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
+
+// Download state for on-device transcription models, driven by the settings modal.
+// Three downloadables:
+//   - "browser":   Web Speech `SpeechRecognition.install()` (no byte progress).
+//   - "moonshine"/"whisper": fetched via the shared TranscribeWorker pool so the
+//                  warmed worker is reused for transcription (byte progress, cancelable).
 //
-// "Downloaded" detection for the worker models is a localStorage flag set on a
-// completed download; the browser engine's readiness comes from the authoritative
-// `checkLocalTranscription` probe instead. The transcribe path treats a flag as a
-// hint only — if the weights turn out to be missing (e.g. cache eviction), the
-// runtime guard in transcription.ts surfaces a toast and reverts.
+// Worker-model "downloaded" state is a localStorage flag; the browser engine's
+// readiness comes from the `checkLocalTranscription` probe. The flag is a hint --
+// missing cache weights are caught at transcription time (toast + revert).
 
 /// <reference types="@types/dom-speech-recognition" />
 
@@ -43,17 +24,14 @@ export type WorkerDownloadModel = 'moonshine' | 'whisper'
 export type DownloadModel = 'browser' | WorkerDownloadModel
 
 export type DownloadState =
-  // Not downloading. (Whether the model is *downloaded* is a separate query —
-  // see isModelDownloaded / the browser availability probe.)
+  // Not downloading (whether the model is downloaded: see isModelDownloaded).
   | { status: 'idle' }
-  // `total === 0` means the size isn't known yet (or, for the browser engine,
-  // is never reported) — render an indeterminate spinner.
+  // `total === 0` = size unknown or unreported (browser engine) -- indeterminate spinner.
   | { status: 'downloading'; loaded: number; total: number }
   | { status: 'failed'; error: string }
 
 export const IDLE: DownloadState = { status: 'idle' }
 
-// On-device speech recognition language, matching the feature probes.
 const LANG = 'en-US'
 
 // ---------------------------------------------------------------------------
@@ -88,8 +66,8 @@ function downloadedKey(model: WorkerDownloadModel): string {
 }
 
 const downloadedListeners = new Set<() => void>()
-// Incremented whenever any download completes, so consumers (including the
-// browser-availability probe, which can't observe the install otherwise) re-read.
+// Incremented on any download completion so consumers (including the browser
+// availability probe) re-read.
 export let downloadedVersion = 0
 
 function bumpDownloaded(): void {
@@ -113,10 +91,8 @@ export function isModelDownloaded(model: WorkerDownloadModel): boolean {
 }
 
 /**
- * Forget a worker model's "downloaded" flag. Used when the transcribe path finds
- * a file missing from the cache (the model isn't actually usable), so the
- * settings modal re-offers the download. Bumps the version so any open UI
- * re-reads the flag.
+ * Clear a worker model's "downloaded" flag when cache eviction makes it unusable,
+ * so the settings modal re-offers the download. Bumps the version to notify UI.
  */
 export function clearModelDownloaded(model: WorkerDownloadModel): void {
   try {
@@ -131,11 +107,8 @@ export function clearModelDownloaded(model: WorkerDownloadModel): void {
 // Worker-model downloads (Moonshine / Whisper)
 // ---------------------------------------------------------------------------
 
-// A cancel handle for each in-flight worker-model download. The download runs on
-// the shared worker pool (see transcribeBundled.ts) so the warmed worker is
-// reused for the subsequent transcription rather than torn down and rebuilt —
-// reloading a large model right after deleting it is unstable. Present only
-// while downloading; cancel = invoke the handle.
+// Cancel handles for in-flight worker downloads. Downloads run on the shared pool
+// so the warmed worker is reused for transcription (reloading right after is unstable).
 const downloadCancels = new Map<WorkerDownloadModel, () => void>()
 
 function startWorkerDownload(model: WorkerDownloadModel, force: boolean): void {
@@ -172,9 +145,8 @@ function markWorkerDownloaded(model: WorkerDownloadModel): void {
 // Browser on-device engine install
 // ---------------------------------------------------------------------------
 
-// The Web Speech `install()` has no cancel and no progress. We model "cancel" as
-// abandoning the wait: bump the token so a late resolution is ignored and reset
-// the visible state. The browser may keep downloading in the background.
+// `install()` has no cancel; bumping the token lets us ignore a late resolution
+// and reset state. The browser may keep downloading in the background.
 let browserInstallToken = 0
 
 async function startBrowserDownload(): Promise<void> {
@@ -199,10 +171,8 @@ async function startBrowserDownload(): Promise<void> {
 }
 
 /**
- * Ensure the browser's on-device speech recognition engine is installed for
- * `lang`, downloading it first if needed. Resolves once the engine is ready;
- * rejects if it could not be installed. Browsers without the `install()` API are
- * treated as ready (the legacy path lets `start()` trigger any lazy download).
+ * Install the browser's on-device speech engine for `lang` if needed.
+ * Browsers without the `install()` API are treated as already ready.
  */
 async function installBrowserEngine(lang: string): Promise<void> {
   if (
@@ -245,9 +215,8 @@ async function installBrowserEngine(lang: string): Promise<void> {
 // ---------------------------------------------------------------------------
 
 /**
- * Begin downloading a model. No-op if it's already downloading. Pass
- * `{ force: true }` to re-download from scratch, discarding any cached files —
- * the recovery path for a corrupt cache that a normal load can't get past.
+ * Begin downloading a model. No-op if already downloading. `{ force: true }`
+ * discards cached files -- recovery for a corrupt cache.
  */
 export function startDownload(
   model: DownloadModel,

@@ -1,19 +1,7 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
+
 /// <reference lib="webworker" />
 
 import { FormantStreamProcessor } from '#/lib/analysis/FormantProcessor'
@@ -112,7 +100,7 @@ export async function runAnalysis(
   const pitchBufSamples = Math.round(sampleRate * PITCH_BUF_SECS)
   const pitchEmitSamples = Math.round(sampleRate * PITCH_EMIT_SECS)
   // Rolling buffer; newest QUANTUM samples are appended to the end each iteration.
-  // Starts as zeros — silence at the beginning is harmless for pitch detection.
+  // Starts as zeros -- silence at the beginning is harmless for pitch detection.
   const pitchBuf = new Float32Array(pitchBufSamples)
 
   let quantumCount = 0
@@ -177,7 +165,7 @@ export async function runAnalysis(
     pitchBuf.set(inp, pitchBufSamples - QUANTUM)
     totalSamples += inp.length
 
-    // Feed raw audio through resampler → formant chain
+    // Feed raw audio through resampler -> formant chain
     resampler.feed(inp)
     const nDrain = resampler.drain(drainBuf)
     if (nDrain > 0) formant.feed(drainBuf.subarray(0, nDrain))

@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
@@ -412,7 +399,7 @@ describe('VadStreamProcessor', () => {
 })
 
 describe('SpeechGate', () => {
-  // 100 frames/sec → 10 ms per frame, so the constants land on round counts:
+  // 100 frames/sec -> 10 ms per frame, so the constants land on round counts:
   // pre-roll = 5, post-roll = 5, redemption = 8, min-speech = 40 frames.
   const FPS = 100
   const PREROLL = 5
@@ -495,7 +482,7 @@ describe('SpeechGate', () => {
 
     it('reclaims an unvoiced attack that exceeds the noise floor', () => {
       const out = gateF(frames)
-      // The whole attack run (indices 10–19) is marked speech...
+      // The whole attack run (indices 10-19) is marked speech...
       for (let i = 10; i < 20; i++) expect(out[i]).toBe(true)
       // ...and the voiced run too.
       expect(out[20]).toBe(true)

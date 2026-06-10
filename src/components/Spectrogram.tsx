@@ -1,21 +1,8 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
-// Renders frequency spectrogram with color-mapped intensity and formant markers.
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
+
+// Renders the frequency spectrogram with color-mapped intensity and formant markers.
 
 import { useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { RefObject } from 'react'
@@ -37,13 +24,10 @@ import { useColourScheme } from './useColourScheme'
 
 const FPS_WINDOW_MS = 1000
 
-// GPU canvas tiles: staying under browser width limits while streaming real-time spectral data.
-// Each tile holds up to TILE_WIDTH frames before overflow to the next tile.
+// GPU canvas tiles; each holds up to TILE_WIDTH frames.
 export const TILE_WIDTH = 256
 
-// Width of the shared scratch ImageData used by paintColumnsToOffscreen.
-// Narrower than TILE_WIDTH so a single allocation serves all tiles without
-// holding a full tile's worth of pixel data in memory.
+// Scratch ImageData for paintColumnsToOffscreen; narrower than TILE_WIDTH so one allocation serves all tiles.
 const SCRATCH_WIDTH = 256
 
 const LN10_10 = 10 / Math.log(10)
@@ -69,8 +53,7 @@ interface ColorTile {
   data: Uint32Array // numBins * TILE_WIDTH
 }
 
-// Per-chunk color data split into fixed-size tiles matching the canvas tile structure.
-// Eliminates capacity doubling: each new tile is a fresh TILE_WIDTH-column allocation.
+// Per-chunk color data split into fixed-size tiles; each new tile is a fresh TILE_WIDTH-column allocation.
 interface ChunkColorsState {
   chunk: AnalysisChunk
   colorTiles: ColorTile[]
@@ -89,9 +72,8 @@ interface OffscreenState {
   tiles: Tile[]
   binForY: Int32Array
   canvasHeight: number
-  // Shared scratch buffer for paintColumnsToOffscreen — written then immediately
-  // pushed via putImageData, never read back. One per OffscreenState so it
-  // survives across calls without reallocating.
+  // Shared scratch for paintColumnsToOffscreen; written then pushed via putImageData,
+  // never read back. Lives on OffscreenState to avoid reallocating across calls.
   scratchData: ImageData
   scratchU32: Uint32Array
 }
@@ -106,8 +88,7 @@ interface DisplayBufState {
   ctx: OffscreenCanvasRenderingContext2D
   width: number
   height: number
-  // Time in seconds at display pixel 0 (updated to account for integer rounding,
-  // keeping rounding error bounded to ±0.5px across frames).
+  // Time at display pixel 0; updated on scroll to keep rounding error less than 0.5px.
   lastSrcTimeSec: number
   lastDxPerSec: number
   lastTilesGen: number
@@ -238,12 +219,8 @@ function paintColumnsToOffscreen(
   }
 }
 
-// Repaint formant tiles from fromTile onward.
-// fromFrame: first frame to repaint — pixels before it are left intact so we
-//   can skip redrawing historical frames that haven't changed.
-// toFrame: exclusive upper bound — frames at or after this index are not
-//   touched, letting the caller handle them via appendFormantTiles.
-// frames: the chunk-local frames array.
+// Repaint formant tiles from fromTile. fromFrame/toFrame narrow the repaint range;
+// pixels outside [fromFrame, toFrame) are preserved so callers can skip unchanged history.
 function paintFormantTiles(
   off: FormantOffscreenState,
   frames: AnalysisFrame[],
@@ -258,8 +235,7 @@ function paintFormantTiles(
     const tile = off.tiles[t]!
     const frameEnd = Math.min(numFrames, tile.startFrame + TILE_WIDTH)
     if (frameEnd <= tile.startFrame) break
-    // For the first tile, skip frames before fromFrame and preserve their
-    // pixels. For subsequent tiles, repaint from the tile edge as usual.
+    // First tile: skip before fromFrame, preserve those pixels. Later tiles: repaint fully.
     const tileFromFrame = Math.max(tile.startFrame, fromFrame)
     const clearX = tileFromFrame - tile.startFrame
     tile.ctx.clearRect(
@@ -292,9 +268,7 @@ function paintFormantTiles(
   }
 }
 
-// Additive paint of new frames [from, to) onto existing tile content.
-// Does NOT clear tiles, so cost is O(to - from), not O(tile frames). Used by append.
-// frames: the chunk-local frames array.
+// Additive paint of [from, to) onto existing tiles; does NOT clear, so O(to - from).
 function appendFormantTiles(
   off: FormantOffscreenState,
   frames: AnalysisFrame[],
@@ -334,7 +308,6 @@ function appendFormantTiles(
   }
 }
 
-// Maps a global frame range [globalFrom, globalTo) to per-chunk local ranges.
 function globalRangeToChunkRanges(
   analysis: AnalysisChunk[],
   globalFrom: number,
@@ -391,9 +364,7 @@ function blitTiles(
   }
 }
 
-// Blit all per-chunk spectrogram and formant tiles into ctx.
-// srcTimeSec: time at display pixel 0.
-// srcWidthSec: time span of the display.
+// Blit all chunk tiles; srcTimeSec = time at pixel 0, srcWidthSec = display span.
 function blitChunks(
   ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
   offs: (OffscreenState | null)[],
@@ -438,9 +409,8 @@ function blitChunks(
   }
 }
 
-// Paint frames in [fromTimeSec, toTimeSec) into the display buffer without a full repaint.
-// Used by append so newly arrived frames appear immediately even if the view is stationary.
-// fromTimeSec should be frameTimeSec(analysis, effectiveFrom - 1) to include the moveTo anchor.
+// Paint [fromTimeSec, toTimeSec) into the display buffer without a full repaint.
+// fromTimeSec should be one frame before effectiveFrom to include the arc moveTo anchor.
 function updateDisplayBufForFrames(
   db: DisplayBufState | null,
   offs: (OffscreenState | null)[],
@@ -509,7 +479,6 @@ function draw(
   const srcTimeSec = -timeToX(0) / dxPerSec
   const srcWidthSec = width / dxPerSec
 
-  // Ensure display buffer matches current canvas dimensions.
   let db = displayBufRef.current
   if (!db || db.width !== width || db.height !== height) {
     const buf = new OffscreenCanvas(width, height)
@@ -555,10 +524,9 @@ function draw(
     db.lastDxPerSec = dxPerSec
     db.lastTilesGen = tilesGen
   } else if (pixelShift !== 0) {
-    // Incremental scroll: shift existing content and paint only the newly revealed strip.
-    // The self-copy is spec-required to snapshot before writing (no aliasing).
+    // Incremental scroll: shift content, repaint new strip. Self-copy snapshots before write (no aliasing).
     db.ctx.drawImage(db.buf, pixelShift, 0)
-    // Track actual buffer position so rounding error stays bounded to ±0.5px per frame.
+    // Track actual buffer position so rounding error stays bounded to 0.5px per frame.
     db.lastSrcTimeSec -= pixelShift / dxPerSec
 
     const stripX = pixelShift < 0 ? width + pixelShift : 0
@@ -568,8 +536,7 @@ function draw(
 
     db.ctx.fillStyle = theme.bgStyle
     db.ctx.fillRect(stripX, 0, stripW, height)
-    // Translate so blitChunks can use its normal coord logic
-    // (place time stripSrcTimeSec at pixel 0) and our translate shifts that to stripX.
+    // translate shifts stripX to pixel 0 for blitChunks' coord logic.
     db.ctx.save()
     db.ctx.translate(stripX, 0)
     blitChunks(
@@ -620,7 +587,6 @@ export function Spectrogram({
   const displayBufRef = useRef<DisplayBufState | null>(null)
   const tilesGenRef = useRef(0)
 
-  // For actually rendering the offscreen buffer(s) to the screen
   const animationFrame = useRef<number | null>(null)
   const triggerDraw = useRef(() => {})
 
@@ -640,7 +606,6 @@ export function Spectrogram({
     }
   }, [debug])
 
-  // Fully recompute colors for all chunks when analysis reference changes (import).
   useEffect(() => {
     if (analysisMut.length === 0) {
       allColorsRef.current = []
@@ -789,13 +754,10 @@ export function Spectrogram({
 
       let needFullRedraw = false
 
-      // Resync per-chunk caches if the chunk array was structurally changed:
-      // reconcileVoicingAt may merge chunks (removing one and growing its
-      // predecessor) or reorder them, not just append or shrink the last one.
-      // Find the first index whose cached chunk no longer matches analysisMut by
-      // identity, drop that diverged tail, and widen the repaint to the
-      // predecessor's start (a merge grows it) so the lazy-grow + range paint
-      // below rebuild everything affected in one pass.
+      // Resync caches on structural change (e.g. reconcileVoicingAt may merge or reorder
+      // chunks). Find the first diverged index by identity, drop the tail, and widen
+      // the repaint to the predecessor's start so lazy-grow + range paint below
+      // rebuilds everything in one pass.
       let structuralResync = false
       {
         let firstDiverged = allColors.length
@@ -885,7 +847,7 @@ export function Spectrogram({
         const prevNumFrames = colors.numFrames
         const isExtending = localTo > prevNumFrames
 
-        // Scan newly appended frames for a new peak (monotonic — old frames
+        // Scan newly appended frames for a new peak (monotonic -- old frames
         // already contributed to dbMax). Also scan any patched existing frames.
         let fullChunkRecolor = false
         if (isExtending) {
@@ -920,7 +882,6 @@ export function Spectrogram({
         let formantOff = allFormantOff[chunkIdx] ?? null
 
         if (!off && canvasHeight > 0) {
-          // First time this chunk has tiles — create from scratch.
           const binForY = buildBinForY(
             colors.numBins,
             chunk.firstBinHz,

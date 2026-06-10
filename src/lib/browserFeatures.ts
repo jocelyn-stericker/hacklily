@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 export function checkFeatures() {
   if (!self.crossOriginIsolated) {
@@ -59,7 +46,7 @@ type MinimalSpeechRecognitionConstructor = new () => MinimalSpeechRecognition
 // Braat transcribes recorded chunks by feeding them in as an audio track, so
 // this is a hard requirement: without it, transcription can't work at all.
 // There's no standardised feature-detect (web-speech-api#126), and the failure
-// mode is silent — a browser that doesn't know the argument ignores it and
+// mode is silent -- a browser that doesn't know the argument ignores it and
 // starts listening to the live microphone instead of our chunk.
 //
 // So we probe behaviourally (after Shaka Player): call start() with a non-track
@@ -101,7 +88,7 @@ function probeTrackRecognition(): boolean {
   frame.remove()
   try {
     recognition.start(0)
-    // Reached only when the argument was ignored — track input isn't supported.
+    // Reached only when the argument was ignored -- track input isn't supported.
     recognition.stop()
     return false
   } catch (err) {
@@ -181,7 +168,7 @@ export type LocalTranscriptionStatus =
  * download, or unavailable. Only the unprefixed `SpeechRecognition` exposes the
  * `available` probe, so a browser that only has the prefixed
  * `webkitSpeechRecognition` is treated as having no local transcription (even
- * though browser-based transcription may still be available — see
+ * though browser-based transcription may still be available -- see
  * `isBrowserTranscriptionAvailable`)
  */
 export async function checkLocalTranscription(

@@ -15,8 +15,8 @@ the Python pipeline (`bfaonnx.py`). See [`ATTRIBUTION.md`](./ATTRIBUTION.md).
 
 ## What it does (and doesn't)
 
-- ✅ Simplified alignment: `CUPE → log_softmax → CTC Viterbi → assort → ms timestamps`.
-- ✅ espeak-ng IPA transcript → ph66 indices (full ph66 mapper ported, incl.
+- ✅ Simplified alignment: `CUPE -> log_softmax -> CTC Viterbi -> assort -> ms timestamps`.
+- ✅ espeak-ng IPA transcript -> ph66 indices (full ph66 mapper ported, incl.
   compound splitting and intelligent fallback).
 - ✅ Designed to run inside a Web Worker.
 - ❌ No advanced pipeline (no target boosting, minimum enforcement, silence
@@ -44,7 +44,7 @@ The transcript is espeak-ng IPA. **Feed phoneme-separated, stress-free tokens.**
 - **Custom delimiter:** set `PhonemizeOptions.phoneSeparator` if your frontend
   uses something other than `"|"`.
 
-Example: `"b|ʌ|ɾ|ɚ|f|l|aɪ"` → ph66 `[29, 10, 58, 9, 43, 56, 23]` ("butterfly").
+Example: `"b|ʌ|ɾ|ɚ|f|l|aɪ"` -> ph66 `[29, 10, 58, 9, 43, 56, 23]` ("butterfly").
 
 ### How to generate a compatible transcript
 
@@ -133,7 +133,7 @@ interface PhonemeTimestamp {
 
 ## Tests
 
-- `phonemizer.test.ts` — IPA→ph66 golden cases (values cross-checked against
+- `phonemizer.test.ts` — IPA->ph66 golden cases (values cross-checked against
   the Python mapper).
 - `decoder.test.ts` — pure DSP + Viterbi unit fixtures.
 - `bfa-e2e.test.ts` — runs the real `models/variants/int8dyn.onnx` over the

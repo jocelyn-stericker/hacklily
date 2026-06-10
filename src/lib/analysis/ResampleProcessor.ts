@@ -1,22 +1,10 @@
-/* Braat, adapted from Praat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- * Copyright (C) 1992-2025 Paul Boersma
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
-// Resampler — Praat-compatible sinc interpolation with raised cosine window
+// Braat, adapted from Praat
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
+// Copyright (C) 1992-2025 Paul Boersma
+
+// Resampler -- Praat-compatible sinc interpolation with raised cosine window
 // Ported from fon/Sound.cpp (Sound_resample) and melder/NUMinterpol.cpp
 
 import { complexFFTForward, complexFFTInverse, FftTables } from '#/lib/dsp/fft'
@@ -147,7 +135,7 @@ export function resample(
  */
 export class ResamplerStreamProcessor {
   private readonly upfactor: number // toRate / fromRate
-  private readonly scale: number // min(1, upfactor) — sinc cutoff scale for anti-aliasing
+  private readonly scale: number // min(1, upfactor) -- sinc cutoff scale for anti-aliasing
   private readonly kernelHalf: number // kernel half-width in input samples = ceil(precision / scale)
 
   private readonly ring: Float32Array
@@ -159,11 +147,11 @@ export class ResamplerStreamProcessor {
   private outWritten: number // total output samples produced
   private outRead: number // total output samples consumed
 
-  // Pre-computed sinc trig recurrence values (step = scale × π per input sample)
+  // Pre-computed sinc trig recurrence values (step = scale x PI per input sample)
   private readonly sincStep: number
   private readonly sinSincStep: number
   private readonly cosSincStep: number
-  // Pre-computed window trig recurrence values (step = π / halfwidth per input sample)
+  // Pre-computed window trig recurrence values (step = PI / halfwidth per input sample)
   private readonly winStep: number
   private readonly sinWinStep: number
   private readonly cosWinStep: number
@@ -192,12 +180,12 @@ export class ResamplerStreamProcessor {
     this.outWritten = 0
     this.outRead = 0
 
-    // Sinc trig step: sin/cos of (scale × π) — the phase increment per input sample
+    // Sinc trig step: sin/cos of (scale x PI) -- the phase increment per input sample
     this.sincStep = this.scale * Math.PI
     this.sinSincStep = Math.sin(this.sincStep)
     this.cosSincStep = Math.cos(this.sincStep)
 
-    // Window trig step: sin/cos of (π / halfwidth) — the Hann-window increment per input sample
+    // Window trig step: sin/cos of (PI / halfwidth) -- the Hann-window increment per input sample
     const halfwidth = this.kernelHalf + 0.5
     this.winStep = Math.PI / halfwidth
     this.sinWinStep = Math.sin(this.winStep)
@@ -246,22 +234,22 @@ export class ResamplerStreamProcessor {
       const midleft = Math.floor(inputX)
       // Need samples up to midleft + kernelHalf to be available
       if (midleft + kernelHalf >= this.totalFed) break
-      if (this.outWritten - this.outRead >= outBuf.length) break // output full
+      if (this.outWritten - this.outRead >= outBuf.length) break
 
       let lr = 0.0
 
       // Left half: ix = midleft down to midleft - kernelHalf + 1
       // scale * sinc(scale*(inputX-ix)) * Hann((inputX-ix)/halfwidth)
       {
-        const dx = inputX - midleft // ∈ [0, 1)
-        let sp = sincStep * dx // scale × π × (inputX - ix), starting offset
+        const dx = inputX - midleft // in [0, 1)
+        let sp = sincStep * dx // scale x PI x (inputX - ix), starting offset
         let sinSp = Math.sin(sp),
           cosSp = Math.cos(sp)
-        const wp = winStep * dx // π × (inputX - ix) / halfwidth
+        const wp = winStep * dx // PI x (inputX - ix) / halfwidth
         let sinW = Math.sin(wp),
           cosW = Math.cos(wp)
         for (let ix = midleft; ix > midleft - kernelHalf; ix--) {
-          // sp ≈ 0 only when inputX is exactly an integer (dx=0); L'Hôpital gives 0.5
+          // sp ~= 0 only when inputX is exactly an integer (dx=0); L'Hopital gives 0.5
           const sv = sp < 1e-12 ? 0.5 : sinSp / (2.0 * sp)
           lr += ring[ix & ringMask]! * sv * (1.0 + cosW)
           sp += sincStep
@@ -276,7 +264,7 @@ export class ResamplerStreamProcessor {
 
       // Right half: ix = midleft + 1 up to midleft + kernelHalf
       {
-        const dx = midleft + 1 - inputX // ∈ (0, 1]
+        const dx = midleft + 1 - inputX // in (0, 1]
         let sp = sincStep * dx
         let sinSp = Math.sin(sp),
           cosSp = Math.cos(sp)
@@ -296,7 +284,7 @@ export class ResamplerStreamProcessor {
         }
       }
 
-      // scale × Σ sinc(scale×t)×Hann(t/half) = 1 for DC (Poisson + normalisation)
+      // scale * sum(sinc(scale*t) * Hann(t/half)) = 1 for DC (Poisson + normalisation)
       outBuf[this.outWritten & outMask] = scale * lr
       this.outWritten++
     }

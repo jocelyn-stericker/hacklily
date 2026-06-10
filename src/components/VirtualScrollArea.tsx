@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import {
   useCallback,
@@ -41,9 +28,9 @@ const MAX_WHEEL_DELTA_PX = 80
 function wheelZoomFactor(ev: WheelEvent, root: HTMLElement) {
   let dy = ev.deltaY
   if (ev.deltaMode === 1) {
-    dy *= 16 // DOM_DELTA_LINE → approximate line height in px
+    dy *= 16 // DOM_DELTA_LINE -> approximate line height in px
   } else if (ev.deltaMode === 2) {
-    dy *= root.clientHeight // DOM_DELTA_PAGE → one viewport
+    dy *= root.clientHeight // DOM_DELTA_PAGE -> one viewport
   }
   dy = Math.max(-MAX_WHEEL_DELTA_PX, Math.min(MAX_WHEEL_DELTA_PX, dy))
   return Math.exp(dy * WHEEL_ZOOM_SENSITIVITY)
@@ -65,7 +52,7 @@ export interface Props extends Omit<
 }
 
 /**
- * VirtualScrollArea` is the primary interaction surface — it handles scroll, zoom,
+ * VirtualScrollArea` is the primary interaction surface -- it handles scroll, zoom,
  * and all pointer events. Domain visualizations (`Waveform`, `Spectrogram`,
  * `VowelChart`) render inside it.
  */

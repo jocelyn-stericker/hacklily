@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import type { PhonemeTimestamp } from '#/lib/alignment'
 import type { AudioSpan } from '#/lib/audio/AudioSpan'
@@ -96,7 +83,7 @@ export function bestResult(t: ChunkTranscript): TranscriptResult | undefined {
  * In-flight work takes priority over a failure, so an active higher tier isn't
  * hidden behind a lower tier's stale error; among in-flight tiers the lowest
  * wins (it completes first, so its spinner resolves soonest). With nothing in
- * flight, a failure is surfaced — the highest tier's — otherwise the best
+ * flight, a failure is surfaced -- the highest tier's -- otherwise the best
  * completed tier (matching `bestResult`'s preference), or `none`.
  */
 export type TranscriptIndicator =
@@ -139,7 +126,7 @@ export function needsTier(
 
 // Marker the transcribe worker prefixes onto an error when the model couldn't be
 // loaded (missing or corrupt cached weights, a failed session, a refused offline
-// fetch) — see TranscribeWorker.ts. Reaching it means the model isn't usable.
+// fetch) -- see TranscribeWorker.ts. Reaching it means the model isn't usable.
 // Duplicated from the worker, which can't be imported here without running on the
 // UI thread.
 const MODEL_LOAD_FAILED_MARKER = 'transcription model could not be loaded'
@@ -246,7 +233,7 @@ export async function tryResolveEngine(
 
 /**
  * Run recognition for one span with a concrete engine (already resolved). The
- * engine is known to be downloaded — the check happened in `resolveEngine`. A
+ * engine is known to be downloaded -- the check happened in `resolveEngine`. A
  * worker model can still throw `ModelUnavailableError` here if its cached weights
  * were evicted or corrupted since the check.
  */

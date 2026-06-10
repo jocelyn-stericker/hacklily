@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import { isPowerOfTwo } from '#/lib/dsp/mathUtils'
 
@@ -71,7 +58,7 @@ export type SabRopeShare = {
  * Once a recording is done growing, `seal()` it: that drops the spare buffer
  * and forbids further appends. Sealing sets a shared flag (visible to every
  * copy at once) but the spare reference is per-copy, so each consumer must run
- * its own `seal()` — driven by the `SabRopeSeal` message — to actually free it.
+ * its own `seal()` -- driven by the `SabRopeSeal` message -- to actually free it.
  */
 export class SabRope {
   #sampleRate: number
@@ -186,7 +173,7 @@ export class SabRope {
    */
   seal(data?: Float32Array) {
     if (data && data.length > 0) {
-      // Append before flagging — `append` rejects a sealed rope.
+      // Append before flagging -- `append` rejects a sealed rope.
       this.append(data)
     }
 
@@ -262,8 +249,8 @@ export class SabRope {
    * `SabRopeGrow` this copy applies, after the buffers are in place. Lets a
    * second consumer be kept in lockstep: snapshot with `shareRope()` and forward
    * each subsequent grow to it. Because a grow's `oldBufferCount` equals this
-   * copy's pre-grow buffer count — and the snapshot starts the other consumer at
-   * that same count — the forwarded grows line up without re-keying. Snapshot
+   * copy's pre-grow buffer count -- and the snapshot starts the other consumer at
+   * that same count -- the forwarded grows line up without re-keying. Snapshot
    * and subscribe with no `await` between them so no grow slips through unseen.
    * Returns an unsubscribe fn.
    */
@@ -274,7 +261,7 @@ export class SabRope {
     }
   }
 
-  /** Observe this copy being sealed (see {@link onGrow}). Returns an unsubscribe fn. */
+  /** Observe this copy being sealed (see `onGrow`). Returns an unsubscribe fn. */
   onSeal(cb: () => void): () => void {
     this.#sealListeners.add(cb)
     return () => {

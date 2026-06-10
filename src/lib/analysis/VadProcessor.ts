@@ -1,20 +1,7 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- * Copyright (C) 2022-2026 ricky0123
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
+// Copyright (C) 2022-2026 ricky0123
 
 // Silero VAD v6 inference via onnxruntime-web.
 // Model interface originally from https://github.com/ricky0123/vad
@@ -46,14 +33,10 @@ function getSession(): Promise<ort.InferenceSession> {
 }
 
 /**
- * Stateful streaming VAD processor for Silero v6.
- *
- * Feed 16 kHz mono audio chunks via `feed()`. The model runs inference each
- * time 512 samples have accumulated. `speechProbability` holds the output of
- * the most recent inference (0 = silence, 1 = speech).
- *
- * LSTM state persists across `feed()` calls so continuous streams are handled
- * correctly. Call `reset()` between independent utterances.
+ * Stateful streaming VAD processor for Silero v6. Feed 16 kHz mono audio via
+ * `feed()`; inference runs per 512-sample chunk and `speechProbability` holds
+ * the latest output (0 = silence, 1 = speech). LSTM state persists across calls;
+ * call `reset()` between independent utterances.
  */
 export class VadStreamProcessor {
   private state = new Float32Array(STATE_SIZE)
@@ -62,10 +45,9 @@ export class VadStreamProcessor {
   speechProbability = 0
 
   /**
-   * Feed 16 kHz mono audio. Runs one inference per 512-sample chunk; `onChunk`,
-   * if given, is invoked with that chunk's speech probability as each inference
-   * completes (in order), so callers can record a per-chunk probability series
-   * rather than only sampling the latest value.
+   * Feed 16 kHz mono audio. `onChunk`, if given, fires once per chunk (in order)
+   * with that chunk's speech probability, letting callers record the full series
+   * rather than only the latest value.
    */
   async feed(
     samples16k: Float32Array,
@@ -84,11 +66,8 @@ export class VadStreamProcessor {
       if (this.bufLen === VAD_CHUNK) {
         await this._run(session)
         onChunk?.(this.speechProbability)
-        // Carry this chunk's trailing VAD_V6_EXTRA_CONTEXT samples into the
-        // context region at the front of the buffer, so the next chunk's
-        // inference sees the proper overlap. The just-processed chunk occupies
-        // buf[VAD_V6_EXTRA_CONTEXT .. VAD_CHUNK + VAD_V6_EXTRA_CONTEXT); its
-        // last VAD_V6_EXTRA_CONTEXT samples are buf[VAD_CHUNK ..].
+        // Carry this chunk's trailing VAD_V6_EXTRA_CONTEXT samples (buf[VAD_CHUNK
+        // ..]) to the front, so the next chunk's inference sees the right overlap.
         this.buf.copyWithin(0, VAD_CHUNK, VAD_CHUNK + VAD_V6_EXTRA_CONTEXT)
         this.bufLen = 0
       }
@@ -96,10 +75,9 @@ export class VadStreamProcessor {
   }
 
   /**
-   * Run inference on any buffered samples that have not filled a full chunk,
-   * zero-padding the remainder to VAD_CHUNK. Use at end of stream so the final
-   * partial chunk still yields a probability, matching the batch path, which
-   * always runs a (zero-padded) last chunk. No-op when nothing is buffered.
+   * Zero-pad and run any buffered partial chunk. Use at end of stream so the
+   * final partial chunk still yields a probability, matching the batch path.
+   * No-op when nothing is buffered.
    */
   async flush(onChunk?: (speechProbability: number) => void): Promise<void> {
     if (this.bufLen === 0) return
@@ -137,55 +115,50 @@ export class VadStreamProcessor {
 
 // --- Speech gating ----------------------------------------------------------
 
-// Hysteresis thresholds on the Silero speech probability (0 = silence, 1 =
-// speech). Speech turns on at POSITIVE and back off at NEGATIVE; the gap
-// between them debounces probabilities hovering around the boundary.
+// Hysteresis on the Silero probability: speech turns on at POSITIVE, back off
+// at NEGATIVE. The gap debounces values hovering around the boundary.
 export const POSITIVE_THRESHOLD = 0.3
 export const NEGATIVE_THRESHOLD = 0.25
 
-// Frames immediately before a voiced onset are retroactively marked as speech,
-// so the attack of a word is not clipped. Always applied, regardless of audio.
+// Blind pad of frames before a voiced onset, retroactively marked speech so a
+// word's attack isn't clipped. Always applied.
 export const PREROLL_MS = 50
 
-// Upper bound on how far before a voiced onset the gate may reclaim as speech
-// when callers supply a per-frame onset feature (high-frequency energy). Unlike
-// PREROLL_MS, this is only a ceiling: the gate walks back from the onset through
-// frames whose energy stays well above the local noise floor — an unvoiced
-// attack such as /s/ or /f/ that Silero, run on quiet input, tends to miss —
-// and stops once the energy returns to the floor. With no feature supplied it
-// has no effect and the blind PREROLL_MS pad is used.
+// Ceiling on how far before an onset the gate may reclaim when a per-frame onset
+// feature (high-frequency energy) is supplied: it walks back from the pad through
+// frames whose energy stays above the local noise floor -- an unvoiced attack like
+// /s/ or /f/ that Silero tends to miss on quiet input -- and stops once energy
+// returns to the floor. No feature -> no effect, just the blind PREROLL_MS pad.
 export const ONSET_BACKTRACK_MS = 200
 
-// How far above the local noise floor a frame's onset feature must sit to be
-// pulled into the onset by the backtrack (≈5 dB in power). Low enough to catch
-// weak fricatives (/f/, /θ/), high enough that steady-state silence stops it.
+// How far above the noise floor the onset feature must sit to be reclaimed by the
+// backtrack (=~5 dB in power). Low enough for weak fricatives (/f/, /θ/), high
+// enough that steady-state silence stops it.
 const ONSET_BACKTRACK_FACTOR = 3
 
-// Frames immediately after a voiced segment ends are kept as speech, so the
-// release/decay tail of the last word is not clipped. Unlike redemption (which
-// reverts when speech does not resume), this pad is always kept.
+// Blind pad of frames after a segment ends, kept as speech so the release tail
+// isn't clipped. Unlike redemption, always kept.
 export const POSTROLL_MS = 50
 
-// After speech stops, frames keep being reported as speech for this long. If
-// speech resumes within the window the gap is bridged; otherwise — or when the
-// stream ends — the held frames revert to silence, save for the POSTROLL_MS pad.
+// After speech stops, frames keep reporting speech for this long. If speech
+// resumes the gap is bridged; otherwise (or at stream end) the held frames revert
+// to silence, save for the POSTROLL_MS pad.
 export const REDEMPTION_MS = 80
 
-// Speech segments shorter than this, measured end to end (including pre-roll,
-// post-roll, and any bridged gaps), are discarded as spurious and reverted to
-// silence.
+// Segments shorter than this end-to-end (incl. pre-roll, post-roll, bridged gaps)
+// are discarded as spurious and reverted to silence.
 export const MIN_SPEECH_MS = 400
 
-// TODO(vad): future explorations, in rough priority order —
+// TODO(vad): future explorations, in rough priority order --
 //   1. Reconsider the live UX of optimistic redemption: at a 2 ms step,
-//      REDEMPTION_MS paints ~500 frames as speech and then retracts them a
-//      second later. Consider a shorter redemption for the realtime path, or a
-//      distinct "tentative" rendering so retraction reads as intentional.
-//   2. Emit segment-level events (utterance start/end/duration) in addition to
+//      REDEMPTION_MS paints ~500 frames as speech then retracts them a second
+//      later. Consider a shorter redemption for the realtime path, or a distinct
+//      "tentative" rendering so retraction reads as intentional.
+//   2. Emit segment-level events (utterance start/end/duration) alongside the
 //      per-frame decisions. The gate already knows these boundaries; surfacing
-//      them would let the UI report durations/counts without re-deriving runs.
-//   3. Make the thresholds and durations tunable (e.g. a single "sensitivity"
-//      knob) once fixed values prove wrong on real mics/rooms.
+//      them lets the UI report durations/counts without re-deriving runs.
+//   3. Make thresholds and durations tunable (e.g. one "sensitivity" knob) once
+//      fixed values prove wrong on real mics/rooms.
 
 export interface SpeechDecision {
   frameIndex: number
@@ -196,23 +169,20 @@ export interface SpeechDecision {
 interface GateFrame {
   frameIndex: number
   speechProbability: number
-  // Per-frame high-frequency energy, used to refine onsets. NaN when the caller
-  // does not supply it; the gate then falls back to the blind PREROLL_MS pad.
+  // Per-frame high-frequency energy for onset refinement. NaN when not supplied,
+  // in which case the gate falls back to the blind PREROLL_MS pad.
   onsetFeature: number
 }
 
 /**
- * Turns a stream of per-frame speech probabilities into per-frame speech
- * decisions, applying hysteresis, pre-roll, post-roll, redemption, and a
- * minimum-duration filter. Shared by the realtime VAD worker and offline buffer
- * analysis so both behave identically.
+ * Turns per-frame speech probabilities into per-frame speech decisions, applying
+ * hysteresis, pre-roll, post-roll, redemption, and a minimum-duration filter.
+ * Shared by the realtime VAD worker and offline analysis so both match.
  *
- * Decisions are reported optimistically and may be revised later: a frame can
- * be reported as speech and then corrected to silence once a redemption window
- * expires without speech resuming, or once its segment proves too short to
- * keep. Each callback carries the latest known value for that frame, so a later
- * decision for a frame overrides an earlier one. Frames are reported in the
- * order they are pushed, though corrections may target earlier frames.
+ * Decisions are optimistic and may be revised: a frame reported as speech can be
+ * corrected to silence once its redemption window expires or its segment proves
+ * too short. A later decision for a frame overrides an earlier one. Frames report
+ * in push order, though corrections may target earlier frames.
  */
 export class SpeechGate {
   private readonly prerollFrames: number
@@ -223,19 +193,19 @@ export class SpeechGate {
 
   // Whether the most recent frame counts as speech (post-hysteresis).
   private speaking = false
-  // Whether we are inside a speech segment: its leading edge has fired and it
-  // has not yet been closed by an expired redemption window or the stream end.
+  // Inside a speech segment: leading edge has fired, not yet closed by an expired
+  // redemption window or stream end.
   private inSegment = false
   // Consecutive silent frames since the last speech frame, while in a segment.
   private silenceRun = 0
 
   // Recent silent frames eligible to become pre-roll for the next onset.
   private preroll: GateFrame[] = []
-  // Silent frames optimistically reported as speech during the redemption
-  // window; either folded into the segment (bridged) or reverted to silence.
+  // Silent frames optimistically reported as speech during redemption; either
+  // folded into the segment (bridged) or reverted to silence.
   private redemption: GateFrame[] = []
-  // Frames in the current segment, retained only until it reaches
-  // minSpeechFrames so they can be reverted if the segment stays too short.
+  // Current segment's frames, retained only until it reaches minSpeechFrames so
+  // they can be reverted if it stays too short.
   private segment: GateFrame[] = []
   private segmentLength = 0
 
@@ -277,8 +247,8 @@ export class SpeechGate {
 
   private onSpeech(frame: GateFrame): void {
     if (!this.inSegment) {
-      // Onset: open a segment and reclaim buffered pre-roll frames, extending
-      // back through any unvoiced attack the onset feature reveals.
+      // Onset: open a segment and reclaim pre-roll, extending back through any
+      // unvoiced attack the onset feature reveals.
       this.inSegment = true
       for (const pf of this.reclaimPreroll()) {
         this.emit(pf, true)
@@ -286,8 +256,8 @@ export class SpeechGate {
       }
       this.preroll = []
     } else if (this.redemption.length > 0) {
-      // Speech resumed within the redemption window: bridge the gap. These
-      // frames were already reported as speech; just fold them into the segment.
+      // Speech resumed within the window: bridge the gap. These frames were
+      // already reported as speech; just fold them into the segment.
       for (const rf of this.redemption) this.extendSegment(rf)
       this.redemption = []
     }
@@ -304,8 +274,8 @@ export class SpeechGate {
       this.redemption.push(frame)
       return
     }
-    // Window expired without speech resuming: close out the tail, close the
-    // segment, and treat this frame as the start of the trailing silence.
+    // Window expired: close the tail and segment, and treat this frame as the
+    // start of the trailing silence.
     this.closeRedemptionTail()
     this.closeSegment()
     this.inSegment = false
@@ -314,8 +284,7 @@ export class SpeechGate {
   }
 
   // Close an unbridged redemption tail: keep the first postrollFrames as a
-  // release pad on the end of the segment (they were already reported as
-  // speech), and revert the rest to silence.
+  // release pad (already reported as speech), revert the rest to silence.
   private closeRedemptionTail(): void {
     const keep = Math.min(this.postrollFrames, this.redemption.length)
     for (let i = 0; i < this.redemption.length; i++) {
@@ -332,13 +301,11 @@ export class SpeechGate {
     if (this.preroll.length > this.backtrackFrames) this.preroll.shift()
   }
 
-  // Choose which buffered pre-onset frames an onset reclaims as speech. Always
-  // takes at least the last prerollFrames (the blind PREROLL_MS pad). When an
-  // onset feature is available, estimates the noise floor from the oldest part
-  // of the buffer (which predates the attack) and walks further back from the
-  // pad through any contiguous run sitting ONSET_BACKTRACK_FACTOR above that
-  // floor, so the onset lands at the start of an unvoiced consonant rather than
-  // the voiced vowel. Falls back to the blind pad when no usable feature exists.
+  // Choose which buffered pre-onset frames to reclaim as speech. Always takes at
+  // least the last prerollFrames (blind pad). With an onset feature, estimates
+  // the noise floor from the oldest quarter of the buffer (predating the attack)
+  // and walks further back through any contiguous run sitting ONSET_BACKTRACK_-
+  // FACTOR above it, so the onset lands at an unvoiced consonant, not the vowel.
   private reclaimPreroll(): GateFrame[] {
     const n = this.preroll.length
     let start = Math.max(0, n - this.prerollFrames)
@@ -370,7 +337,7 @@ export class SpeechGate {
     if (this.segmentLength < this.minSpeechFrames) {
       this.segment.push(frame)
     } else if (this.segmentLength === this.minSpeechFrames) {
-      // Long enough to keep for good; stop tracking frames for reversion.
+      // Long enough to keep; stop tracking frames for reversion.
       this.segment = []
     }
   }

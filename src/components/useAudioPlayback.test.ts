@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react'
@@ -95,7 +82,7 @@ describe('useAudioPlayback', () => {
   beforeEach(() => {
     mockPipelineInstances = []
 
-    // A SabRope stand-in — the mocked pipeline ignores the data, so we only
+    // A SabRope stand-in -- the mocked pipeline ignores the data, so we only
     // need enough shape for `ropes.length` checks in the hook.
     mockRopes = [{ length: 220500, sampleRate: 44100, shareRope: vi.fn() }]
 
@@ -126,9 +113,6 @@ describe('useAudioPlayback', () => {
         onPlaybackPositionChanged,
       }),
     )
-
-    // Should not throw
-    expect(true).toBe(true)
   })
 
   it('creates pipeline when enabled with ropes', () => {
@@ -318,14 +302,14 @@ describe('useAudioPlayback', () => {
 
     // The worklet reports a new position every animation frame. The parent
     // turns those into cursor updates, but its re-render always trails the live
-    // playhead — so by the time the cursor catches up to one reported value, the
+    // playhead -- so by the time the cursor catches up to one reported value, the
     // pipeline has already emitted the next one(s).
     pipeline.dispatchEvent('positionChanged', { timeSec: 1.0 })
     pipeline.dispatchEvent('positionChanged', { timeSec: 1.0166 })
 
     // Parent commits the first reported position; the pipeline meanwhile sits at
     // 1.0166. The playhead only moved forward and nothing else changed, so the
-    // graph must keep playing — not be torn down and recreated (an audible gap).
+    // graph must keep playing -- not be torn down and recreated (an audible gap).
     rerender({ cursorSec: 1.0 })
 
     expect(mockPipelineInstances.length).toBe(1)
@@ -353,7 +337,7 @@ describe('useAudioPlayback', () => {
     rerender({ cursorSec: 2.0 })
     expect(mockPipelineInstances.length).toBe(1)
 
-    // User scrubs back to 0.5 — behind the playhead, a real seek.
+    // User scrubs back to 0.5 -- behind the playhead, a real seek.
     rerender({ cursorSec: 0.5 })
     expect(mockPipelineInstances.length).toBe(2)
   })
@@ -379,7 +363,7 @@ describe('useAudioPlayback', () => {
     rerender({ cursorSec: 1.0 })
     expect(mockPipelineInstances.length).toBe(1)
 
-    // User scrubs forward to 5s — ahead of anything played, a real seek.
+    // User scrubs forward to 5s -- ahead of anything played, a real seek.
     rerender({ cursorSec: 5.0 })
     expect(mockPipelineInstances.length).toBe(2)
   })

@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import { Link } from '@tanstack/react-router'
 import { Check, Copy } from 'lucide-react'
@@ -35,8 +22,8 @@ const PAGE_TITLE = 'English to IPA — Phonetic Transcription · Braat'
 const SAMPLE_TEXT =
   'When sunlight strikes raindrops in the air, they act as a prism and form a rainbow.'
 
-// U+0361 COMBINING DOUBLE INVERTED BREVE — ties the two halves of a
-// multi-character phoneme together (e.g. aɪ → a͡ɪ) when "Tie diphthongs" is on.
+// U+0361 COMBINING DOUBLE INVERTED BREVE -- ties the two halves of a
+// multi-character phoneme together (e.g. aɪ -> a͡ɪ) when "Tie diphthongs" is on.
 const TIE_CHAR = '͡'
 
 type Voice = 'en' | 'en-us'
@@ -49,7 +36,7 @@ export function IpaTranscriber() {
 
   // The engine is an emscripten Module instance: a large object graph with
   // cyclic references into WASM memory. Keep it in local state and read it here,
-  // but never pass it across a component boundary as a prop — React's dev-mode
+  // but never pass it across a component boundary as a prop -- React's dev-mode
   // traversal of props recurses through the whole graph and hangs the tab. Pass
   // derived primitives (e.g. `engineLoading`) to children instead.
   const [engine, setEngine] = useState<ESpeakEngine | null>(null)

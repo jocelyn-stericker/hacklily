@@ -1,12 +1,11 @@
-/*
- * Public API for the BFA TypeScript port (simplified pipeline).
- *
- * Part of a TypeScript port of the Bournemouth Forced Aligner (BFA).
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>.
- * Copyright (C) Tabahi <tabahi@duck.com>.
- * Licensed under the GNU Affero General Public License v3.0 or later.
- * See the LICENSE at the repository root and ATTRIBUTION.md.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Part of a TypeScript port of the Bournemouth Forced Aligner (BFA).
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>.
+// Copyright (C) Tabahi <tabahi@duck.com>.
+// See ATTRIBUTION.md.
+
+// Public API for the BFA TypeScript port (simplified pipeline).
 
 import * as ort from 'onnxruntime-web'
 
@@ -55,7 +54,7 @@ export async function createCupeSession(
   return ort.InferenceSession.create(bytes, options)
 }
 
-/** Result of {@link alignTranscript}: alignment plus the phonemization used. */
+/** Result of `alignTranscript`: alignment plus the phonemization used. */
 export interface TranscriptAlignment extends AlignmentResult {
   phonemized: PhonemizedTranscript
 }

@@ -1,7 +1,12 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Part of a TypeScript port of the Bournemouth Forced Aligner (BFA).
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>.
+// Copyright (C) Tabahi <tabahi@duck.com>.
+
 /*
- * Phonemizer golden tests — values cross-checked against the upstream Python
+ * Phonemizer golden tests -- values cross-checked against the upstream Python
  * ph66 mapper (bournemouth_aligner/ipamappers/ph66_mapper.py).
- * Part of the BFA TypeScript port (AGPL-3.0-or-later).
  */
 import { describe, it, expect } from 'vitest'
 

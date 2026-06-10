@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import {
   CaptionsOff,
@@ -76,9 +63,8 @@ function formatMB(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-// Progress for an in-flight download: a determinate bar once the total size is
-// known, an indeterminate spinner before that (and for the browser engine,
-// whose install reports no byte progress).
+// Determinate bar once total size is known; indeterminate spinner before that
+// (and for the browser engine, which reports no byte progress).
 function DownloadProgress({
   loaded,
   total,
@@ -86,8 +72,7 @@ function DownloadProgress({
 }: {
   loaded: number
   total: number
-  // Names the model being fetched, for when one control downloads several in
-  // turn (Accurate). Omitted for a single-model control.
+  // Named only for multi-model controls (Accurate); omitted otherwise.
   label?: string
 }) {
   if (total <= 0) {
@@ -118,10 +103,8 @@ function DownloadProgress({
   )
 }
 
-// Download / cancel / retry controls for one model, rendered only while the
-// model isn't ready. Downloads can only ever be started from here. Starting a
-// download also selects the tier (via `onDownload`) — downloading a model is a
-// clear signal the user intends to use it.
+// Download/cancel/retry for one model, visible until it's ready. Starting a
+// download also selects the tier -- a clear intent signal.
 function DownloadControls({
   model,
   sizeLabel,
@@ -132,26 +115,23 @@ function DownloadControls({
   onDownload: () => void
 }) {
   const state = useDownloadState(model)
-  // The Fast draft model is shared with the Accurate tier, so the same download
-  // can be in flight from the other card. Only the control that actually kicked
-  // it off shows the bar and Cancel; reset when it settles back to idle so a
-  // later download started elsewhere is correctly treated as not-ours.
+  // The draft model is shared with Accurate, so a download can be in flight
+  // from the other card. Only the card that started it shows the bar and Cancel.
   const [startedHere, setStartedHere] = useState(false)
   useEffect(() => {
     // FIXME: should be tracked externally
     // oxlint-disable-next-line react-hooks-js/set-state-in-effect
     if (state.status === 'idle') setStartedHere(false)
   }, [state.status])
-  // `force` re-downloads ignoring the cache; used by "Try again" so a corrupt
-  // cached file (e.g. a truncated weight) can't keep failing the same way.
+  // `force` bypasses the cache; used by "Try again" so a corrupt cached file
+  // can't keep failing.
   const begin = (force = false) => {
     onDownload()
     setStartedHere(true)
     startDownload(model, { force })
   }
   if (state.status === 'downloading') {
-    // Downloading because of the other card — show a passive note, not a second
-    // bar (and no Cancel; it isn't ours to cancel).
+    // Download started from the other card -- no bar or Cancel (not ours).
     if (!startedHere) {
       return <DownloadProgress loaded={0} total={0} />
     }
@@ -195,12 +175,9 @@ function DownloadControls({
   )
 }
 
-// Accurate needs two models: the fast draft engine (the same one the Fast tier
-// uses) for the instant rough transcription, and Whisper Turbo for the on-demand
-// sharpen. One button fetches both, one at a time — draft first — so a low-memory
-// device never loads both heavy models at once, surfacing a single progress bar
-// for whichever stage is in flight. Both must land before Accurate can be applied;
-// the modal blocks Save until then and cancels whatever's in flight when it closes.
+// Accurate needs two models: the draft engine (shared with Fast) plus Whisper Turbo.
+// One button fetches both sequentially -- draft first -- one bar tracks whichever
+// stage is in flight. Both must land before Save is unblocked.
 function AccurateDownloadControls({
   draftModel,
   draftReady,
@@ -210,20 +187,16 @@ function AccurateDownloadControls({
 }: {
   draftModel: DownloadModel
   draftReady: boolean
-  // Combined size still to download, shown on the Download button.
   sizeLabel: string
-  // False while the modal is closing, so the sequencer doesn't restart a
-  // just-cancelled download on the way out.
+  // False while closing, preventing the sequencer from restarting a cancelled download.
   enabled: boolean
   onStart: () => void
 }) {
   const draftState = useDownloadState(draftModel)
   const whisperState = useDownloadState('whisper')
 
-  // Set once the user kicks the pair off from *this* control. Gating the whole UI
-  // on it keeps a Fast-tier download of the shared draft model from lighting this
-  // up too, and means Whisper only auto-starts after the user began the sequence
-  // here (not on reopen with the draft model already present).
+  // Set once the user starts the sequence here, so a concurrent Fast-tier download
+  // of the shared draft model doesn't trigger Whisper auto-start on this control.
   const [started, setStarted] = useState(false)
 
   // The stage currently in flight: the draft model until it's ready, then Whisper.
@@ -235,9 +208,8 @@ function AccurateDownloadControls({
     : 'Whisper Turbo'
   const stageState = !draftReady ? draftState : whisperState
 
-  // Advance the sequence: draft first, then Whisper, each only once its
-  // predecessor is ready. Re-runs as each stage settles. A failed stage stops here
-  // (its state is `failed`, not `idle`) until the user retries.
+  // Advance the sequence: draft → Whisper, each starting once the prior settles.
+  // A failed stage holds here until the user retries.
   useEffect(() => {
     if (!enabled || !started) return
     if (stageState.status === 'idle') startDownload(stageModel)
@@ -258,9 +230,8 @@ function AccurateDownloadControls({
     )
   }
 
-  // Active sequence: one bar for the current stage. `idle` here is the brief gap
-  // between stages (or the frame before the first fetch starts) — render it as the
-  // indeterminate bar rather than flashing the Download button back.
+  // One bar for the current stage; `idle` is the brief gap between stages --
+  // show indeterminate rather than flashing the Download button.
   if (started) {
     const loaded = stageState.status === 'downloading' ? stageState.loaded : 0
     const total = stageState.status === 'downloading' ? stageState.total : 0
@@ -387,10 +358,8 @@ export function TranscriptionSettingsModal({
   const moonshineDownloaded = useModelDownloaded('moonshine')
   const whisperDownloaded = useModelDownloaded('whisper')
 
-  // Block Save while any model is fetching — the heavy Whisper download in
-  // particular can destabilise low-memory devices, so we keep the modal open
-  // until it settles rather than letting the user apply and navigate away
-  // mid-download (closing the modal cancels the download).
+  // Block Save while downloading -- Whisper can destabilise low-memory devices,
+  // so keep the modal open until it settles (closing cancels the download).
   const browserState = useDownloadState('browser')
   const moonshineState = useDownloadState('moonshine')
   const whisperState = useDownloadState('whisper')
@@ -399,8 +368,7 @@ export function TranscriptionSettingsModal({
     moonshineState.status === 'downloading' ||
     whisperState.status === 'downloading'
 
-  // Small tier resolves to the browser engine (if downloaded/downloadable) or
-  // the bundled Moonshine model. `null` while the availability probe is pending.
+  // Small = browser engine (if available) or Moonshine; `null` while probing.
   const smallEngine = local === null ? null : resolveSmallEngine(local)
   const smallDownloadModel: DownloadModel =
     smallEngine === 'moonshine' ? 'moonshine' : 'browser'
@@ -411,33 +379,25 @@ export function TranscriptionSettingsModal({
         ? moonshineDownloaded
         : false
 
-  // Large tier needs WebGPU. While the probe is in flight (webgpu === null) we
-  // leave it selectable, like the cloud tier.
+  // Large needs WebGPU; selectable while probe is pending, like cloud.
   const largeAvailable = webgpu !== false
   const largeReady = whisperDownloaded
 
-  // Accurate is "draft engine + Whisper": the small engine supplies the instant
-  // rough transcription and Whisper sharpens it on demand, so the tier isn't
-  // usable until *both* models are present.
+  // Accurate requires both the small (draft) engine and Whisper.
   const accurateReady = smallReady && largeReady
 
-  // What the Accurate download still has to fetch, for the button so the user
-  // knows the commitment up front: Whisper (540 MB) plus the fast draft model
-  // unless it's already present. The browser draft engine reports no size, so we
-  // show an upper bound (matching its standalone "<100 MB" label) in that case.
+  // Remaining download for the button: Whisper (540 MB) + draft model if needed.
+  // Browser engine reports no size, so show an upper bound.
   const accurateDownloadLabel = smallReady
     ? '540 MB'
     : smallEngine === 'moonshine'
       ? '610 MB'
       : '< 640 MB'
 
-  // The bundled fallback always works, so the small tier is never unavailable —
-  // only "not downloaded yet".
+  // Bundled fallback means small is never unavailable, only not-yet-downloaded.
   const cloudAvailable = availability === null ? true : availability.browser
 
-  // The dialog edits a draft and only commits when Save is pressed. Reset it to
-  // the saved value whenever the dialog opens (adjusting state during render
-  // rather than in an effect, per the React docs).
+  // Draft resets to saved value on open (during render, per React docs).
   const [draft, setDraft] = useState<TranscriptionMode>(mode)
   const [wasOpen, setWasOpen] = useState(open)
   if (open !== wasOpen) {
@@ -445,8 +405,7 @@ export function TranscriptionSettingsModal({
     if (open) setDraft(mode)
   }
 
-  // Downloads may only happen from this modal, so cancel any in-flight download
-  // when it closes.
+  // Cancel any in-flight downloads when the modal closes.
   useEffect(() => {
     if (open) return
     cancelDownload('browser')
@@ -465,8 +424,6 @@ export function TranscriptionSettingsModal({
         toast('Failed to save setting')
       })
 
-  // The action's label reflects the kind of change being saved: turning
-  // transcription on, turning it off, or just switching between engines.
   const saveLabel =
     mode === 'disabled' && draft !== 'disabled'
       ? 'Enable transcription'
@@ -474,9 +431,7 @@ export function TranscriptionSettingsModal({
         ? 'Disable transcription'
         : 'Save'
 
-  // Any tier the device supports is selectable, but a tier whose model isn't
-  // downloaded yet can't actually be applied — block Save (with an explanatory
-  // tooltip) until its weights are present.
+  // Block Save if the selected tier needs a model that isn't downloaded yet.
   const draftNeedsDownload =
     (draft === 'small' && !smallReady) || (draft === 'large' && !accurateReady)
 
@@ -505,7 +460,6 @@ export function TranscriptionSettingsModal({
             aria-label="Transcription method"
             className="flex flex-col gap-5 py-1"
           >
-            {/* Turn transcription off entirely. */}
             <section className="flex flex-col gap-3">
               <ModeCard
                 selected={draft === 'disabled'}
@@ -515,7 +469,6 @@ export function TranscriptionSettingsModal({
               />
             </section>
 
-            {/* Engines that run locally — audio stays in this browser. */}
             <section className="flex flex-col gap-3 border-t border-border/60 pt-5">
               <header className="flex flex-col gap-0.5">
                 <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
@@ -569,10 +522,8 @@ export function TranscriptionSettingsModal({
                   ) : null
                 }
                 footer={
-                  // Only offer the download once WebGPU is confirmed (not merely
-                  // while the probe is pending — no point fetching ~600 MB the
-                  // device can't run) and the draft engine has resolved (local !==
-                  // null), since that decides which draft model to fetch.
+                  // Wait for WebGPU confirmation before offering ~600 MB download,
+                  // and for local to resolve so we know which draft model to fetch.
                   webgpu === true && local !== null && !accurateReady ? (
                     <AccurateDownloadControls
                       draftModel={smallDownloadModel}
@@ -586,7 +537,6 @@ export function TranscriptionSettingsModal({
               />
             </section>
 
-            {/* Remote (cloud) transcription — opt-in. */}
             <section className="flex flex-col gap-3 border-t border-border/60 pt-5">
               <header className="flex flex-col gap-0.5">
                 <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">

@@ -1,18 +1,21 @@
-/**
- * This is Luna McNulty's reference formant data, and resonance score
- * weights used in https://acousticgender.space. I'm not sure how the
- * corpus she used was generated, but there is this attribution on
- * https://acousticgender.space:
- *
- * This application is developed by Luna McNulty as part of a research project for her
- * Sc. M. program at Brown University. Its content is available under CC BY-SA 4.0 and
- * uses Creative-Commons-licensed sound files from Morgan and Christine Lemmer-Webber's
- * podcast Foss and Crafts as well as public domain content audiobook content from Librivox.
- *
- * https://gitlab.com/lmcnulty/gender-voice-visualization/-/blob/master/stats.json
- *
- * When there were multiple stressings, only the first is kept here.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>.
+// Copyright (C) Luna McNulty
+
+// This is Luna McNulty's reference formant data, and resonance score
+// weights used in https://acousticgender.space. I'm not sure how the
+// corpus she used was generated, but there is this attribution on
+// https://acousticgender.space:
+//
+// This application is developed by Luna McNulty as part of a research project for her
+// Sc. M. program at Brown University. Its content is available under CC BY-SA 4.0 and
+// uses Creative-Commons-licensed sound files from Morgan and Christine Lemmer-Webber's
+// podcast Foss and Crafts as well as public domain content audiobook content from Librivox.
+//
+// https://gitlab.com/lmcnulty/gender-voice-visualization/-/blob/master/stats.json
+//
+// When there were multiple stressings, only the first is kept here.
 
 type FormantReference = {
   mean: number

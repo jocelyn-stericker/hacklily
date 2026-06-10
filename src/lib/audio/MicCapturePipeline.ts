@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import { toast } from 'sonner'
 
@@ -65,7 +52,7 @@ type MicCaptureOutEvents = {
   sabRopeSeal: CustomEvent<SabRopeSeal>
 }
 
-// Cached persistent stream — key tracks the settings it was opened with so we
+// Cached persistent stream -- key tracks the settings it was opened with so we
 // can invalidate it when settings change.
 let STREAM: MediaStream | null = null
 let STREAM_KEY: string | null = null
@@ -169,8 +156,8 @@ export async function preInitPersistentStream(
  *
  * - An **AudioWorklet** (`AudioRingWriter`) writes PCM into a SAB ring buffer with minimal latency.
  * - Two parallel **Web Workers** both read from the same SAB:
- *   - **SpectrogramWorker** — generates spectrogram frames, accumulates PCM for playback, and sends a `params` message that also triggers `FormantWorker` initialization.
- *   - **FormantWorker** — runs pitch (F0) and formant (F1–F3) analysis, patching earlier frames via `patch` messages.
+ *   - **SpectrogramWorker** -- generates spectrogram frames, accumulates PCM for playback, and sends a `params` message that also triggers `FormantWorker` initialization.
+ *   - **FormantWorker** -- runs pitch (F0) and formant (F1-F3) analysis, patching earlier frames via `patch` messages.
  *
  * **Stop protocol**: the SAB sentinel (`ctrl[1] = 1`) is written _after_ `AudioContext.close()` resolves, guaranteeing all worklet writes have landed before workers exit their read loops.
  */
@@ -474,8 +461,6 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
         if (this.#workletNode) {
           this.#sourceNode?.connect(this.#workletNode)
         }
-        // To hear loopback
-        // this.#sourceNode.connect(this.#context.destination)
 
         this.emit('chunkStart', { params })
         this.emit('sabRopeShare', data.rope)
@@ -606,7 +591,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
         if (decision.frameIndex + 1 > to) to = decision.frameIndex + 1
       } else {
         // Frame not appended yet (VAD normally lags the spectrogram, so this is
-        // rare): stash it to be applied — and patched individually — on append.
+        // rare): stash it to be applied -- and patched individually -- on append.
         this.#pendPatch({ type: 'patch', ...decision })
       }
     }

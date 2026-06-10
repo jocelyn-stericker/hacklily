@@ -1,7 +1,11 @@
-/*
- * Pure DSP + Viterbi unit tests (no ONNX). Fixtures cross-checked against the
- * C++/Python reference numbers. Part of the BFA TypeScript port (AGPL-3.0-or-later).
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Part of a TypeScript port of the Bournemouth Forced Aligner (BFA).
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>.
+// Copyright (C) Tabahi <tabahi@duck.com>.
+
+// Pure DSP + Viterbi unit tests (no ONNX). Fixtures cross-checked against the
+// C++/Python reference numbers.
 import { describe, it, expect } from 'vitest'
 
 import {
@@ -74,7 +78,7 @@ describe('stitchWindowPredictionsFlat', () => {
     const numWindows = 124
     const fpw = 10
     const C = 2
-    const flat = new Float32Array(numWindows * fpw * C) // zeros
+    const flat = new Float32Array(numWindows * fpw * C)
     const { combined, totalFrames } = stitchWindowPredictionsFlat(
       flat,
       numWindows,
@@ -223,7 +227,7 @@ describe('calculateConfidences', () => {
   it('trims endFrame when trailing frames have low probability', () => {
     const C = 3
     const T = 6
-    // Class 1 strong in frames 0–2, weak in frames 3–5
+    // Class 1 strong in frames 0-2, weak in frames 3-5
     const logits = new Float32Array([
       -10, 10, -10, -10, 10, -10, -10, 10, -10, 10, -10, -10, 10, -10, -10, 10,
       -10, -10,

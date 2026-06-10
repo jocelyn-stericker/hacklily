@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import { describe, it, expect } from 'vitest'
 
@@ -331,7 +318,7 @@ function voicing(chunks: AnalysisChunk[]): boolean[] {
 }
 
 // Assert both chunk invariants hold and that the list is fully coalesced
-// (adjacent chunks always differ in voicing — no redundant fragmentation).
+// (adjacent chunks always differ in voicing -- no redundant fragmentation).
 function expectInvariants(chunks: AnalysisChunk[]): void {
   for (const chunk of chunks) {
     expect(chunk.frames.length).toBeGreaterThan(0)
@@ -475,7 +462,7 @@ describe('reconcileVoicingAt across recording boundaries', () => {
     b.recordingStart = true
     const chunks = [a, b]
 
-    // B's first frame reverts to silence — it now matches A's last frame, but
+    // B's first frame reverts to silence -- it now matches A's last frame, but
     // the recording boundary must keep them in separate chunks.
     expect(flip(chunks, 2, false)).toBe(true)
     expect(voicing(chunks)).toEqual([false, false, false, true])

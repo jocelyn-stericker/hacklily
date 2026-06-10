@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 // Core audio analysis worker spawning; defines AnalysisFrame type for frame data with pitch, formants, and RMS.
 
@@ -143,7 +130,7 @@ export async function analyzeBuffer(
     frameSpeechProb[x] = vadProbs[vadIdx]!
   }
 
-  // Per-frame energy summed over the spectrogram bins above ONSET_BAND_LO_HZ —
+  // Per-frame energy summed over the spectrogram bins above ONSET_BAND_LO_HZ --
   // broadband enough to include the aspiration of weak, non-sibilant fricatives
   // (/f/, /h/, /θ/), whose energy sits in the formant region rather than the
   // sibilant HF band, while still excluding F0/rumble below the cutoff. The
@@ -175,7 +162,7 @@ export async function analyzeBuffer(
   gate.end()
 
   // Build per-frame formant state with validity filter and last-valid holdover,
-  // matching FormantWorker's F1/F2 range checks (F1 ∈ [200,1100] Hz, F2 ∈ [650,3500] Hz)
+  // matching FormantWorker's F1/F2 range checks (F1 in [200,1100] Hz, F2 in [650,3500] Hz)
   let formantPtr = 0
   let latestValidF1: number | null = null
   let latestValidF2: number | null = null
@@ -234,7 +221,7 @@ export async function analyzeBuffer(
   }
 
   // Split into chunks at voicing boundaries so each chunk is uniformly
-  // voiced/unvoiced with `voiced` set to match — identical invariants to the
+  // voiced/unvoiced with `voiced` set to match -- identical invariants to the
   // realtime path, which maintains them incrementally as VAD patches arrive.
   return framesToChunks(
     results,

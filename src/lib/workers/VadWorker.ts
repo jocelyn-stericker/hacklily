@@ -1,19 +1,7 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
+
 /// <reference lib="webworker" />
 
 import { ResamplerStreamProcessor } from '#/lib/analysis/ResampleProcessor'
@@ -93,9 +81,9 @@ export async function runAnalysis(
   }
 
   // Per-VAD-chunk speech probability, indexed by chunk. Each chunk c covers
-  // 16 kHz samples [c·VAD_CHUNK, (c+1)·VAD_CHUNK), i.e. absolute time
-  // [c·CHUNK_SEC, (c+1)·CHUNK_SEC). A frame is gated against the chunk covering
-  // its midpoint, identical to analyzeBuffer's frame→probability mapping; here
+  // 16 kHz samples [c*VAD_CHUNK, (c+1)*VAD_CHUNK), i.e. absolute time
+  // [c*CHUNK_SEC, (c+1)*CHUNK_SEC). A frame is gated against the chunk covering
+  // its midpoint, identical to analyzeBuffer's frame->probability mapping; here
   // it is applied incrementally as chunk probabilities arrive.
   const CHUNK_SEC = VAD_CHUNK / VAD_RATE
   const timeStepSec = timeStepSamples / sampleRate
@@ -193,9 +181,9 @@ export async function runAnalysis(
   await vad.flush((prob) => vadProbs.push(prob)).catch(() => {})
   gateReadyFrames()
 
-  // Frames past the last produced chunk — the resampler leaves a few ms of
-  // input unresolved at the tail — clamp to the final chunk, matching
-  // analyzeBuffer's Math.min(vadProbs.length - 1, …).
+  // Frames past the last produced chunk -- the resampler leaves a few ms of
+  // input unresolved at the tail -- clamp to the final chunk, matching
+  // analyzeBuffer's Math.min(vadProbs.length - 1, ...).
   const lastChunk = vadProbs.length - 1
   while (nextFrame < frameIndex) {
     const coveringChunk = Math.min(

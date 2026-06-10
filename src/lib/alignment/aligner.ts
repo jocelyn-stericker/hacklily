@@ -1,3 +1,10 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Part of a TypeScript port of the Bournemouth Forced Aligner (BFA).
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>.
+// Copyright (C) Tabahi <tabahi@duck.com>.
+// See ATTRIBUTION.md.
+
 /*
  * CUPE ONNX inference + simplified BFA alignment orchestration.
  *
@@ -7,20 +14,14 @@
  *   cupe_prediction / extract_timestamps_from_segment_simplified / convert_to_ms.
  *
  * By default `align` also runs the two post-processing steps the C++ advanced
- * pipeline applies after decoding — ensure_target_coverage and
- * extend_soft_boundaries (see decoder.ts) — so target phonemes the simplified
+ * pipeline applies after decoding -- ensure_target_coverage and
+ * extend_soft_boundaries (see decoder.ts) -- so target phonemes the simplified
  * decode drops are recovered and each phoneme's boundaries widen into adjacent
  * confident frames. Toggle via AlignerConfig.
  *
  * Uses onnxruntime-web (wasm backend). The caller supplies an already-created
  * InferenceSession (see worker.ts / createCupeSession) so this module stays
  * agnostic about backend wiring.
- *
- * Part of a TypeScript port of the Bournemouth Forced Aligner (BFA).
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>.
- * Copyright (C) Tabahi <tabahi@duck.com>.
- * Licensed under the GNU Affero General Public License v3.0 or later.
- * See the LICENSE at the repository root and ATTRIBUTION.md.
  */
 
 import * as ort from 'onnxruntime-web'
@@ -143,7 +144,7 @@ export class PhonemeTimestampAligner {
    * to frames >= spectralLen). Very short clips are still padded up to two full
    * windows so the stitch produces enough frames to cover spectralLen.
    *
-   * `wavLen` is the real (valid) length — capped at wavLenMax — and continues to
+   * `wavLen` is the real (valid) length -- capped at wavLenMax -- and continues to
    * drive spectralLen and timestamp conversion. `wav.length` may exceed it only
    * for the short-clip padding case.
    */

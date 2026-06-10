@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import { readAudioSpan } from '#/lib/audio/AudioSpan'
 import type { AudioSpan } from '#/lib/audio/AudioSpan'
@@ -24,19 +11,14 @@ import type {
   TranscribeWorkerOutMessage,
 } from '#/lib/workers/TranscribeWorker'
 
-// Runs a transformers.js speech model ("moonshine" or "whisper") in a web worker
-// so inference stays off the UI thread. A worker is created lazily per model on
-// first use; each posted chunk is matched to its result by id. These transcribe
-// workers are offline (see TranscribeWorker.ts) — they only use weights already
-// downloaded via modelDownload.ts, never fetching anything themselves. To keep
-// the resident footprint small on memory-constrained devices, idle workers are
-// torn down after a spell of inactivity and rebuilt on the next request (the
-// weights come straight from the browser cache, so the rebuild is download-free).
+// Runs a transformers.js speech model in a dedicated web worker per model (lazy).
+// Workers are offline-only: they use weights already in the browser cache, never
+// fetching. Idle workers are torn down after IDLE_TEARDOWN_MS and rebuilt on
+// demand from the cache (re-init cost only, no re-download).
 
 const LOG = '[transcribeBundled]'
 
-// One worker per model so the Moonshine (wasm) and Whisper (WebGPU) sessions can
-// coexist; in practice the user has only one mode selected at a time.
+// One worker per model so Moonshine (wasm) and Whisper (WebGPU) can coexist.
 const workers = new Map<TranscribeWorkerModel, TranscribeWorker>()
 let nextTranscribeId = 0
 const pendingTranscriptions = new Map<
@@ -44,12 +26,9 @@ const pendingTranscriptions = new Map<
   { resolve: (text: string) => void; reject: (error: Error) => void }
 >()
 
-// Once a model has been idle this long, terminate its worker to release the
-// weights. Long enough that back-to-back chunks (and a user transcribing one
-// recording after another) keep the warm worker; short enough that the model
-// doesn't sit resident competing with the recording buffers for the rest of the
-// session. Rebuilding reads the cached weights, so the cost is re-init, not a
-// re-download.
+// After this idle period, terminate the worker to free its weights. Long enough
+// that consecutive chunks keep the warm worker; short enough to avoid competing
+// with recording buffers for the session. Re-init from cache only, no re-download.
 const IDLE_TEARDOWN_MS = 60_000
 let idleTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -59,9 +38,8 @@ function cancelIdleTeardown(): void {
   idleTimer = null
 }
 
-// Schedule a teardown once nothing is in flight. Re-armed every time a request
-// settles, so the timer only fires after a genuine quiet period. Tears down all
-// idle workers at once.
+// Schedule teardown after all requests settle. Re-armed on each settlement so it
+// fires only after a genuine quiet period.
 function scheduleIdleTeardown(): void {
   cancelIdleTeardown()
   idleTimer = setTimeout(() => {
@@ -72,14 +50,10 @@ function scheduleIdleTeardown(): void {
   }, IDLE_TEARDOWN_MS)
 }
 
-// Crash breadcrumb. iOS Safari kills the whole tab when it crosses its
-// (device-dependent) memory ceiling, and a bundled model is the heaviest thing
-// Braat loads — on a low-memory device the load/inference peak can trip it.
-// There's no catchable signal for that kill, so instead we leave a localStorage
-// breadcrumb while a worker transcription is actually running and clear it the
-// moment the work drains. A clean unload (pagehide) also clears it. So if the
-// flag is still set on the next load, the previous session was killed
-// mid-transcription — see `consumeBundledCrashFlag`.
+// iOS Safari OOM-kills the tab with no catchable signal when memory peaks during
+// inference. We leave a localStorage breadcrumb while a worker transcription runs
+// and clear it on drain or pagehide. If set on next load, the session was killed
+// mid-transcription -- see `consumeBundledCrashFlag`.
 const CRASH_FLAG_KEY = 'braat:bundled-transcription-active'
 
 function markBundledActive(): void {
@@ -98,17 +72,15 @@ function clearBundledActive(): void {
   }
 }
 
-// A jetsam/OOM kill never fires pagehide; a normal navigation or tab close
-// does. Clearing the breadcrumb here keeps an ordinary unload mid-transcription
-// from looking like a crash on the next load.
+// OOM kills don't fire pagehide; normal unloads do. Clear here so a clean
+// unload mid-transcription doesn't look like a crash on next load.
 if (typeof window !== 'undefined') {
   window.addEventListener('pagehide', clearBundledActive)
 }
 
 /**
- * Whether the previous session was terminated while a worker transcription was
- * in flight (i.e. an uncaught tab crash, most likely an out-of-memory kill).
- * Reads and clears the breadcrumb, so it reports `true` at most once per crash.
+ * True if the previous session was OOM-killed during a worker transcription.
+ * Reads and clears the breadcrumb -- reports `true` at most once per crash.
  */
 export function consumeBundledCrashFlag(): boolean {
   let crashed = false
@@ -121,16 +93,14 @@ export function consumeBundledCrashFlag(): boolean {
   return crashed
 }
 
-// Called whenever a request settles; once the queue is empty there's no work to
-// crash on, so drop the breadcrumb and start the idle countdown.
+// On settle: if queue empty, drop crash breadcrumb and start idle countdown.
 function onTranscriptionSettled(): void {
   if (pendingTranscriptions.size > 0) return
   clearBundledActive()
   scheduleIdleTeardown()
 }
 
-// Terminate a model's worker (releasing its loaded weights) and drop the pool
-// reference so the next request builds a fresh one. No-op if absent.
+// Terminate a worker and remove it from the pool so the next request rebuilds.
 function teardownWorker(model: TranscribeWorkerModel): void {
   const worker = workers.get(model)
   if (!worker) return
@@ -146,8 +116,7 @@ function getWorker(model: TranscribeWorkerModel): TranscribeWorker {
   worker.addEventListener(
     'message',
     ({ data }: MessageEvent<TranscribeWorkerOutMessage>) => {
-      // Download messages can't reach a transcribe worker (it's never sent a
-      // download request), so only result/error are expected here.
+      // Only result/error expected -- transcribe workers don't receive download messages.
       if (data.type !== 'result' && data.type !== 'error') return
       const pending = pendingTranscriptions.get(data.id)
       if (!pending) return
@@ -157,12 +126,8 @@ function getWorker(model: TranscribeWorkerModel): TranscribeWorker {
       onTranscriptionSettled()
     },
   )
-  // A worker-level failure (e.g. the model script failing to load) never
-  // delivers per-request results, so reject everything in flight rather than
-  // leaving those promises to hang. Terminate the errored worker to free its
-  // loaded model weights, then drop the reference so the next request builds
-  // a fresh one. This is a caught, clean failure — not a crash — so clear the
-  // breadcrumb.
+  // Worker-level failure: reject all pending requests, tear down the worker to
+  // free weights, and clear the crash breadcrumb (clean failure, not a kill).
   worker.addEventListener('error', (event) => {
     teardownWorker(model)
     cancelIdleTeardown()
@@ -195,9 +160,7 @@ export async function transcribeWithWorker(
     const detach = () => {
       audio.signal.removeEventListener('abort', onAbort)
     }
-    // Inference isn't cancelable mid-run, so on abort we just stop waiting: drop
-    // the pending entry (its eventual result is ignored) and reject. The worker
-    // finishes in the background and goes idle.
+    // Abort: drop the pending entry and reject; the worker finishes in background.
     const onAbort = () => {
       if (!pendingTranscriptions.delete(id)) return
       detach()
@@ -215,9 +178,8 @@ export async function transcribeWithWorker(
       },
     })
     audio.signal.addEventListener('abort', onAbort)
-    // Transfer the PCM rather than cloning it: the worker treats its copy as
-    // owned, and the caller doesn't touch `pcm` again, so handing over the
-    // buffer avoids keeping a second copy of the audio resident on this thread.
+    // Transfer (not clone) the PCM: the caller is done with it, so no second
+    // copy stays resident on this thread.
     worker.postMessage({ type: 'transcribe', id, pcm, sampleRate, model }, [
       pcm.buffer,
     ])
@@ -231,26 +193,21 @@ export type WorkerDownloadHandlers = {
 }
 
 /**
- * Download a model's weights into the browser cache, then keep the warmed worker
- * resident in the shared pool so the next transcription reuses it. Going through
- * the same pool as `transcribeWithWorker` (rather than a throwaway download
- * worker) means a large model is loaded once: tearing one down and immediately
- * reloading it — the old download-then-transcribe handoff — is unstable.
- *
- * Returns a cancel function that aborts the wait and tears down the worker.
+ * Download a model into the browser cache via the shared worker pool, keeping
+ * the warmed worker resident for the next transcription. Using the same pool
+ * avoids reloading a large model immediately after tearing it down (unstable).
+ * Returns a cancel function that tears down the worker.
  */
 export function downloadWithWorker(
   model: TranscribeWorkerModel,
   force: boolean,
   handlers: WorkerDownloadHandlers,
 ): () => void {
-  // `force` is the corrupt-cache recovery path: drop any existing worker first
-  // so the reload starts from a fresh worker that can't reuse an already-loaded
-  // (and presumably stale) in-memory pipeline.
+  // `force` recovery: drop the existing worker so the reload can't reuse a stale
+  // in-memory pipeline.
   if (force) teardownWorker(model)
   const worker = getWorker(model)
-  // While the download runs the worker must stay resident even if a prior
-  // transcription left an idle teardown armed.
+  // Keep the worker alive during download even if an idle teardown is armed.
   cancelIdleTeardown()
 
   const cleanup = () => {
@@ -263,19 +220,16 @@ export function downloadWithWorker(
     } else if (data.type === 'download-ready' && data.model === model) {
       cleanup()
       handlers.onReady()
-      // Leave the warmed worker in the pool, but don't let it sit resident
-      // forever if the user never transcribes — start the idle countdown.
+      // Worker stays in pool; start idle countdown in case the user never transcribes.
       scheduleIdleTeardown()
     } else if (data.type === 'download-error' && data.model === model) {
       cleanup()
-      // The failed load may have left the worker in a bad state; tear it down so
-      // a retry (or a later transcribe) builds a fresh one.
+      // Tear down after failure so a retry or later transcription starts fresh.
       teardownWorker(model)
       handlers.onError(data.error)
     }
   }
-  // A worker-level failure never delivers a download-error message; surface it
-  // here. (The pool's own error listener also fires, tearing the worker down.)
+  // Worker-level failure: never delivers download-error, so surface it here.
   const onError = (event: ErrorEvent) => {
     cleanup()
     teardownWorker(model)
@@ -286,8 +240,7 @@ export function downloadWithWorker(
   worker.addEventListener('error', onError)
   worker.postMessage({ type: 'download', model, force })
 
-  // Cancel: a download isn't otherwise cancelable, so stop listening and kill
-  // the worker (its in-flight fetch dies with it).
+  // Cancel: stop listening and kill the worker (its in-flight fetch dies with it).
   return () => {
     cleanup()
     teardownWorker(model)

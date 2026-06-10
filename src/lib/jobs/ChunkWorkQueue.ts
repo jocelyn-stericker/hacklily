@@ -1,19 +1,6 @@
-/* Braat
- * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
 import { locateChunkRope, chunkAudioFromRopes } from '#/lib/audio/AudioSpan'
@@ -33,7 +20,7 @@ const LOG = '[ChunkWorkQueue]'
 
 /** The timeline the queue schedules over. */
 export type WorkDeps = {
-  /** The authoritative chunk timeline (read live — mutated in place). */
+  /** The authoritative chunk timeline (read live -- mutated in place). */
   getChunks: () => readonly AnalysisChunk[]
   /** Per-session recorded PCM, in `recordingStart` order. */
   getRopes: () => readonly SabRope[]
@@ -48,22 +35,22 @@ export type WorkRunner = (
 ) => Promise<void>
 
 /**
- * One kind of work the queue can schedule (transcribe, align, …), injected so
+ * One kind of work the queue can schedule (transcribe, align, ...), injected so
  * the queue stays free of any one job's specifics. Multiple kinds share the
- * queue's single chain — only one job runs at a time — and {@link PickNext}
+ * queue's single chain -- only one job runs at a time -- and `PickNext`
  * decides which kind goes next.
  */
 export interface ChunkWork {
-  /** Stable id, used by {@link PickNext} and to key per-kind state. */
+  /** Stable id, used by `PickNext` and to key per-kind state. */
   kind: string
   /** Whether a voiced chunk still needs this kind of work. */
   needsWork: (chunk: AnalysisChunk) => boolean
   /**
    * Resolve the backend for a pass and return a runner bound to it, or `null` to
-   * stand down (then {@link onUnavailable} fires and this kind is skipped for the
+   * stand down (then `onUnavailable` fires and this kind is skipped for the
    * rest of the pass). Called at most once per pass. The returned runner claims
    * the chunk synchronously (before its first await), executes, and persists; it
-   * may throw {@link ModelUnavailableError} to stand the kind down mid-pass.
+   * may throw `ModelUnavailableError` to stand the kind down mid-pass.
    */
   resolve: () => Promise<WorkRunner | null>
   /** The model became unavailable (resolve returned null, or a run threw). */
@@ -78,10 +65,10 @@ export interface ChunkWork {
 
 /**
  * Drives per-chunk async work across the recording timeline. Each pass repeatedly
- * asks {@link PickNext} for the next eligible `{ kind, chunk }` job, runs it, and
- * re-asks — so priority is re-evaluated after every job and as new work appears
+ * asks `PickNext` for the next eligible `{ kind, chunk }` job, runs it, and
+ * re-asks -- so priority is re-evaluated after every job and as new work appears
  * mid-pass (e.g. a transcript that makes a chunk alignable). One job runs at a
- * time (a single chain); kinds that opt into {@link ChunkWork.liveSpans} get live
+ * time (a single chain); kinds that opt into `ChunkWork.liveSpans` get live
  * spans for chunks still being recorded. All result state lives in the kinds; the
  * queue holds only transient plumbing.
  *
@@ -207,7 +194,7 @@ export class ChunkWorkQueue {
     const attempted = new Map<string, Set<AnalysisChunk>>()
 
     for (;;) {
-      // A config change / teardown superseded this pass — stop writing stale results.
+      // A config change / teardown superseded this pass -- stop writing stale results.
       if (this.#generation !== generation) return
       const job = this.#pickNext(
         this.#candidates(runners, attempted),
