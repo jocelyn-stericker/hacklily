@@ -86,7 +86,7 @@ export interface SpectrogramResult {
   data: Array<Float32Array>
 }
 
-function resolveSpectrogramParams(
+export function resolveSpectrogramParams(
   config: SpectrogramConfig,
   sampleRate: number,
 ): ResolvedSpectrogramParams {

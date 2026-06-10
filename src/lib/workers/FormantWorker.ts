@@ -12,7 +12,6 @@ import { AudioRopeReader } from '#/lib/audio/AudioRopeReader'
 
 import type {
   WorkerEndedMessage,
-  ParamsMessage,
   PatchFrameMessage,
   RopeConsumerInitMessage,
   RopeGrowMessage,
@@ -39,10 +38,7 @@ export type FormantWorkerInMessage =
   | RopeSealMessage
   | null
 
-export type FormantWorkerOutMessage =
-  | ParamsMessage
-  | PatchFrameMessage
-  | WorkerEndedMessage
+export type FormantWorkerOutMessage = PatchFrameMessage | WorkerEndedMessage
 
 export type FormantWorker = Omit<Worker, 'postMessage' | 'onmessage'> & {
   postMessage: (msg: FormantWorkerInMessage) => null

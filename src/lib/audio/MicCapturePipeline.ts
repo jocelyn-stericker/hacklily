@@ -9,6 +9,7 @@ import type {
   AnalysisFrame,
   AnalysisParams,
 } from '#/lib/analysis/AnalysisFrame'
+import { resolveSpectrogramParams } from '#/lib/analysis/SpectrogramProcessor'
 import audioWorkletUrl from '#/lib/audio/AudioRingWriter?worker&url'
 import type { AudioRingWriterNode } from '#/lib/audio/AudioRingWriter'
 import type {
@@ -34,7 +35,6 @@ import VadWorker from '#/lib/workers/VadWorker?worker'
 import type { VadWorkerOutMessage } from '#/lib/workers/VadWorker'
 import type {
   AnalysisPatch,
-  AppendFrameMessage,
   PatchFrameMessage,
   PatchFramesMessage,
 } from '#/lib/workers/workerMessages'
@@ -144,7 +144,6 @@ export async function preInitPersistentStream(
 
 export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
   #analysis: AnalysisChunk | null = null
-  #pendingPatches = new Map<number, PatchFrameMessage>()
 
   #context: AudioContext | null = null
   #sourceNode: MediaStreamAudioSourceNode | null = null
@@ -161,6 +160,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
   #settings: AudioCaptureSettings
   #sab: SharedArrayBuffer | null = null
   #pendingWorkers = 0
+  #numFreqs = 0
 
   get destroyed(): AbortSignal {
     return this.#destroyed.signal
@@ -362,6 +362,10 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
     })
     this.#ropeWriterWorker.terminate()
     this.#ropeWriterWorker = null
+    // Seal the rope on consumer-side so their AudioRopeReader loops can exit cleanly.
+    // Without this, consumers block forever on Atomics.waitAsync if the writer crashes
+    // before it called rope.seal() itself.
+    this.#forwardRopeSeal()
     this.#onWorkerDone()
   }
 
@@ -396,6 +400,33 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
   }
 
   #initConsumerWorkers(rope: SabRopeShare, sampleRate: number) {
+    const sp = resolveSpectrogramParams(
+      {
+        effectiveWindowLengthSec: 0.005,
+        maxFrequencyHz: Math.min(5500, sampleRate / 2),
+        timeStepSec: 0.002,
+        freqStepHz: 20,
+        windowShape: 'gaussian',
+      },
+      sampleRate,
+    )
+
+    const params: AnalysisParams = {
+      timeStepSamples: Math.round(sp.actualTimeStepSec * sampleRate),
+      sampleRate,
+      freqStepHz: sp.actualFreqStepHz,
+      firstBinHz: sp.f1Hz,
+    }
+
+    this.#analysis = {
+      ...params,
+      startTimeSec: 0,
+      frames: [],
+      voiced: false,
+    }
+    this.#numFreqs = sp.numFreqs
+    this.emit('chunkStart', { params })
+
     this.#spectrogramWorker?.postMessage({
       type: 'init',
       rope,
@@ -481,28 +512,6 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
         return
       }
 
-      case 'params': {
-        const params: AnalysisParams = {
-          timeStepSamples: data.timeStepSamples,
-          sampleRate: data.sampleRate,
-          freqStepHz: data.freqStepHz,
-          firstBinHz: data.firstBinHz,
-        }
-        this.#analysis = {
-          ...params,
-          startTimeSec: 0,
-          frames: [],
-          voiced: false,
-        }
-        this.#pendingPatches.clear()
-        this.emit('chunkStart', { params })
-        return
-      }
-
-      case 'frame':
-        this.#handleAppend(data)
-        return
-
       case 'patch':
         this.#handlePatch(data)
         return
@@ -545,29 +554,9 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
     }
   }
 
-  #handleAppend = (data: AppendFrameMessage) => {
-    const frame: AnalysisFrame = {
-      spectrum: data.spectrum,
-      rms: data.rms,
-      speechProbability: data.speechProbability ?? 0,
-      pitchDetected: data.pitchDetected ?? false,
-      speechDetected: data.speechDetected ?? false,
-      f0: data.f0 ?? 0,
-      f1: data.f1 ?? null,
-      f2: data.f2 ?? null,
-      f3: data.f3 ?? null,
-      lunaBrightness: data.lunaBrightness ?? null,
-    }
-    this.#analysis?.frames.push(frame)!
-    this.emit('append', { frame })
-    const pending = this.#pendingPatches.get(data.frameIndex)
-    if (pending) {
-      this.#pendingPatches.delete(data.frameIndex)
-      this.#handlePatch(pending)
-    }
-  }
-
   #applyPatchFields(frame: AnalysisFrame, data: AnalysisPatch) {
+    if (data.spectrum !== undefined) frame.spectrum = data.spectrum
+    if (data.rms !== undefined) frame.rms = data.rms
     if (data.pitchDetected !== undefined)
       frame.pitchDetected = data.pitchDetected
     if (data.speechDetected !== undefined)
@@ -578,43 +567,66 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
     if (data.f3 !== undefined) frame.f3 = data.f3
     if (data.speechProbability !== undefined)
       frame.speechProbability = data.speechProbability
+    if (data.lunaBrightness !== undefined)
+      frame.lunaBrightness = data.lunaBrightness
   }
 
-  #pendPatch(data: PatchFrameMessage) {
-    const existing = this.#pendingPatches.get(data.frameIndex)
-    this.#pendingPatches.set(
-      data.frameIndex,
-      existing ? { ...existing, ...data } : data,
-    )
+  #ensureFrame(frameIndex: number): { frame: AnalysisFrame; isNew: boolean } {
+    const frames = this.#analysis!.frames
+    const isNew = frameIndex >= frames.length
+    while (frames.length <= frameIndex) {
+      const frame: AnalysisFrame = {
+        spectrum: new Float32Array(this.#numFreqs),
+        rms: 0,
+        speechProbability: 0,
+        pitchDetected: false,
+        speechDetected: false,
+        f0: 0,
+        f1: null,
+        f2: null,
+        f3: null,
+        lunaBrightness: null,
+      }
+      frames.push(frame)
+    }
+    return { frame: frames[frameIndex]!, isNew }
   }
 
   #handlePatch = (data: PatchFrameMessage) => {
-    const frame = this.#analysis?.frames[data.frameIndex]
-    if (frame) {
-      this.#applyPatchFields(frame, data)
+    const { frame, isNew } = this.#ensureFrame(data.frameIndex)
+    this.#applyPatchFields(frame, data)
+    if (isNew) {
+      this.emit('append', { frame })
+    } else {
       this.emit('patch', {
         from: data.frameIndex,
         to: data.frameIndex + 1,
       })
-    } else {
-      this.#pendPatch(data)
     }
   }
 
   #handlePatchFrames = (data: PatchFramesMessage) => {
-    let from = Infinity
-    let to = -Infinity
+    let appendFrom = Infinity
+    let appendTo = -Infinity
+    let patchFrom = Infinity
+    let patchTo = -Infinity
     for (const decision of data.frames) {
-      const frame = this.#analysis?.frames[decision.frameIndex]
-      if (frame) {
-        this.#applyPatchFields(frame, decision)
-        if (decision.frameIndex < from) from = decision.frameIndex
-        if (decision.frameIndex + 1 > to) to = decision.frameIndex + 1
+      const { frame, isNew } = this.#ensureFrame(decision.frameIndex)
+      this.#applyPatchFields(frame, decision)
+      if (isNew) {
+        if (decision.frameIndex < appendFrom) appendFrom = decision.frameIndex
+        if (decision.frameIndex + 1 > appendTo)
+          appendTo = decision.frameIndex + 1
       } else {
-        this.#pendPatch({ type: 'patch', ...decision })
+        if (decision.frameIndex < patchFrom) patchFrom = decision.frameIndex
+        if (decision.frameIndex + 1 > patchTo) patchTo = decision.frameIndex + 1
       }
     }
-    if (to > from) this.emit('patch', { from, to })
+    for (let i = appendFrom; i < appendTo; i++) {
+      this.emit('append', { frame: this.#analysis!.frames[i]! })
+    }
+    if (patchTo > patchFrom)
+      this.emit('patch', { from: patchFrom, to: patchTo })
   }
 
   #stop = async () => {

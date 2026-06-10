@@ -125,6 +125,10 @@ export class SabRope {
     )
   }
 
+  get rawLength() {
+    return Atomics.load(this.#ctrlView, CTRL_LENGTH)
+  }
+
   waitForLength(expected: number) {
     return Atomics.waitAsync(this.#ctrlView, CTRL_LENGTH, expected)
   }

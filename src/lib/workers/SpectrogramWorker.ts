@@ -8,8 +8,6 @@ import { SpectrogramStreamProcessor } from '#/lib/analysis/SpectrogramProcessor'
 import { AudioRopeReader } from '#/lib/audio/AudioRopeReader'
 
 import type {
-  AppendFrameMessage,
-  ParamsMessage,
   PatchFrameMessage,
   WorkerEndedMessage,
   RopeConsumerInitMessage,
@@ -32,11 +30,7 @@ export type SpectrogramWorkerInMessage =
   | RopeSealMessage
   | null
 
-export type SpectrogramWorkerOutMessage =
-  | ParamsMessage
-  | AppendFrameMessage
-  | PatchFrameMessage
-  | WorkerEndedMessage
+export type SpectrogramWorkerOutMessage = PatchFrameMessage | WorkerEndedMessage
 
 export type SpectrogramWorker = Omit<Worker, 'postMessage' | 'onmessage'> & {
   postMessage: (msg: SpectrogramWorkerInMessage) => null
@@ -78,13 +72,6 @@ export async function runAnalysis(reader: AudioRopeReader, sampleRate: number) {
   )
 
   const sp = spec.params
-  postMessage({
-    type: 'params',
-    firstBinHz: sp.f1Hz,
-    freqStepHz: sp.actualFreqStepHz,
-    timeStepSamples: Math.round(sp.actualTimeStepSec * sampleRate),
-    sampleRate,
-  } satisfies ParamsMessage)
   const specBuf = new Float32Array(sp.numFreqs)
 
   const preEmphFactor = Math.exp((-2 * Math.PI * 50) / sampleRate)
@@ -110,12 +97,12 @@ export async function runAnalysis(reader: AudioRopeReader, sampleRate: number) {
 
     while (spec.readFrame(specBuf)) {
       postMessage({
-        type: 'frame',
+        type: 'patch',
         frameIndex: frameIndex++,
         spectrum: specBuf.slice(),
         rms,
         lunaBrightness: null,
-      } satisfies AppendFrameMessage)
+      } satisfies PatchFrameMessage)
     }
   }
 }

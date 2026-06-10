@@ -11,7 +11,6 @@ import type { ResolvedSpectrogramParams } from '#/lib/analysis/SpectrogramProces
 const SAMPLE_RATE = 44100
 const QUANTUM = 128
 
-// Mock state for controllable test data
 const mockState = vi.hoisted(() => ({
   audioChunks: [] as Float32Array[],
   spectrogramFrames: [] as Float32Array[],
@@ -71,7 +70,6 @@ vi.mock('#/lib/analysis/SpectrogramProcessor', () => {
   return { SpectrogramStreamProcessor }
 })
 
-// Helper to run analysis with mocked dependencies and capture messages
 async function testRunAnalysis(
   audioChunks: Float32Array[],
   sampleRate: number,
@@ -89,7 +87,6 @@ async function testRunAnalysis(
     128,
   )
 
-  // Mock the global postMessage to capture calls from runAnalysis
   const capturedMessages: any[] = []
   const originalPostMessage = globalThis.postMessage
   globalThis.postMessage = ((msg: any) => {
@@ -100,7 +97,6 @@ async function testRunAnalysis(
     const mod = await import('./SpectrogramWorker')
     const runAnalysis = (mod as any).runAnalysis
     await runAnalysis(reader, sampleRate)
-    // Send 'ended' message after runAnalysis completes, matching worker behavior
     capturedMessages.push({ type: 'ended' })
   } finally {
     globalThis.postMessage = originalPostMessage
@@ -143,23 +139,7 @@ describe('SpectrogramWorker', () => {
   })
 
   describe('output structure', () => {
-    it('sends params message at the start', async () => {
-      const audio = generateSilence(0.1, SAMPLE_RATE)
-      const chunks = chunkAudio(audio, QUANTUM)
-
-      const out = await testRunAnalysis(chunks, SAMPLE_RATE)
-
-      expect(out.length).toBeGreaterThan(0)
-      const paramsMsg = out[0]
-      expect(paramsMsg?.type).toBe('params')
-      expect(paramsMsg).toHaveProperty('firstBinHz')
-      expect(paramsMsg).toHaveProperty('freqStepHz')
-      expect(paramsMsg).toHaveProperty('timeStepSamples')
-      expect(paramsMsg).toHaveProperty('sampleRate')
-      expect(paramsMsg.sampleRate).toBe(SAMPLE_RATE)
-    })
-
-    it('sends frame messages with expected fields', async () => {
+    it('sends patch messages with expected fields', async () => {
       const audio = generateSilence(0.1, SAMPLE_RATE)
       const chunks = chunkAudio(audio, QUANTUM)
       mockState.spectrogramFrames = [
@@ -169,10 +149,10 @@ describe('SpectrogramWorker', () => {
 
       const out = await testRunAnalysis(chunks, SAMPLE_RATE)
 
-      const frameMessages = out.filter((m) => m.type === 'frame')
-      expect(frameMessages.length).toBeGreaterThan(0)
+      const patchMessages = out.filter((m) => m.type === 'patch')
+      expect(patchMessages.length).toBeGreaterThan(0)
 
-      for (const msg of frameMessages) {
+      for (const msg of patchMessages) {
         expect(msg).toHaveProperty('frameIndex')
         expect(msg).toHaveProperty('spectrum')
         expect(msg).toHaveProperty('rms')
@@ -200,8 +180,8 @@ describe('SpectrogramWorker', () => {
 
       const out = await testRunAnalysis(chunks, SAMPLE_RATE)
 
-      const frameMessages = out.filter((m) => m.type === 'frame')
-      for (const msg of frameMessages) {
+      const patchMessages = out.filter((m) => m.type === 'patch')
+      for (const msg of patchMessages) {
         expect(msg.rms).toBeCloseTo(0, 10)
       }
     })
@@ -215,10 +195,10 @@ describe('SpectrogramWorker', () => {
 
       const out = await testRunAnalysis(chunks, SAMPLE_RATE)
 
-      const frameMessages = out.filter((m) => m.type === 'frame')
-      expect(frameMessages.length).toBeGreaterThan(0)
+      const patchMessages = out.filter((m) => m.type === 'patch')
+      expect(patchMessages.length).toBeGreaterThan(0)
 
-      const rmsValues = frameMessages.map((m) => m.rms)
+      const rmsValues = patchMessages.map((m) => m.rms)
       const maxRms = Math.max(...rmsValues)
       expect(maxRms).toBeGreaterThan(0)
     })
@@ -232,23 +212,22 @@ describe('SpectrogramWorker', () => {
 
       const out = await testRunAnalysis(chunks, SAMPLE_RATE)
 
-      const frameMessages = out.filter((m) => m.type === 'frame')
-      expect(frameMessages.length).toBeGreaterThan(2)
+      const patchMessages = out.filter((m) => m.type === 'patch')
+      expect(patchMessages.length).toBeGreaterThan(2)
 
-      const rmsValues = frameMessages.map((m) => m.rms)
+      const rmsValues = patchMessages.map((m) => m.rms)
       const avgRms = rmsValues.reduce((a, b) => a + b) / rmsValues.length
       const variance =
         rmsValues.reduce((sum, r) => sum + (r - avgRms) ** 2, 0) /
         rmsValues.length
       const stdDev = Math.sqrt(variance)
 
-      // Standard deviation should be small relative to mean for constant amplitude
       expect(stdDev / avgRms).toBeLessThan(0.5)
     })
   })
 
   describe('frame indexing', () => {
-    it('produces frames with sequential frameIndex starting at 0', async () => {
+    it('produces patches with sequential frameIndex starting at 0', async () => {
       const audio = generateSilence(0.15, SAMPLE_RATE)
       const chunks = chunkAudio(audio, QUANTUM)
       mockState.spectrogramFrames = Array.from({ length: 10 }, () =>
@@ -257,17 +236,17 @@ describe('SpectrogramWorker', () => {
 
       const out = await testRunAnalysis(chunks, SAMPLE_RATE)
 
-      const frameMessages = out.filter((m) => m.type === 'frame')
-      for (let i = 0; i < frameMessages.length; i++) {
-        expect(frameMessages[i]?.frameIndex).toBe(i)
+      const patchMessages = out.filter((m) => m.type === 'patch')
+      for (let i = 0; i < patchMessages.length; i++) {
+        expect(patchMessages[i]?.frameIndex).toBe(i)
       }
     })
 
-    it('number of frames roughly matches audio duration', async () => {
+    it('number of patches roughly matches audio duration', async () => {
       const durationSec = 0.2
       const audio = generateSilence(durationSec, SAMPLE_RATE)
       const chunks = chunkAudio(audio, QUANTUM)
-      const expectedFrames = Math.floor((durationSec / 0.002) * 0.8) // 0.002 is timeStepSec
+      const expectedFrames = Math.floor((durationSec / 0.002) * 0.8)
 
       mockState.spectrogramFrames = Array.from({ length: expectedFrames }, () =>
         new Float32Array(129).fill(0.5),
@@ -275,14 +254,14 @@ describe('SpectrogramWorker', () => {
 
       const out = await testRunAnalysis(chunks, SAMPLE_RATE)
 
-      const frameMessages = out.filter((m) => m.type === 'frame')
-      expect(frameMessages.length).toBeGreaterThan(expectedFrames * 0.7)
-      expect(frameMessages.length).toBeLessThan(expectedFrames * 1.5)
+      const patchMessages = out.filter((m) => m.type === 'patch')
+      expect(patchMessages.length).toBeGreaterThan(expectedFrames * 0.7)
+      expect(patchMessages.length).toBeLessThan(expectedFrames * 1.5)
     })
   })
 
-  describe('spectrum frames', () => {
-    it('each spectrum frame has correct length', async () => {
+  describe('spectrum patches', () => {
+    it('each spectrum patch has correct length', async () => {
       const audio = generateSilence(0.1, SAMPLE_RATE)
       const chunks = chunkAudio(audio, QUANTUM)
       const numFreqs = 129
@@ -293,8 +272,8 @@ describe('SpectrogramWorker', () => {
 
       const out = await testRunAnalysis(chunks, SAMPLE_RATE)
 
-      const frameMessages = out.filter((m) => m.type === 'frame')
-      for (const msg of frameMessages) {
+      const patchMessages = out.filter((m) => m.type === 'patch')
+      for (const msg of patchMessages) {
         expect(msg.spectrum.length).toBe(numFreqs)
       }
     })
@@ -310,9 +289,9 @@ describe('SpectrogramWorker', () => {
 
       const out = await testRunAnalysis(chunks, SAMPLE_RATE)
 
-      const frameMessages = out.filter((m) => m.type === 'frame')
-      const frame1 = frameMessages[0]?.spectrum
-      const frame2 = frameMessages[1]?.spectrum
+      const patchMessages = out.filter((m) => m.type === 'patch')
+      const frame1 = patchMessages[0]?.spectrum
+      const frame2 = patchMessages[1]?.spectrum
 
       expect(frame1).not.toBe(frame2)
       if (frame1 && frame2) {
@@ -322,71 +301,18 @@ describe('SpectrogramWorker', () => {
     })
   })
 
-  describe('parameter message', () => {
-    it('params message contains correct sample rate', async () => {
-      const audio = generateSilence(0.1, SAMPLE_RATE)
-      const chunks = chunkAudio(audio, QUANTUM)
-
-      const out = await testRunAnalysis(chunks, SAMPLE_RATE)
-
-      const paramsMsg = out.find((m) => m.type === 'params')
-      expect(paramsMsg?.sampleRate).toBe(SAMPLE_RATE)
-    })
-
-    it('timeStepSamples matches expected value', async () => {
-      const audio = generateSilence(0.1, SAMPLE_RATE)
-      const chunks = chunkAudio(audio, QUANTUM)
-
-      const out = await testRunAnalysis(chunks, SAMPLE_RATE)
-
-      const paramsMsg = out.find((m) => m.type === 'params')
-      const expectedTimeStepSamples = Math.round(0.002 * SAMPLE_RATE)
-      expect(paramsMsg?.timeStepSamples).toBe(expectedTimeStepSamples)
-    })
-
-    it('freqStepHz is positive', async () => {
-      const audio = generateSilence(0.1, SAMPLE_RATE)
-      const chunks = chunkAudio(audio, QUANTUM)
-
-      const out = await testRunAnalysis(chunks, SAMPLE_RATE)
-
-      const paramsMsg = out.find((m) => m.type === 'params')
-      expect(paramsMsg?.freqStepHz).toBeGreaterThan(0)
-    })
-
-    it('firstBinHz is positive', async () => {
-      const audio = generateSilence(0.1, SAMPLE_RATE)
-      const chunks = chunkAudio(audio, QUANTUM)
-
-      const out = await testRunAnalysis(chunks, SAMPLE_RATE)
-
-      const paramsMsg = out.find((m) => m.type === 'params')
-      expect(paramsMsg?.firstBinHz).toBeGreaterThanOrEqual(0)
-    })
-  })
-
   describe('message ordering', () => {
-    it('params message always comes first', async () => {
-      const audio = generateSilence(0.1, SAMPLE_RATE)
-      const chunks = chunkAudio(audio, QUANTUM)
-
-      const out = await testRunAnalysis(chunks, SAMPLE_RATE)
-
-      const paramsIdx = out.findIndex((m) => m.type === 'params')
-      expect(paramsIdx).toBe(0)
-    })
-
-    it('all frame messages come before ended message', async () => {
+    it('all patch messages come before ended message', async () => {
       const audio = generateSilence(0.1, SAMPLE_RATE)
       const chunks = chunkAudio(audio, QUANTUM)
 
       const out = await testRunAnalysis(chunks, SAMPLE_RATE)
 
       const endedIdx = out.findIndex((m) => m.type === 'ended')
-      const frameMessages = out.filter(
-        (m, i) => m.type === 'frame' && i > endedIdx,
+      const patchMessages = out.filter(
+        (m, i) => m.type === 'patch' && i > endedIdx,
       )
-      expect(frameMessages.length).toBe(0)
+      expect(patchMessages.length).toBe(0)
     })
   })
 
@@ -395,7 +321,6 @@ describe('SpectrogramWorker', () => {
       const out = await testRunAnalysis([], SAMPLE_RATE)
 
       expect(out.length).toBeGreaterThan(0)
-      expect(out[0]?.type).toBe('params')
       expect(out[out.length - 1]?.type).toBe('ended')
     })
   })

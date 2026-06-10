@@ -7,10 +7,7 @@ import { render, waitFor } from '@testing-library/react'
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
 import type * as SettingsModule from '#/components/useSettings'
-import type {
-  AppendFrameMessage,
-  ParamsMessage,
-} from '#/lib/workers/workerMessages'
+import type { PatchFrameMessage } from '#/lib/workers/workerMessages'
 
 import { useMicCapture } from './useMicCapture'
 
@@ -303,23 +300,13 @@ describe('AudioRecorder', () => {
   }
 
   let mockFrameIndex = 0
-  const createMockParamsMessage = (
-    overrides?: Partial<Omit<ParamsMessage, 'type'>>,
-  ): ParamsMessage => ({
-    type: 'params',
-    timeStepSamples: 882,
-    sampleRate: 44100,
-    freqStepHz: 20,
-    firstBinHz: 0,
-    ...overrides,
-  })
-  const createMockFrameMessage = (
-    overrides?: Partial<AppendFrameMessage>,
-  ): AppendFrameMessage => {
+  const createMockPatchMessage = (
+    overrides?: Partial<PatchFrameMessage>,
+  ): PatchFrameMessage => {
     const spectrum = new Float32Array(257)
     spectrum.fill(0.1)
     return {
-      type: 'frame',
+      type: 'patch',
       frameIndex: mockFrameIndex++,
       pitchDetected: true,
       speechDetected: true,
@@ -638,8 +625,7 @@ describe('AudioRecorder', () => {
     await dispatchRopeReady()
     await waitForConsumerInit()
 
-    getMockWorker().dispatchMessage(createMockParamsMessage())
-    const msg = createMockFrameMessage()
+    const msg = createMockPatchMessage()
     getMockWorker().dispatchMessage(msg)
 
     expect(onAppend).toHaveBeenCalledWith(
@@ -674,11 +660,55 @@ describe('AudioRecorder', () => {
     await dispatchRopeReady()
     await waitForConsumerInit()
 
-    getMockWorker().dispatchMessage(createMockParamsMessage())
-    getMockWorker().dispatchMessage(createMockFrameMessage())
-    getMockWorker().dispatchMessage(createMockFrameMessage())
+    getMockWorker().dispatchMessage(createMockPatchMessage())
+    getMockWorker().dispatchMessage(createMockPatchMessage())
 
     expect(onAppend).toHaveBeenCalledTimes(2)
+  })
+
+  it('emits append only for new frames, patch for updates (regression: transcription spam)', async () => {
+    const onAppend = vi.fn()
+    const onPatch = vi.fn()
+    const onRecordingComplete = vi.fn()
+    const onError = vi.fn()
+    const onSabRopeGrow = vi.fn()
+    const onSabRopeShare = vi.fn()
+
+    render(
+      <TestRecorder
+        enabled={true}
+        onAppend={onAppend}
+        onPatch={onPatch}
+        onRecordingComplete={onRecordingComplete}
+        onError={onError}
+        onSabRopeGrow={onSabRopeGrow}
+        onSabRopeShare={onSabRopeShare}
+      />,
+    )
+
+    await waitForMockRopeWriterWorker()
+    await dispatchRopeReady()
+    await waitForConsumerInit()
+
+    // First patch to frame 0 should emit append (new frame)
+    getMockWorker().dispatchMessage(createMockPatchMessage({ frameIndex: 0 }))
+    expect(onAppend).toHaveBeenCalledTimes(1)
+    expect(onPatch).toHaveBeenCalledTimes(0)
+
+    // Second patch to frame 0 should emit patch (update existing frame)
+    getMockWorker().dispatchMessage(createMockPatchMessage({ frameIndex: 0 }))
+    expect(onAppend).toHaveBeenCalledTimes(1) // still 1, not 2
+    expect(onPatch).toHaveBeenCalledTimes(1)
+
+    // Patch to frame 1 should emit append (new frame)
+    getMockWorker().dispatchMessage(createMockPatchMessage({ frameIndex: 1 }))
+    expect(onAppend).toHaveBeenCalledTimes(2)
+    expect(onPatch).toHaveBeenCalledTimes(1)
+
+    // Another patch to frame 1 should emit patch (update existing frame)
+    getMockWorker().dispatchMessage(createMockPatchMessage({ frameIndex: 1 }))
+    expect(onAppend).toHaveBeenCalledTimes(2) // still 2, not 3
+    expect(onPatch).toHaveBeenCalledTimes(2)
   })
 
   it('calls onRecordingComplete on ended message when frames were produced', async () => {
@@ -703,10 +733,8 @@ describe('AudioRecorder', () => {
     await dispatchRopeReady()
     await waitForConsumerInit()
 
-    const params = createMockParamsMessage({ timeStepSamples: 441 })
-    const msg = createMockFrameMessage()
+    const msg = createMockPatchMessage()
 
-    getMockWorker().dispatchMessage(params)
     getMockWorker().dispatchMessage(msg)
     getMockWorker().dispatchMessage({ type: 'ended' })
 
@@ -936,8 +964,7 @@ describe('AudioRecorder', () => {
       { timeout: 100 },
     )
 
-    getMockWorker().dispatchMessage(createMockParamsMessage())
-    const msg = createMockFrameMessage()
+    const msg = createMockPatchMessage()
     getMockWorker().dispatchMessage(msg)
 
     expect(onAppend2).toHaveBeenCalledWith(
@@ -967,8 +994,7 @@ describe('AudioRecorder', () => {
     await waitForMockRopeWriterWorker()
     await dispatchRopeReady()
     await waitForConsumerInit()
-    getMockWorker().dispatchMessage(createMockParamsMessage())
-    getMockWorker().dispatchMessage(createMockFrameMessage())
+    getMockWorker().dispatchMessage(createMockPatchMessage())
     getMockWorker().dispatchMessage({ type: 'ended' })
 
     await waitFor(() => {

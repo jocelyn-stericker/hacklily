@@ -29,8 +29,14 @@ export class AudioRopeReader {
 
     while (true) {
       while (rope.length - this._readPos < quantum) {
-        if (rope.sealed) return
-        const r = rope.waitForLength(rope.length)
+        const rawLen = rope.rawLength
+        // Only exit when sealed AND rope.length is unclamped (all grow messages applied).
+        // If clamped, wait: the consumer-side seal() call (from 'rope-seal' message) will
+        // notify CTRL_LENGTH after all grows land, unblocking the wait below.
+        if (rope.sealed && rope.length === rawLen) return
+        // Wait on the actual Atomics value (not the clamped length) so this truly
+        // blocks when the producer is ahead of our local buffer count.
+        const r = rope.waitForLength(rawLen)
         if (r.async) await r.value
       }
 

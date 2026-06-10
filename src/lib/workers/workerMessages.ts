@@ -28,8 +28,6 @@ export type ParamsMessage = {
   type: 'params'
 } & AnalysisParams
 
-type AnalysisCore = Pick<AnalysisFrame, 'spectrum' | 'rms'>
-
 export type AnalysisPatch = Partial<
   Pick<
     AnalysisFrame,
@@ -41,14 +39,10 @@ export type AnalysisPatch = Partial<
     | 'f3'
     | 'speechProbability'
     | 'lunaBrightness'
+    | 'spectrum'
+    | 'rms'
   >
 >
-
-export type AppendFrameMessage = {
-  type: 'frame'
-  frameIndex: number
-} & AnalysisCore &
-  AnalysisPatch
 
 export type PatchFrameMessage = {
   type: 'patch'
