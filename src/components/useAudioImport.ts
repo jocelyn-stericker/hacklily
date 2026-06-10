@@ -6,12 +6,12 @@ import { useCallback, useEffect, useRef } from 'react'
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
 import { totalFrames } from '#/lib/analysis/AnalysisFrame'
-import { SabRope } from '#/lib/audio/SabRope'
+import { AudioRope } from '#/lib/audio/AudioRope'
 import ImportWorker from '#/lib/workers/ImportWorker?worker'
 
 async function importAudioFile(file: File): Promise<{
   analysis: AnalysisChunk[]
-  ropes: SabRope[]
+  ropes: AudioRope[]
 }> {
   const audioImporter = new ImportWorker()
   console.time('import: decode')
@@ -45,11 +45,11 @@ async function importAudioFile(file: File): Promise<{
         const timeStepSamples = chunks[0]?.timeStepSamples ?? 0
         const analysisSamples = timeStepSamples * totalFrames(chunks)
 
-        // Mirror the mono PCM, trimmed to the analysed length, into a SabRope --
+        // Mirror the mono PCM, trimmed to the analysed length, into a AudioRope --
         // the single audio representation for playback, export, and
         // transcription. One rope covers the whole clip; it never grows, so
         // seal it in one shot (no spare buffer, appends forbidden).
-        const rope = new SabRope(fileSampleRate)
+        const rope = new AudioRope(fileSampleRate)
         rope.seal(mono.subarray(0, analysisSamples))
 
         resolve({ analysis: chunks, ropes: [rope] })
@@ -62,7 +62,7 @@ async function importAudioFile(file: File): Promise<{
 
 interface FileImportResult {
   analysis: AnalysisChunk[]
-  ropes: SabRope[]
+  ropes: AudioRope[]
 }
 
 interface UseAudioImportOptions {

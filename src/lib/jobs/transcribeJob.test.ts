@@ -5,7 +5,7 @@
 import { describe, it, expect, vi } from 'vitest'
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
-import { SabRope } from '#/lib/audio/SabRope'
+import { AudioRope } from '#/lib/audio/AudioRope'
 import type { ChunkTranscript, TranscriptTier } from '#/lib/transcription'
 
 import { ChunkWorkQueue } from './ChunkWorkQueue'
@@ -45,8 +45,8 @@ function chunk(frames: number, voiced: boolean): AnalysisChunk {
   }
 }
 
-function sealedRope(length: number): SabRope {
-  const r = new SabRope(100)
+function sealedRope(length: number): AudioRope {
+  const r = new AudioRope(100)
   r.append(new Float32Array(length))
   r.seal()
   return r
@@ -61,7 +61,7 @@ function makeSink(): TranscriptSink & {
 
 type Deps = TranscribeJobDeps & {
   getChunks: () => readonly AnalysisChunk[]
-  getRopes: () => readonly SabRope[]
+  getRopes: () => readonly AudioRope[]
   getViewport: () => Viewport | null
 }
 
@@ -112,7 +112,7 @@ describe('transcribe kind', () => {
 
   it('transcribes a still-voiced last chunk when the recording seals', async () => {
     // A single live recording session: one voiced chunk, rope not yet sealed.
-    const rope = new SabRope(100)
+    const rope = new AudioRope(100)
     rope.append(new Float32Array(50)) // 5 frames * 10 samples
     const c = chunk(5, true)
     c.recordingStart = true

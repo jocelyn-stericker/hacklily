@@ -3,21 +3,21 @@
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import { ResamplerStreamProcessor } from '#/lib/analysis/ResampleProcessor'
-import type { SabRopeGrow, SabRopeShare } from '#/lib/audio/SabRope'
+import type { AudioRopeGrow, AudioRopeShare } from '#/lib/audio/AudioRope'
 import { assertUnreachable } from '#/lib/utils'
 
-import { SabRope } from './SabRope'
+import { AudioRope } from './AudioRope'
 
 export interface RopeInitMessage {
   type: 'setBuffer'
-  ropes: Array<SabRopeShare>
+  ropes: Array<AudioRopeShare>
   /** One loudness-normalization gain per rope, aligned to `ropes`. */
   gains: Array<number>
 }
 
 export interface RopeGrowLastMessage {
   type: 'growLastRope'
-  grow: SabRopeGrow
+  grow: AudioRopeGrow
 }
 
 export interface RopeSealLastMessage {
@@ -52,9 +52,9 @@ export interface RopeEndEvent {
   contextTime: number
 }
 
-export type SabRopeSourceNodeOutEvent = RopeStartedEvent | RopeEndEvent
+export type AudioRopeSourceNodeOutEvent = RopeStartedEvent | RopeEndEvent
 
-export type SabRopeSourceNodeMessage =
+export type AudioRopeSourceNodeMessage =
   | RopeInitMessage
   | RopeGrowLastMessage
   | RopeSealLastMessage
@@ -62,13 +62,13 @@ export type SabRopeSourceNodeMessage =
   | RopeEndMessage
   | null
 
-export type SabRopeSourceNode = Omit<AudioWorkletNode, 'port'> & {
+export type AudioRopeSourceNode = Omit<AudioWorkletNode, 'port'> & {
   port: {
-    postMessage: (msg: SabRopeSourceNodeMessage) => void
+    postMessage: (msg: AudioRopeSourceNodeMessage) => void
     onmessage:
       | ((
           this: MessagePort,
-          msg: MessageEvent<SabRopeSourceNodeOutEvent>,
+          msg: MessageEvent<AudioRopeSourceNodeOutEvent>,
         ) => void)
       | null
   }
@@ -84,7 +84,7 @@ type Cursor = {
 const FEED_CHUNK = 128
 
 /**
- * Audio worklet that writes one or more SabRopes to output in realtime.
+ * Audio worklet that writes one or more AudioRopes to output in realtime.
  *
  * Ropes lay end-to-end on a single timeline. Each rope may have its own sample
  * rate; rate mismatches go through a windowed-sinc `ResamplerStreamProcessor`,
@@ -97,14 +97,14 @@ const FEED_CHUNK = 128
  *
  * Load it:
  * ```
- * import audioWorkletUrl from '#/lib/audio/SabRopeSourceNode?worker&url'
+ * import audioWorkletUrl from '#/lib/audio/AudioRopeSourceNode?worker&url'
  * await context.audioWorklet.addModule(audioWorkletUrl)
- * workletNode = new AudioWorkletNode(context, 'sab-rope-source-node')
+ * workletNode = new AudioWorkletNode(context, 'audio-rope-source-node')
  * ```
  */
-export class SabRopeSourceNodeProcessor extends AudioWorkletProcessor {
+export class AudioRopeSourceNodeProcessor extends AudioWorkletProcessor {
   /** Ropes laid end-to-end; the last one may still be growing. */
-  #ropes: Array<SabRope> = []
+  #ropes: Array<AudioRope> = []
   #gains: Array<number> = []
   #playing = false
 
@@ -126,7 +126,7 @@ export class SabRopeSourceNodeProcessor extends AudioWorkletProcessor {
     super()
     this.port.onmessage = ({
       data,
-    }: MessageEvent<SabRopeSourceNodeMessage>) => {
+    }: MessageEvent<AudioRopeSourceNodeMessage>) => {
       if (data === null) {
         // Pause; position retained for resume.
         this.#playing = false
@@ -135,7 +135,7 @@ export class SabRopeSourceNodeProcessor extends AudioWorkletProcessor {
 
       switch (data.type) {
         case 'setBuffer': {
-          this.#ropes = data.ropes.map((share) => new SabRope(share))
+          this.#ropes = data.ropes.map((share) => new AudioRope(share))
           this.#gains = data.gains
           this.#playing = false
           this.#cursor = null
@@ -359,4 +359,4 @@ export class SabRopeSourceNodeProcessor extends AudioWorkletProcessor {
   }
 }
 
-registerProcessor('sab-rope-source-node', SabRopeSourceNodeProcessor)
+registerProcessor('audio-rope-source-node', AudioRopeSourceNodeProcessor)

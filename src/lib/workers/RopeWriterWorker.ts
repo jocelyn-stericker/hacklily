@@ -5,12 +5,12 @@
 /// <reference lib="webworker" />
 
 import { AudioRingReader } from '#/lib/audio/AudioRingReader'
-import { SabRope } from '#/lib/audio/SabRope'
+import { AudioRope } from '#/lib/audio/AudioRope'
 import type {
-  SabRopeGrow,
-  SabRopeSeal,
-  SabRopeShare,
-} from '#/lib/audio/SabRope'
+  AudioRopeGrow,
+  AudioRopeSeal,
+  AudioRopeShare,
+} from '#/lib/audio/AudioRope'
 
 import type { WorkerEndedMessage } from './workerMessages'
 
@@ -28,14 +28,14 @@ export type RopeWriterInMessage = RopeWriterInitMessage | null
 
 export type RopeReadyMessage = {
   type: 'rope-ready'
-  rope: SabRopeShare
+  rope: AudioRopeShare
   sampleRate: number
 }
 
 export type RopeWriterWorkerOutMessage =
   | RopeReadyMessage
-  | SabRopeGrow
-  | SabRopeSeal
+  | AudioRopeGrow
+  | AudioRopeSeal
   | WorkerEndedMessage
 
 export type RopeWriterWorker = Omit<Worker, 'postMessage' | 'onmessage'> & {
@@ -61,7 +61,7 @@ self.onmessage = async ({ data }: MessageEvent<RopeWriterInMessage>) => {
     console.warn(LOG, `ring buffer overrun: ${dropped} samples lost`)
   }
 
-  const rope = new SabRope(data.sampleRate)
+  const rope = new AudioRope(data.sampleRate)
   const share = rope.shareRope()
 
   postMessage({
@@ -82,7 +82,7 @@ self.onmessage = async ({ data }: MessageEvent<RopeWriterInMessage>) => {
   }
 
   rope.seal()
-  postMessage({ type: 'sab-rope-seal' } satisfies SabRopeSeal)
+  postMessage({ type: 'audio-rope-seal' } satisfies AudioRopeSeal)
   postMessage({ type: 'ended' })
   console.log(LOG, 'complete')
 }

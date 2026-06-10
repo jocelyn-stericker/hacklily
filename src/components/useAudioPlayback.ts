@@ -6,7 +6,7 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 
 import { useSettings } from '#/components/useSettings'
 import { AudioPlaybackPipeline } from '#/lib/audio/AudioPlaybackPipeline'
-import type { SabRope } from '#/lib/audio/SabRope'
+import type { AudioRope } from '#/lib/audio/AudioRope'
 import type { RopeGainCache } from '#/lib/loudness/ropeLoudness'
 import { preferredSampleRate } from '#/lib/settings'
 
@@ -20,7 +20,7 @@ export function useAudioPlayback({
   onError,
 }: {
   enabled: boolean
-  ropes: Array<SabRope>
+  ropes: Array<AudioRope>
   gainCache: RopeGainCache
   cursorSec: number
   onStop: () => void

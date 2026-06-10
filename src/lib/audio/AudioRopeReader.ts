@@ -2,20 +2,20 @@
 
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
-import { SabRope } from '#/lib/audio/SabRope'
-import type { SabRopeGrow, SabRopeShare } from '#/lib/audio/SabRope'
+import { AudioRope } from '#/lib/audio/AudioRope'
+import type { AudioRopeGrow, AudioRopeShare } from '#/lib/audio/AudioRope'
 
 export class AudioRopeReader {
-  private readonly _rope: SabRope
+  private readonly _rope: AudioRope
   private readonly _quantum: number
   private _readPos = 0
 
-  constructor(share: SabRopeShare, quantum: number) {
-    this._rope = new SabRope(share)
+  constructor(share: AudioRopeShare, quantum: number) {
+    this._rope = new AudioRope(share)
     this._quantum = quantum
   }
 
-  grow(grow: SabRopeGrow) {
+  grow(grow: AudioRopeGrow) {
     this._rope.grow(grow)
   }
 

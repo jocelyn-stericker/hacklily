@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
-import type { SabRope } from '#/lib/audio/SabRope'
+import type { AudioRope } from '#/lib/audio/AudioRope'
 import { createAlignJob } from '#/lib/jobs/alignJob'
 import { ChunkWorkQueue } from '#/lib/jobs/ChunkWorkQueue'
 import { priorityPickNext } from '#/lib/jobs/schedule'
@@ -54,7 +54,7 @@ export function useChunkWorkQueue({
 }: {
   store: TranscriptStore
   analysisMutRef: RefObject<AnalysisChunk[]>
-  ropesRef: RefObject<SabRope[]>
+  ropesRef: RefObject<AudioRope[]>
   getViewport: () => Viewport | null
   transcriptionMode: TranscriptionMode
   onModelUnavailable: () => void

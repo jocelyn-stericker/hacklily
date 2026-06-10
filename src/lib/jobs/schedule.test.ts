@@ -5,7 +5,7 @@
 import { describe, it, expect } from 'vitest'
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
-import { SabRope } from '#/lib/audio/SabRope'
+import { AudioRope } from '#/lib/audio/AudioRope'
 
 import {
   computeSealResolutions,
@@ -34,8 +34,8 @@ function chunk(opts: {
   }
 }
 
-function rope(length: number, sampleRate = 100): SabRope {
-  const r = new SabRope(sampleRate)
+function rope(length: number, sampleRate = 100): AudioRope {
+  const r = new AudioRope(sampleRate)
   if (length > 0) r.append(new Float32Array(length))
   return r
 }

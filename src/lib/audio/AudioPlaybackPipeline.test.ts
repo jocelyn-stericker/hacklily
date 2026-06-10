@@ -6,7 +6,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 import { AudioPlaybackPipeline } from './AudioPlaybackPipeline'
-import type { SabRope } from './SabRope'
+import type { AudioRope } from './AudioRope'
 
 const mockAudioAPI = vi.hoisted(() => {
   const workletNode = {
@@ -76,17 +76,17 @@ vi.stubGlobal('cancelAnimationFrame', vi.fn())
 // Lets the async #play (which awaits addModule) run to completion.
 const flush = () => new Promise<void>((resolve) => setTimeout(resolve, 0))
 
-function makeRope(lengthSamples: number, sampleRate = 44100): SabRope {
+function makeRope(lengthSamples: number, sampleRate = 44100): AudioRope {
   return {
     length: lengthSamples,
     sampleRate,
     shareRope: vi.fn(() => ({
-      type: 'sab-rope',
+      type: 'audio-rope',
       sampleRate,
       buffers: [],
       ctrlPtr: new SharedArrayBuffer(8),
     })),
-  } as unknown as SabRope
+  } as unknown as AudioRope
 }
 
 function lastMessages() {
@@ -167,7 +167,7 @@ describe('AudioPlaybackPipeline', () => {
 
       expect(mockAudioAPI.context.audioWorklet.addModule).toHaveBeenCalled()
       expect(MockAudioWorkletNode.count).toBe(1)
-      expect(MockAudioWorkletNode.lastName).toBe('sab-rope-source-node')
+      expect(MockAudioWorkletNode.lastName).toBe('audio-rope-source-node')
       expect(mockAudioAPI.workletNode.connect).toHaveBeenCalledWith(
         mockAudioAPI.context.destination,
       )

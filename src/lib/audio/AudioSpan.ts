@@ -3,10 +3,10 @@
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import type { AnalysisChunk } from '../analysis/AnalysisFrame'
-import type { SabRope } from './SabRope'
+import type { AudioRope } from './AudioRope'
 
 /**
- * A span of recorded audio: a region of a (possibly still-growing) `SabRope`,
+ * A span of recorded audio: a region of a (possibly still-growing) `AudioRope`,
  * identified by the time it starts, plus a promise that resolves with the
  * time it ends once the recording of that span is complete.
  *
@@ -17,7 +17,7 @@ import type { SabRope } from './SabRope'
  * known, so the promise resolves immediately.
  */
 export type AudioSpan = {
-  rope: SabRope
+  rope: AudioRope
   /** Seconds into `rope` where the span begins. */
   startTime: number
   /** Seconds into `rope` just past the span's last sample, known once the recording of the span finishes. */
@@ -84,8 +84,8 @@ export async function readAudioSpan(audio: AudioSpan): Promise<Float32Array> {
 export function locateChunkRope(
   chunk: AnalysisChunk,
   chunks: readonly AnalysisChunk[],
-  ropes: readonly SabRope[],
-): { rope: SabRope; startSample: number } | null {
+  ropes: readonly AudioRope[],
+): { rope: AudioRope; startSample: number } | null {
   // Walk the timeline to find which rope holds `chunk` and its sample offset
   // within that rope. Recording sessions are delimited by `recordingStart`, so
   // the rope index advances at each marker and the in-session frame offset
@@ -114,7 +114,7 @@ export function locateChunkRope(
 }
 
 /**
- * Locate the recorded audio spanning `chunk` within the `SabRope` that holds its
+ * Locate the recorded audio spanning `chunk` within the `AudioRope` that holds its
  * recording session, or `null` if that audio isn't available. `chunks` is the
  * full analysis timeline -- needed to locate which session `chunk` belongs to and
  * its frame offset within it -- and `ropes` are the per-session PCM buffers in
@@ -125,7 +125,7 @@ export function locateChunkRope(
 export function chunkAudioFromRopes(
   chunk: AnalysisChunk,
   chunks: readonly AnalysisChunk[],
-  ropes: readonly SabRope[],
+  ropes: readonly AudioRope[],
 ): AudioSpan | null {
   const loc = locateChunkRope(chunk, chunks, ropes)
   if (!loc) return null

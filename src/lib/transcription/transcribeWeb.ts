@@ -13,9 +13,9 @@
 
 /// <reference types="@types/dom-speech-recognition" />
 
+import audioWorkletUrl from '#/lib/audio/AudioRopeSourceNode?worker&url'
+import type { AudioRopeSourceNode } from '#/lib/audio/AudioRopeSourceNode'
 import type { AudioSpan } from '#/lib/audio/AudioSpan'
-import audioWorkletUrl from '#/lib/audio/SabRopeSourceNode?worker&url'
-import type { SabRopeSourceNode } from '#/lib/audio/SabRopeSourceNode'
 
 /** Recognition language. Matches the default used by the feature probes. */
 const TRANSCRIPTION_LANG = 'en-US'
@@ -90,7 +90,7 @@ export function transcribeWeb(
  * Recognize a recorded audio span with the Web Speech API; resolves with the
  * joined transcript (empty if nothing recognized).
  *
- * Audio is played in real time via `SabRopeSourceNode` into a MediaStream
+ * Audio is played in real time via `AudioRopeSourceNode` into a MediaStream
  * handed to `recognition.start()`. `processLocally` forces on-device recognition.
  *
  * Playback starts immediately from whatever audio has landed, forwarding later
@@ -117,9 +117,9 @@ export async function recognizePcm(
 
     // Plays from `startTime` into a MediaStream; resamples to the context rate.
     // Emits silence after stopping, giving the endpointer its trailing pause.
-    const node: SabRopeSourceNode = new AudioWorkletNode(
+    const node: AudioRopeSourceNode = new AudioWorkletNode(
       audioContext,
-      'sab-rope-source-node',
+      'audio-rope-source-node',
     )
     const destination = audioContext.createMediaStreamDestination()
     node.connect(destination)

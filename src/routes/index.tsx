@@ -35,9 +35,9 @@ import type {
   AnalysisParams,
 } from '#/lib/analysis/AnalysisFrame'
 import { reconcileVoicingAt, totalFrames } from '#/lib/analysis/AnalysisFrame'
+import { AudioRope } from '#/lib/audio/AudioRope'
+import type { AudioRopeGrow, AudioRopeShare } from '#/lib/audio/AudioRope'
 import { exportWav } from '#/lib/audio/exportWav'
-import { SabRope } from '#/lib/audio/SabRope'
-import type { SabRopeGrow, SabRopeShare } from '#/lib/audio/SabRope'
 import type { Viewport } from '#/lib/jobs/schedule'
 import { RopeGainCache } from '#/lib/loudness/ropeLoudness'
 import { updateSettings } from '#/lib/settings'
@@ -67,7 +67,7 @@ function App() {
     document.title = 'Braat'
   }, [])
 
-  const [ropes, setRopes] = useState<Array<SabRope>>([])
+  const [ropes, setRopes] = useState<Array<AudioRope>>([])
   const {
     status,
     timelineState,
@@ -186,7 +186,7 @@ function App() {
     startRecording()
   }, [startRecording])
 
-  const ropesRef = useRef<SabRope[]>(ropes)
+  const ropesRef = useRef<AudioRope[]>(ropes)
   useEffect(() => {
     ropesRef.current = ropes
   }, [ropes])
@@ -340,19 +340,19 @@ function App() {
     },
     [schedulePlaybackPositionChanged, transcriptStore],
   )
-  const handleSabRopeGrow = useCallback(
-    (ev: SabRopeGrow) => {
+  const handleAudioRopeGrow = useCallback(
+    (ev: AudioRopeGrow) => {
       ropes[ropes.length - 1]!.grow(ev)
     },
     [ropes],
   )
-  const handleSabRopeShare = useCallback(
-    (ev: SabRopeShare) => {
-      ropes.push(new SabRope(ev))
+  const handleAudioRopeShare = useCallback(
+    (ev: AudioRopeShare) => {
+      ropes.push(new AudioRope(ev))
     },
     [ropes],
   )
-  const handleSabRopeSeal = useCallback(() => {
+  const handleAudioRopeSeal = useCallback(() => {
     // Seal our copy too, releasing its spare buffer. The shared flag is already
     // set by the producer; this just drops the local reference.
     ropes[ropes.length - 1]!.seal()
@@ -408,9 +408,9 @@ function App() {
     onPatch: handlePatch,
     onRecordingComplete: handleRecordingComplete,
     onError: handleError,
-    onSabRopeGrow: handleSabRopeGrow,
-    onSabRopeShare: handleSabRopeShare,
-    onSabRopeSeal: handleSabRopeSeal,
+    onAudioRopeGrow: handleAudioRopeGrow,
+    onAudioRopeShare: handleAudioRopeShare,
+    onAudioRopeSeal: handleAudioRopeSeal,
   })
 
   useAudioPlayback({

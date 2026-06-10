@@ -3,9 +3,9 @@
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
+import type { AudioRope } from '#/lib/audio/AudioRope'
 import { locateChunkRope, chunkAudioFromRopes } from '#/lib/audio/AudioSpan'
 import type { AudioSpan } from '#/lib/audio/AudioSpan'
-import type { SabRope } from '#/lib/audio/SabRope'
 
 import { ModelUnavailableError } from './ModelUnavailableError'
 import { computeSealResolutions, reconcileLiveSpans } from './schedule'
@@ -23,7 +23,7 @@ export type WorkDeps = {
   /** The authoritative chunk timeline (read live -- mutated in place). */
   getChunks: () => readonly AnalysisChunk[]
   /** Per-session recorded PCM, in `recordingStart` order. */
-  getRopes: () => readonly SabRope[]
+  getRopes: () => readonly AudioRope[]
   /** The visible range, so on-screen chunks are handled first. */
   getViewport: () => Viewport | null
 }

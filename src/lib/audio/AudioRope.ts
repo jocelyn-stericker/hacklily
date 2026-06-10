@@ -17,8 +17,8 @@ const CTRL_LENGTH = 0
 const CTRL_SEALED = 1
 const CTRL_SLOTS = 2
 
-export type SabRopeGrow = {
-  type: 'sab-rope-grow'
+export type AudioRopeGrow = {
+  type: 'audio-rope-grow'
   /** Number of buffers consumer must have before appending `buffers`. */
   oldBufferCount: number
   buffers: Array<SharedArrayBuffer>
@@ -30,14 +30,14 @@ export type SabRopeGrow = {
  * the shared control block, so a consumer that holds this rope sees them the
  * instant the producer sets them. This message exists only to trigger the
  * local `seal()` that releases the now-useless spare `SharedArrayBuffer`
- * reference in that copy. Ships over the same channel as `SabRopeGrow`.
+ * reference in that copy. Ships over the same channel as `AudioRopeGrow`.
  */
-export type SabRopeSeal = {
-  type: 'sab-rope-seal'
+export type AudioRopeSeal = {
+  type: 'audio-rope-seal'
 }
 
-export type SabRopeShare = {
-  type: 'sab-rope'
+export type AudioRopeShare = {
+  type: 'audio-rope'
   sampleRate: number
   buffers: Array<SharedArrayBuffer>
   ctrlPtr: SharedArrayBuffer
@@ -58,9 +58,9 @@ export type SabRopeShare = {
  * Once a recording is done growing, `seal()` it: that drops the spare buffer
  * and forbids further appends. Sealing sets a shared flag (visible to every
  * copy at once) but the spare reference is per-copy, so each consumer must run
- * its own `seal()` -- driven by the `SabRopeSeal` message -- to actually free it.
+ * its own `seal()` -- driven by the `AudioRopeSeal` message -- to actually free it.
  */
-export class SabRope {
+export class AudioRope {
   #sampleRate: number
 
   #buffers: Array<SharedArrayBuffer>
@@ -70,12 +70,12 @@ export class SabRope {
   #ctrlView: Int32Array
 
   /** Observers notified when this copy applies a `grow()` / `seal()`. */
-  #growListeners = new Set<(grow: SabRopeGrow) => void>()
+  #growListeners = new Set<(grow: AudioRopeGrow) => void>()
   #sealListeners = new Set<() => void>()
 
   constructor(sampleRate: number)
-  constructor(state: SabRopeShare)
-  constructor(init: number | SabRopeShare) {
+  constructor(state: AudioRopeShare)
+  constructor(init: number | AudioRopeShare) {
     if (typeof init === 'number') {
       this.#sampleRate = init
       const sab = new SharedArrayBuffer(
@@ -89,7 +89,7 @@ export class SabRope {
       this.#ctrlView = new Int32Array(this.#ctrlPtr)
     } else {
       // oxlint-disable-next-line typescript/no-unnecessary-condition
-      console.assert(init.type === 'sab-rope')
+      console.assert(init.type === 'audio-rope')
 
       this.#sampleRate = init.sampleRate
       this.#buffers = init.buffers
@@ -176,7 +176,7 @@ export class SabRope {
    * copy observes the seal immediately; but each copy holds its own reference
    * to the spare `SharedArrayBuffer`. So this method is idempotent and runs on
    * each copy: the producer seals (optionally with the final `data`) and ships
-   * a `SabRopeSeal`; each consumer runs `seal()` (no data) to release its spare
+   * a `AudioRopeSeal`; each consumer runs `seal()` (no data) to release its spare
    * and let the buffer be collected everywhere.
    */
   seal(data?: Float32Array) {
@@ -241,7 +241,7 @@ export class SabRope {
     }
   }
 
-  grow(grow: SabRopeGrow) {
+  grow(grow: AudioRopeGrow) {
     if (grow.oldBufferCount !== this.#buffers.length) {
       throw new Error('Unexpected buffer count')
     }
@@ -254,7 +254,7 @@ export class SabRope {
 
   /**
    * Observe segment buffers arriving on this copy. `cb` fires with each
-   * `SabRopeGrow` this copy applies, after the buffers are in place. Lets a
+   * `AudioRopeGrow` this copy applies, after the buffers are in place. Lets a
    * second consumer be kept in lockstep: snapshot with `shareRope()` and forward
    * each subsequent grow to it. Because a grow's `oldBufferCount` equals this
    * copy's pre-grow buffer count -- and the snapshot starts the other consumer at
@@ -262,7 +262,7 @@ export class SabRope {
    * and subscribe with no `await` between them so no grow slips through unseen.
    * Returns an unsubscribe fn.
    */
-  onGrow(cb: (grow: SabRopeGrow) => void): () => void {
+  onGrow(cb: (grow: AudioRopeGrow) => void): () => void {
     this.#growListeners.add(cb)
     return () => {
       this.#growListeners.delete(cb)
@@ -278,11 +278,11 @@ export class SabRope {
   }
 
   /**
-   * Construct an SabRope with this result to share underlying data.
+   * Construct an AudioRope with this result to share underlying data.
    */
-  shareRope(): SabRopeShare {
+  shareRope(): AudioRopeShare {
     return {
-      type: 'sab-rope',
+      type: 'audio-rope',
       sampleRate: this.#sampleRate,
       buffers: this.#buffers.slice(),
       ctrlPtr: this.#ctrlPtr,
@@ -290,9 +290,9 @@ export class SabRope {
   }
 
   /**
-   * Grow a cloned SabRope with this result.
+   * Grow a cloned AudioRope with this result.
    */
-  shareGrowth(currentBufferCount: number): SabRopeGrow | null {
+  shareGrowth(currentBufferCount: number): AudioRopeGrow | null {
     if (this.#buffers.length === currentBufferCount) {
       return null
     }
@@ -303,7 +303,7 @@ export class SabRope {
     }
 
     return {
-      type: 'sab-rope-grow',
+      type: 'audio-rope-grow',
       oldBufferCount: currentBufferCount,
       buffers,
     }

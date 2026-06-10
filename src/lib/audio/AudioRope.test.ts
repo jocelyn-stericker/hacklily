@@ -4,9 +4,9 @@
 
 import { describe, it, expect, beforeEach } from 'vitest'
 
-import { SabRope } from './SabRope'
+import { AudioRope } from './AudioRope'
 
-// Must match SEG_SAMPLES in SabRope.ts. Kept here because it isn't exported;
+// Must match SEG_SAMPLES in AudioRope.ts. Kept here because it isn't exported;
 // the boundary-crossing tests below are meaningless if these drift apart.
 const SEG = 65536
 
@@ -37,24 +37,24 @@ function expectRamp(actual: Float32Array, start: number): void {
   expect(firstMismatch(actual, start)).toBe(-1)
 }
 
-function readAll(rope: SabRope): Float32Array {
+function readAll(rope: AudioRope): Float32Array {
   const dest = new Float32Array(rope.length)
   rope.read(dest, 0, 0, rope.length)
   return dest
 }
 
-describe('SabRope', () => {
+describe('AudioRope', () => {
   describe('construction', () => {
     it('starts empty and exposes the sample rate', () => {
-      const r = new SabRope(48000)
+      const r = new AudioRope(48000)
       expect(r.sampleRate).toBe(48000)
       expect(r.length).toBe(0)
     })
 
     it('round-trips sample rate and data through shareRope', () => {
-      const producer = new SabRope(44100)
+      const producer = new AudioRope(44100)
       producer.append(ramp(0, 100))
-      const consumer = new SabRope(producer.shareRope())
+      const consumer = new AudioRope(producer.shareRope())
       expect(consumer.sampleRate).toBe(44100)
       expect(consumer.length).toBe(100)
       expectRamp(readAll(consumer), 0)
@@ -63,20 +63,20 @@ describe('SabRope', () => {
 
   describe('append + read', () => {
     it('appends and reads back a small buffer', () => {
-      const r = new SabRope(48000)
+      const r = new AudioRope(48000)
       r.append(ramp(0, 10))
       expect(r.length).toBe(10)
       expectRamp(readAll(r), 0)
     })
 
     it('treats an empty append as a no-op', () => {
-      const r = new SabRope(48000)
+      const r = new AudioRope(48000)
       r.append(new Float32Array(0))
       expect(r.length).toBe(0)
     })
 
     it('concatenates successive appends into one continuous stream', () => {
-      const r = new SabRope(48000)
+      const r = new AudioRope(48000)
       r.append(ramp(0, 100))
       r.append(ramp(100, SEG)) // starts mid-segment, crosses into seg 1
       r.append(ramp(100 + SEG, 50))
@@ -85,7 +85,7 @@ describe('SabRope', () => {
     })
 
     it('reads a sub-range with a destination write offset', () => {
-      const r = new SabRope(48000)
+      const r = new AudioRope(48000)
       r.append(ramp(0, 50))
       const dest = new Float32Array(10)
       dest.fill(-1)
@@ -96,7 +96,7 @@ describe('SabRope', () => {
 
   describe('segment boundaries', () => {
     it('keeps exactly one spare buffer ahead of the write head', () => {
-      const r = new SabRope(48000)
+      const r = new AudioRope(48000)
       expect(r.shareRope().buffers.length).toBe(1) // fresh: just the spare
 
       r.append(ramp(0, 1))
@@ -107,7 +107,7 @@ describe('SabRope', () => {
     })
 
     it('handles an append that exactly fills a segment', () => {
-      const r = new SabRope(48000)
+      const r = new AudioRope(48000)
       r.append(ramp(0, SEG))
       expect(r.length).toBe(SEG)
 
@@ -120,14 +120,14 @@ describe('SabRope', () => {
     })
 
     it('handles a single append spanning multiple segments', () => {
-      const r = new SabRope(48000)
+      const r = new AudioRope(48000)
       r.append(ramp(0, 3 * SEG + 7))
       expect(r.length).toBe(3 * SEG + 7)
       expectRamp(readAll(r), 0)
     })
 
     it('reads across a segment boundary', () => {
-      const r = new SabRope(48000)
+      const r = new AudioRope(48000)
       r.append(ramp(0, 3 * SEG))
       const dest = new Float32Array(20)
       r.read(dest, 2 * SEG - 10, 0, 20) // straddles seg 1 / seg 2
@@ -136,9 +136,9 @@ describe('SabRope', () => {
   })
 
   describe('read validation', () => {
-    let r: SabRope
+    let r: AudioRope
     beforeEach(() => {
-      r = new SabRope(48000)
+      r = new AudioRope(48000)
       r.append(ramp(0, 10))
     })
 
@@ -179,9 +179,9 @@ describe('SabRope', () => {
 
   describe('cross-thread sharing', () => {
     it('shows appends within already-shared segments without a grow', () => {
-      const producer = new SabRope(48000)
+      const producer = new AudioRope(48000)
       producer.append(ramp(0, 10))
-      const consumer = new SabRope(producer.shareRope())
+      const consumer = new AudioRope(producer.shareRope())
       expect(consumer.length).toBe(10)
 
       // Stays within seg 0, which the consumer already holds.
@@ -191,8 +191,8 @@ describe('SabRope', () => {
     })
 
     it('clamps a consumer to the segments it physically holds', () => {
-      const producer = new SabRope(48000)
-      const consumer = new SabRope(producer.shareRope()) // 1 buffer each
+      const producer = new AudioRope(48000)
+      const consumer = new AudioRope(producer.shareRope()) // 1 buffer each
       producer.append(ramp(0, 2 * SEG + 10)) // producer grows; consumer does not
 
       expect(producer.length).toBe(2 * SEG + 10)
@@ -210,8 +210,8 @@ describe('SabRope', () => {
     })
 
     it('restores readability after grow delivers the missing buffers', () => {
-      const producer = new SabRope(48000)
-      const consumer = new SabRope(producer.shareRope()) // 1 buffer
+      const producer = new AudioRope(48000)
+      const consumer = new AudioRope(producer.shareRope()) // 1 buffer
       producer.append(ramp(0, 2 * SEG + 10))
 
       consumer.grow(producer.shareGrowth(1)!)
@@ -220,7 +220,7 @@ describe('SabRope', () => {
     })
 
     it('reports the buffer count the consumer must already hold', () => {
-      const producer = new SabRope(48000)
+      const producer = new AudioRope(48000)
       producer.append(ramp(0, 2 * SEG)) // producer now holds 3 buffers
       const g = producer.shareGrowth(1)!
       expect(g.oldBufferCount).toBe(1) // the count *before* the new buffers
@@ -228,8 +228,8 @@ describe('SabRope', () => {
     })
 
     it('rejects a grow with a mismatched buffer count', () => {
-      const producer = new SabRope(48000)
-      const consumer = new SabRope(producer.shareRope())
+      const producer = new AudioRope(48000)
+      const consumer = new AudioRope(producer.shareRope())
       producer.append(ramp(0, 2 * SEG))
       const g = producer.shareGrowth(1)!
 
@@ -238,8 +238,8 @@ describe('SabRope', () => {
     })
 
     it('grows incrementally across two segment-crossing appends', () => {
-      const producer = new SabRope(48000)
-      const consumer = new SabRope(producer.shareRope()) // 1 buffer
+      const producer = new AudioRope(48000)
+      const consumer = new AudioRope(producer.shareRope()) // 1 buffer
 
       producer.append(ramp(0, SEG + 5)) // into seg 1
       consumer.grow(producer.shareGrowth(consumer.shareRope().buffers.length)!)
@@ -252,7 +252,7 @@ describe('SabRope', () => {
     })
 
     it('returns a buffer snapshot from shareRope unaffected by later growth', () => {
-      const producer = new SabRope(48000)
+      const producer = new AudioRope(48000)
       producer.append(ramp(0, 10))
       const snap = producer.shareRope()
       const before = snap.buffers.length
@@ -262,10 +262,10 @@ describe('SabRope', () => {
     })
 
     it('supports multiple independent consumers on the same data', () => {
-      const producer = new SabRope(48000)
+      const producer = new AudioRope(48000)
       producer.append(ramp(0, 100))
-      const c1 = new SabRope(producer.shareRope())
-      const c2 = new SabRope(producer.shareRope())
+      const c1 = new AudioRope(producer.shareRope())
+      const c2 = new AudioRope(producer.shareRope())
 
       producer.append(ramp(100, 100)) // within seg 0, no grow needed
       expect(c1.length).toBe(200)
@@ -277,7 +277,7 @@ describe('SabRope', () => {
 
   describe('seal', () => {
     it('reports sealed and drops the spare buffer', () => {
-      const r = new SabRope(48000)
+      const r = new AudioRope(48000)
       r.append(ramp(0, 100))
       expect(r.sealed).toBe(false)
       expect(r.shareRope().buffers.length).toBe(2) // seg 0 + spare
@@ -290,7 +290,7 @@ describe('SabRope', () => {
     })
 
     it('keeps every segment the data spans, dropping only the spare', () => {
-      const r = new SabRope(48000)
+      const r = new AudioRope(48000)
       r.append(ramp(0, SEG + 5)) // segs 0,1 + spare
       expect(r.shareRope().buffers.length).toBe(3)
 
@@ -301,7 +301,7 @@ describe('SabRope', () => {
     })
 
     it('appends the optional data before sealing', () => {
-      const r = new SabRope(48000)
+      const r = new AudioRope(48000)
       r.seal(ramp(0, 50))
       expect(r.sealed).toBe(true)
       expect(r.length).toBe(50)
@@ -310,7 +310,7 @@ describe('SabRope', () => {
     })
 
     it('seals an empty rope down to zero buffers', () => {
-      const r = new SabRope(48000)
+      const r = new AudioRope(48000)
       r.seal()
       expect(r.sealed).toBe(true)
       expect(r.length).toBe(0)
@@ -318,7 +318,7 @@ describe('SabRope', () => {
     })
 
     it('rejects appends once sealed', () => {
-      const r = new SabRope(48000)
+      const r = new AudioRope(48000)
       r.append(ramp(0, 10))
       r.seal()
       expect(() => r.append(ramp(10, 5))).toThrow()
@@ -327,7 +327,7 @@ describe('SabRope', () => {
     })
 
     it('is idempotent when re-sealed without data', () => {
-      const r = new SabRope(48000)
+      const r = new AudioRope(48000)
       r.append(ramp(0, 10))
       r.seal()
       expect(() => r.seal()).not.toThrow()
@@ -338,9 +338,9 @@ describe('SabRope', () => {
 
   describe('seal across copies', () => {
     it('shows the sealed flag to consumers at once, but each drops its own spare', () => {
-      const producer = new SabRope(48000)
+      const producer = new AudioRope(48000)
       producer.append(ramp(0, 100))
-      const consumer = new SabRope(producer.shareRope())
+      const consumer = new AudioRope(producer.shareRope())
       expect(consumer.sealed).toBe(false)
       expect(consumer.shareRope().buffers.length).toBe(2) // holds the spare
 
@@ -358,9 +358,9 @@ describe('SabRope', () => {
     })
 
     it('is born sealed when constructed from a sealed share', () => {
-      const producer = new SabRope(48000)
+      const producer = new AudioRope(48000)
       producer.seal(ramp(0, 100))
-      const consumer = new SabRope(producer.shareRope())
+      const consumer = new AudioRope(producer.shareRope())
       expect(consumer.sealed).toBe(true)
       expect(() => consumer.append(ramp(100, 5))).toThrow()
       expectRamp(readAll(consumer), 0)
@@ -369,10 +369,10 @@ describe('SabRope', () => {
 
   describe('observers', () => {
     it('forwards a grow to a lockstep copy via onGrow', () => {
-      const producer = new SabRope(48000)
-      const consumer = new SabRope(producer.shareRope()) // 1 buffer
+      const producer = new AudioRope(48000)
+      const consumer = new AudioRope(producer.shareRope()) // 1 buffer
       // A second copy snapshotted from the consumer, kept in step by forwarding.
-      const mirror = new SabRope(consumer.shareRope())
+      const mirror = new AudioRope(consumer.shareRope())
       const unsub = consumer.onGrow((grow) => mirror.grow(grow))
 
       producer.append(ramp(0, 2 * SEG + 10))
@@ -395,7 +395,7 @@ describe('SabRope', () => {
     })
 
     it('fires onSeal when the copy is sealed', () => {
-      const r = new SabRope(48000)
+      const r = new AudioRope(48000)
       r.append(ramp(0, 10))
       let sealCount = 0
       const unsub = r.onSeal(() => {
@@ -411,8 +411,8 @@ describe('SabRope', () => {
     })
 
     it('delivers grows to multiple observers', () => {
-      const producer = new SabRope(48000)
-      const consumer = new SabRope(producer.shareRope())
+      const producer = new AudioRope(48000)
+      const consumer = new AudioRope(producer.shareRope())
       const seen: number[] = []
       consumer.onGrow((grow) => seen.push(grow.buffers.length))
       consumer.onGrow((grow) => seen.push(grow.buffers.length))

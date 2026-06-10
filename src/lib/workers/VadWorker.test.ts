@@ -133,7 +133,7 @@ async function testRunAnalysis(
   const { AudioRopeReader } = await import('#/lib/audio/AudioRopeReader')
   const reader = new AudioRopeReader(
     {
-      type: 'sab-rope',
+      type: 'audio-rope',
       buffers: [new SharedArrayBuffer(4096)],
       ctrlPtr: new SharedArrayBuffer(8),
       sampleRate: 44100,
@@ -306,7 +306,7 @@ describe('VadWorker', () => {
       const { AudioRopeReader } = await import('#/lib/audio/AudioRopeReader')
       const reader = new AudioRopeReader(
         {
-          type: 'sab-rope',
+          type: 'audio-rope',
           buffers: [new SharedArrayBuffer(4096)],
           ctrlPtr: new SharedArrayBuffer(8),
           sampleRate: 44100,

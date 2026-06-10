@@ -7,17 +7,17 @@ import type {
   AnalysisParams,
 } from '#/lib/analysis/AnalysisFrame'
 import type { SpeechDecision } from '#/lib/analysis/VadProcessor'
-import type { SabRopeGrow, SabRopeShare } from '#/lib/audio/SabRope'
+import type { AudioRopeGrow, AudioRopeShare } from '#/lib/audio/AudioRope'
 
 export interface RopeConsumerInitMessage {
   type: 'init'
-  rope: SabRopeShare
+  rope: AudioRopeShare
   sampleRate: number
 }
 
 export type RopeGrowMessage = {
   type: 'rope-grow'
-  grow: SabRopeGrow
+  grow: AudioRopeGrow
 }
 
 export type RopeSealMessage = {

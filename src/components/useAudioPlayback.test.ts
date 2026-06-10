@@ -82,7 +82,7 @@ describe('useAudioPlayback', () => {
   beforeEach(() => {
     mockPipelineInstances = []
 
-    // A SabRope stand-in -- the mocked pipeline ignores the data, so we only
+    // A AudioRope stand-in -- the mocked pipeline ignores the data, so we only
     // need enough shape for `ropes.length` checks in the hook.
     mockRopes = [{ length: 220500, sampleRate: 44100, shareRope: vi.fn() }]
 

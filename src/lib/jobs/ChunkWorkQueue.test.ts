@@ -5,7 +5,7 @@
 import { describe, it, expect, vi } from 'vitest'
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
-import { SabRope } from '#/lib/audio/SabRope'
+import { AudioRope } from '#/lib/audio/AudioRope'
 
 import { ChunkWorkQueue } from './ChunkWorkQueue'
 import type { ChunkWork } from './ChunkWorkQueue'
@@ -23,8 +23,8 @@ function chunk(frames: number): AnalysisChunk {
   }
 }
 
-function sealedRope(length: number): SabRope {
-  const r = new SabRope(100)
+function sealedRope(length: number): AudioRope {
+  const r = new AudioRope(100)
   r.append(new Float32Array(length))
   r.seal()
   return r

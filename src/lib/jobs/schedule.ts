@@ -8,8 +8,8 @@
 // injected `needsWork` predicate. The queue applies the results.
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
+import type { AudioRope } from '#/lib/audio/AudioRope'
 import { locateChunkRope } from '#/lib/audio/AudioSpan'
-import type { SabRope } from '#/lib/audio/SabRope'
 
 /** A visible time range on the timeline, in seconds. */
 export type Viewport = { leftSec: number; rightSec: number }
@@ -116,7 +116,7 @@ export type ReconcileResult = {
 export function reconcileLiveSpans(
   chunks: readonly AnalysisChunk[],
   liveSpans: ReadonlyMap<AnalysisChunk, LiveSpanEntry>,
-  ropes: readonly SabRope[],
+  ropes: readonly AudioRope[],
   needsWork: NeedsWork,
 ): ReconcileResult {
   const abort = new Set<AnalysisChunk>()
@@ -161,7 +161,7 @@ export function reconcileLiveSpans(
 export function computeSealResolutions(
   chunks: readonly AnalysisChunk[],
   liveSpans: ReadonlyMap<AnalysisChunk, LiveSpanEntry>,
-  ropes: readonly SabRope[],
+  ropes: readonly AudioRope[],
 ): { span: LiveSpanEntry; endTime: number }[] {
   const resolutions: { span: LiveSpanEntry; endTime: number }[] = []
   for (const [chunk, span] of liveSpans) {

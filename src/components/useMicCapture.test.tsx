@@ -12,13 +12,13 @@ import type { PatchFrameMessage } from '#/lib/workers/workerMessages'
 import { useMicCapture } from './useMicCapture'
 
 type MicCaptureProps = Parameters<typeof useMicCapture>[0]
-// `onSabRopeSeal` is irrelevant to these tests; default it so each case can
+// `onAudioRopeSeal` is irrelevant to these tests; default it so each case can
 // omit it.
 function TestRecorder(
-  props: Omit<MicCaptureProps, 'onSabRopeSeal'> &
-    Partial<Pick<MicCaptureProps, 'onSabRopeSeal'>>,
+  props: Omit<MicCaptureProps, 'onAudioRopeSeal'> &
+    Partial<Pick<MicCaptureProps, 'onAudioRopeSeal'>>,
 ) {
-  useMicCapture({ onSabRopeSeal: () => {}, ...props })
+  useMicCapture({ onAudioRopeSeal: () => {}, ...props })
   return null
 }
 
@@ -285,7 +285,7 @@ describe('AudioRecorder', () => {
     getMockRopeWriterWorker().dispatchMessage({
       type: 'rope-ready',
       rope: {
-        type: 'sab-rope',
+        type: 'audio-rope',
         buffers: [new SharedArrayBuffer(4096)],
         ctrlPtr: new SharedArrayBuffer(8),
         sampleRate: 44100,
@@ -438,8 +438,8 @@ describe('AudioRecorder', () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()
-    const onSabRopeGrow = vi.fn()
-    const onSabRopeShare = vi.fn()
+    const onAudioRopeGrow = vi.fn()
+    const onAudioRopeShare = vi.fn()
 
     render(
       <TestRecorder
@@ -447,8 +447,8 @@ describe('AudioRecorder', () => {
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
-        onSabRopeGrow={onSabRopeGrow}
-        onSabRopeShare={onSabRopeShare}
+        onAudioRopeGrow={onAudioRopeGrow}
+        onAudioRopeShare={onAudioRopeShare}
       />,
     )
 
@@ -463,8 +463,8 @@ describe('AudioRecorder', () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()
-    const onSabRopeGrow = vi.fn()
-    const onSabRopeShare = vi.fn()
+    const onAudioRopeGrow = vi.fn()
+    const onAudioRopeShare = vi.fn()
 
     render(
       <TestRecorder
@@ -472,8 +472,8 @@ describe('AudioRecorder', () => {
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
-        onSabRopeGrow={onSabRopeGrow}
-        onSabRopeShare={onSabRopeShare}
+        onAudioRopeGrow={onAudioRopeGrow}
+        onAudioRopeShare={onAudioRopeShare}
       />,
     )
 
@@ -489,8 +489,8 @@ describe('AudioRecorder', () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()
-    const onSabRopeGrow = vi.fn()
-    const onSabRopeShare = vi.fn()
+    const onAudioRopeGrow = vi.fn()
+    const onAudioRopeShare = vi.fn()
 
     render(
       <TestRecorder
@@ -498,8 +498,8 @@ describe('AudioRecorder', () => {
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
-        onSabRopeGrow={onSabRopeGrow}
-        onSabRopeShare={onSabRopeShare}
+        onAudioRopeGrow={onAudioRopeGrow}
+        onAudioRopeShare={onAudioRopeShare}
       />,
     )
 
@@ -512,8 +512,8 @@ describe('AudioRecorder', () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()
-    const onSabRopeGrow = vi.fn()
-    const onSabRopeShare = vi.fn()
+    const onAudioRopeGrow = vi.fn()
+    const onAudioRopeShare = vi.fn()
 
     render(
       <TestRecorder
@@ -521,8 +521,8 @@ describe('AudioRecorder', () => {
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
-        onSabRopeGrow={onSabRopeGrow}
-        onSabRopeShare={onSabRopeShare}
+        onAudioRopeGrow={onAudioRopeGrow}
+        onAudioRopeShare={onAudioRopeShare}
       />,
     )
 
@@ -538,8 +538,8 @@ describe('AudioRecorder', () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()
-    const onSabRopeGrow = vi.fn()
-    const onSabRopeShare = vi.fn()
+    const onAudioRopeGrow = vi.fn()
+    const onAudioRopeShare = vi.fn()
 
     render(
       <TestRecorder
@@ -547,8 +547,8 @@ describe('AudioRecorder', () => {
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
-        onSabRopeGrow={onSabRopeGrow}
-        onSabRopeShare={onSabRopeShare}
+        onAudioRopeGrow={onAudioRopeGrow}
+        onAudioRopeShare={onAudioRopeShare}
       />,
     )
 
@@ -564,8 +564,8 @@ describe('AudioRecorder', () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()
-    const onSabRopeGrow = vi.fn()
-    const onSabRopeShare = vi.fn()
+    const onAudioRopeGrow = vi.fn()
+    const onAudioRopeShare = vi.fn()
 
     render(
       <TestRecorder
@@ -573,8 +573,8 @@ describe('AudioRecorder', () => {
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
-        onSabRopeGrow={onSabRopeGrow}
-        onSabRopeShare={onSabRopeShare}
+        onAudioRopeGrow={onAudioRopeGrow}
+        onAudioRopeShare={onAudioRopeShare}
       />,
     )
 
@@ -607,8 +607,8 @@ describe('AudioRecorder', () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()
-    const onSabRopeGrow = vi.fn()
-    const onSabRopeShare = vi.fn()
+    const onAudioRopeGrow = vi.fn()
+    const onAudioRopeShare = vi.fn()
 
     render(
       <TestRecorder
@@ -616,8 +616,8 @@ describe('AudioRecorder', () => {
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
-        onSabRopeGrow={onSabRopeGrow}
-        onSabRopeShare={onSabRopeShare}
+        onAudioRopeGrow={onAudioRopeGrow}
+        onAudioRopeShare={onAudioRopeShare}
       />,
     )
 
@@ -642,8 +642,8 @@ describe('AudioRecorder', () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()
-    const onSabRopeGrow = vi.fn()
-    const onSabRopeShare = vi.fn()
+    const onAudioRopeGrow = vi.fn()
+    const onAudioRopeShare = vi.fn()
 
     render(
       <TestRecorder
@@ -651,8 +651,8 @@ describe('AudioRecorder', () => {
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
-        onSabRopeGrow={onSabRopeGrow}
-        onSabRopeShare={onSabRopeShare}
+        onAudioRopeGrow={onAudioRopeGrow}
+        onAudioRopeShare={onAudioRopeShare}
       />,
     )
 
@@ -671,8 +671,8 @@ describe('AudioRecorder', () => {
     const onPatch = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()
-    const onSabRopeGrow = vi.fn()
-    const onSabRopeShare = vi.fn()
+    const onAudioRopeGrow = vi.fn()
+    const onAudioRopeShare = vi.fn()
 
     render(
       <TestRecorder
@@ -681,8 +681,8 @@ describe('AudioRecorder', () => {
         onPatch={onPatch}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
-        onSabRopeGrow={onSabRopeGrow}
-        onSabRopeShare={onSabRopeShare}
+        onAudioRopeGrow={onAudioRopeGrow}
+        onAudioRopeShare={onAudioRopeShare}
       />,
     )
 
@@ -715,8 +715,8 @@ describe('AudioRecorder', () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()
-    const onSabRopeGrow = vi.fn()
-    const onSabRopeShare = vi.fn()
+    const onAudioRopeGrow = vi.fn()
+    const onAudioRopeShare = vi.fn()
 
     render(
       <TestRecorder
@@ -724,8 +724,8 @@ describe('AudioRecorder', () => {
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
-        onSabRopeGrow={onSabRopeGrow}
-        onSabRopeShare={onSabRopeShare}
+        onAudioRopeGrow={onAudioRopeGrow}
+        onAudioRopeShare={onAudioRopeShare}
       />,
     )
 
@@ -747,8 +747,8 @@ describe('AudioRecorder', () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()
-    const onSabRopeGrow = vi.fn()
-    const onSabRopeShare = vi.fn()
+    const onAudioRopeGrow = vi.fn()
+    const onAudioRopeShare = vi.fn()
 
     render(
       <TestRecorder
@@ -756,8 +756,8 @@ describe('AudioRecorder', () => {
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
-        onSabRopeGrow={onSabRopeGrow}
-        onSabRopeShare={onSabRopeShare}
+        onAudioRopeGrow={onAudioRopeGrow}
+        onAudioRopeShare={onAudioRopeShare}
       />,
     )
 
@@ -785,8 +785,8 @@ describe('AudioRecorder', () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()
-    const onSabRopeGrow = vi.fn()
-    const onSabRopeShare = vi.fn()
+    const onAudioRopeGrow = vi.fn()
+    const onAudioRopeShare = vi.fn()
 
     render(
       <TestRecorder
@@ -794,8 +794,8 @@ describe('AudioRecorder', () => {
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
-        onSabRopeGrow={onSabRopeGrow}
-        onSabRopeShare={onSabRopeShare}
+        onAudioRopeGrow={onAudioRopeGrow}
+        onAudioRopeShare={onAudioRopeShare}
       />,
     )
 
@@ -808,8 +808,8 @@ describe('AudioRecorder', () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()
-    const onSabRopeGrow = vi.fn()
-    const onSabRopeShare = vi.fn()
+    const onAudioRopeGrow = vi.fn()
+    const onAudioRopeShare = vi.fn()
 
     const { unmount } = render(
       <TestRecorder
@@ -817,8 +817,8 @@ describe('AudioRecorder', () => {
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
-        onSabRopeGrow={onSabRopeGrow}
-        onSabRopeShare={onSabRopeShare}
+        onAudioRopeGrow={onAudioRopeGrow}
+        onAudioRopeShare={onAudioRopeShare}
       />,
     )
 
@@ -842,8 +842,8 @@ describe('AudioRecorder', () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()
-    const onSabRopeGrow = vi.fn()
-    const onSabRopeShare = vi.fn()
+    const onAudioRopeGrow = vi.fn()
+    const onAudioRopeShare = vi.fn()
 
     const { unmount } = render(
       <TestRecorder
@@ -851,8 +851,8 @@ describe('AudioRecorder', () => {
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
-        onSabRopeGrow={onSabRopeGrow}
-        onSabRopeShare={onSabRopeShare}
+        onAudioRopeGrow={onAudioRopeGrow}
+        onAudioRopeShare={onAudioRopeShare}
       />,
     )
 
@@ -875,8 +875,8 @@ describe('AudioRecorder', () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()
-    const onSabRopeGrow = vi.fn()
-    const onSabRopeShare = vi.fn()
+    const onAudioRopeGrow = vi.fn()
+    const onAudioRopeShare = vi.fn()
 
     // Create a promise that won't resolve immediately
     const slowGetUserMedia = vi.fn(
@@ -903,8 +903,8 @@ describe('AudioRecorder', () => {
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
-        onSabRopeGrow={onSabRopeGrow}
-        onSabRopeShare={onSabRopeShare}
+        onAudioRopeGrow={onAudioRopeGrow}
+        onAudioRopeShare={onAudioRopeShare}
       />,
     )
 
@@ -924,8 +924,8 @@ describe('AudioRecorder', () => {
     const onAppend1 = vi.fn()
     const onRecordingComplete1 = vi.fn()
     const onError1 = vi.fn()
-    const onSabRopeGrow = vi.fn()
-    const onSabRopeShare = vi.fn()
+    const onAudioRopeGrow = vi.fn()
+    const onAudioRopeShare = vi.fn()
 
     const { rerender } = render(
       <TestRecorder
@@ -933,8 +933,8 @@ describe('AudioRecorder', () => {
         onAppend={onAppend1}
         onRecordingComplete={onRecordingComplete1}
         onError={onError1}
-        onSabRopeGrow={onSabRopeGrow}
-        onSabRopeShare={onSabRopeShare}
+        onAudioRopeGrow={onAudioRopeGrow}
+        onAudioRopeShare={onAudioRopeShare}
       />,
     )
 
@@ -952,8 +952,8 @@ describe('AudioRecorder', () => {
         onAppend={onAppend2}
         onRecordingComplete={onRecordingComplete2}
         onError={onError2}
-        onSabRopeGrow={onSabRopeGrow}
-        onSabRopeShare={onSabRopeShare}
+        onAudioRopeGrow={onAudioRopeGrow}
+        onAudioRopeShare={onAudioRopeShare}
       />,
     )
 
@@ -977,8 +977,8 @@ describe('AudioRecorder', () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()
-    const onSabRopeGrow = vi.fn()
-    const onSabRopeShare = vi.fn()
+    const onAudioRopeGrow = vi.fn()
+    const onAudioRopeShare = vi.fn()
 
     render(
       <TestRecorder
@@ -986,8 +986,8 @@ describe('AudioRecorder', () => {
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
-        onSabRopeGrow={onSabRopeGrow}
-        onSabRopeShare={onSabRopeShare}
+        onAudioRopeGrow={onAudioRopeGrow}
+        onAudioRopeShare={onAudioRopeShare}
       />,
     )
 
@@ -1029,8 +1029,8 @@ describe('AudioRecorder', () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()
-    const onSabRopeGrow = vi.fn()
-    const onSabRopeShare = vi.fn()
+    const onAudioRopeGrow = vi.fn()
+    const onAudioRopeShare = vi.fn()
 
     render(
       <TestRecorder
@@ -1038,8 +1038,8 @@ describe('AudioRecorder', () => {
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
-        onSabRopeGrow={onSabRopeGrow}
-        onSabRopeShare={onSabRopeShare}
+        onAudioRopeGrow={onAudioRopeGrow}
+        onAudioRopeShare={onAudioRopeShare}
       />,
     )
 

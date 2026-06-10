@@ -6,12 +6,12 @@ import { describe, it, expect } from 'vitest'
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
 
+import { AudioRope } from './AudioRope'
 import {
   chunkAudioFromRopes,
   locateChunkRope,
   readAudioSpan,
 } from './AudioSpan'
-import { SabRope } from './SabRope'
 
 // Only `frames.length`, `timeStepSamples`, `sampleRate`, and `recordingStart`
 // matter to the audio-location helpers, so keep the chunks minimal.
@@ -35,16 +35,16 @@ function chunk(opts: {
 
 // A rope filled with a ramp (sample i === i), so a returned slice reveals the
 // offset it was read from.
-function rampRope(length: number, sampleRate = 100): SabRope {
-  const rope = new SabRope(sampleRate)
+function rampRope(length: number, sampleRate = 100): AudioRope {
+  const rope = new AudioRope(sampleRate)
   const data = new Float32Array(length)
   for (let i = 0; i < length; i++) data[i] = i
   rope.append(data)
   return rope
 }
 
-function makeRope(length: number, sampleRate = 100): SabRope {
-  const rope = new SabRope(sampleRate)
+function makeRope(length: number, sampleRate = 100): AudioRope {
+  const rope = new AudioRope(sampleRate)
   if (length > 0) rope.append(new Float32Array(length))
   return rope
 }
@@ -99,7 +99,7 @@ describe('chunkAudioFromRopes', () => {
     const chunks = [c0, c1]
 
     // Rope so far only holds the first chunk's worth of audio.
-    const rope = new SabRope(100)
+    const rope = new AudioRope(100)
     rope.append(new Float32Array(50))
     const ropes = [rope]
 
@@ -113,7 +113,7 @@ describe('chunkAudioFromRopes', () => {
 
   it('clamps to the samples available when a chunk is partially covered', async () => {
     const c0 = chunk({ frames: 5 }) // wants [0, 50)
-    const rope = new SabRope(100)
+    const rope = new AudioRope(100)
     rope.append(new Float32Array(30)) // only 30 of the 50 samples are present
     const pcm = await readAudioSpan(chunkAudioFromRopes(c0, [c0], [rope])!)
     expect(pcm.length).toBe(30)

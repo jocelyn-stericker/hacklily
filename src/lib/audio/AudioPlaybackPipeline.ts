@@ -2,9 +2,9 @@
 
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
-import type { SabRope } from '#/lib/audio/SabRope'
-import type { SabRopeSourceNode } from '#/lib/audio/SabRopeSourceNode'
-import audioWorkletUrl from '#/lib/audio/SabRopeSourceNode?worker&url'
+import type { AudioRope } from '#/lib/audio/AudioRope'
+import type { AudioRopeSourceNode } from '#/lib/audio/AudioRopeSourceNode'
+import audioWorkletUrl from '#/lib/audio/AudioRopeSourceNode?worker&url'
 import { TypedEventTarget } from '#/lib/TypedEventTarget'
 import { assertUnreachable } from '#/lib/utils'
 
@@ -17,8 +17,8 @@ type AudioPlaybackOutEvents = {
 }
 
 /**
- * Plays one or more `SabRope`s laid end-to-end through the
- * `SabRopeSourceNode` worklet. The worklet handles the seek and any
+ * Plays one or more `AudioRope`s laid end-to-end through the
+ * `AudioRopeSourceNode` worklet. The worklet handles the seek and any
  * per-rope resampling; this wrapper owns the `AudioContext` and tracks the
  * playback position off `context.currentTime`.
  *
@@ -30,7 +30,7 @@ type AudioPlaybackOutEvents = {
  */
 export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEvents> {
   #context: AudioContext | null = null
-  #node: SabRopeSourceNode | null = null
+  #node: AudioRopeSourceNode | null = null
   #animFrameId: number | null = null
   #startTimeSec = 0
   // `context.currentTime` at which the worklet's first kept sample plays out,
@@ -56,7 +56,7 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
     signal,
     sampleRate,
   }: {
-    ropes: Array<SabRope>
+    ropes: Array<AudioRope>
     /** Loudness-normalization gain per rope, aligned to `ropes`. */
     gains: Array<number>
     startAtSec: number
@@ -74,7 +74,7 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
   }
 
   async #play(
-    ropes: Array<SabRope>,
+    ropes: Array<AudioRope>,
     gains: Array<number>,
     requestedStartAtSec: number,
     sampleRate?: number,
@@ -100,9 +100,9 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
       return
     }
 
-    const node: SabRopeSourceNode = new AudioWorkletNode(
+    const node: AudioRopeSourceNode = new AudioWorkletNode(
       context,
-      'sab-rope-source-node',
+      'audio-rope-source-node',
     )
     this.#node = node
     node.connect(context.destination)

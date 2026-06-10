@@ -12,17 +12,17 @@ against `main` before each milestone; the VAD and audio layers move.
 
 ## What already exists (don't rebuild any of this)
 
-| Need                    | Existing code                                                                                                                                                                |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| VAD                     | `src/lib/analysis/VadProcessor.ts` — Silero v6 streaming + `SpeechGate` (hysteresis, pre/post-roll, redemption, 400 ms min-speech)                                           |
-| Mic capture             | `src/lib/audio/MicCapturePipeline.ts` — mic → AudioWorklet → SabRope, emits `AnalysisFrame`s with `speechDetected`, plus `patch` events when the gate revises earlier frames |
-| React wrapper           | `src/components/useMicCapture.ts`                                                                                                                                            |
-| Audio storage           | `SabRope` (append-only, shared with workers), `AudioSpan` (region of a rope, `endTime` as a promise)                                                                         |
-| Playback                | `AudioPlaybackPipeline` (whole ropes, loudness-normalized), `SabRopeSourceNode` (span playback — already used by transcription preview)                                      |
-| Batch analysis          | `ImportWorker` path in `useAudioImport.ts` — mono PCM → `AnalysisChunk[]` + sealed rope                                                                                      |
-| Passages                | `src/lib/passages.ts` — `passage` and `sentenceLists` kinds                                                                                                                  |
-| Settings                | `src/lib/settings.ts` / `useSettings`                                                                                                                                        |
-| Reduced-state precedent | `src/routes/ipa.tsx` — a second route that reuses the audio stack                                                                                                            |
+| Need                    | Existing code                                                                                                                                                                  |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| VAD                     | `src/lib/analysis/VadProcessor.ts` — Silero v6 streaming + `SpeechGate` (hysteresis, pre/post-roll, redemption, 400 ms min-speech)                                             |
+| Mic capture             | `src/lib/audio/MicCapturePipeline.ts` — mic → AudioWorklet → AudioRope, emits `AnalysisFrame`s with `speechDetected`, plus `patch` events when the gate revises earlier frames |
+| React wrapper           | `src/components/useMicCapture.ts`                                                                                                                                              |
+| Audio storage           | `AudioRope` (append-only, shared with workers), `AudioSpan` (region of a rope, `endTime` as a promise)                                                                         |
+| Playback                | `AudioPlaybackPipeline` (whole ropes, loudness-normalized), `AudioRopeSourceNode` (span playback — already used by transcription preview)                                      |
+| Batch analysis          | `ImportWorker` path in `useAudioImport.ts` — mono PCM → `AnalysisChunk[]` + sealed rope                                                                                        |
+| Passages                | `src/lib/passages.ts` — `passage` and `sentenceLists` kinds                                                                                                                    |
+| Settings                | `src/lib/settings.ts` / `useSettings`                                                                                                                                          |
+| Reduced-state precedent | `src/routes/ipa.tsx` — a second route that reuses the audio stack                                                                                                              |
 
 The only genuinely new logic is: (1) an **utterance/take detector** layered on
 the VAD frame stream, (2) the **echo state machine** (listening → playing →
@@ -164,7 +164,7 @@ back…` → listening, with the live level meter always visible.
 ### 1. Takes are `AudioSpan`s over one session rope
 
 One `MicCapturePipeline` runs for the whole practice session, writing one
-growing `SabRope`. A take is `{ id, span: AudioSpan, createdAt, voicedRanges }`
+growing `AudioRope`. A take is `{ id, span: AudioSpan, createdAt, voicedRanges }`
 — no PCM copies. Replay = span playback; "skip silence" = play only
 `voicedRanges`; handoff = `readAudioSpan` once, at handoff time. Session-only
 state, held in a plain reducer/store in the route. This is also the shape that
@@ -232,7 +232,7 @@ speculatively.
 44.1 kHz mono float32 ≈ 10.6 MB/min ≈ 635 MB/hour — too much for phones if the
 rope never sheds. Mitigation, in order of preference: cap retained takes (e.g.
 last 20 + reference), and when old takes are dropped, the rope regions they
-spanned become garbage — but `SabRope` is append-only, so it can't free them.
+spanned become garbage — but `AudioRope` is append-only, so it can't free them.
 Options: (a) start a fresh pipeline/rope every N minutes of audio and copy the
 retained takes' spans into small sealed ropes; (b) accept the cost for v1 with
 a visible session-duration indicator and a "clear session" that really frees.
@@ -294,7 +294,7 @@ audio state exists.
   `voicedRanges` on the take.
 - Takes store (newest-first, expand-on-tap, pin-as-reference ★, A/B button,
   clear session); latest-take row; `[Analyze ↗]` stubbed.
-- Take playback via the span-playback path (`SabRopeSourceNode`, as used by
+- Take playback via the span-playback path (`AudioRopeSourceNode`, as used by
   transcription preview — read that call site before writing a new one).
   "Skip silence" toggle = play `voicedRanges` back-to-back.
 - Status row: recording state + live level meter (level can come from the

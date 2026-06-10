@@ -6,7 +6,7 @@
 
 import { resample } from '#/lib/analysis/ResampleProcessor'
 
-import type { SabRope } from './SabRope'
+import type { AudioRope } from './AudioRope'
 
 /**
  * Trigger download of a wav containing the ropes laid end-to-end.
@@ -16,7 +16,7 @@ import type { SabRope } from './SabRope'
  *
  * Must be done in response to a click or other event.
  */
-export function exportWav(ropes: SabRope[], gains: number[]) {
+export function exportWav(ropes: AudioRope[], gains: number[]) {
   const wavBuf = ropesToWav(ropes, gains)
 
   const ts = new Date()
@@ -38,7 +38,7 @@ enum WavFormat {
 }
 
 /**
- * Encode mono PCM from one or more `SabRope`s laid end-to-end as a 16-bit
+ * Encode mono PCM from one or more `AudioRope`s laid end-to-end as a 16-bit
  * WAV. Ropes may carry different sample rates (e.g. recordings appended under
  * changed device settings); each is resampled to the highest rate present and
  * concatenated, matching how the playback worklet treats the same ropes.
@@ -47,7 +47,7 @@ enum WavFormat {
  * resampling (gain is linear, so it commutes). Matches the playback worklet so
  * the exported file sounds like what was played.
  */
-export function ropesToWav(ropes: SabRope[], gains: number[]): ArrayBuffer {
+export function ropesToWav(ropes: AudioRope[], gains: number[]): ArrayBuffer {
   const sampleRate =
     ropes.reduce((max, rope) => Math.max(max, rope.sampleRate), 0) || 44100
 

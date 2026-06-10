@@ -13,10 +13,10 @@ import { resolveSpectrogramParams } from '#/lib/analysis/SpectrogramProcessor'
 import audioWorkletUrl from '#/lib/audio/AudioRingWriter?worker&url'
 import type { AudioRingWriterNode } from '#/lib/audio/AudioRingWriter'
 import type {
-  SabRopeGrow,
-  SabRopeSeal,
-  SabRopeShare,
-} from '#/lib/audio/SabRope'
+  AudioRopeGrow,
+  AudioRopeSeal,
+  AudioRopeShare,
+} from '#/lib/audio/AudioRope'
 import type { AudioCaptureSettings } from '#/lib/settings'
 import {
   buildAudioConstraints,
@@ -47,9 +47,9 @@ type MicCaptureOutEvents = {
   patch: CustomEvent<{ from: number; to: number }>
   recordingComplete: Event
   error: CustomEvent<{ error: string }>
-  sabRopeShare: CustomEvent<SabRopeShare>
-  sabRopeGrow: CustomEvent<SabRopeGrow>
-  sabRopeSeal: CustomEvent<SabRopeSeal>
+  sabRopeShare: CustomEvent<AudioRopeShare>
+  sabRopeGrow: CustomEvent<AudioRopeGrow>
+  sabRopeSeal: CustomEvent<AudioRopeSeal>
 }
 
 let STREAM: MediaStream | null = null
@@ -399,7 +399,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
     this.#onWorkerDone()
   }
 
-  #initConsumerWorkers(rope: SabRopeShare, sampleRate: number) {
+  #initConsumerWorkers(rope: AudioRopeShare, sampleRate: number) {
     const sp = resolveSpectrogramParams(
       {
         effectiveWindowLengthSec: 0.005,
@@ -453,7 +453,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
     }
   }
 
-  #forwardRopeGrow(grow: SabRopeGrow) {
+  #forwardRopeGrow(grow: AudioRopeGrow) {
     this.#spectrogramWorker?.postMessage({ type: 'rope-grow', grow })
     this.#formantWorker?.postMessage({ type: 'rope-grow', grow })
     this.#vadWorker?.postMessage({ type: 'rope-grow', grow })
@@ -464,7 +464,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
     this.#spectrogramWorker?.postMessage({ type: 'rope-seal' })
     this.#formantWorker?.postMessage({ type: 'rope-seal' })
     this.#vadWorker?.postMessage({ type: 'rope-seal' })
-    this.emit('sabRopeSeal', { type: 'sab-rope-seal' })
+    this.emit('sabRopeSeal', { type: 'audio-rope-seal' })
   }
 
   #handleRopeWriterWorkerOutMessage = ({
@@ -477,12 +477,12 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
         return
       }
 
-      case 'sab-rope-grow': {
+      case 'audio-rope-grow': {
         this.#forwardRopeGrow(data)
         return
       }
 
-      case 'sab-rope-seal': {
+      case 'audio-rope-seal': {
         this.#forwardRopeSeal()
         return
       }

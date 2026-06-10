@@ -4,9 +4,9 @@
 
 import { describe, it, expect, vi } from 'vitest'
 
-import { SabRope } from './SabRope'
-import type { SabRopeSourceNodeMessage } from './SabRopeSourceNode'
-import { SabRopeSourceNodeProcessor } from './SabRopeSourceNode'
+import { AudioRope } from './AudioRope'
+import type { AudioRopeSourceNodeMessage } from './AudioRopeSourceNode'
+import { AudioRopeSourceNodeProcessor } from './AudioRopeSourceNode'
 
 vi.hoisted(() => {
   vi.stubGlobal(
@@ -17,7 +17,7 @@ vi.hoisted(() => {
       }
       port: {
         onmessage?: ((event: MessageEvent<any>) => void) | null
-        postMessage: (msg: SabRopeSourceNodeMessage) => void
+        postMessage: (msg: AudioRopeSourceNodeMessage) => void
       } = {
         onmessage: null,
         postMessage: vi.fn(),
@@ -34,15 +34,15 @@ vi.hoisted(() => {
 /** Construct a node with the worklet's `sampleRate`/`currentTime` globals
  * stubbed. `currentTime` only feeds the end event's playout timestamp, which
  * these tests don't assert on, so a constant is fine. */
-function makeNode(outRate: number): SabRopeSourceNodeProcessor {
+function makeNode(outRate: number): AudioRopeSourceNodeProcessor {
   vi.stubGlobal('sampleRate', outRate)
   vi.stubGlobal('currentTime', 0)
-  return new SabRopeSourceNodeProcessor()
+  return new AudioRopeSourceNodeProcessor()
 }
 
 function send(
-  node: SabRopeSourceNodeProcessor,
-  msg: SabRopeSourceNodeMessage,
+  node: AudioRopeSourceNodeProcessor,
+  msg: AudioRopeSourceNodeMessage,
 ): void {
   ;(
     node as unknown as { port: { onmessage: (e: MessageEvent) => void } }
@@ -51,7 +51,7 @@ function send(
 
 /** Run one render quantum, returning the first output channel. */
 function quantum(
-  node: SabRopeSourceNodeProcessor,
+  node: AudioRopeSourceNodeProcessor,
   frames = 128,
   channels = 1,
 ): Float32Array[] {
@@ -63,7 +63,7 @@ function quantum(
 
 /** Pull `n` output samples across as many quanta as needed. */
 function collect(
-  node: SabRopeSourceNodeProcessor,
+  node: AudioRopeSourceNodeProcessor,
   n: number,
   frames = 128,
 ): Float32Array {
@@ -102,8 +102,8 @@ function rms(buf: Float32Array, from: number, to: number): number {
 }
 
 function setBuffer(
-  node: SabRopeSourceNodeProcessor,
-  ...ropes: SabRope[]
+  node: AudioRopeSourceNodeProcessor,
+  ...ropes: AudioRope[]
 ): void {
   send(node, {
     type: 'setBuffer',
@@ -113,8 +113,8 @@ function setBuffer(
 }
 
 function setBufferWithGains(
-  node: SabRopeSourceNodeProcessor,
-  ropes: SabRope[],
+  node: AudioRopeSourceNodeProcessor,
+  ropes: AudioRope[],
   gains: number[],
 ): void {
   send(node, {
@@ -125,7 +125,7 @@ function setBufferWithGains(
 }
 
 /** Messages of a given `type` the worklet has posted back to the main thread. */
-function postedOfType(node: SabRopeSourceNodeProcessor, type: string): any[] {
+function postedOfType(node: AudioRopeSourceNodeProcessor, type: string): any[] {
   const post = (
     node as unknown as { port: { postMessage: ReturnType<typeof vi.fn> } }
   ).port.postMessage
@@ -136,7 +136,7 @@ function postedOfType(node: SabRopeSourceNodeProcessor, type: string): any[] {
 
 // ---------------------------------------------------------------------------
 
-describe('SabRopeSourceNode', () => {
+describe('AudioRopeSourceNode', () => {
   describe('lifecycle & message protocol', () => {
     it('is silent before any setBuffer/start', () => {
       const node = makeNode(48000)
@@ -146,8 +146,8 @@ describe('SabRopeSourceNode', () => {
 
     it('is silent after setBuffer until start', () => {
       const node = makeNode(48000)
-      setBuffer(node, new SabRope(48000))
-      const producer = new SabRope(48000)
+      setBuffer(node, new AudioRope(48000))
+      const producer = new AudioRope(48000)
       producer.append(ramp(64))
       setBuffer(node, producer)
       // No start yet.
@@ -158,7 +158,7 @@ describe('SabRopeSourceNode', () => {
 
     it('pauses on a null message and resumes on the next start', () => {
       const node = makeNode(48000)
-      const producer = new SabRope(48000)
+      const producer = new AudioRope(48000)
       producer.append(ramp(500))
       setBuffer(node, producer)
       send(node, { type: 'start', timeSec: 0 })
@@ -184,7 +184,7 @@ describe('SabRopeSourceNode', () => {
 
     it('mirrors mono output to every channel', () => {
       const node = makeNode(48000)
-      const producer = new SabRope(48000)
+      const producer = new AudioRope(48000)
       producer.append(ramp(200))
       setBuffer(node, producer)
       send(node, { type: 'start', timeSec: 0 })
@@ -198,7 +198,7 @@ describe('SabRopeSourceNode', () => {
   describe('passthrough (rope rate == output rate)', () => {
     it('copies samples bit-exactly (no resampling kernel)', () => {
       const node = makeNode(48000)
-      const producer = new SabRope(48000)
+      const producer = new AudioRope(48000)
       producer.append(ramp(300))
       setBuffer(node, producer)
       send(node, { type: 'start', timeSec: 0 })
@@ -209,7 +209,7 @@ describe('SabRopeSourceNode', () => {
 
     it('seeks to an exact sample offset', () => {
       const node = makeNode(48000)
-      const producer = new SabRope(48000)
+      const producer = new AudioRope(48000)
       producer.append(ramp(500))
       setBuffer(node, producer)
       send(node, { type: 'start', timeSec: 200 / 48000 })
@@ -221,9 +221,9 @@ describe('SabRopeSourceNode', () => {
 
     it('concatenates ropes seamlessly across a boundary', () => {
       const node = makeNode(48000)
-      const a = new SabRope(48000)
+      const a = new AudioRope(48000)
       a.append(ramp(200))
-      const b = new SabRope(48000)
+      const b = new AudioRope(48000)
       b.append(ramp(200, 1000))
       setBuffer(node, a, b)
       send(node, { type: 'start', timeSec: 0 })
@@ -237,7 +237,7 @@ describe('SabRopeSourceNode', () => {
 
     it('outputs silence past the live tail, then resumes when data is appended', () => {
       const node = makeNode(48000)
-      const producer = new SabRope(48000)
+      const producer = new AudioRope(48000)
       producer.append(ramp(100))
       setBuffer(node, producer)
       send(node, { type: 'start', timeSec: 0 })
@@ -258,7 +258,7 @@ describe('SabRopeSourceNode', () => {
 
     it('clamps a seek past the end to the live write head', () => {
       const node = makeNode(48000)
-      const producer = new SabRope(48000)
+      const producer = new AudioRope(48000)
       producer.append(ramp(200))
       setBuffer(node, producer)
       send(node, { type: 'start', timeSec: 10 }) // far past end
@@ -270,8 +270,8 @@ describe('SabRopeSourceNode', () => {
 
     it('skips an empty leading rope', () => {
       const node = makeNode(48000)
-      const empty = new SabRope(48000)
-      const b = new SabRope(48000)
+      const empty = new AudioRope(48000)
+      const b = new AudioRope(48000)
       b.append(ramp(100, 7))
       setBuffer(node, empty, b)
       send(node, { type: 'start', timeSec: 0 })
@@ -282,7 +282,7 @@ describe('SabRopeSourceNode', () => {
   describe('per-rope loudness gain', () => {
     it('scales passthrough output by the rope gain', () => {
       const node = makeNode(48000)
-      const producer = new SabRope(48000)
+      const producer = new AudioRope(48000)
       producer.append(ramp(300))
       setBufferWithGains(node, [producer], [0.5])
       send(node, { type: 'start', timeSec: 0 })
@@ -293,9 +293,9 @@ describe('SabRopeSourceNode', () => {
 
     it('applies each rope its own gain across a boundary', () => {
       const node = makeNode(48000)
-      const a = new SabRope(48000)
+      const a = new AudioRope(48000)
       a.append(ramp(200, 100))
-      const b = new SabRope(48000)
+      const b = new AudioRope(48000)
       b.append(ramp(200, 1000))
       setBufferWithGains(node, [a, b], [0.5, 2])
       send(node, { type: 'start', timeSec: 0 })
@@ -311,7 +311,7 @@ describe('SabRopeSourceNode', () => {
   describe('resampling (rope rate != output rate)', () => {
     it('preserves DC through upsampling', () => {
       const node = makeNode(48000)
-      const producer = new SabRope(24000)
+      const producer = new AudioRope(24000)
       producer.append(dc(0.5, 2000))
       setBuffer(node, producer)
       send(node, { type: 'start', timeSec: 0 })
@@ -327,7 +327,7 @@ describe('SabRopeSourceNode', () => {
       // positions, so they must equal the source sample exactly. If the seek
       // priming / drop count were off by even one sample this fails.
       const node = makeNode(48000)
-      const producer = new SabRope(24000)
+      const producer = new AudioRope(24000)
       producer.append(ramp(2000))
       setBuffer(node, producer)
       send(node, { type: 'start', timeSec: 500 / 24000 })
@@ -341,14 +341,14 @@ describe('SabRopeSourceNode', () => {
     it('anti-aliases on downsampling (rejects content above the output Nyquist)', () => {
       // Output 24 kHz (Nyquist 12 kHz), source 48 kHz.
       const low = makeNode(24000)
-      const lowSrc = new SabRope(48000)
+      const lowSrc = new AudioRope(48000)
       lowSrc.append(sine(6000, 5000, 48000))
       setBuffer(low, lowSrc)
       send(low, { type: 'start', timeSec: 0 })
       const lowOut = collect(low, 700)
 
       const high = makeNode(24000)
-      const highSrc = new SabRope(48000)
+      const highSrc = new AudioRope(48000)
       highSrc.append(sine(18000, 5000, 48000)) // above output Nyquist
       setBuffer(high, highSrc)
       send(high, { type: 'start', timeSec: 0 })
@@ -362,7 +362,7 @@ describe('SabRopeSourceNode', () => {
 
     it('does not crash on a non-integer rate ratio', () => {
       const node = makeNode(48000)
-      const producer = new SabRope(44100)
+      const producer = new AudioRope(44100)
       producer.append(dc(0.25, 4000))
       setBuffer(node, producer)
       send(node, { type: 'start', timeSec: 0 })
@@ -372,9 +372,9 @@ describe('SabRopeSourceNode', () => {
 
     it('plays a mixed-rate timeline, advancing into a resampled rope', () => {
       const node = makeNode(48000)
-      const a = new SabRope(48000) // passthrough
+      const a = new AudioRope(48000) // passthrough
       a.append(dc(0.3, 300))
-      const b = new SabRope(24000) // resampled
+      const b = new AudioRope(24000) // resampled
       b.append(dc(0.6, 1000))
       setBuffer(node, a, b)
       send(node, { type: 'start', timeSec: 0 })
@@ -388,11 +388,11 @@ describe('SabRopeSourceNode', () => {
 
   describe('growth across a segment boundary', () => {
     it('forwards growLastRope so cross-segment live data becomes playable', () => {
-      const SEG = 65536 // SabRope SEG_SAMPLES
+      const SEG = 65536 // AudioRope SEG_SAMPLES
       const node = makeNode(48000)
 
       // Producer holding a single segment; consumer is built from this share.
-      const producer = new SabRope(48000)
+      const producer = new AudioRope(48000)
       setBuffer(node, producer) // share has 1 buffer
 
       // Fill segment 0 fully, then spill 10 samples into segment 1.
@@ -423,7 +423,7 @@ describe('SabRopeSourceNode', () => {
   describe('scheduled end', () => {
     it('stops playback once the cursor reaches the scheduled end', () => {
       const node = makeNode(48000)
-      const producer = new SabRope(48000)
+      const producer = new AudioRope(48000)
       producer.append(ramp(500))
       setBuffer(node, producer)
       send(node, { type: 'start', timeSec: 0 })
@@ -437,9 +437,9 @@ describe('SabRopeSourceNode', () => {
 
     it('stops on a later rope at the scheduled end', () => {
       const node = makeNode(48000)
-      const a = new SabRope(48000)
+      const a = new AudioRope(48000)
       a.append(ramp(200))
-      const b = new SabRope(48000)
+      const b = new AudioRope(48000)
       b.append(ramp(200, 1000))
       setBuffer(node, a, b)
       send(node, { type: 'start', timeSec: 0 })
@@ -457,7 +457,7 @@ describe('SabRopeSourceNode', () => {
 
     it('plays to the natural end when the end time is past the timeline', () => {
       const node = makeNode(48000)
-      const producer = new SabRope(48000)
+      const producer = new AudioRope(48000)
       producer.append(ramp(100))
       setBuffer(node, producer)
       send(node, { type: 'start', timeSec: 0 })
@@ -470,7 +470,7 @@ describe('SabRopeSourceNode', () => {
 
     it('also stops on a resampled rope', () => {
       const node = makeNode(48000)
-      const producer = new SabRope(24000) // 2x upsample
+      const producer = new AudioRope(24000) // 2x upsample
       producer.append(ramp(2000, 1)) // values 1..2000 (all non-zero)
       setBuffer(node, producer)
       send(node, { type: 'start', timeSec: 0 })
@@ -490,7 +490,7 @@ describe('SabRopeSourceNode', () => {
       // so playback runs to the end of the block containing the end frame
       // rather than stopping exactly on it. Documents current granularity.
       const node = makeNode(48000)
-      const producer = new SabRope(48000)
+      const producer = new AudioRope(48000)
       producer.append(ramp(500))
       setBuffer(node, producer)
       send(node, { type: 'start', timeSec: 0 })
@@ -508,7 +508,7 @@ describe('SabRopeSourceNode', () => {
 
     it('does not clip a resampled rope short of the scheduled end', () => {
       const node = makeNode(48000)
-      const producer = new SabRope(24000) // 2x upsample
+      const producer = new AudioRope(24000) // 2x upsample
       producer.append(ramp(2000, 1)) // values 1..2000 (all non-zero)
       setBuffer(node, producer)
       send(node, { type: 'start', timeSec: 0 })
@@ -521,13 +521,13 @@ describe('SabRopeSourceNode', () => {
 
     it('clears a stale end when a new buffer is set', () => {
       const node = makeNode(48000)
-      const first = new SabRope(48000)
+      const first = new AudioRope(48000)
       first.append(ramp(500))
       setBuffer(node, first)
       send(node, { type: 'end', timeSec: 50 / 48000 }) // arm end at frame 50
 
       // A new recording replaces the buffer; the old end should not apply.
-      const second = new SabRope(48000)
+      const second = new AudioRope(48000)
       second.append(ramp(500, 1000))
       setBuffer(node, second)
       send(node, { type: 'start', timeSec: 0 })
@@ -538,12 +538,12 @@ describe('SabRopeSourceNode', () => {
   })
 
   describe('sealed end', () => {
-    const endEvents = (node: SabRopeSourceNodeProcessor) =>
+    const endEvents = (node: AudioRopeSourceNodeProcessor) =>
       postedOfType(node, 'end')
 
     it('emits end when the final rope is sealed and runs out', () => {
       const node = makeNode(48000)
-      const producer = new SabRope(48000)
+      const producer = new AudioRope(48000)
       producer.seal(ramp(200))
       setBuffer(node, producer)
       send(node, { type: 'start', timeSec: 0 })
@@ -556,7 +556,7 @@ describe('SabRopeSourceNode', () => {
 
     it('stalls (no end) at the end of a still-growing final rope', () => {
       const node = makeNode(48000)
-      const producer = new SabRope(48000)
+      const producer = new AudioRope(48000)
       producer.append(ramp(200)) // not sealed: more may come
       setBuffer(node, producer)
       send(node, { type: 'start', timeSec: 0 })
@@ -569,9 +569,9 @@ describe('SabRopeSourceNode', () => {
 
     it('ends only on the final rope, not at a join into a sealed later rope', () => {
       const node = makeNode(48000)
-      const a = new SabRope(48000)
+      const a = new AudioRope(48000)
       a.seal(ramp(200))
-      const b = new SabRope(48000)
+      const b = new AudioRope(48000)
       b.seal(ramp(200, 1000))
       setBuffer(node, a, b)
       send(node, { type: 'start', timeSec: 0 })
@@ -586,7 +586,7 @@ describe('SabRopeSourceNode', () => {
 
     it('emits end after a sealed resampled rope drains', () => {
       const node = makeNode(48000)
-      const producer = new SabRope(24000) // 2x upsample
+      const producer = new AudioRope(24000) // 2x upsample
       producer.seal(ramp(200, 1)) // values 1..200
       setBuffer(node, producer)
       send(node, { type: 'start', timeSec: 0 })
@@ -599,13 +599,13 @@ describe('SabRopeSourceNode', () => {
   })
 
   describe('start anchor', () => {
-    const startedEvents = (node: SabRopeSourceNodeProcessor) =>
+    const startedEvents = (node: AudioRopeSourceNodeProcessor) =>
       postedOfType(node, 'started')
 
     it('anchors the clock at the first kept sample (passthrough)', () => {
       const node = makeNode(48000)
       vi.stubGlobal('currentTime', 10) // quantum-start context time
-      const producer = new SabRope(48000)
+      const producer = new AudioRope(48000)
       producer.append(ramp(200))
       setBuffer(node, producer)
       send(node, { type: 'start', timeSec: 0 })
@@ -619,7 +619,7 @@ describe('SabRopeSourceNode', () => {
 
     it('anchors only once across the whole playback', () => {
       const node = makeNode(48000)
-      const producer = new SabRope(48000)
+      const producer = new AudioRope(48000)
       producer.append(ramp(500))
       setBuffer(node, producer)
       send(node, { type: 'start', timeSec: 0 })
@@ -630,7 +630,7 @@ describe('SabRopeSourceNode', () => {
 
     it('does not anchor until the resampler warm-up is discarded', () => {
       const node = makeNode(48000)
-      const producer = new SabRope(24000) // 2x upsample -> primed with warm-up
+      const producer = new AudioRope(24000) // 2x upsample -> primed with warm-up
       producer.append(ramp(2000, 1))
       setBuffer(node, producer)
       send(node, { type: 'start', timeSec: 0 })
@@ -642,7 +642,7 @@ describe('SabRopeSourceNode', () => {
 
     it('re-anchors on a fresh start after a pause', () => {
       const node = makeNode(48000)
-      const producer = new SabRope(48000)
+      const producer = new AudioRope(48000)
       producer.append(ramp(500))
       setBuffer(node, producer)
 

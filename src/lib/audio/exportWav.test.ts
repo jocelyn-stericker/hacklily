@@ -6,11 +6,11 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
+import { AudioRope } from './AudioRope'
 import { exportWav, ropesToWav } from './exportWav'
-import { SabRope } from './SabRope'
 
-function makeRope(lengthSamples = 44100, sampleRate = 44100): SabRope {
-  const rope = new SabRope(sampleRate)
+function makeRope(lengthSamples = 44100, sampleRate = 44100): AudioRope {
+  const rope = new AudioRope(sampleRate)
   rope.append(new Float32Array(lengthSamples))
   return rope
 }
@@ -161,7 +161,7 @@ describe('ropesToWav', () => {
 
   it('applies the per-rope gain to the encoded samples', () => {
     const makeFilled = () => {
-      const rope = new SabRope(44100)
+      const rope = new AudioRope(44100)
       rope.append(new Float32Array(100).fill(0.4))
       return rope
     }

@@ -9,15 +9,15 @@ import type {
   AnalysisFrame,
   AnalysisParams,
 } from '#/lib/analysis/AnalysisFrame'
+import type {
+  AudioRopeGrow,
+  AudioRopeSeal,
+  AudioRopeShare,
+} from '#/lib/audio/AudioRope'
 import {
   MicCapturePipeline,
   preInitPersistentStream,
 } from '#/lib/audio/MicCapturePipeline'
-import type {
-  SabRopeGrow,
-  SabRopeSeal,
-  SabRopeShare,
-} from '#/lib/audio/SabRope'
 
 export function useMicCapture({
   enabled,
@@ -26,9 +26,9 @@ export function useMicCapture({
   onPatch,
   onRecordingComplete,
   onError,
-  onSabRopeGrow,
-  onSabRopeShare,
-  onSabRopeSeal,
+  onAudioRopeGrow,
+  onAudioRopeShare,
+  onAudioRopeSeal,
 }: {
   enabled: boolean
   onAppend: (frame: AnalysisFrame) => void
@@ -36,9 +36,9 @@ export function useMicCapture({
   onPatch?: (from: number, to: number) => void
   onRecordingComplete: () => void
   onError: (error: string) => void
-  onSabRopeGrow: (grow: SabRopeGrow) => void
-  onSabRopeShare: (sabRope: SabRopeShare) => void
-  onSabRopeSeal: (seal: SabRopeSeal) => void
+  onAudioRopeGrow: (grow: AudioRopeGrow) => void
+  onAudioRopeShare: (sabRope: AudioRopeShare) => void
+  onAudioRopeSeal: (seal: AudioRopeSeal) => void
 }) {
   const [audioSettings] = useSettings()
 
@@ -59,9 +59,9 @@ export function useMicCapture({
   const onPatchRef = useRef(onPatch)
   const onRecordingCompleteRef = useRef(onRecordingComplete)
   const onErrorRef = useRef(onError)
-  const onSabRopeGrowRef = useRef(onSabRopeGrow)
-  const onSabRopeShareRef = useRef(onSabRopeShare)
-  const onSabRopeSealRef = useRef(onSabRopeSeal)
+  const onAudioRopeGrowRef = useRef(onAudioRopeGrow)
+  const onAudioRopeShareRef = useRef(onAudioRopeShare)
+  const onAudioRopeSealRef = useRef(onAudioRopeSeal)
 
   useLayoutEffect(() => {
     onAppendRef.current = onAppend
@@ -69,9 +69,9 @@ export function useMicCapture({
     onPatchRef.current = onPatch
     onRecordingCompleteRef.current = onRecordingComplete
     onErrorRef.current = onError
-    onSabRopeGrowRef.current = onSabRopeGrow
-    onSabRopeShareRef.current = onSabRopeShare
-    onSabRopeSealRef.current = onSabRopeSeal
+    onAudioRopeGrowRef.current = onAudioRopeGrow
+    onAudioRopeShareRef.current = onAudioRopeShare
+    onAudioRopeSealRef.current = onAudioRopeSeal
   })
 
   useEffect(() => {
@@ -115,17 +115,17 @@ export function useMicCapture({
     )
     pipeline.addEventListener(
       'sabRopeShare',
-      (e) => onSabRopeShareRef.current(e.detail),
+      (e) => onAudioRopeShareRef.current(e.detail),
       { signal: pipeline.destroyed },
     )
     pipeline.addEventListener(
       'sabRopeGrow',
-      (e) => onSabRopeGrowRef.current(e.detail),
+      (e) => onAudioRopeGrowRef.current(e.detail),
       { signal: pipeline.destroyed },
     )
     pipeline.addEventListener(
       'sabRopeSeal',
-      (e) => onSabRopeSealRef.current(e.detail),
+      (e) => onAudioRopeSealRef.current(e.detail),
       { signal: pipeline.destroyed },
     )
     return () => ctrl.abort()
