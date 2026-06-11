@@ -39,7 +39,11 @@ const config = defineConfig({
   },
   plugins: [
     tailwindcss(),
-    tanstackRouter({ target: 'react', autoCodeSplitting: true }),
+    tanstackRouter({
+      target: 'react',
+      autoCodeSplitting: true,
+      routeFileIgnorePattern: '\\.test\\.',
+    }),
     viteReact(),
     babel({
       presets: [reactCompilerPreset()],

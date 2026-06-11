@@ -94,6 +94,7 @@ export type SettingsRow = {
   practicePassageId: string
   practiceMode: PracticeMode
   practiceRandomize: boolean
+  practiceAutoAdvance: boolean
 }
 
 /** The subset of settings the audio capture path reads. */
@@ -113,6 +114,7 @@ export const DEFAULT_SETTINGS: SettingsRow = {
   practicePassageId: 'rainbow',
   practiceMode: 'echo',
   practiceRandomize: false,
+  practiceAutoAdvance: true,
 }
 
 const STORAGE_KEY = 'braat:settings'

@@ -10,6 +10,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function assertUnreachable(_: never) {
+export function assertUnreachable(_: never): never {
   throw new Error('unreachable')
 }

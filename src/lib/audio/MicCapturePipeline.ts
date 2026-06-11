@@ -147,7 +147,7 @@ export async function preInitPersistentStream(
 export type MicCaptureFeatures = {
   spectrogram?: boolean
   formant?: boolean
-  vad?: boolean | VadParams
+  vad?: boolean | Partial<VadParams>
 }
 
 export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {

@@ -18,12 +18,14 @@ import {
   Shuffle,
   Square,
   Star,
+  StopCircle,
 } from 'lucide-react'
 import {
   useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
+  useReducer,
   useRef,
   useState,
 } from 'react'
@@ -57,10 +59,127 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '#/components/ui/tooltip'
+import { useMicCapture } from '#/components/useMicCapture'
 import { useSettings } from '#/components/useSettings'
+import type {
+  AnalysisFrame,
+  AnalysisParams,
+} from '#/lib/analysis/AnalysisFrame'
+import type {
+  AudioRope,
+  AudioRopeGrow,
+  AudioRopeSeal,
+  AudioRopeShare,
+} from '#/lib/audio/AudioRope'
+import { AudioRope as AudioRopeClass } from '#/lib/audio/AudioRope'
+import workletUrl from '#/lib/audio/AudioRopeSourceNode?worker&url'
+import type { AudioSpan } from '#/lib/audio/AudioSpan'
+import { RopeGainCache } from '#/lib/loudness/ropeLoudness'
 import { passages } from '#/lib/passages'
 import type { PracticeTextSize } from '#/lib/settings'
-import { cn } from '#/lib/utils'
+import { assertUnreachable, cn } from '#/lib/utils'
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+type VoicedRange = {
+  startSec: number
+  endSec: number
+}
+
+type Take = {
+  id: number
+  span: AudioSpan
+  createdAt: number
+  voicedRanges: VoicedRange[]
+}
+
+type PracticeState = {
+  takes: Take[]
+  nextTakeId: number
+  referenceTakeId: number | null
+  recording: boolean
+  recordingStartTime: number | null
+  playingTakeId: number | null
+  playingSkipSilence: boolean
+}
+
+type PracticeAction =
+  | { type: 'START_RECORDING'; startTime: number }
+  | { type: 'STOP_RECORDING'; span: AudioSpan; voicedRanges: VoicedRange[] }
+  | { type: 'START_PLAYBACK'; takeId: number; skipSilence: boolean }
+  | { type: 'STOP_PLAYBACK' }
+  | { type: 'STAR_TAKE'; takeId: number }
+  | { type: 'CLEAR_SESSION' }
+
+// ---------------------------------------------------------------------------
+// Reducer
+// ---------------------------------------------------------------------------
+
+function initialPracticeState(): PracticeState {
+  return {
+    takes: [],
+    nextTakeId: 1,
+    referenceTakeId: null,
+    recording: false,
+    recordingStartTime: null,
+    playingTakeId: null,
+    playingSkipSilence: false,
+  }
+}
+
+function practiceReducer(
+  state: PracticeState,
+  action: PracticeAction,
+): PracticeState {
+  switch (action.type) {
+    case 'START_RECORDING':
+      return { ...state, recording: true, recordingStartTime: action.startTime }
+
+    case 'STOP_RECORDING': {
+      const newTake: Take = {
+        id: state.nextTakeId,
+        span: action.span,
+        createdAt: Date.now(),
+        voicedRanges: action.voicedRanges,
+      }
+      const takes = [newTake, ...state.takes]
+      return {
+        ...state,
+        takes,
+        nextTakeId: state.nextTakeId + 1,
+        recording: false,
+        recordingStartTime: null,
+        referenceTakeId: state.referenceTakeId ?? newTake.id,
+      }
+    }
+
+    case 'START_PLAYBACK':
+      return {
+        ...state,
+        playingTakeId: action.takeId,
+        playingSkipSilence: action.skipSilence,
+      }
+
+    case 'STOP_PLAYBACK':
+      return { ...state, playingTakeId: null, playingSkipSilence: false }
+
+    case 'STAR_TAKE':
+      return {
+        ...state,
+        referenceTakeId:
+          state.referenceTakeId === action.takeId ? null : action.takeId,
+      }
+
+    case 'CLEAR_SESSION':
+      return initialPracticeState()
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
 const PAGE_TITLE = 'Practice — Braat'
 
@@ -78,10 +197,10 @@ const TEXT_SIZE_LABELS: Record<PracticeTextSize, string> = {
   '2xl': '2XL',
 }
 
-function takeRelativeTime(secondsAgo: number): string {
-  if (secondsAgo < 60) return 'just now'
-  const m = Math.floor(secondsAgo / 60)
-  return `${m}m`
+function formatDuration(totalSec: number): string {
+  const m = Math.floor(totalSec / 60)
+  const s = Math.floor(totalSec % 60)
+  return `${m}:${String(s).padStart(2, '0')}`
 }
 
 function shuffleArray<T>(arr: readonly T[]): T[] {
@@ -91,6 +210,36 @@ function shuffleArray<T>(arr: readonly T[]): T[] {
     ;[result[i], result[j]] = [result[j]!, result[i]!]
   }
   return result
+}
+
+function computeVoicedRanges(
+  decisions: boolean[],
+  fromIdx: number,
+  toIdx: number,
+  timePerFrame: number,
+  baseTimeSec: number,
+): VoicedRange[] {
+  const ranges: VoicedRange[] = []
+  let runStart = -1
+  const end = Math.min(toIdx, decisions.length)
+  for (let i = fromIdx; i < end; i++) {
+    if (decisions[i]) {
+      if (runStart === -1) runStart = i
+    } else if (runStart !== -1) {
+      ranges.push({
+        startSec: baseTimeSec + (runStart - fromIdx) * timePerFrame,
+        endSec: baseTimeSec + (i - fromIdx) * timePerFrame,
+      })
+      runStart = -1
+    }
+  }
+  if (runStart !== -1) {
+    ranges.push({
+      startSec: baseTimeSec + (runStart - fromIdx) * timePerFrame,
+      endSec: baseTimeSec + (end - fromIdx) * timePerFrame,
+    })
+  }
+  return ranges
 }
 
 function TooltipButton({
@@ -109,6 +258,10 @@ function TooltipButton({
     </Tooltip>
   )
 }
+
+// ---------------------------------------------------------------------------
+// Level meter
+// ---------------------------------------------------------------------------
 
 function useAnimatedLevel(intensity: number) {
   const [bars, setBars] = useState<number[]>(() =>
@@ -198,27 +351,162 @@ function LevelMeter({
   )
 }
 
-function StatusRow({
-  listening,
-  mode,
-  voiced,
-  playing,
-  onToggleListening,
-  onTogglePlay,
+// ---------------------------------------------------------------------------
+// Playback manager
+// ---------------------------------------------------------------------------
+
+type PlaybackRef = {
+  context: AudioContext
+  node: AudioWorkletNode
+  ropeShare: AudioRopeShare
+  done: (() => void) | null
+  ranges: VoicedRange[] | null
+  rangeIdx: number
+}
+
+function usePlaybackManager({
+  onPlaybackEnd,
+  gainCache,
 }: {
-  listening: boolean
-  mode: 'echo' | 'on-demand'
-  voiced?: boolean
-  playing: boolean
-  onToggleListening: () => void
-  onTogglePlay: () => void
+  onPlaybackEnd: () => void
+  gainCache: RopeGainCache
 }) {
-  if (!listening) {
+  const playbackRef = useRef<PlaybackRef | null>(null)
+
+  const stopPlayback = useCallback(() => {
+    const pb = playbackRef.current
+    if (!pb) return
+    try {
+      pb.node.port.postMessage(null)
+      pb.node.disconnect()
+    } catch {
+      /* node may already be dead */
+    }
+    void pb.context.close().catch(() => {})
+    playbackRef.current = null
+  }, [])
+
+  const playSpan = useCallback(
+    async (
+      sessionRope: AudioRope,
+      span: AudioSpan,
+      voicedRanges: VoicedRange[],
+      skipSilence: boolean,
+    ) => {
+      stopPlayback()
+
+      const context = new AudioContext({
+        sampleRate: sessionRope.sampleRate,
+        latencyHint: 'interactive',
+      })
+      await context.audioWorklet.addModule(workletUrl)
+
+      const node = new AudioWorkletNode(context, 'audio-rope-source-node')
+      node.connect(context.destination)
+
+      const ropeShare = sessionRope.shareRope()
+      let doneSent = false
+      const done = () => {
+        if (doneSent) return
+        doneSent = true
+        stopPlayback()
+        onPlaybackEnd()
+      }
+
+      node.port.onmessage = ({ data }: MessageEvent<{ type: string }>) => {
+        if (data.type === 'end') {
+          const pb = playbackRef.current
+          if (!pb || pb.node !== node) return
+          if (pb.ranges && pb.rangeIdx + 1 < pb.ranges.length) {
+            pb.rangeIdx++
+            const r = pb.ranges[pb.rangeIdx]!
+            node.port.postMessage({ type: 'start', timeSec: r.startSec })
+            node.port.postMessage({ type: 'end', timeSec: r.endSec })
+          } else {
+            done()
+          }
+        }
+      }
+
+      node.port.postMessage({
+        type: 'setBuffer',
+        ropes: [ropeShare],
+        gains: [gainCache.gainFor(sessionRope)],
+      })
+
+      if (skipSilence && voicedRanges.length > 0) {
+        playbackRef.current = {
+          context,
+          node,
+          ropeShare,
+          done,
+          ranges: voicedRanges,
+          rangeIdx: 0,
+        }
+        const r = voicedRanges[0]!
+        node.port.postMessage({ type: 'start', timeSec: r.startSec })
+        node.port.postMessage({ type: 'end', timeSec: r.endSec })
+      } else {
+        const endTime = await span.endTime
+        const playStart =
+          voicedRanges.length > 0 ? voicedRanges[0]!.startSec : span.startTime
+        const playEnd =
+          voicedRanges.length > 0
+            ? voicedRanges[voicedRanges.length - 1]!.endSec
+            : endTime
+        playbackRef.current = {
+          context,
+          node,
+          ropeShare,
+          done,
+          ranges: null,
+          rangeIdx: 0,
+        }
+        node.port.postMessage({ type: 'start', timeSec: playStart })
+        node.port.postMessage({ type: 'end', timeSec: playEnd })
+      }
+    },
+    [stopPlayback, onPlaybackEnd, gainCache],
+  )
+
+  // Cleanup on unmount
+  useEffect(() => () => stopPlayback(), [stopPlayback])
+
+  return { playSpan, stopPlayback }
+}
+
+// ---------------------------------------------------------------------------
+// StatusRow
+// ---------------------------------------------------------------------------
+
+function StatusRow({
+  phase,
+  mode,
+  playing,
+  timerActive,
+  elapsedMs,
+  voiced,
+  onStartSession,
+  onNextTake,
+  onEndSession,
+}: {
+  phase: 'idle' | 'recording' | 'playback'
+  mode: 'echo' | 'on-demand'
+  playing: boolean
+  timerActive: boolean
+  elapsedMs: number
+  level: number
+  voiced: boolean
+  onStartSession: () => void
+  onNextTake: () => void
+  onEndSession: () => void
+}) {
+  if (phase === 'idle') {
     return (
       <div className="flex flex-col items-center gap-2 px-4 py-4">
         <button
           type="button"
-          onClick={onToggleListening}
+          onClick={onStartSession}
           className="flex items-center gap-2 rounded-full bg-red-500 px-6 py-3 text-base font-medium text-white shadow-md hover:bg-red-600 active:scale-95 transition-all cursor-pointer"
         >
           <Mic className="size-5" />
@@ -226,57 +514,88 @@ function StatusRow({
         </button>
         <p className="flex items-center gap-1.5 text-xs text-muted-foreground italic">
           <Lock className="size-3" />
-          Audio stays on your device
+          Free and open source. Audio stays in your browser.
         </p>
+      </div>
+    )
+  }
+
+  const indicator = (
+    <span className="relative flex size-3 shrink-0 mr-2">
+      <span className="animate-ping absolute inline-flex size-full rounded-full bg-red-400 opacity-75" />
+      <span className="relative inline-flex size-3 rounded-full bg-red-500" />
+    </span>
+  )
+
+  if (mode === 'echo') {
+    const statusText = playing
+      ? 'Playing back…'
+      : voiced
+        ? 'Recording…'
+        : 'Listening…'
+    return (
+      <div className="relative flex items-center px-4 py-3">
+        <div className="absolute left-0 right-0 top-0 bottom-0 flex justify-center">
+          <Button
+            aria-label="End session"
+            onClick={onEndSession}
+            size="icon-lg"
+            className="rounded-full bg-red-500 text-white hover:bg-red-600 self-center"
+          >
+            <Square className="size-4 fill-current" />
+          </Button>
+        </div>
+        <div className="flex items-center gap-2 shrink-0 z-1">
+          {playing ? <Play className="size-4" /> : indicator}
+          <span className="text-sm font-medium">{statusText}</span>
+        </div>
+        <div className="flex-1" />
+        <LevelMeter intensity={voiced ? 1.0 : 0.0} voiced={voiced} />
       </div>
     )
   }
 
   return (
     <div className="relative flex items-center px-4 py-3">
-      {mode === 'echo' ? (
-        <div className="flex items-center gap-2 group shrink-0">
-          <span className="relative flex size-3">
-            <span className="animate-ping absolute inline-flex size-full rounded-full bg-red-400 opacity-75" />
-            <span className="relative inline-flex size-3 rounded-full bg-red-500" />
-          </span>
-          <span className="text-sm font-medium">Listening…</span>
-        </div>
-      ) : (
-        <button
-          type="button"
-          onClick={onTogglePlay}
-          className="flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted active:scale-95 transition-all cursor-pointer"
+      <div className="absolute left-0 right-0 top-0 bottom-0 flex justify-center">
+        <Button
+          aria-label="End session"
+          onClick={onEndSession}
+          size="icon-lg"
+          className="rounded-full bg-red-500 text-white hover:bg-red-600 self-center"
         >
-          {playing ? (
-            <>
-              <Play className="size-3 fill-current" />
-              Playing…
-            </>
-          ) : (
-            <>
-              <span className="relative flex size-3">
-                <span className="animate-ping absolute inline-flex size-full rounded-full bg-red-400 opacity-75" />
-                <span className="relative inline-flex size-3 rounded-full bg-red-500" />
-              </span>
-              Next take
-            </>
-          )}
-        </button>
-      )}
-      <button
-        type="button"
-        onClick={onToggleListening}
-        aria-label="Stop"
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center size-9 rounded-full bg-red-500 text-white hover:bg-red-600 active:scale-95 transition-all cursor-pointer"
-      >
-        <Square className="size-4 fill-current" />
-      </button>
+          <Square className="size-4 fill-current" />
+        </Button>
+      </div>
+      <div className="flex items-center gap-2 shrink-0 z-1">
+        {playing ? (
+          <Button variant="outline" disabled={true} size="sm" className="px-3">
+            <Play />
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            disabled={!timerActive}
+            onClick={onNextTake}
+            size="sm"
+            className="px-3"
+          >
+            {indicator}
+            {timerActive
+              ? `Next · ${formatDuration(elapsedMs / 1000)}`
+              : 'Listening…'}
+          </Button>
+        )}
+      </div>
       <div className="flex-1" />
-      <LevelMeter intensity={0.7} voiced={voiced} />
+      <LevelMeter intensity={voiced ? 1.0 : 0.0} voiced={voiced} />
     </div>
   )
 }
+
+// ---------------------------------------------------------------------------
+// Settings popover
+// ---------------------------------------------------------------------------
 
 function PracticeSettings({
   textSize,
@@ -297,16 +616,20 @@ function PracticeSettings({
   return (
     <Popover>
       <Tooltip>
-        <TooltipTrigger>
-          <PopoverTrigger>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label="Practice settings"
-            >
-              <Settings className="size-4" />
-            </Button>
-          </PopoverTrigger>
+        <TooltipTrigger
+          render={
+            <PopoverTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Practice settings"
+                />
+              }
+            />
+          }
+        >
+          <Settings className="size-4" />
         </TooltipTrigger>
         <TooltipContent sideOffset={8}>Settings</TooltipContent>
       </Tooltip>
@@ -345,14 +668,15 @@ function PracticeSettings({
           </div>
         </div>
         <div className="border-t border-border pt-3">
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start"
             onClick={onOpenAudioSettings}
-            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
           >
             <Mic className="size-4" />
             Audio settings
-          </button>
+          </Button>
           <a
             href="https://codeberg.org/jocelyn-stericker/braat"
             target="_blank"
@@ -390,6 +714,10 @@ function PracticeSettings({
     </Popover>
   )
 }
+
+// ---------------------------------------------------------------------------
+// Drill pager
+// ---------------------------------------------------------------------------
 
 function DrillPager({
   sentenceIndex,
@@ -450,183 +778,9 @@ function DrillPager({
   )
 }
 
-function LatestTakeRow() {
-  return (
-    <DrawerTrigger>
-      <button
-        type="button"
-        className="flex relative w-full items-center gap-2 border-t border-border px-4 py-3 text-left hover:bg-muted/50 transition-colors cursor-pointer group"
-      >
-        <span className="flex size-6 items-center justify-center rounded-full bg-muted text-xs">
-          <Play className="size-3" />
-        </span>
-        <span className="text-sm font-medium tabular-nums">#7</span>
-        <span className="text-sm tabular-nums text-muted-foreground">0:06</span>
-        <span className="ml-auto flex items-center gap-2">
-          <Tooltip>
-            <TooltipTrigger>
-              <span className="inline-flex">
-                <ArrowUpRight className="size-4 text-muted-foreground" />
-              </span>
-            </TooltipTrigger>
-            <TooltipContent sideOffset={8}>Analyze in Braat</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger>
-              <span className="inline-flex">
-                <Star className="size-4 text-muted-foreground" />
-              </span>
-            </TooltipTrigger>
-            <TooltipContent sideOffset={8}>Reference take</TooltipContent>
-          </Tooltip>
-        </span>
-        <ChevronUp className="absolute left-1/2 -translate-x-1/2 size-4 text-muted-foreground/40 transition-transform translate-y-[-10px] group-hover:translate-y-[-12px] group-hover:-translate-x-1/2" />
-      </button>
-    </DrawerTrigger>
-  )
-}
-
-function TakesList() {
-  const mockTakes = [
-    { id: 7, duration: '0:06', secondsAgo: 0 },
-    { id: 6, duration: '0:09', secondsAgo: 60 },
-    { id: 5, duration: '0:04', secondsAgo: 120 },
-    { id: 4, duration: '0:07', secondsAgo: 180 },
-    { id: 3, duration: '0:05', secondsAgo: 300 },
-    { id: 2, duration: '0:08', secondsAgo: 420 },
-    { id: 1, duration: '0:03', secondsAgo: 540 },
-  ]
-
-  return (
-    <>
-      <div className="rounded-lg border border-border bg-muted/30 p-3">
-        <div className="flex items-center gap-2 text-sm">
-          <Star className="size-4 text-muted-foreground" />
-          <span className="font-medium">Reference</span>
-          <span className="text-muted-foreground tabular-nums">0:05</span>
-          <div className="ml-auto flex items-center gap-1">
-            <TooltipButton label="Play" variant="ghost" size="icon-sm">
-              <Play className="size-3" />
-            </TooltipButton>
-            <TooltipButton label="A/B latest" variant="ghost" size="icon-sm">
-              A/B
-            </TooltipButton>
-          </div>
-        </div>
-      </div>
-      {mockTakes.map((t) => (
-        <div
-          key={t.id}
-          className="flex items-center gap-2 rounded-lg px-3 py-2.5 hover:bg-muted/50 transition-colors"
-        >
-          <span className="text-sm font-medium tabular-nums">#{t.id}</span>
-          <span className="text-sm tabular-nums text-muted-foreground">
-            {t.duration}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {takeRelativeTime(t.secondsAgo)}
-          </span>
-          <div className="ml-auto flex items-center gap-1">
-            <TooltipButton label="Play" variant="ghost" size="icon-sm">
-              <Play className="size-3" />
-            </TooltipButton>
-            <TooltipButton label="Analyze" variant="ghost" size="icon-sm">
-              <ArrowUpRight className="size-3" />
-            </TooltipButton>
-            <TooltipButton
-              label="Star as reference"
-              variant="ghost"
-              size="icon-sm"
-            >
-              <Star className="size-3" />
-            </TooltipButton>
-          </div>
-        </div>
-      ))}
-      <Tooltip>
-        <TooltipTrigger>
-          <Button variant="outline" className="mt-3 w-full text-sm">
-            Clear session
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent sideOffset={8}>
-          Remove all takes from this session
-        </TooltipContent>
-      </Tooltip>
-    </>
-  )
-}
-
-function TakesDrawer() {
-  return (
-    <Drawer>
-      <LatestTakeRow />
-      <DrawerContent className="max-h-[70vh]">
-        <DrawerHeader>
-          <DrawerTitle className="flex items-center justify-center gap-2">
-            <GripHorizontal className="size-4 text-muted-foreground" />
-            Takes (7)
-          </DrawerTitle>
-        </DrawerHeader>
-        <div className="flex flex-col gap-1 px-4 pb-4">
-          <TakesList />
-        </div>
-      </DrawerContent>
-    </Drawer>
-  )
-}
-
-function TakesSidebar() {
-  return (
-    <>
-      <div className="flex items-center justify-center gap-2 px-4 py-3 border-b border-border">
-        <span className="text-sm font-medium">Takes (7)</span>
-      </div>
-      <div className="flex-1 overflow-y-auto">
-        <div className="flex flex-col gap-1 px-4 py-3">
-          <TakesList />
-        </div>
-      </div>
-    </>
-  )
-}
-
-function ModeToggle({
-  mode,
-  onModeChange,
-}: {
-  mode: 'echo' | 'on-demand'
-  onModeChange: (m: 'echo' | 'on-demand') => void
-}) {
-  return (
-    <div className="flex rounded-lg border border-input p-0.5">
-      <button
-        type="button"
-        onClick={() => onModeChange('echo')}
-        className={cn(
-          'rounded-md px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer',
-          mode === 'echo'
-            ? 'bg-primary text-primary-foreground'
-            : 'text-muted-foreground hover:text-foreground',
-        )}
-      >
-        Echo
-      </button>
-      <button
-        type="button"
-        onClick={() => onModeChange('on-demand')}
-        className={cn(
-          'rounded-md px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer',
-          mode === 'on-demand'
-            ? 'bg-primary text-primary-foreground'
-            : 'text-muted-foreground hover:text-foreground',
-        )}
-      >
-        On-demand
-      </button>
-    </div>
-  )
-}
+// ---------------------------------------------------------------------------
+// Takes UI
+// ---------------------------------------------------------------------------
 
 function PassageFooter({
   source,
@@ -662,29 +816,354 @@ function PassageFooter({
   )
 }
 
+// ---------------------------------------------------------------------------
+// Practice — main component
+// ---------------------------------------------------------------------------
+
 function Practice() {
   const [settings, updateSettings] = useSettings()
+  const [state, dispatch] = useReducer(
+    practiceReducer,
+    undefined,
+    initialPracticeState,
+  )
+  const [, forceRender] = useState(0)
+
+  // Session / mic control — mic pipeline only runs during 'recording' phase
+  const [sessionPhase, setSessionPhase] = useState<
+    'idle' | 'recording' | 'playback'
+  >('idle')
+  const micActive = sessionPhase === 'recording'
+  const [voicedStartMs, setVoicedStartMs] = useState<number | null>(null)
+  const [elapsedMs, setElapsedMs] = useState(0)
+  const [displayLevel, setDisplayLevel] = useState({
+    intensity: 0,
+    voiced: false,
+  })
+  const [error, setError] = useState<string | null>(null)
+
+  // UI toggles
   const [drillIndex, setDrillIndex] = useState(0)
-  const [listening, setListening] = useState(false)
-  const [voiced, _setVoiced] = useState(false)
-  const [playing, setPlaying] = useState(false)
   const [audioSettingsOpen, setAudioSettingsOpen] = useState(false)
-  const [autoAdvance, setAutoAdvance] = useState(false)
+
+  // Refs — mutable state that shouldn't trigger re-renders
+  const sessionRopeRef = useRef<AudioRopeClass | null>(null)
+  const frameCountRef = useRef(0)
+  const decisionsRef = useRef<boolean[]>([])
+  const paramsRef = useRef<AnalysisParams | null>(null)
+  const levelRef = useRef({ rms: 0, speechDetected: false })
+  const recordingStartFrameRef = useRef(0)
+  const [gainCache] = useState(() => new RopeGainCache())
+  const shuttingDownRef = useRef(false)
+  const pipelineDoneResolveRef = useRef<(() => void) | null>(null)
+  const drillIndexRef = useRef(0)
+  const sentenceCountRef = useRef(0)
+  const echoWasHearingRef = useRef(false)
+  const echoGateUntilRef = useRef(0)
+  const shouldAutoRestartRef = useRef(false)
+  const modeRef = useRef<'echo' | 'on-demand'>('echo')
+  const handleNextTakeRef = useRef<(() => Promise<void>) | null>(null)
 
   const passageId = settings.practicePassageId
+  const autoAdvance = settings.practiceAutoAdvance
   const mode = settings.practiceMode
   const randomize = settings.practiceRandomize
 
-  useEffect(() => {
-    document.title = PAGE_TITLE
+  // Start mic pipeline + new recording
+  const startPipelineAndRecord = useCallback(() => {
+    frameCountRef.current = 0
+    decisionsRef.current = []
+    sessionRopeRef.current = null
+    paramsRef.current = null
+    levelRef.current = { rms: 0, speechDetected: false }
+    recordingStartFrameRef.current = 0
+    echoWasHearingRef.current = false
+    echoGateUntilRef.current = 0
+    setVoicedStartMs(null)
+    setSessionPhase('recording')
+    dispatch({ type: 'START_RECORDING', startTime: Date.now() })
   }, [])
 
-  useEffect(() => {
-    if (!playing) return
-    const id = setTimeout(() => setPlaying(false), 2000)
-    return () => clearTimeout(id)
-  }, [playing])
+  // Tear down mic pipeline, resolving once VAD is fully computed
+  const closePipeline = useCallback(() => {
+    return new Promise<void>((resolve) => {
+      pipelineDoneResolveRef.current = resolve
+      setSessionPhase('playback')
+    })
+  }, [])
 
+  // When playback ends, either shut down or restart pipeline for next take
+  const handlePlaybackEnd = useCallback(() => {
+    if (shuttingDownRef.current) {
+      shuttingDownRef.current = false
+      dispatch({ type: 'STOP_PLAYBACK' })
+      return
+    }
+    dispatch({ type: 'STOP_PLAYBACK' })
+    if (autoAdvance && sentenceCountRef.current > 0) {
+      const next = Math.min(
+        sentenceCountRef.current - 1,
+        drillIndexRef.current + 1,
+      )
+      drillIndexRef.current = next
+      setDrillIndex(next)
+    }
+    if (shouldAutoRestartRef.current) {
+      shouldAutoRestartRef.current = false
+      startPipelineAndRecord()
+      echoGateUntilRef.current = performance.now() + 250
+    } else {
+      setSessionPhase('idle')
+      echoGateUntilRef.current = 0
+    }
+  }, [autoAdvance, startPipelineAndRecord])
+  const { playSpan, stopPlayback } = usePlaybackManager({
+    onPlaybackEnd: handlePlaybackEnd,
+    gainCache,
+  })
+
+  // Document title
+  useEffect(() => {
+    document.title = PAGE_TITLE
+    return () => {
+      document.title = 'Braat'
+    }
+  }, [])
+
+  // Level meter polling
+  useEffect(() => {
+    if (!micActive) return
+    const id = setInterval(() => {
+      const { rms, speechDetected } = levelRef.current
+      const intensity = Math.min(1, Math.sqrt(rms) * 5)
+      if (speechDetected && voicedStartMs === null) {
+        setVoicedStartMs(Date.now())
+      }
+      setDisplayLevel({ intensity, voiced: speechDetected })
+    }, 60)
+    return () => clearInterval(id)
+  }, [micActive, voicedStartMs])
+
+  // Elapsed timer during recording — only starts once the first voiced frame is detected
+  useEffect(() => {
+    if (!state.recording || voicedStartMs === null) return
+    const tick = () => setElapsedMs(Date.now() - voicedStartMs)
+    tick()
+    const id = setInterval(tick, 100)
+    return () => clearInterval(id)
+  }, [state.recording, voicedStartMs])
+
+  // Mic capture callbacks
+  const handleChunkStart = useCallback((params: AnalysisParams) => {
+    paramsRef.current = params
+  }, [])
+
+  const handleAppend = useCallback((frame: AnalysisFrame) => {
+    const idx = frameCountRef.current
+    frameCountRef.current = idx + 1
+    // Ensure decisions array is large enough
+    while (decisionsRef.current.length <= idx) {
+      decisionsRef.current.push(false)
+    }
+    decisionsRef.current[idx] = frame.speechDetected
+    // Update level meter
+    levelRef.current = { rms: frame.rms, speechDetected: frame.speechDetected }
+
+    // Echo mode: auto-detect utterance end
+    if (modeRef.current === 'echo') {
+      if (frame.speechDetected) {
+        echoWasHearingRef.current = true
+      } else if (
+        echoWasHearingRef.current &&
+        performance.now() > echoGateUntilRef.current
+      ) {
+        echoWasHearingRef.current = false
+        echoGateUntilRef.current = Infinity
+        void handleNextTakeRef.current?.()
+      }
+    }
+  }, [])
+
+  const handlePatch = useCallback((_from: number, _to: number) => {
+    // Frames in the pipeline are mutated in-place. With redemptionMs=1500,
+    // patches revert optimistic speech→silence after the 1.5s window. Our
+    // decisionsRef values from onAppend go stale for those frames, so
+    // voicedRanges computed at STOP will be slightly too large until the
+    // pipeline API emits updated speechDetected values in patch events.
+  }, [])
+
+  const handleRecordingComplete = useCallback(() => {
+    pipelineDoneResolveRef.current?.()
+    pipelineDoneResolveRef.current = null
+  }, [])
+
+  const handleError = useCallback((err: string) => {
+    setError(err)
+  }, [])
+
+  const handleAudioRopeShare = useCallback((share: AudioRopeShare) => {
+    sessionRopeRef.current = new AudioRopeClass(share)
+  }, [])
+
+  const handleAudioRopeGrow = useCallback((grow: AudioRopeGrow) => {
+    sessionRopeRef.current?.grow(grow)
+  }, [])
+
+  const handleAudioRopeSeal = useCallback((_seal: AudioRopeSeal) => {
+    sessionRopeRef.current?.seal()
+  }, [])
+
+  // useMicCapture — runs for the whole session
+  useMicCapture({
+    enabled: micActive,
+    features: {
+      spectrogram: false,
+      formant: false,
+      vad: {
+        redemptionMs: settings.practiceMode === 'on-demand' ? 80 : 1500,
+        prerollMs: 500,
+      },
+    },
+    onAppend: handleAppend,
+    onChunkStart: handleChunkStart,
+    onPatch: handlePatch,
+    onRecordingComplete: handleRecordingComplete,
+    onError: handleError,
+    onAudioRopeGrow: handleAudioRopeGrow,
+    onAudioRopeShare: handleAudioRopeShare,
+    onAudioRopeSeal: handleAudioRopeSeal,
+  })
+
+  // Start session — immediately begin recording the first take
+  const handleStartSession = useCallback(() => {
+    shuttingDownRef.current = false
+    setError(null)
+    startPipelineAndRecord()
+  }, [startPipelineAndRecord])
+
+  // End session — stop mic and playback, but keep takes
+  const handleEndSession = useCallback(() => {
+    if (shuttingDownRef.current) return
+    shuttingDownRef.current = true
+    stopPlayback()
+    dispatch({ type: 'STOP_PLAYBACK' })
+    echoGateUntilRef.current = Infinity
+
+    void (async () => {
+      if (state.recording && echoWasHearingRef.current) {
+        await closePipeline()
+
+        const startFrame = recordingStartFrameRef.current
+        const endFrame = frameCountRef.current
+        const params = paramsRef.current
+        const rope = sessionRopeRef.current
+        const decisions = decisionsRef.current.slice()
+
+        if (rope && params) {
+          const timePerFrame = params.timeStepSamples / params.sampleRate
+          const baseTimeSec = startFrame * timePerFrame
+          const voicedRanges = computeVoicedRanges(
+            decisions,
+            startFrame,
+            endFrame,
+            timePerFrame,
+            baseTimeSec,
+          )
+          const span: AudioSpan = {
+            rope,
+            startTime: baseTimeSec,
+            endTime: Promise.resolve(endFrame * timePerFrame),
+            signal: new AbortController().signal,
+          }
+          dispatch({ type: 'STOP_RECORDING', span, voicedRanges })
+          forceRender((n) => n + 1)
+        }
+      }
+
+      setSessionPhase('idle')
+      setElapsedMs(0)
+      echoWasHearingRef.current = false
+      echoGateUntilRef.current = 0
+      shouldAutoRestartRef.current = false
+    })()
+  }, [stopPlayback, state.recording, closePipeline])
+
+  // Finish current take, tear down pipeline, then play back
+  const handleNextTake = useCallback(async () => {
+    if (!state.recording) return
+
+    const startFrame = recordingStartFrameRef.current
+    const endFrame = frameCountRef.current
+    const params = paramsRef.current
+    const rope = sessionRopeRef.current
+    const decisions = decisionsRef.current.slice()
+
+    if (!rope || !params) return
+
+    await closePipeline()
+
+    const timePerFrame = params.timeStepSamples / params.sampleRate
+    const baseTimeSec = startFrame * timePerFrame
+    const voicedRanges = computeVoicedRanges(
+      decisions,
+      startFrame,
+      endFrame,
+      timePerFrame,
+      baseTimeSec,
+    )
+
+    const span: AudioSpan = {
+      rope,
+      startTime: baseTimeSec,
+      endTime: Promise.resolve(endFrame * timePerFrame),
+      signal: new AbortController().signal,
+    }
+
+    const takeId = state.nextTakeId
+    dispatch({ type: 'STOP_RECORDING', span, voicedRanges })
+    dispatch({ type: 'START_PLAYBACK', takeId, skipSilence: false })
+    shouldAutoRestartRef.current = true
+    void playSpan(rope, span, voicedRanges, false)
+    forceRender((n) => n + 1)
+  }, [state.recording, state.nextTakeId, closePipeline, playSpan])
+
+  // Play a take
+  const handlePlayTake = useCallback(
+    (take: Take, skipSilence: boolean) => {
+      if (state.playingTakeId === take.id) {
+        stopPlayback()
+        dispatch({ type: 'STOP_PLAYBACK' })
+        echoGateUntilRef.current = 0
+        return
+      }
+      const rope = take.span.rope
+      echoGateUntilRef.current = Infinity
+      dispatch({ type: 'START_PLAYBACK', takeId: take.id, skipSilence })
+      void playSpan(rope, take.span, take.voicedRanges, skipSilence)
+    },
+    [state.playingTakeId, stopPlayback, playSpan],
+  )
+
+  // Star a take as reference
+  const handleStarTake = useCallback((takeId: number) => {
+    dispatch({ type: 'STAR_TAKE', takeId })
+  }, [])
+
+  // Clear session
+  const handleClearSession = useCallback(() => {
+    stopPlayback()
+    dispatch({ type: 'CLEAR_SESSION' })
+    frameCountRef.current = 0
+    decisionsRef.current = []
+    levelRef.current = { rms: 0, speechDetected: false }
+    recordingStartFrameRef.current = 0
+    echoWasHearingRef.current = false
+    echoGateUntilRef.current = 0
+    shouldAutoRestartRef.current = false
+    forceRender((n) => n + 1)
+  }, [stopPlayback])
+
+  // --- Derived data ---
   const passage = passages.find((p) => p.id === passageId) ?? passages[0]!
 
   const handleTextSizeChange = useCallback(
@@ -711,10 +1190,6 @@ function Practice() {
     [updateSettings],
   )
 
-  const handleTogglePlay = useCallback(() => {
-    setPlaying((p) => !p)
-  }, [])
-
   const handleOpenAudioSettings = useCallback(() => {
     setAudioSettingsOpen(true)
   }, [])
@@ -726,18 +1201,21 @@ function Practice() {
     [updateSettings],
   )
 
+  const handleAutoAdvanceChange = useCallback(
+    (v: boolean) => {
+      void updateSettings({ practiceAutoAdvance: v })
+    },
+    [updateSettings],
+  )
+
   const handleDrillPrev = useCallback(() => {
     setDrillIndex((i) => Math.max(0, i - 1))
   }, [])
 
   const handleDrillNext = useCallback(() => {
-    if (passage.kind === 'sentenceLists') {
-      setDrillIndex((i) => Math.min(passage.lists.flat().length - 1, i + 1))
+    if (sentenceCountRef.current > 0) {
+      setDrillIndex((i) => Math.min(sentenceCountRef.current - 1, i + 1))
     }
-  }, [passage])
-
-  const toggleListening = useCallback(() => {
-    setListening((l) => !l)
   }, [])
 
   const textSizeClass = TEXT_SIZE_CLASS[settings.practiceTextSize]
@@ -747,9 +1225,268 @@ function Practice() {
     return randomize ? shuffleArray(raw) : raw
   }, [passage, randomize])
 
-  const selectedTitle =
-    passages.find((p) => p.id === passageId)?.title ?? passages[0]!.title
+  // Keep drill refs in sync for the playback-end handler
+  useLayoutEffect(() => {
+    drillIndexRef.current = drillIndex
+  }, [drillIndex])
+  useLayoutEffect(() => {
+    sentenceCountRef.current = sentences.length
+  }, [sentences.length])
+  useLayoutEffect(() => {
+    modeRef.current = mode
+  })
+  useLayoutEffect(() => {
+    handleNextTakeRef.current = handleNextTake
+  })
 
+  const selectedTitle = passage.title
+
+  const referenceTake = state.referenceTakeId
+    ? state.takes.find((t) => t.id === state.referenceTakeId)
+    : state.takes[0]
+
+  const takeCount = state.takes.length
+
+  // --- Render helpers ---
+  const renderTakeRow = (take: Take, isLatest: boolean) => {
+    const isReference = state.referenceTakeId === take.id
+    const isPlaying = state.playingTakeId === take.id
+
+    const approxDuration =
+      take.voicedRanges.length > 0
+        ? formatDuration(
+            take.voicedRanges[take.voicedRanges.length - 1]!.endSec -
+              take.voicedRanges[0]!.startSec,
+          )
+        : '…'
+
+    return (
+      <div
+        key={take.id}
+        className={cn(
+          'flex items-center gap-2 rounded-lg px-3 py-2.5 hover:bg-muted/50 transition-colors',
+          isReference && 'bg-muted/30',
+        )}
+      >
+        <span className="text-sm font-medium tabular-nums">#{take.id}</span>
+        <span className="text-sm tabular-nums text-muted-foreground">
+          {approxDuration}
+        </span>
+        {isLatest && (
+          <span className="text-xs text-muted-foreground">just now</span>
+        )}
+        <div className="ml-auto flex items-center gap-1">
+          <TooltipButton
+            label={isPlaying ? 'Stop' : 'Play'}
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => handlePlayTake(take, false)}
+          >
+            {isPlaying ? (
+              <StopCircle className="size-3" />
+            ) : (
+              <Play className="size-3" />
+            )}
+          </TooltipButton>
+          <TooltipButton
+            label="Analyze"
+            variant="ghost"
+            size="icon-sm"
+            disabled
+          >
+            <ArrowUpRight className="size-3" />
+          </TooltipButton>
+          <TooltipButton
+            label={isReference ? 'Unstar reference' : 'Star as reference'}
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => handleStarTake(take.id)}
+          >
+            <Star
+              className={cn(
+                'size-3',
+                isReference
+                  ? 'fill-yellow-400 text-yellow-400'
+                  : 'text-muted-foreground',
+              )}
+            />
+          </TooltipButton>
+        </div>
+      </div>
+    )
+  }
+
+  const renderTakesList = () => (
+    <>
+      {referenceTake && (
+        <div className="rounded-lg border border-border bg-muted/30 p-3">
+          <div className="flex items-center gap-2 text-sm">
+            <Star className="size-4 fill-yellow-400 text-yellow-400" />
+            <span className="font-medium">Reference</span>
+            <span className="text-muted-foreground tabular-nums">
+              #{referenceTake.id}
+            </span>
+            <div className="ml-auto flex items-center gap-1">
+              <TooltipButton
+                label="Play"
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => handlePlayTake(referenceTake, false)}
+              >
+                <Play className="size-3" />
+              </TooltipButton>
+              <TooltipButton
+                label="A/B latest"
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => {
+                  const latest = state.takes[0]
+                  if (latest && latest.id !== referenceTake.id) {
+                    handlePlayTake(referenceTake, false)
+                  }
+                }}
+              >
+                A/B
+              </TooltipButton>
+            </div>
+          </div>
+        </div>
+      )}
+      {state.takes.map((t, i) => renderTakeRow(t, i === 0))}
+      {state.takes.length > 0 && (
+        <Tooltip>
+          <TooltipTrigger>
+            <Button
+              variant="outline"
+              className="mt-3 w-full text-sm"
+              onClick={handleClearSession}
+            >
+              Clear session
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent sideOffset={8}>
+            Remove all takes from this session
+          </TooltipContent>
+        </Tooltip>
+      )}
+      {state.takes.length === 0 && (
+        <p className="text-center text-sm text-muted-foreground py-8">
+          No takes yet. Record your first take to get started.
+        </p>
+      )}
+    </>
+  )
+
+  const latestTake = state.takes[0]
+
+  const renderLatestTakeRow = () => {
+    if (!latestTake) {
+      return (
+        <DrawerTrigger className="w-full">
+          <Button
+            variant="ghost"
+            className="w-full justify-start border-t border-b-0! border-x-0! border-border rounded-none px-4 py-3 text-left group"
+          >
+            <span className="text-sm text-muted-foreground">No takes yet</span>
+            <ChevronUp className="absolute left-1/2 -translate-x-1/2 size-4 text-muted-foreground/40 transition-transform" />
+          </Button>
+        </DrawerTrigger>
+      )
+    }
+
+    const isPlaying = state.playingTakeId === latestTake.id
+    return (
+      <DrawerTrigger className="w-full">
+        <button className="w-full justify-start border-t border-b-0! border-x-0! border-border rounded-none px-4 py-3 text-left group flex gap-1 align-center">
+          <span className="flex size-6 items-center justify-center rounded-full bg-muted text-xs">
+            {isPlaying ? (
+              <StopCircle className="size-3" />
+            ) : (
+              <Play className="size-3" />
+            )}
+          </span>
+          <span className="text-sm font-medium tabular-nums">
+            #{latestTake.id}
+          </span>
+          <span className="text-sm tabular-nums text-muted-foreground">
+            {(() => {
+              const vr = latestTake.voicedRanges
+              if (vr.length > 0) {
+                return formatDuration(
+                  vr[vr.length - 1]!.endSec - vr[0]!.startSec,
+                )
+              }
+              return '…'
+            })()}
+          </span>
+          <ChevronUp className="size-4 text-muted-foreground/40 transition-transform" />
+          <span className="ml-auto flex items-center gap-2">
+            <Tooltip>
+              <TooltipTrigger>
+                <span className="inline-flex">
+                  <ArrowUpRight className="size-4 text-muted-foreground" />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent sideOffset={8}>Analyze in Braat</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger>
+                <span
+                  className="inline-flex cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleStarTake(latestTake.id)
+                  }}
+                >
+                  <Star
+                    className={cn(
+                      'size-4',
+                      state.referenceTakeId === latestTake.id
+                        ? 'fill-yellow-400 text-yellow-400'
+                        : 'text-muted-foreground',
+                    )}
+                  />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent sideOffset={8}>
+                {state.referenceTakeId === latestTake.id
+                  ? 'Unstar reference'
+                  : 'Reference take'}
+              </TooltipContent>
+            </Tooltip>
+          </span>
+        </button>
+      </DrawerTrigger>
+    )
+  }
+
+  const renderTakesDrawer = () => (
+    <Drawer>
+      {renderLatestTakeRow()}
+      <DrawerContent className="max-h-[70vh]">
+        <DrawerHeader>
+          <DrawerTitle className="flex items-center justify-center gap-2">
+            <GripHorizontal className="size-4 text-muted-foreground" />
+            Takes ({takeCount})
+          </DrawerTitle>
+        </DrawerHeader>
+        <div className="flex flex-col gap-1 px-4 pb-4">{renderTakesList()}</div>
+      </DrawerContent>
+    </Drawer>
+  )
+
+  const renderTakesSidebar = () => (
+    <>
+      <div className="flex items-center justify-center gap-2 px-4 py-3 border-b border-border">
+        <span className="text-sm font-medium">Takes ({takeCount})</span>
+      </div>
+      <div className="flex-1 overflow-y-auto">
+        <div className="flex flex-col gap-1 px-4 py-3">{renderTakesList()}</div>
+      </div>
+    </>
+  )
+
+  // --- Main render ---
   return (
     <main className="h-dvh flex flex-col overflow-hidden bg-background text-foreground">
       <header className="flex items-center gap-3 border-b border-border px-4 py-2 shrink-0">
@@ -792,7 +1529,7 @@ function Practice() {
       <div className="flex-1 flex flex-col lg:flex-row min-h-0">
         <div className="flex-1 overflow-y-auto">
           {passage.kind === 'passage' ? (
-            <div className="mx-auto max-w-[768px] px-4 py-6">
+            <div className="mx-auto max-w-3xl px-4 py-6">
               <div
                 className={cn(
                   'leading-relaxed text-justify font-serif',
@@ -807,9 +1544,9 @@ function Practice() {
                 attribution={passage.attribution}
               />
             </div>
-          ) : passage.kind === 'blank' ? null : (
-            <div className="mx-auto max-w-[768px] px-4 py-6">
-              <div className="flex flex-col justify-center min-h-[16rem]">
+          ) : passage.kind === 'sentenceLists' ? (
+            <div className="mx-auto max-w-3xl px-4 py-6">
+              <div className="flex flex-col justify-center min-h-64">
                 <div
                   className={cn(
                     'text-center font-serif leading-relaxed py-8',
@@ -823,7 +1560,7 @@ function Practice() {
                 sentenceIndex={drillIndex}
                 sentenceCount={sentences.length}
                 autoAdvance={autoAdvance}
-                onAutoAdvanceChange={setAutoAdvance}
+                onAutoAdvanceChange={handleAutoAdvanceChange}
                 randomize={randomize}
                 onRandomizeChange={handleRandomizeChange}
                 onPrevious={handleDrillPrev}
@@ -835,37 +1572,50 @@ function Practice() {
                 attribution={passage.attribution}
               />
             </div>
+          ) : // eslint-disable-next-line no-unnecessary-condition
+          passage.kind === 'blank' ? null : (
+            assertUnreachable(passage)
           )}
         </div>
 
         <div className="hidden lg:flex flex-col w-72 shrink-0 border-l border-border">
-          <TakesSidebar />
+          {renderTakesSidebar()}
         </div>
       </div>
 
-      <div className="lg:hidden">
-        <TakesDrawer />
-      </div>
+      <div className="lg:hidden">{renderTakesDrawer()}</div>
 
       <AudioSettingsModal
         open={audioSettingsOpen}
         onOpenChange={setAudioSettingsOpen}
       />
 
+      {error && (
+        <div className="shrink-0 border-t border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
+          {error}
+          <Button
+            variant="link"
+            className="ml-2 underline text-red-700 dark:text-red-300"
+            onClick={() => setError(null)}
+          >
+            Dismiss
+          </Button>
+        </div>
+      )}
+
       <div className="shrink-0 border-t border-border">
         <StatusRow
-          listening={listening}
+          phase={sessionPhase}
           mode={mode}
-          voiced={voiced}
-          playing={playing}
-          onToggleListening={toggleListening}
-          onTogglePlay={handleTogglePlay}
+          playing={state.playingTakeId !== null}
+          timerActive={voicedStartMs !== null}
+          elapsedMs={elapsedMs}
+          level={displayLevel.intensity}
+          voiced={displayLevel.voiced}
+          onStartSession={handleStartSession}
+          onNextTake={handleNextTake}
+          onEndSession={handleEndSession}
         />
-        {listening && (
-          <div className="flex lg:hidden items-center justify-center border-t border-border px-4 py-3">
-            <ModeToggle mode={mode} onModeChange={handleModeChange} />
-          </div>
-        )}
       </div>
     </main>
   )

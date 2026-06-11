@@ -66,6 +66,7 @@ describe('settings', () => {
         practicePassageId: 'rainbow',
         practiceMode: 'echo',
         practiceRandomize: false,
+        practiceAutoAdvance: false,
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.echoCancellation).toBeUndefined()
@@ -87,6 +88,7 @@ describe('settings', () => {
         practicePassageId: 'rainbow',
         practiceMode: 'echo',
         practiceRandomize: false,
+        practiceAutoAdvance: false,
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.echoCancellation).toBe(false)
@@ -107,6 +109,7 @@ describe('settings', () => {
         practicePassageId: 'rainbow',
         practiceMode: 'echo',
         practiceRandomize: false,
+        practiceAutoAdvance: false,
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.deviceId).toEqual({ exact: deviceId })
@@ -124,6 +127,7 @@ describe('settings', () => {
         practicePassageId: 'rainbow',
         practiceMode: 'echo',
         practiceRandomize: false,
+        practiceAutoAdvance: false,
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.sampleRate).toEqual({ ideal: 48000 })
@@ -141,6 +145,7 @@ describe('settings', () => {
         practicePassageId: 'rainbow',
         practiceMode: 'echo',
         practiceRandomize: false,
+        practiceAutoAdvance: false,
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.sampleRate).toEqual({ ideal: 44100 })
@@ -159,6 +164,7 @@ describe('settings', () => {
         practicePassageId: 'rainbow',
         practiceMode: 'echo',
         practiceRandomize: false,
+        practiceAutoAdvance: false,
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.echoCancellation).toBe(false)
@@ -182,6 +188,7 @@ describe('settings', () => {
         practicePassageId: 'rainbow',
         practiceMode: 'echo',
         practiceRandomize: false,
+        practiceAutoAdvance: false,
       }
       expect(preferredSampleRate(settings)).toBeUndefined()
     })
@@ -198,6 +205,7 @@ describe('settings', () => {
         practicePassageId: 'rainbow',
         practiceMode: 'echo',
         practiceRandomize: false,
+        practiceAutoAdvance: false,
       }
       expect(preferredSampleRate(settings)).toBe(48000)
     })
@@ -214,6 +222,7 @@ describe('settings', () => {
         practicePassageId: 'rainbow',
         practiceMode: 'echo',
         practiceRandomize: false,
+        practiceAutoAdvance: false,
       }
       expect(preferredSampleRate(settings)).toBe(44100)
     })
@@ -240,6 +249,7 @@ describe('settings', () => {
         practicePassageId: 'rainbow',
         practiceMode: 'echo',
         practiceRandomize: false,
+        practiceAutoAdvance: false,
       }
       localStorage.setItem('braat:settings', JSON.stringify(initial))
 
