@@ -115,39 +115,58 @@ export class VadStreamProcessor {
 
 // --- Speech gating ----------------------------------------------------------
 
-// Hysteresis on the Silero probability: speech turns on at POSITIVE, back off
-// at NEGATIVE. The gap debounces values hovering around the boundary.
-export const POSITIVE_THRESHOLD = 0.3
-export const NEGATIVE_THRESHOLD = 0.25
+export type VadParams = {
+  /**
+   * Speech turns on at this Silero result
+   */
+  positiveThreshold: number
 
-// Blind pad of frames before a voiced onset, retroactively marked speech so a
-// word's attack isn't clipped. Always applied.
-export const PREROLL_MS = 50
+  /**
+   * Speech turns back off at this Silero result
+   */
+  negativeThreshold: number
 
-// Ceiling on how far before an onset the gate may reclaim when a per-frame onset
-// feature (high-frequency energy) is supplied: it walks back from the pad through
-// frames whose energy stays above the local noise floor -- an unvoiced attack like
-// /s/ or /f/ that Silero tends to miss on quiet input -- and stops once energy
-// returns to the floor. No feature -> no effect, just the blind PREROLL_MS pad.
-export const ONSET_BACKTRACK_MS = 200
+  /**
+   * Blind pad of frames before a voiced onset, retroactively marked speech so a
+   * word's attack isn't clipped. Always applied.
+   */
+  prerollMs: number
 
-// How far above the noise floor the onset feature must sit to be reclaimed by the
-// backtrack (=~5 dB in power). Low enough for weak fricatives (/f/, /θ/), high
-// enough that steady-state silence stops it.
-const ONSET_BACKTRACK_FACTOR = 3
+  /**
+   * Ceiling on how far before an onset the gate may reclaim when a per-frame onset
+   * feature (high-frequency energy) is supplied: it walks back from the pad through
+   * frames whose energy stays above the local noise floor -- an unvoiced attack like
+   * /s/ or /f/ that Silero tends to miss on quiet input -- and stops once energy
+   * returns to the floor. No feature -> no effect, just the blind PREROLL_MS pad.
+   */
+  onsetBacktrackMs: number
 
-// Blind pad of frames after a segment ends, kept as speech so the release tail
-// isn't clipped. Unlike redemption, always kept.
-export const POSTROLL_MS = 50
+  /**
+   * How far above the noise floor the onset feature must sit to be reclaimed by the
+   * backtrack (=~5 dB in power). Low enough for weak fricatives (/f/, /θ/), high
+   * enough that steady-state silence stops it.
+   */
+  onsetBacktrackFactor: number
 
-// After speech stops, frames keep reporting speech for this long. If speech
-// resumes the gap is bridged; otherwise (or at stream end) the held frames revert
-// to silence, save for the POSTROLL_MS pad.
-export const REDEMPTION_MS = 80
+  /**
+   * Blind pad of frames after a segment ends, kept as speech so the release tail
+   * isn't clipped. Unlike redemption, always kept.
+   */
+  postrollMs: number
 
-// Segments shorter than this end-to-end (incl. pre-roll, post-roll, bridged gaps)
-// are discarded as spurious and reverted to silence.
-export const MIN_SPEECH_MS = 400
+  /**
+   * After speech stops, frames keep reporting speech for this long. If speech
+   * resumes the gap is bridged; otherwise (or at stream end) the held frames revert
+   * to silence, save for the POSTROLL_MS pad.
+   */
+  redemptionMs: number
+
+  /**
+   * Segments shorter than this end-to-end (incl. pre-roll, post-roll, bridged gaps)
+   * are discarded as spurious and reverted to silence.
+   */
+  minSpeechMs: number
+}
 
 // TODO(vad): future explorations, in rough priority order --
 //   1. Reconsider the live UX of optimistic redemption: at a 2 ms step,
@@ -157,8 +176,6 @@ export const MIN_SPEECH_MS = 400
 //   2. Emit segment-level events (utterance start/end/duration) alongside the
 //      per-frame decisions. The gate already knows these boundaries; surfacing
 //      them lets the UI report durations/counts without re-deriving runs.
-//   3. Make thresholds and durations tunable (e.g. one "sensitivity" knob) once
-//      fixed values prove wrong on real mics/rooms.
 
 export interface SpeechDecision {
   frameIndex: number
@@ -185,40 +202,49 @@ interface GateFrame {
  * in push order, though corrections may target earlier frames.
  */
 export class SpeechGate {
-  private readonly prerollFrames: number
-  private readonly backtrackFrames: number
-  private readonly postrollFrames: number
-  private readonly redemptionFrames: number
-  private readonly minSpeechFrames: number
+  readonly #prerollFrames: number
+  readonly #backtrackFrames: number
+  readonly #postrollFrames: number
+  readonly #redemptionFrames: number
+  readonly #minSpeechFrames: number
+  readonly #positiveThreshold: number
+  readonly #negativeThreshold: number
+  readonly #onsetBacktrackFactor: number
+  readonly #onDecision: (decision: SpeechDecision) => void
 
   // Whether the most recent frame counts as speech (post-hysteresis).
-  private speaking = false
+  #speaking = false
   // Inside a speech segment: leading edge has fired, not yet closed by an expired
   // redemption window or stream end.
-  private inSegment = false
+  #inSegment = false
   // Consecutive silent frames since the last speech frame, while in a segment.
-  private silenceRun = 0
+  #silenceRun = 0
 
   // Recent silent frames eligible to become pre-roll for the next onset.
-  private preroll: GateFrame[] = []
+  #preroll: GateFrame[] = []
   // Silent frames optimistically reported as speech during redemption; either
   // folded into the segment (bridged) or reverted to silence.
-  private redemption: GateFrame[] = []
+  #redemption: GateFrame[] = []
   // Current segment's frames, retained only until it reaches minSpeechFrames so
   // they can be reverted if it stays too short.
-  private segment: GateFrame[] = []
-  private segmentLength = 0
+  #segment: GateFrame[] = []
+  #segmentLength = 0
 
   constructor(
     framesPerSecond: number,
-    private readonly onDecision: (decision: SpeechDecision) => void,
+    onDecision: (decision: SpeechDecision) => void,
+    consumerParams: Partial<VadParams> = {},
   ) {
+    this.#onDecision = onDecision
+    this.#positiveThreshold = consumerParams.positiveThreshold ?? 0.3
+    this.#negativeThreshold = consumerParams.negativeThreshold ?? 0.25
+    this.#onsetBacktrackFactor = consumerParams.onsetBacktrackFactor ?? 3
     const framesFor = (ms: number) => Math.round((ms / 1000) * framesPerSecond)
-    this.prerollFrames = framesFor(PREROLL_MS)
-    this.backtrackFrames = framesFor(ONSET_BACKTRACK_MS)
-    this.postrollFrames = framesFor(POSTROLL_MS)
-    this.redemptionFrames = framesFor(REDEMPTION_MS)
-    this.minSpeechFrames = framesFor(MIN_SPEECH_MS)
+    this.#prerollFrames = framesFor(consumerParams.prerollMs ?? 50)
+    this.#backtrackFrames = framesFor(consumerParams.onsetBacktrackMs ?? 200)
+    this.#postrollFrames = framesFor(consumerParams.postrollMs ?? 50)
+    this.#redemptionFrames = framesFor(consumerParams.redemptionMs ?? 80)
+    this.#minSpeechFrames = framesFor(consumerParams.minSpeechMs ?? 400)
   }
 
   push(
@@ -228,77 +254,77 @@ export class SpeechGate {
   ): void {
     const frame: GateFrame = { frameIndex, speechProbability, onsetFeature }
 
-    if (speechProbability >= POSITIVE_THRESHOLD) this.speaking = true
-    else if (speechProbability < NEGATIVE_THRESHOLD) this.speaking = false
+    if (speechProbability >= this.#positiveThreshold) this.#speaking = true
+    else if (speechProbability < this.#negativeThreshold) this.#speaking = false
 
-    if (this.speaking) this.onSpeech(frame)
-    else if (this.inSegment) this.onRedemption(frame)
-    else this.onSilence(frame)
+    if (this.#speaking) this.#onVoiced(frame)
+    else if (this.#inSegment) this.#onRedemption(frame)
+    else this.#onUnvoiced(frame)
   }
 
   /** End of stream: an open redemption tail never resumed, so close it out. */
   end(): void {
-    if (!this.inSegment) return
-    this.closeRedemptionTail()
-    this.closeSegment()
-    this.inSegment = false
-    this.silenceRun = 0
+    if (!this.#inSegment) return
+    this.#closeRedemptionTail()
+    this.#closeSegment()
+    this.#inSegment = false
+    this.#silenceRun = 0
   }
 
-  private onSpeech(frame: GateFrame): void {
-    if (!this.inSegment) {
+  #onVoiced(frame: GateFrame): void {
+    if (!this.#inSegment) {
       // Onset: open a segment and reclaim pre-roll, extending back through any
       // unvoiced attack the onset feature reveals.
-      this.inSegment = true
-      for (const pf of this.reclaimPreroll()) {
-        this.emit(pf, true)
-        this.extendSegment(pf)
+      this.#inSegment = true
+      for (const pf of this.#reclaimPreroll()) {
+        this.#emit(pf, true)
+        this.#extendSegment(pf)
       }
-      this.preroll = []
-    } else if (this.redemption.length > 0) {
+      this.#preroll = []
+    } else if (this.#redemption.length > 0) {
       // Speech resumed within the window: bridge the gap. These frames were
       // already reported as speech; just fold them into the segment.
-      for (const rf of this.redemption) this.extendSegment(rf)
-      this.redemption = []
+      for (const rf of this.#redemption) this.#extendSegment(rf)
+      this.#redemption = []
     }
-    this.silenceRun = 0
-    this.emit(frame, true)
-    this.extendSegment(frame)
+    this.#silenceRun = 0
+    this.#emit(frame, true)
+    this.#extendSegment(frame)
   }
 
-  private onRedemption(frame: GateFrame): void {
-    this.silenceRun++
-    if (this.silenceRun <= this.redemptionFrames) {
+  #onRedemption(frame: GateFrame): void {
+    this.#silenceRun++
+    if (this.#silenceRun <= this.#redemptionFrames) {
       // Still within the window: keep reporting speech in case it resumes.
-      this.emit(frame, true)
-      this.redemption.push(frame)
+      this.#emit(frame, true)
+      this.#redemption.push(frame)
       return
     }
     // Window expired: close the tail and segment, and treat this frame as the
     // start of the trailing silence.
-    this.closeRedemptionTail()
-    this.closeSegment()
-    this.inSegment = false
-    this.silenceRun = 0
-    this.onSilence(frame)
+    this.#closeRedemptionTail()
+    this.#closeSegment()
+    this.#inSegment = false
+    this.#silenceRun = 0
+    this.#onUnvoiced(frame)
   }
 
   // Close an unbridged redemption tail: keep the first postrollFrames as a
   // release pad (already reported as speech), revert the rest to silence.
-  private closeRedemptionTail(): void {
-    const keep = Math.min(this.postrollFrames, this.redemption.length)
-    for (let i = 0; i < this.redemption.length; i++) {
-      const frame = this.redemption[i]!
-      if (i < keep) this.extendSegment(frame)
-      else this.emit(frame, false)
+  #closeRedemptionTail(): void {
+    const keep = Math.min(this.#postrollFrames, this.#redemption.length)
+    for (let i = 0; i < this.#redemption.length; i++) {
+      const frame = this.#redemption[i]!
+      if (i < keep) this.#extendSegment(frame)
+      else this.#emit(frame, false)
     }
-    this.redemption = []
+    this.#redemption = []
   }
 
-  private onSilence(frame: GateFrame): void {
-    this.emit(frame, false)
-    this.preroll.push(frame)
-    if (this.preroll.length > this.backtrackFrames) this.preroll.shift()
+  #onUnvoiced(frame: GateFrame): void {
+    this.#emit(frame, false)
+    this.#preroll.push(frame)
+    if (this.#preroll.length > this.#backtrackFrames) this.#preroll.shift()
   }
 
   // Choose which buffered pre-onset frames to reclaim as speech. Always takes at
@@ -306,56 +332,59 @@ export class SpeechGate {
   // the noise floor from the oldest quarter of the buffer (predating the attack)
   // and walks further back through any contiguous run sitting ONSET_BACKTRACK_-
   // FACTOR above it, so the onset lands at an unvoiced consonant, not the vowel.
-  private reclaimPreroll(): GateFrame[] {
-    const n = this.preroll.length
-    let start = Math.max(0, n - this.prerollFrames)
+  #reclaimPreroll(): GateFrame[] {
+    const n = this.#preroll.length
+    let start = Math.max(0, n - this.#prerollFrames)
 
     const refEnd = Math.floor(n / 4)
     let sum = 0
     let count = 0
     for (let i = 0; i < refEnd; i++) {
-      const f = this.preroll[i]!.onsetFeature
+      const f = this.#preroll[i]!.onsetFeature
       if (!Number.isNaN(f)) {
         sum += f
         count++
       }
     }
     if (count > 0) {
-      const threshold = (sum / count) * ONSET_BACKTRACK_FACTOR
+      const threshold = (sum / count) * this.#onsetBacktrackFactor
       if (threshold > 0) {
-        while (start > 0 && this.preroll[start - 1]!.onsetFeature > threshold) {
+        while (
+          start > 0 &&
+          this.#preroll[start - 1]!.onsetFeature > threshold
+        ) {
           start--
         }
       }
     }
 
-    return this.preroll.slice(start)
+    return this.#preroll.slice(start)
   }
 
-  private extendSegment(frame: GateFrame): void {
-    this.segmentLength++
-    if (this.segmentLength < this.minSpeechFrames) {
-      this.segment.push(frame)
-    } else if (this.segmentLength === this.minSpeechFrames) {
+  #extendSegment(frame: GateFrame): void {
+    this.#segmentLength++
+    if (this.#segmentLength < this.#minSpeechFrames) {
+      this.#segment.push(frame)
+    } else if (this.#segmentLength === this.#minSpeechFrames) {
       // Long enough to keep; stop tracking frames for reversion.
-      this.segment = []
+      this.#segment = []
     }
   }
 
   // Close the segment, reverting it to silence if it never reached
   // minSpeechFrames. (A kept segment leaves `segment` empty, so this is a no-op.)
-  private closeSegment(): void {
-    this.revert(this.segment)
-    this.segment = []
-    this.segmentLength = 0
+  #closeSegment(): void {
+    this.#revert(this.#segment)
+    this.#segment = []
+    this.#segmentLength = 0
   }
 
-  private revert(frames: GateFrame[]): void {
-    for (const frame of frames) this.emit(frame, false)
+  #revert(frames: GateFrame[]): void {
+    for (const frame of frames) this.#emit(frame, false)
   }
 
-  private emit(frame: GateFrame, speechDetected: boolean): void {
-    this.onDecision({
+  #emit(frame: GateFrame, speechDetected: boolean): void {
+    this.#onDecision({
       frameIndex: frame.frameIndex,
       speechProbability: frame.speechProbability,
       speechDetected,

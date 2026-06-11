@@ -5,7 +5,7 @@
 /// <reference lib="webworker" />
 
 import { ResamplerStreamProcessor } from '#/lib/analysis/ResampleProcessor'
-import type { SpeechDecision } from '#/lib/analysis/VadProcessor'
+import type { SpeechDecision, VadParams } from '#/lib/analysis/VadProcessor'
 import {
   SpeechGate,
   VadStreamProcessor,
@@ -16,7 +16,7 @@ import { AudioRopeReader } from '#/lib/audio/AudioRopeReader'
 import type {
   WorkerEndedMessage,
   PatchFramesMessage,
-  RopeConsumerInitMessage,
+  VadInitMessage,
   RopeGrowMessage,
   RopeSealMessage,
 } from './workerMessages'
@@ -27,7 +27,7 @@ const LOG = '[VadWorker]'
 const TIME_STEP_SEC = 0.002
 
 export type VadWorkerInMessage =
-  | RopeConsumerInitMessage
+  | VadInitMessage
   | RopeGrowMessage
   | RopeSealMessage
   | null
@@ -53,7 +53,12 @@ self.onmessage = ({ data }: MessageEvent<VadWorkerInMessage>) => {
   if (data.type === 'init') {
     ropeReader = new AudioRopeReader(data.rope, QUANTUM)
     const timeStepSamples = Math.round(TIME_STEP_SEC * data.sampleRate)
-    void runAnalysis(ropeReader, data.sampleRate, timeStepSamples).then(() => {
+    void runAnalysis(
+      ropeReader,
+      data.sampleRate,
+      timeStepSamples,
+      data.params,
+    ).then(() => {
       postMessage({ type: 'ended' })
       console.log(LOG, 'complete')
     })
@@ -68,15 +73,20 @@ export async function runAnalysis(
   reader: AudioRopeReader,
   sampleRate: number,
   timeStepSamples: number,
+  params: Partial<VadParams> = {},
 ): Promise<void> {
   const vadResampler = new ResamplerStreamProcessor(sampleRate, VAD_RATE, 50)
   const vadDrainBuf = new Float32Array(256)
   const vad = new VadStreamProcessor()
 
   const pendingDecisions: SpeechDecision[] = []
-  const gate = new SpeechGate(sampleRate / timeStepSamples, (decision) => {
-    pendingDecisions.push(decision)
-  })
+  const gate = new SpeechGate(
+    sampleRate / timeStepSamples,
+    (decision) => {
+      pendingDecisions.push(decision)
+    },
+    params,
+  )
 
   function flushDecisions() {
     if (pendingDecisions.length === 0) return

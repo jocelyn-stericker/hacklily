@@ -50,7 +50,9 @@ export function useMicCapture({
     audioSettings
   const spectrogramEnabled = features?.spectrogram ?? true
   const formantEnabled = features?.formant ?? true
-  const vadEnabled = features?.vad ?? true
+  // Serialize to a primitive dep: prevents pipeline restarts when the caller
+  // passes an un-memoized VadParams object literal (new reference each render).
+  const vadSettingsKey = JSON.stringify(features?.vad ?? true)
   useEffect(() => {
     void preInitPersistentStream({
       inputDeviceId,
@@ -94,7 +96,7 @@ export function useMicCapture({
       features: {
         spectrogram: spectrogramEnabled,
         formant: formantEnabled,
-        vad: vadEnabled,
+        vad: JSON.parse(vadSettingsKey) as MicCaptureFeatures['vad'],
       },
     })
     pipeline.addEventListener(
@@ -148,6 +150,6 @@ export function useMicCapture({
     browserPreprocessing,
     spectrogramEnabled,
     formantEnabled,
-    vadEnabled,
+    vadSettingsKey,
   ])
 }

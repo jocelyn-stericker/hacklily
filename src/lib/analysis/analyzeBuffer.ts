@@ -12,6 +12,7 @@ import { FormantProcessor } from './FormantProcessor'
 import { PitchProcessor } from './PitchProcessor'
 import { resample } from './ResampleProcessor'
 import { SpectrogramProcessor } from './SpectrogramProcessor'
+import type { VadParams } from './VadProcessor'
 import { SpeechGate, VadStreamProcessor } from './VadProcessor'
 
 interface Opts {
@@ -37,6 +38,7 @@ function defaultOpts(): Opts {
 export async function analyzeBuffer(
   input: Float32Array,
   sampleRate: number,
+  vadParams?: Partial<VadParams>,
 ): Promise<AnalysisChunk[]> {
   const results: AnalysisFrame[] = []
   console.log(
@@ -154,9 +156,13 @@ export async function analyzeBuffer(
   // pre-roll, redemption, and the minimum-duration filter, identical to the
   // realtime VAD worker. The gate revises frames in place via its callback.
   const speechDetectedArr = new Uint8Array(specResult.numFrames)
-  const gate = new SpeechGate(1 / specResult.timeStepSec, (d) => {
-    speechDetectedArr[d.frameIndex] = d.speechDetected ? 1 : 0
-  })
+  const gate = new SpeechGate(
+    1 / specResult.timeStepSec,
+    (d) => {
+      speechDetectedArr[d.frameIndex] = d.speechDetected ? 1 : 0
+    },
+    vadParams,
+  )
   for (let x = 0; x < specResult.numFrames; x++)
     gate.push(x, frameSpeechProb[x]!, frameHfEnergy[x])
   gate.end()

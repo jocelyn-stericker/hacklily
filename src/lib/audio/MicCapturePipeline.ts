@@ -39,6 +39,8 @@ import type {
   PatchFramesMessage,
 } from '#/lib/workers/workerMessages'
 
+import type { VadParams } from '../analysis/VadProcessor'
+
 const SAB_BUF_SAMPLES = 8192
 
 type MicCaptureOutEvents = {
@@ -145,7 +147,7 @@ export async function preInitPersistentStream(
 export type MicCaptureFeatures = {
   spectrogram?: boolean
   formant?: boolean
-  vad?: boolean
+  vad?: boolean | VadParams
 }
 
 export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
@@ -465,7 +467,13 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
     }
 
     if (this.#vadWorker) {
-      this.#vadWorker.postMessage({ type: 'init', rope, sampleRate })
+      this.#vadWorker.postMessage({
+        type: 'init',
+        rope,
+        sampleRate,
+        params:
+          typeof this.#features.vad === 'boolean' ? {} : this.#features.vad,
+      })
       this.#pendingWorkers++
     }
 

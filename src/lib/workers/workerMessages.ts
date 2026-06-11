@@ -6,13 +6,17 @@ import type {
   AnalysisFrame,
   AnalysisParams,
 } from '#/lib/analysis/AnalysisFrame'
-import type { SpeechDecision } from '#/lib/analysis/VadProcessor'
+import type { SpeechDecision, VadParams } from '#/lib/analysis/VadProcessor'
 import type { AudioRopeGrow, AudioRopeShare } from '#/lib/audio/AudioRope'
 
-export interface RopeConsumerInitMessage {
+export type RopeConsumerInitMessage = {
   type: 'init'
   rope: AudioRopeShare
   sampleRate: number
+}
+
+export type VadInitMessage = RopeConsumerInitMessage & {
+  params?: Partial<VadParams>
 }
 
 export type RopeGrowMessage = {
