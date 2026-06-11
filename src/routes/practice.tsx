@@ -103,6 +103,15 @@ type PracticeState = {
   recordingStartTime: number | null
   playingTakeId: number | null
   playingSkipSilence: boolean
+  sessionPhase: 'idle' | 'recording' | 'playback'
+  echoWasHearing: boolean
+  echoGateUntilTs: number
+  echoAutoRestart: boolean
+  error: string | null
+  recordingStartFrame: number
+  shuttingDown: boolean
+  drillIndex: number
+  sentenceCount: number
 }
 
 type PracticeAction =
@@ -112,6 +121,18 @@ type PracticeAction =
   | { type: 'STOP_PLAYBACK' }
   | { type: 'STAR_TAKE'; takeId: number }
   | { type: 'CLEAR_SESSION' }
+  | { type: 'SET_SESSION_PHASE'; phase: PracticeState['sessionPhase'] }
+  | { type: 'STOP_SESSION' }
+  | { type: 'ECHO_SPEECH_HEARD' }
+  | { type: 'ECHO_UTTERANCE_DONE' }
+  | { type: 'ECHO_AUTO_RESTART' }
+  | { type: 'ECHO_COOLDOWN'; untilTs: number }
+  | { type: 'ECHO_GATE_BLOCK' }
+  | { type: 'ECHO_RESET_GATE' }
+  | { type: 'SET_ERROR'; error: string | null }
+  | { type: 'SET_SHUTTING_DOWN'; value: boolean }
+  | { type: 'SET_DRILL_INDEX'; index: number }
+  | { type: 'SET_SENTENCE_COUNT'; count: number }
 
 // ---------------------------------------------------------------------------
 // Reducer
@@ -126,6 +147,15 @@ function initialPracticeState(): PracticeState {
     recordingStartTime: null,
     playingTakeId: null,
     playingSkipSilence: false,
+    sessionPhase: 'idle',
+    echoWasHearing: false,
+    echoGateUntilTs: 0,
+    echoAutoRestart: false,
+    error: null,
+    recordingStartFrame: 0,
+    shuttingDown: false,
+    drillIndex: 0,
+    sentenceCount: 0,
   }
 }
 
@@ -135,7 +165,17 @@ function practiceReducer(
 ): PracticeState {
   switch (action.type) {
     case 'START_RECORDING':
-      return { ...state, recording: true, recordingStartTime: action.startTime }
+      return {
+        ...state,
+        recording: true,
+        recordingStartTime: action.startTime,
+        sessionPhase: 'recording',
+        echoWasHearing: false,
+        echoGateUntilTs: 0,
+        echoAutoRestart: false,
+        recordingStartFrame: 0,
+        shuttingDown: false,
+      }
 
     case 'STOP_RECORDING': {
       const newTake: Take = {
@@ -174,6 +214,53 @@ function practiceReducer(
 
     case 'CLEAR_SESSION':
       return initialPracticeState()
+
+    case 'SET_SESSION_PHASE':
+      return { ...state, sessionPhase: action.phase }
+
+    case 'STOP_SESSION':
+      return {
+        ...state,
+        sessionPhase: 'idle',
+        echoWasHearing: false,
+        echoGateUntilTs: 0,
+        echoAutoRestart: false,
+        shuttingDown: false,
+      }
+
+    case 'ECHO_SPEECH_HEARD':
+      return { ...state, echoWasHearing: true }
+
+    case 'ECHO_UTTERANCE_DONE':
+      return {
+        ...state,
+        echoWasHearing: false,
+        echoGateUntilTs: Infinity,
+      }
+
+    case 'ECHO_AUTO_RESTART':
+      return { ...state, echoAutoRestart: true }
+
+    case 'ECHO_COOLDOWN':
+      return { ...state, echoGateUntilTs: action.untilTs }
+
+    case 'ECHO_GATE_BLOCK':
+      return { ...state, echoGateUntilTs: Infinity }
+
+    case 'ECHO_RESET_GATE':
+      return { ...state, echoGateUntilTs: 0 }
+
+    case 'SET_ERROR':
+      return { ...state, error: action.error }
+
+    case 'SET_SHUTTING_DOWN':
+      return { ...state, shuttingDown: action.value }
+
+    case 'SET_DRILL_INDEX':
+      return { ...state, drillIndex: action.index }
+
+    case 'SET_SENTENCE_COUNT':
+      return { ...state, sentenceCount: action.count }
   }
 }
 
@@ -489,6 +576,7 @@ function StatusRow({
   onStartSession,
   onNextTake,
   onEndSession,
+  numTakes,
 }: {
   phase: 'idle' | 'recording' | 'playback'
   mode: 'echo' | 'on-demand'
@@ -500,6 +588,7 @@ function StatusRow({
   onStartSession: () => void
   onNextTake: () => void
   onEndSession: () => void
+  numTakes: number
 }) {
   if (phase === 'idle') {
     return (
@@ -510,7 +599,9 @@ function StatusRow({
           className="flex items-center gap-2 rounded-full bg-red-500 px-6 py-3 text-base font-medium text-white shadow-md hover:bg-red-600 active:scale-95 transition-all cursor-pointer"
         >
           <Mic className="size-5" />
-          Start practice session
+          {numTakes > 0
+            ? 'Continue practice session'
+            : 'Start practice session'}
         </button>
         <p className="flex items-center gap-1.5 text-xs text-muted-foreground italic">
           <Lock className="size-3" />
@@ -654,10 +745,10 @@ function PracticeSettings({
           />
         </div>
         <div className="pt-3 px-2 flex items-center justify-between">
-          <Label className="text-xs">Playback</Label>
+          <Label className="text-xs">End take</Label>
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground">
-              {mode === 'echo' ? 'Echo' : 'On-demand'}
+              {mode === 'echo' ? 'Automatic' : 'On-demand'}
             </span>
             <Switch
               checked={mode === 'echo'}
@@ -668,15 +759,14 @@ function PracticeSettings({
           </div>
         </div>
         <div className="border-t border-border pt-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start"
+          <button
+            type="button"
             onClick={onOpenAudioSettings}
+            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
           >
             <Mic className="size-4" />
             Audio settings
-          </Button>
+          </button>
           <a
             href="https://codeberg.org/jocelyn-stericker/braat"
             target="_blank"
@@ -827,23 +917,21 @@ function Practice() {
     undefined,
     initialPracticeState,
   )
+  const stateRef = useRef(state)
+  useLayoutEffect(() => {
+    stateRef.current = state
+  })
   const [, forceRender] = useState(0)
 
-  // Session / mic control — mic pipeline only runs during 'recording' phase
-  const [sessionPhase, setSessionPhase] = useState<
-    'idle' | 'recording' | 'playback'
-  >('idle')
-  const micActive = sessionPhase === 'recording'
+  const micActive = state.sessionPhase === 'recording'
   const [voicedStartMs, setVoicedStartMs] = useState<number | null>(null)
   const [elapsedMs, setElapsedMs] = useState(0)
   const [displayLevel, setDisplayLevel] = useState({
     intensity: 0,
     voiced: false,
   })
-  const [error, setError] = useState<string | null>(null)
 
   // UI toggles
-  const [drillIndex, setDrillIndex] = useState(0)
   const [audioSettingsOpen, setAudioSettingsOpen] = useState(false)
 
   // Refs — mutable state that shouldn't trigger re-renders
@@ -852,15 +940,8 @@ function Practice() {
   const decisionsRef = useRef<boolean[]>([])
   const paramsRef = useRef<AnalysisParams | null>(null)
   const levelRef = useRef({ rms: 0, speechDetected: false })
-  const recordingStartFrameRef = useRef(0)
   const [gainCache] = useState(() => new RopeGainCache())
-  const shuttingDownRef = useRef(false)
   const pipelineDoneResolveRef = useRef<(() => void) | null>(null)
-  const drillIndexRef = useRef(0)
-  const sentenceCountRef = useRef(0)
-  const echoWasHearingRef = useRef(false)
-  const echoGateUntilRef = useRef(0)
-  const shouldAutoRestartRef = useRef(false)
   const modeRef = useRef<'echo' | 'on-demand'>('echo')
   const handleNextTakeRef = useRef<(() => Promise<void>) | null>(null)
 
@@ -876,11 +957,7 @@ function Practice() {
     sessionRopeRef.current = null
     paramsRef.current = null
     levelRef.current = { rms: 0, speechDetected: false }
-    recordingStartFrameRef.current = 0
-    echoWasHearingRef.current = false
-    echoGateUntilRef.current = 0
     setVoicedStartMs(null)
-    setSessionPhase('recording')
     dispatch({ type: 'START_RECORDING', startTime: Date.now() })
   }, [])
 
@@ -888,33 +965,34 @@ function Practice() {
   const closePipeline = useCallback(() => {
     return new Promise<void>((resolve) => {
       pipelineDoneResolveRef.current = resolve
-      setSessionPhase('playback')
+      dispatch({ type: 'SET_SESSION_PHASE', phase: 'playback' })
     })
   }, [])
 
   // When playback ends, either shut down or restart pipeline for next take
   const handlePlaybackEnd = useCallback(() => {
-    if (shuttingDownRef.current) {
-      shuttingDownRef.current = false
+    if (stateRef.current.shuttingDown) {
+      dispatch({ type: 'SET_SHUTTING_DOWN', value: false })
       dispatch({ type: 'STOP_PLAYBACK' })
       return
     }
     dispatch({ type: 'STOP_PLAYBACK' })
-    if (autoAdvance && sentenceCountRef.current > 0) {
+    if (autoAdvance && stateRef.current.sentenceCount > 0) {
       const next = Math.min(
-        sentenceCountRef.current - 1,
-        drillIndexRef.current + 1,
+        stateRef.current.sentenceCount - 1,
+        stateRef.current.drillIndex + 1,
       )
-      drillIndexRef.current = next
-      setDrillIndex(next)
+      dispatch({ type: 'SET_DRILL_INDEX', index: next })
     }
-    if (shouldAutoRestartRef.current) {
-      shouldAutoRestartRef.current = false
+    const echoAutoRestart = stateRef.current.echoAutoRestart
+    if (echoAutoRestart) {
       startPipelineAndRecord()
-      echoGateUntilRef.current = performance.now() + 250
+      dispatch({
+        type: 'ECHO_COOLDOWN',
+        untilTs: performance.now() + 250,
+      })
     } else {
-      setSessionPhase('idle')
-      echoGateUntilRef.current = 0
+      dispatch({ type: 'STOP_SESSION' })
     }
   }, [autoAdvance, startPipelineAndRecord])
   const { playSpan, stopPlayback } = usePlaybackManager({
@@ -972,13 +1050,14 @@ function Practice() {
     // Echo mode: auto-detect utterance end
     if (modeRef.current === 'echo') {
       if (frame.speechDetected) {
-        echoWasHearingRef.current = true
+        if (!stateRef.current.echoWasHearing) {
+          dispatch({ type: 'ECHO_SPEECH_HEARD' })
+        }
       } else if (
-        echoWasHearingRef.current &&
-        performance.now() > echoGateUntilRef.current
+        stateRef.current.echoWasHearing &&
+        performance.now() > stateRef.current.echoGateUntilTs
       ) {
-        echoWasHearingRef.current = false
-        echoGateUntilRef.current = Infinity
+        dispatch({ type: 'ECHO_UTTERANCE_DONE' })
         void handleNextTakeRef.current?.()
       }
     }
@@ -998,7 +1077,7 @@ function Practice() {
   }, [])
 
   const handleError = useCallback((err: string) => {
-    setError(err)
+    dispatch({ type: 'SET_ERROR', error: err })
   }, [])
 
   const handleAudioRopeShare = useCallback((share: AudioRopeShare) => {
@@ -1036,24 +1115,23 @@ function Practice() {
 
   // Start session — immediately begin recording the first take
   const handleStartSession = useCallback(() => {
-    shuttingDownRef.current = false
-    setError(null)
+    dispatch({ type: 'SET_ERROR', error: null })
     startPipelineAndRecord()
   }, [startPipelineAndRecord])
 
   // End session — stop mic and playback, but keep takes
   const handleEndSession = useCallback(() => {
-    if (shuttingDownRef.current) return
-    shuttingDownRef.current = true
+    if (stateRef.current.shuttingDown) return
+    dispatch({ type: 'SET_SHUTTING_DOWN', value: true })
     stopPlayback()
     dispatch({ type: 'STOP_PLAYBACK' })
-    echoGateUntilRef.current = Infinity
+    dispatch({ type: 'ECHO_GATE_BLOCK' })
 
     void (async () => {
-      if (state.recording && echoWasHearingRef.current) {
+      if (stateRef.current.recording && stateRef.current.echoWasHearing) {
         await closePipeline()
 
-        const startFrame = recordingStartFrameRef.current
+        const startFrame = stateRef.current.recordingStartFrame
         const endFrame = frameCountRef.current
         const params = paramsRef.current
         const rope = sessionRopeRef.current
@@ -1080,19 +1158,16 @@ function Practice() {
         }
       }
 
-      setSessionPhase('idle')
+      dispatch({ type: 'STOP_SESSION' })
       setElapsedMs(0)
-      echoWasHearingRef.current = false
-      echoGateUntilRef.current = 0
-      shouldAutoRestartRef.current = false
     })()
-  }, [stopPlayback, state.recording, closePipeline])
+  }, [stopPlayback, closePipeline])
 
   // Finish current take, tear down pipeline, then play back
   const handleNextTake = useCallback(async () => {
     if (!state.recording) return
 
-    const startFrame = recordingStartFrameRef.current
+    const startFrame = stateRef.current.recordingStartFrame
     const endFrame = frameCountRef.current
     const params = paramsRef.current
     const rope = sessionRopeRef.current
@@ -1122,7 +1197,7 @@ function Practice() {
     const takeId = state.nextTakeId
     dispatch({ type: 'STOP_RECORDING', span, voicedRanges })
     dispatch({ type: 'START_PLAYBACK', takeId, skipSilence: false })
-    shouldAutoRestartRef.current = true
+    dispatch({ type: 'ECHO_AUTO_RESTART' })
     void playSpan(rope, span, voicedRanges, false)
     forceRender((n) => n + 1)
   }, [state.recording, state.nextTakeId, closePipeline, playSpan])
@@ -1133,11 +1208,11 @@ function Practice() {
       if (state.playingTakeId === take.id) {
         stopPlayback()
         dispatch({ type: 'STOP_PLAYBACK' })
-        echoGateUntilRef.current = 0
+        dispatch({ type: 'ECHO_RESET_GATE' })
         return
       }
       const rope = take.span.rope
-      echoGateUntilRef.current = Infinity
+      dispatch({ type: 'ECHO_GATE_BLOCK' })
       dispatch({ type: 'START_PLAYBACK', takeId: take.id, skipSilence })
       void playSpan(rope, take.span, take.voicedRanges, skipSilence)
     },
@@ -1156,10 +1231,6 @@ function Practice() {
     frameCountRef.current = 0
     decisionsRef.current = []
     levelRef.current = { rms: 0, speechDetected: false }
-    recordingStartFrameRef.current = 0
-    echoWasHearingRef.current = false
-    echoGateUntilRef.current = 0
-    shouldAutoRestartRef.current = false
     forceRender((n) => n + 1)
   }, [stopPlayback])
 
@@ -1176,7 +1247,7 @@ function Practice() {
   const handlePassageChange = useCallback(
     (id: string | null) => {
       if (id) {
-        setDrillIndex(0)
+        dispatch({ type: 'SET_DRILL_INDEX', index: 0 })
         void updateSettings({ practicePassageId: id })
       }
     },
@@ -1209,12 +1280,21 @@ function Practice() {
   )
 
   const handleDrillPrev = useCallback(() => {
-    setDrillIndex((i) => Math.max(0, i - 1))
+    dispatch({
+      type: 'SET_DRILL_INDEX',
+      index: Math.max(0, stateRef.current.drillIndex - 1),
+    })
   }, [])
 
   const handleDrillNext = useCallback(() => {
-    if (sentenceCountRef.current > 0) {
-      setDrillIndex((i) => Math.min(sentenceCountRef.current - 1, i + 1))
+    if (stateRef.current.sentenceCount > 0) {
+      dispatch({
+        type: 'SET_DRILL_INDEX',
+        index: Math.min(
+          stateRef.current.sentenceCount - 1,
+          stateRef.current.drillIndex + 1,
+        ),
+      })
     }
   }, [])
 
@@ -1225,12 +1305,9 @@ function Practice() {
     return randomize ? shuffleArray(raw) : raw
   }, [passage, randomize])
 
-  // Keep drill refs in sync for the playback-end handler
+  // Keep sentence count in the reducer for the playback-end handler
   useLayoutEffect(() => {
-    drillIndexRef.current = drillIndex
-  }, [drillIndex])
-  useLayoutEffect(() => {
-    sentenceCountRef.current = sentences.length
+    dispatch({ type: 'SET_SENTENCE_COUNT', count: sentences.length })
   }, [sentences.length])
   useLayoutEffect(() => {
     modeRef.current = mode
@@ -1553,11 +1630,11 @@ function Practice() {
                     textSizeClass,
                   )}
                 >
-                  {sentences[drillIndex]}
+                  {sentences[state.drillIndex]}
                 </div>
               </div>
               <DrillPager
-                sentenceIndex={drillIndex}
+                sentenceIndex={state.drillIndex}
                 sentenceCount={sentences.length}
                 autoAdvance={autoAdvance}
                 onAutoAdvanceChange={handleAutoAdvanceChange}
@@ -1590,13 +1667,13 @@ function Practice() {
         onOpenChange={setAudioSettingsOpen}
       />
 
-      {error && (
+      {state.error && (
         <div className="shrink-0 border-t border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
-          {error}
+          {state.error}
           <Button
             variant="link"
             className="ml-2 underline text-red-700 dark:text-red-300"
-            onClick={() => setError(null)}
+            onClick={() => dispatch({ type: 'SET_ERROR', error: null })}
           >
             Dismiss
           </Button>
@@ -1605,7 +1682,7 @@ function Practice() {
 
       <div className="shrink-0 border-t border-border">
         <StatusRow
-          phase={sessionPhase}
+          phase={state.sessionPhase}
           mode={mode}
           playing={state.playingTakeId !== null}
           timerActive={voicedStartMs !== null}
@@ -1615,6 +1692,7 @@ function Practice() {
           onStartSession={handleStartSession}
           onNextTake={handleNextTake}
           onEndSession={handleEndSession}
+          numTakes={state.takes.length}
         />
       </div>
     </main>
