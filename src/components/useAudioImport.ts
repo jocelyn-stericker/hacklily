@@ -5,7 +5,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
-import { frameTimeSec, totalFrames } from '#/lib/analysis/AnalysisFrame'
 import { AudioRope } from '#/lib/audio/AudioRope'
 import ImportWorker from '#/lib/workers/ImportWorker?worker'
 import type { ImportWorker as ImportWorkerInstance } from '#/lib/workers/ImportWorker'
