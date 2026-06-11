@@ -62,6 +62,10 @@ describe('settings', () => {
         browserPreprocessing: 'default',
         transcriptionMode: 'small',
         vowelChartAverages: 'hidden',
+        practiceTextSize: 'lg',
+        practicePassageId: 'rainbow',
+        practiceMode: 'echo',
+        practiceRandomize: false,
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.echoCancellation).toBeUndefined()
@@ -79,6 +83,10 @@ describe('settings', () => {
         browserPreprocessing: 'minimal',
         transcriptionMode: 'small',
         vowelChartAverages: 'hidden',
+        practiceTextSize: 'lg',
+        practicePassageId: 'rainbow',
+        practiceMode: 'echo',
+        practiceRandomize: false,
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.echoCancellation).toBe(false)
@@ -95,6 +103,10 @@ describe('settings', () => {
         browserPreprocessing: 'default',
         transcriptionMode: 'small',
         vowelChartAverages: 'hidden',
+        practiceTextSize: 'lg',
+        practicePassageId: 'rainbow',
+        practiceMode: 'echo',
+        practiceRandomize: false,
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.deviceId).toEqual({ exact: deviceId })
@@ -108,6 +120,10 @@ describe('settings', () => {
         browserPreprocessing: 'default',
         transcriptionMode: 'small',
         vowelChartAverages: 'hidden',
+        practiceTextSize: 'lg',
+        practicePassageId: 'rainbow',
+        practiceMode: 'echo',
+        practiceRandomize: false,
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.sampleRate).toEqual({ ideal: 48000 })
@@ -121,6 +137,10 @@ describe('settings', () => {
         browserPreprocessing: 'default',
         transcriptionMode: 'small',
         vowelChartAverages: 'hidden',
+        practiceTextSize: 'lg',
+        practicePassageId: 'rainbow',
+        practiceMode: 'echo',
+        practiceRandomize: false,
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.sampleRate).toEqual({ ideal: 44100 })
@@ -135,6 +155,10 @@ describe('settings', () => {
         browserPreprocessing: 'minimal',
         transcriptionMode: 'small',
         vowelChartAverages: 'hidden',
+        practiceTextSize: 'lg',
+        practicePassageId: 'rainbow',
+        practiceMode: 'echo',
+        practiceRandomize: false,
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.echoCancellation).toBe(false)
@@ -154,6 +178,10 @@ describe('settings', () => {
         browserPreprocessing: 'default',
         transcriptionMode: 'small',
         vowelChartAverages: 'hidden',
+        practiceTextSize: 'lg',
+        practicePassageId: 'rainbow',
+        practiceMode: 'echo',
+        practiceRandomize: false,
       }
       expect(preferredSampleRate(settings)).toBeUndefined()
     })
@@ -166,6 +194,10 @@ describe('settings', () => {
         browserPreprocessing: 'default',
         transcriptionMode: 'small',
         vowelChartAverages: 'hidden',
+        practiceTextSize: 'lg',
+        practicePassageId: 'rainbow',
+        practiceMode: 'echo',
+        practiceRandomize: false,
       }
       expect(preferredSampleRate(settings)).toBe(48000)
     })
@@ -178,6 +210,10 @@ describe('settings', () => {
         browserPreprocessing: 'default',
         transcriptionMode: 'small',
         vowelChartAverages: 'hidden',
+        practiceTextSize: 'lg',
+        practicePassageId: 'rainbow',
+        practiceMode: 'echo',
+        practiceRandomize: false,
       }
       expect(preferredSampleRate(settings)).toBe(44100)
     })
@@ -200,6 +236,10 @@ describe('settings', () => {
         browserPreprocessing: 'minimal',
         transcriptionMode: 'small',
         vowelChartAverages: 'hidden',
+        practiceTextSize: 'lg',
+        practicePassageId: 'rainbow',
+        practiceMode: 'echo',
+        practiceRandomize: false,
       }
       localStorage.setItem('braat:settings', JSON.stringify(initial))
 
@@ -239,6 +279,10 @@ describe('settings', () => {
       expect(stored).toHaveProperty('persistentMic')
       expect(stored).toHaveProperty('browserPreprocessing')
       expect(stored).toHaveProperty('vowelChartAverages')
+      expect(stored).toHaveProperty('practiceTextSize')
+      expect(stored).toHaveProperty('practicePassageId')
+      expect(stored).toHaveProperty('practiceMode')
+      expect(stored).toHaveProperty('practiceRandomize')
     })
   })
 
@@ -249,6 +293,10 @@ describe('settings', () => {
       expect(DEFAULT_SETTINGS.persistentMic).toBe(false)
       expect(DEFAULT_SETTINGS.browserPreprocessing).toBe('default')
       expect(DEFAULT_SETTINGS.vowelChartAverages).toBe('hidden')
+      expect(DEFAULT_SETTINGS.practiceTextSize).toBe('lg')
+      expect(DEFAULT_SETTINGS.practicePassageId).toBe('rainbow')
+      expect(DEFAULT_SETTINGS.practiceMode).toBe('echo')
+      expect(DEFAULT_SETTINGS.practiceRandomize).toBe(false)
     })
   })
 })

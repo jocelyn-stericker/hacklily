@@ -58,6 +58,31 @@ function normalizeTranscriptionMode(value: unknown): TranscriptionMode {
   }
 }
 
+export type PracticeTextSize = 'md' | 'lg' | 'xl' | '2xl'
+export type PracticeMode = 'echo' | 'on-demand'
+
+function normalizePracticeTextSize(value: unknown): PracticeTextSize {
+  switch (value) {
+    case 'md':
+    case 'lg':
+    case 'xl':
+    case '2xl':
+      return value
+    default:
+      return DEFAULT_SETTINGS.practiceTextSize
+  }
+}
+
+function normalizePracticeMode(value: unknown): PracticeMode {
+  switch (value) {
+    case 'echo':
+    case 'on-demand':
+      return value
+    default:
+      return DEFAULT_SETTINGS.practiceMode
+  }
+}
+
 export type SettingsRow = {
   inputDeviceId: string | null
   sampleRate: SampleRatePref
@@ -65,6 +90,10 @@ export type SettingsRow = {
   browserPreprocessing: BrowserPreprocessing
   transcriptionMode: TranscriptionMode
   vowelChartAverages: VowelChartAverages
+  practiceTextSize: PracticeTextSize
+  practicePassageId: string
+  practiceMode: PracticeMode
+  practiceRandomize: boolean
 }
 
 /** The subset of settings the audio capture path reads. */
@@ -80,6 +109,10 @@ export const DEFAULT_SETTINGS: SettingsRow = {
   browserPreprocessing: 'default',
   transcriptionMode: 'disabled',
   vowelChartAverages: 'hidden',
+  practiceTextSize: 'lg',
+  practicePassageId: 'rainbow',
+  practiceMode: 'echo',
+  practiceRandomize: false,
 }
 
 const STORAGE_KEY = 'braat:settings'
@@ -95,6 +128,8 @@ function readFromStorage(): SettingsRow {
         ...DEFAULT_SETTINGS,
         ...stored,
         transcriptionMode: normalizeTranscriptionMode(stored.transcriptionMode),
+        practiceTextSize: normalizePracticeTextSize(stored.practiceTextSize),
+        practiceMode: normalizePracticeMode(stored.practiceMode),
       }
     }
   } catch (err) {

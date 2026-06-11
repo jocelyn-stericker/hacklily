@@ -1,12 +1,13 @@
 export type PassageBase = {
   id: string
   title: string
-  source: string
-  sourceUrl: string
-  attribution: string
+  source?: string
+  sourceUrl?: string
+  attribution?: string
 }
 
 export type Passage =
+  | (PassageBase & { kind: 'blank' })
   | (PassageBase & { kind: 'passage'; passage: string })
   | (PassageBase & {
       kind: 'sentenceLists'
@@ -27,55 +28,8 @@ export const passages = [
       'Public domain. From Grant Fairbanks, Voice and Articulation Drillbook, 2nd edn (New York: Harper & Row, 1960), p. 127.',
   },
   {
-    id: 'grandfather',
-    title: 'The Grandfather Passage',
-    kind: 'passage',
-    passage:
-      'You wished to know all about my grandfather. Well, he is nearly ninety-three years old; he dresses himself in an ancient black frock coat, usually minus several buttons; yet he still thinks as swiftly as ever. A long, flowing beard clings to his chin, giving those who observe him a pronounced feeling of the utmost respect. When he speaks, his voice is just a bit cracked and quivers a trifle. Twice each day he plays skilfully and with zest upon our small organ. Except in the winter when the ooze or snow or ice prevents, he slowly takes a short walk in the open air each day. We have often urged him to walk more and smoke less, but he always answers, “Banana oil!” Grandfather likes to be modern in his language.',
-    source: 'University of York — Standardised reading passages',
-    sourceUrl:
-      'https://www.york.ac.uk/media/languageandlinguistics/documents/currentstudents/linguisticsresources/Standardised-reading.pdf',
-    attribution: 'Public domain. A standard speech-pathology reading passage.',
-  },
-  {
-    id: 'north-wind-and-the-sun',
-    title: 'The North Wind and the Sun',
-    kind: 'passage',
-    passage:
-      'The North Wind and the Sun were disputing which was the stronger, when a traveller came along wrapped in a warm cloak. They agreed that the one who first succeeded in making the traveller take his cloak off should be considered stronger than the other. Then the North Wind blew as hard as he could, but the more he blew the more closely did the traveller fold his cloak around him, and at last the North Wind gave up the attempt. Then the Sun shone out warmly, and immediately the traveller took off his cloak. And so the North Wind was obliged to confess that the Sun was the stronger of the two.',
-    source: 'University of York — Standardised reading passages',
-    sourceUrl:
-      'https://www.york.ac.uk/media/languageandlinguistics/documents/currentstudents/linguisticsresources/Standardised-reading.pdf',
-    attribution:
-      "Public domain (Aesop's fable). Orthographic version used as the illustrative passage of the International Phonetic Association.",
-  },
-  {
-    id: 'arthur-the-rat',
-    title: 'Arthur the Rat',
-    kind: 'passage',
-    passage:
-      'Once upon a time there was a rat who couldn\'t make up his mind. Whenever the other rats asked him if he would like to come out hunting with them, he would answer in a hoarse voice, "I don\'t know." And when they said, "Would you rather stay inside?" he wouldn\'t say yes, or no either. He\'d always shirk making a choice.\n\nOne fine day his aunt Josephine said to him, "Now look here! No one will ever care for you if you carry on like this. You have no more mind of your own than a greasy old blade of grass!" The young rat coughed and looked wise, as usual, but said nothing.\n\n"Don\'t you think so?" said his aunt stamping with her foot, for she couldn\'t bear to see the young rat so coldblooded.\n\n"I don\'t know," was all he ever answered, and then he\'d walk off to think for an hour or more, whether he would stay in his hole in the ground or go out into the loft.\n\nOne night the rats heard a loud noise in the loft. It was a very dreary old place. The roof let the rain come washing in, the beams and rafters had all rotted through, so that the whole thing was quite unsafe.\n\nAt last one of the joists gave way, and the beams fell with one edge on the floor. The walls shook, and the cupola fell off, and all the rats\' hair stood on end with fear and horror.\n\n"This won\'t do," said their leader. "We can\'t stay cooped up here any longer." So they sent out scouts to search for a new home.\n\nA little later on that evening the scouts came back and said they had found an old- fashioned horse-barn where there would be room and board for all of them.\n\nThe leader gave the order at once, "Company fall in!" and the rats crawled out of their holes right away and stood on the floor in a long line.\n\nJust then the old rat caught sight of young Arthur - that was the name of the shirker. He wasn\'t in the line, and he wasn\'t exactly outside it - he stood just by it.\n\n"Come on, get in line!" growled the old rat coarsely. "Of course you\'re coming too?"\n\n"I don\'t know," said Arthur calmly.\n\n"Why, the idea of it! You don\'t think it\'s safe here any more, do you?"\n\n"I\'m not certain," said Arthur undaunted. "The roof may not fall down yet."\n\n"Well," said the old rat, "we can\'t wait for you to join us." Then he turned to the others and shouted, "Right about face! March!" and the long line marched out of the barn while the young rat watched them. "I think I\'ll go tomorrow," he said to himself, "but then again, perhaps I won\'t - it\'s so nice and snug here. I guess I\'ll go back to my hole under the log for a while just to make up my mind."\n\nBut during the night there was a big crash. Down came beams, rafters, joists - the whole business.\n\nNext morning - it was a foggy day - some men came to look over the damage. It seemed odd that the old building was not haunted by rats. But at last one of them happened to move a board, and he caught sight of a young rat, quite dead, half in and half out of his hole.\n\nThus the shirker got his due, and there was no mourning for him.',
-    source: 'University of York — Standardised reading passages',
-    sourceUrl:
-      'https://www.york.ac.uk/media/languageandlinguistics/documents/currentstudents/linguisticsresources/Standardised-reading.pdf',
-    attribution:
-      'Public domain. A traditional phonetics reading passage, popularized by W. C. Greet (Columbia University).',
-  },
-  {
-    id: 'comma-gets-a-cure',
-    title: 'Comma Gets a Cure',
-    kind: 'passage',
-    passage:
-      "Well, here's a story for you: Sarah Perry was a veterinary nurse who had been working daily at an old zoo in a deserted district of the territory, so she was very happy to start a new job at a superb private practice in North Square near the Duke Street Tower. That area was much nearer for her and more to her liking. Even so, on her first morning, she felt stressed. She ate a bowl of porridge, checked herself in the mirror and washed her face in a hurry. Then she put on a plain yellow dress and a fleece jacket, picked up her kit and headed for work.\n\nWhen she got there, there was a woman with a goose waiting for her. The woman gave Sarah an official letter from the vet. The letter implied that the animal could be suffering from a rare form of foot and mouth disease, which was surprising, because normally you would only expect to see it in a dog or a goat. Sarah was sentimental, so this made her feel sorry for the beautiful bird.\n\nBefore long, that itchy goose began to strut around the office like a lunatic, which made an unsanitary mess. The goose's owner, Mary Harrison, kept calling, \"Comma, Comma,\" which Sarah thought was an odd choice for a name. Comma was strong and huge, so it would take some force to trap her, but Sarah had a different idea. First she tried gently stroking the goose's lower back with her palm, then singing a tune to her. Finally, she administered ether. Her efforts were not futile. In no time, the goose began to tire, so Sarah was able to hold onto Comma and give her a relaxing bath.\n\nOnce Sarah had managed to bathe the goose, she wiped her off with a cloth and laid her on her right side. Then Sarah confirmed the vet’s diagnosis. Almost immediately, she remembered an effective treatment that required her to measure out a lot of medicine. Sarah warned that this course of treatment might be expensive—either five or six times the cost of penicillin. I can’t imagine paying so much, but Mrs. Harrison—a millionaire lawyer—thought it was a fair price for a cure.",
-    source: 'International Dialects of English Archive (IDEA)',
-    sourceUrl:
-      'https://www.dialectsarchive.com/wp-content/uploads/2012/10/COMMA-GETS-A-CURE.pdf',
-    attribution:
-      'Written by Jill McCullough & Barbara Somerville, edited by Douglas N. Honorof. Comma Gets a Cure and derivative works may be used freely for any purpose without special permission provided the present sentence and the following copyright notification accompany the passage in print, if reproduced in print, and in audio format in the case of a sound recording: Copyright 2000 Douglas N. Honorof, Jill McCullough & Barbara Somerville. All rights reserved.',
-  },
-  {
     id: 'harvard-sentences',
-    title: 'Harvard Sentences (IEEE)',
+    title: 'Harvard Sentences (drills)',
     kind: 'sentenceLists',
     lists: [
       [
@@ -948,5 +902,57 @@ export const passages = [
     sourceUrl: 'https://www.cs.columbia.edu/~hgs/audio/harvard.html',
     attribution:
       'From IEEE, "IEEE Recommended Practice for Speech Quality Measurements," IEEE Transactions on Audio and Electroacoustics 17(3):225-246, 1969 (the "1965 Revised List of Phonetically Balanced Sentences").',
+  },
+  {
+    id: 'grandfather',
+    title: 'The Grandfather Passage',
+    kind: 'passage',
+    passage:
+      'You wished to know all about my grandfather. Well, he is nearly ninety-three years old; he dresses himself in an ancient black frock coat, usually minus several buttons; yet he still thinks as swiftly as ever. A long, flowing beard clings to his chin, giving those who observe him a pronounced feeling of the utmost respect. When he speaks, his voice is just a bit cracked and quivers a trifle. Twice each day he plays skilfully and with zest upon our small organ. Except in the winter when the ooze or snow or ice prevents, he slowly takes a short walk in the open air each day. We have often urged him to walk more and smoke less, but he always answers, “Banana oil!” Grandfather likes to be modern in his language.',
+    source: 'University of York — Standardised reading passages',
+    sourceUrl:
+      'https://www.york.ac.uk/media/languageandlinguistics/documents/currentstudents/linguisticsresources/Standardised-reading.pdf',
+    attribution: 'Public domain. A standard speech-pathology reading passage.',
+  },
+  {
+    id: 'north-wind-and-the-sun',
+    title: 'The North Wind and the Sun',
+    kind: 'passage',
+    passage:
+      'The North Wind and the Sun were disputing which was the stronger, when a traveller came along wrapped in a warm cloak. They agreed that the one who first succeeded in making the traveller take his cloak off should be considered stronger than the other. Then the North Wind blew as hard as he could, but the more he blew the more closely did the traveller fold his cloak around him, and at last the North Wind gave up the attempt. Then the Sun shone out warmly, and immediately the traveller took off his cloak. And so the North Wind was obliged to confess that the Sun was the stronger of the two.',
+    source: 'University of York — Standardised reading passages',
+    sourceUrl:
+      'https://www.york.ac.uk/media/languageandlinguistics/documents/currentstudents/linguisticsresources/Standardised-reading.pdf',
+    attribution:
+      "Public domain (Aesop's fable). Orthographic version used as the illustrative passage of the International Phonetic Association.",
+  },
+  {
+    id: 'arthur-the-rat',
+    title: 'Arthur the Rat',
+    kind: 'passage',
+    passage:
+      'Once upon a time there was a rat who couldn\'t make up his mind. Whenever the other rats asked him if he would like to come out hunting with them, he would answer in a hoarse voice, "I don\'t know." And when they said, "Would you rather stay inside?" he wouldn\'t say yes, or no either. He\'d always shirk making a choice.\n\nOne fine day his aunt Josephine said to him, "Now look here! No one will ever care for you if you carry on like this. You have no more mind of your own than a greasy old blade of grass!" The young rat coughed and looked wise, as usual, but said nothing.\n\n"Don\'t you think so?" said his aunt stamping with her foot, for she couldn\'t bear to see the young rat so coldblooded.\n\n"I don\'t know," was all he ever answered, and then he\'d walk off to think for an hour or more, whether he would stay in his hole in the ground or go out into the loft.\n\nOne night the rats heard a loud noise in the loft. It was a very dreary old place. The roof let the rain come washing in, the beams and rafters had all rotted through, so that the whole thing was quite unsafe.\n\nAt last one of the joists gave way, and the beams fell with one edge on the floor. The walls shook, and the cupola fell off, and all the rats\' hair stood on end with fear and horror.\n\n"This won\'t do," said their leader. "We can\'t stay cooped up here any longer." So they sent out scouts to search for a new home.\n\nA little later on that evening the scouts came back and said they had found an old- fashioned horse-barn where there would be room and board for all of them.\n\nThe leader gave the order at once, "Company fall in!" and the rats crawled out of their holes right away and stood on the floor in a long line.\n\nJust then the old rat caught sight of young Arthur - that was the name of the shirker. He wasn\'t in the line, and he wasn\'t exactly outside it - he stood just by it.\n\n"Come on, get in line!" growled the old rat coarsely. "Of course you\'re coming too?"\n\n"I don\'t know," said Arthur calmly.\n\n"Why, the idea of it! You don\'t think it\'s safe here any more, do you?"\n\n"I\'m not certain," said Arthur undaunted. "The roof may not fall down yet."\n\n"Well," said the old rat, "we can\'t wait for you to join us." Then he turned to the others and shouted, "Right about face! March!" and the long line marched out of the barn while the young rat watched them. "I think I\'ll go tomorrow," he said to himself, "but then again, perhaps I won\'t - it\'s so nice and snug here. I guess I\'ll go back to my hole under the log for a while just to make up my mind."\n\nBut during the night there was a big crash. Down came beams, rafters, joists - the whole business.\n\nNext morning - it was a foggy day - some men came to look over the damage. It seemed odd that the old building was not haunted by rats. But at last one of them happened to move a board, and he caught sight of a young rat, quite dead, half in and half out of his hole.\n\nThus the shirker got his due, and there was no mourning for him.',
+    source: 'University of York — Standardised reading passages',
+    sourceUrl:
+      'https://www.york.ac.uk/media/languageandlinguistics/documents/currentstudents/linguisticsresources/Standardised-reading.pdf',
+    attribution:
+      'Public domain. A traditional phonetics reading passage, popularized by W. C. Greet (Columbia University).',
+  },
+  {
+    id: 'comma-gets-a-cure',
+    title: 'Comma Gets a Cure',
+    kind: 'passage',
+    passage:
+      "Well, here's a story for you: Sarah Perry was a veterinary nurse who had been working daily at an old zoo in a deserted district of the territory, so she was very happy to start a new job at a superb private practice in North Square near the Duke Street Tower. That area was much nearer for her and more to her liking. Even so, on her first morning, she felt stressed. She ate a bowl of porridge, checked herself in the mirror and washed her face in a hurry. Then she put on a plain yellow dress and a fleece jacket, picked up her kit and headed for work.\n\nWhen she got there, there was a woman with a goose waiting for her. The woman gave Sarah an official letter from the vet. The letter implied that the animal could be suffering from a rare form of foot and mouth disease, which was surprising, because normally you would only expect to see it in a dog or a goat. Sarah was sentimental, so this made her feel sorry for the beautiful bird.\n\nBefore long, that itchy goose began to strut around the office like a lunatic, which made an unsanitary mess. The goose's owner, Mary Harrison, kept calling, \"Comma, Comma,\" which Sarah thought was an odd choice for a name. Comma was strong and huge, so it would take some force to trap her, but Sarah had a different idea. First she tried gently stroking the goose's lower back with her palm, then singing a tune to her. Finally, she administered ether. Her efforts were not futile. In no time, the goose began to tire, so Sarah was able to hold onto Comma and give her a relaxing bath.\n\nOnce Sarah had managed to bathe the goose, she wiped her off with a cloth and laid her on her right side. Then Sarah confirmed the vet’s diagnosis. Almost immediately, she remembered an effective treatment that required her to measure out a lot of medicine. Sarah warned that this course of treatment might be expensive—either five or six times the cost of penicillin. I can’t imagine paying so much, but Mrs. Harrison—a millionaire lawyer—thought it was a fair price for a cure.",
+    source: 'International Dialects of English Archive (IDEA)',
+    sourceUrl:
+      'https://www.dialectsarchive.com/wp-content/uploads/2012/10/COMMA-GETS-A-CURE.pdf',
+    attribution:
+      'Written by Jill McCullough & Barbara Somerville, edited by Douglas N. Honorof. Comma Gets a Cure and derivative works may be used freely for any purpose without special permission provided the present sentence and the following copyright notification accompany the passage in print, if reproduced in print, and in audio format in the case of a sound recording: Copyright 2000 Douglas N. Honorof, Jill McCullough & Barbara Somerville. All rights reserved.',
+  },
+  {
+    id: 'freePractice',
+    title: 'Free practice',
+    kind: 'blank',
   },
 ] satisfies readonly Passage[]

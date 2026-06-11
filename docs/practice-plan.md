@@ -22,7 +22,7 @@ against `main` before each milestone; the VAD and audio layers move.
 | Batch analysis          | `ImportWorker` path in `useAudioImport.ts` — mono PCM → `AnalysisChunk[]` + sealed rope                                                                                        |
 | Passages                | `src/lib/passages.ts` — `passage` and `sentenceLists` kinds                                                                                                                    |
 | Settings                | `src/lib/settings.ts` / `useSettings`                                                                                                                                          |
-| Reduced-state precedent | `src/routes/ipa.tsx` — a second route that reuses the audio stack                                                                                                              |
+| Reduced-state precedent | `src/routes/ipa.tsx` — a second route                                                                                                                                          |
 
 The only genuinely new logic is: (1) an **utterance/take detector** layered on
 the VAD frame stream, (2) the **echo state machine** (listening → playing →

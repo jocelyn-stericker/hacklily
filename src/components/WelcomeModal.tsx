@@ -3,7 +3,13 @@
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import { Link } from '@tanstack/react-router'
-import { ChevronRight, FolderOpen, Languages, MicVocal } from 'lucide-react'
+import {
+  ChevronRight,
+  FolderOpen,
+  Languages,
+  MicVocal,
+  Metronome,
+} from 'lucide-react'
 
 import braatPng from '#/braat.png'
 import { Button } from '#/components/ui/button'
@@ -57,6 +63,14 @@ export function WelcomeModal({
               <span className="text-xs font-medium text-muted-foreground">
                 Other tools
               </span>
+              <Link
+                to="/practice"
+                className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted"
+              >
+                <Metronome className="size-4 shrink-0 text-muted-foreground" />
+                <span className="flex-1">Practice</span>
+                <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+              </Link>
               <Link
                 to="/ipa"
                 className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted"

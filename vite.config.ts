@@ -15,10 +15,11 @@ const config = defineConfig({
     rollupOptions: {
       // Multi-page build: each HTML entry boots the same SPA, but ships its own
       // <head> so the page's metadata is visible before JS runs (we don't SSR).
-      // The host serves /ipa from ipa.html.
+      // The host serves /ipa from ipa.html and /practice from practice.html.
       input: {
         main: 'index.html',
         ipa: 'ipa.html',
+        practice: 'practice.html',
       },
     },
   },
