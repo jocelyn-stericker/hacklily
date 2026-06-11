@@ -10,7 +10,13 @@ import {
   Sparkle,
   Sparkles,
 } from 'lucide-react'
-import { useEffect, useImperativeHandle, useRef, useState } from 'react'
+import {
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import type { RefObject } from 'react'
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
@@ -246,10 +252,23 @@ function ChunkOverlay({
     .filter((f) => f != null)
     .reduce((m, a, _, d) => m + a / d.length, 0)
 
-  const topText =
-    brightness > 0
-      ? `${result?.text} (${toPercent(brightness)} bright)`
-      : result?.text
+  let topText: React.ReactNode = result?.text?.trim() ?? null
+
+  if (!topText) {
+    topText = <span className="text-primary-foreground/50 italic">Voiced</span>
+  }
+
+  // HACK: f0 is set in-place on frames, and then doesn't change; memoize on countt
+  // to avoid re-sorting on every render
+  const voicedFrames = chunk.frames.filter((a) => a.f0 > 0)
+  const sortedPitches = useMemo(
+    () => voicedFrames.map((a) => a.f0).sort((a, b) => a - b),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [voicedFrames.length],
+  )
+  const medianF0 = Math.round(
+    sortedPitches[Math.floor(sortedPitches.length / 2)] ?? 0,
+  )
 
   return (
     <div
@@ -258,14 +277,26 @@ function ChunkOverlay({
     >
       <div className="flex items-center gap-1 px-1" style={{ height: '50%' }}>
         {renderIcon()}
-        {result ? (
+        {topText || medianF0 > 0 || brightness > 0 ? (
           <Tooltip>
             <TooltipTrigger
               render={<span className="truncate text-[10px] leading-tight" />}
             >
               {topText}
             </TooltipTrigger>
-            <TooltipContent>{topText}</TooltipContent>
+            <TooltipContent>
+              <div className="flex flex-col">
+                <div>{topText}</div>
+                {medianF0 > 0 || brightness > 0 ? (
+                  <div className="flex flex-row text-primary-foreground/70 gap-3">
+                    {medianF0 > 0 ? <div>{medianF0} Hz</div> : null}
+                    {brightness > 0 ? (
+                      <div>{`${toPercent(brightness)} bright`}</div>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+            </TooltipContent>
           </Tooltip>
         ) : null}
       </div>
