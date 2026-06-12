@@ -345,11 +345,13 @@ function TooltipButton({
 }: React.ComponentProps<typeof Button> & { label: string }) {
   return (
     <Tooltip>
-      <TooltipTrigger>
-        <Button {...props} aria-label={label}>
-          {children}
-        </Button>
-      </TooltipTrigger>
+      <TooltipTrigger
+        render={
+          <Button {...props} aria-label={label}>
+            {children}
+          </Button>
+        }
+      />
       <TooltipContent sideOffset={8}>{label}</TooltipContent>
     </Tooltip>
   )
@@ -1345,15 +1347,17 @@ function Practice() {
       {state.takes.map((t, i) => renderTakeRow(t, i === 0))}
       {state.takes.length > 0 && (
         <Tooltip>
-          <TooltipTrigger>
-            <Button
-              variant="outline"
-              className="mt-3 w-full text-sm"
-              onClick={handleClearSession}
-            >
-              Clear session
-            </Button>
-          </TooltipTrigger>
+          <TooltipTrigger
+            render={
+              <Button
+                variant="outline"
+                className="mt-3 w-full text-sm"
+                onClick={handleClearSession}
+              >
+                Clear session
+              </Button>
+            }
+          />
           <TooltipContent sideOffset={8}>
             Remove all takes from this session
           </TooltipContent>
@@ -1372,7 +1376,7 @@ function Practice() {
   const renderLatestTakeRow = () => {
     if (!latestTake) {
       return (
-        <DrawerTrigger className="w-full">
+        <DrawerTrigger asChild>
           <Button
             variant="ghost"
             className="w-full justify-start border-t border-b-0! border-x-0! border-border rounded-none px-4 py-3 text-left group"
@@ -1386,8 +1390,11 @@ function Practice() {
 
     const isPlaying = state.playingTakeId === latestTake.id
     return (
-      <DrawerTrigger className="w-full">
-        <button className="w-full justify-start border-t border-b-0! border-x-0! border-border rounded-none px-4 py-3 text-left group flex gap-1 align-center">
+      <DrawerTrigger asChild>
+        <button
+          type="button"
+          className="w-full justify-start border-t border-b-0! border-x-0! border-border rounded-none px-4 py-3 text-left group flex gap-1 align-center"
+        >
           <span className="flex size-6 items-center justify-center rounded-full bg-muted text-xs">
             {isPlaying ? (
               <StopCircle className="size-3" />
@@ -1412,32 +1419,36 @@ function Practice() {
           <ChevronUp className="size-4 text-muted-foreground/40 transition-transform" />
           <span className="ml-auto flex items-center gap-2">
             <Tooltip>
-              <TooltipTrigger>
-                <span className="inline-flex">
-                  <ArrowUpRight className="size-4 text-muted-foreground" />
-                </span>
-              </TooltipTrigger>
+              <TooltipTrigger
+                render={
+                  <span className="inline-flex">
+                    <ArrowUpRight className="size-4 text-muted-foreground" />
+                  </span>
+                }
+              />
               <TooltipContent sideOffset={8}>Analyze in Braat</TooltipContent>
             </Tooltip>
             <Tooltip>
-              <TooltipTrigger>
-                <span
-                  className="inline-flex cursor-pointer"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleStarTake(latestTake.id)
-                  }}
-                >
-                  <Star
-                    className={cn(
-                      'size-4',
-                      state.referenceTakeId === latestTake.id
-                        ? 'fill-yellow-400 text-yellow-400'
-                        : 'text-muted-foreground',
-                    )}
-                  />
-                </span>
-              </TooltipTrigger>
+              <TooltipTrigger
+                render={
+                  <span
+                    className="inline-flex cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleStarTake(latestTake.id)
+                    }}
+                  >
+                    <Star
+                      className={cn(
+                        'size-4',
+                        state.referenceTakeId === latestTake.id
+                          ? 'fill-yellow-400 text-yellow-400'
+                          : 'text-muted-foreground',
+                      )}
+                    />
+                  </span>
+                }
+              />
               <TooltipContent sideOffset={8}>
                 {state.referenceTakeId === latestTake.id
                   ? 'Unstar reference'
