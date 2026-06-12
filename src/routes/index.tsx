@@ -2,7 +2,7 @@
 
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useBlocker } from '@tanstack/react-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { toast } from 'sonner'
@@ -15,7 +15,7 @@ import { SpeechStrip } from '#/components/SpeechStrip'
 import type { SpeechStripHandle } from '#/components/SpeechStrip'
 import { Toolbar } from '#/components/Toolbar'
 import { TranscriptStore } from '#/components/TranscriptStore'
-import { useAudioImport } from '#/components/useAudioImport'
+import { importMonoPcm, useAudioImport } from '#/components/useAudioImport'
 import { useAudioPlayback } from '#/components/useAudioPlayback'
 import { autoTier, useChunkWorkQueue } from '#/components/useChunkWorkQueue'
 import { useMicCapture } from '#/components/useMicCapture'
@@ -41,6 +41,7 @@ import { exportWav } from '#/lib/audio/exportWav'
 import { getOrCreateSharedAudioContext } from '#/lib/audio/sharedAudioContext'
 import type { Viewport } from '#/lib/jobs/schedule'
 import { RopeGainCache } from '#/lib/loudness/ropeLoudness'
+import { takePracticeData } from '#/lib/practiceHandoff'
 import { preferredSampleRate, updateSettings } from '#/lib/settings'
 import { consumeBundledCrashFlag } from '#/lib/transcription/transcribeBundled'
 import { cn } from '#/lib/utils'
@@ -102,6 +103,34 @@ function App() {
       replaceAnalysis(newAnalysis)
     },
   })
+
+  useEffect(() => {
+    const tryConsumeHandoff = () => {
+      const data = takePracticeData()
+      if (!data) return
+      void handleAnalyze(async () => {
+        const { analysis, ropes: newRopes } = await importMonoPcm(
+          data.pcm,
+          data.sampleRate,
+        )
+        setRopes(newRopes)
+        replaceAnalysis(analysis)
+        const trackDurationSec = newRopes.reduce(
+          (sum, rope) => sum + rope.length / rope.sampleRate,
+          0,
+        )
+        return { trackDurationSec }
+      })
+    }
+
+    tryConsumeHandoff()
+
+    const onMessage = (e: MessageEvent) => {
+      if (e.data === 'braat:handoff') tryConsumeHandoff()
+    }
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+  }, [handleAnalyze])
 
   const recordingStartIndexRef = useRef(0)
   const recordingDurationSecRef = useRef(0)
@@ -443,20 +472,11 @@ function App() {
   const playDisabled = !ropes.some((rope) => rope.length > 0)
   const exportAudioDisabled = playDisabled || isExporting
 
-  useEffect(() => {
-    if (!hasData) {
-      return
-    }
-
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault()
-    }
-
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload)
-    }
-  }, [hasData])
+  const blocker = useBlocker({
+    shouldBlockFn: () => hasData,
+    enableBeforeUnload: true,
+    withResolver: true,
+  })
 
   const isRecording =
     status.value === 'recording' || status.value === 'analyzing'
@@ -565,6 +585,9 @@ function App() {
         confirmingNew={confirmingAction !== null}
         onCancelNew={handleCancelNew}
         onConfirmNew={handleConfirmNew}
+        confirmingNavigate={blocker.status === 'blocked'}
+        onCancelNavigate={() => blocker.reset?.()}
+        onConfirmNavigate={() => blocker.proceed?.()}
         showAudioSettings={status.value === 'editAudioSettings'}
         onCloseAudioSettings={handleOpenAudioSettings}
         showTranscriptionSettings={showTranscriptionSettings}

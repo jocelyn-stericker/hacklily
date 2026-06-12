@@ -23,6 +23,9 @@ export function Dialogs({
   confirmingNew,
   onCancelNew,
   onConfirmNew,
+  confirmingNavigate,
+  onCancelNavigate,
+  onConfirmNavigate,
   showAudioSettings,
   onCloseAudioSettings,
   showTranscriptionSettings,
@@ -35,6 +38,9 @@ export function Dialogs({
   confirmingNew: boolean
   onCancelNew: () => void
   onConfirmNew: () => void
+  confirmingNavigate: boolean
+  onCancelNavigate: () => void
+  onConfirmNavigate: () => void
   showAudioSettings: boolean
   onCloseAudioSettings: () => void
   showTranscriptionSettings: boolean
@@ -79,6 +85,27 @@ export function Dialogs({
               Cancel
             </Button>
             <Button variant="destructive" onClick={onConfirmNew}>
+              Discard
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={confirmingNavigate}
+        onOpenChange={(open) => !open && onCancelNavigate()}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Discard unsaved changes?</DialogTitle>
+            <DialogDescription>
+              Your current recording will be lost.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={onCancelNavigate}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={onConfirmNavigate}>
               Discard
             </Button>
           </DialogFooter>

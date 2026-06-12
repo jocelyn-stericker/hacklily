@@ -2,22 +2,35 @@
 
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
-import { createFileRoute, Link } from '@tanstack/react-router'
+// A route for voice practice sessions: read a passage, record takes,
+// hear them back — either automatically when you stop talking (echo mode) or on
+// demand — and load any take into the main analysis view in one click. Mobile is
+// the primary target.
+//
+// Future directions (not implemented):
+//  - Persistence of takes across reloads (take model is already serialization-
+//    friendly; needs OPFS/IndexedDB + quota + privacy copy).
+//  - Reference-clip import (an external file as the ★ reference).
+//  - Segment-event adoption in the index route (replacing its run-derivation
+//    with `UtteranceTracker`).
+//  - Rope segmentation for unbounded sessions (§5 option (a)).
+//  - A single VAD "sensitivity" knob (item 3 of the `TODO(vad)` list).
+
+import { createFileRoute, Link, useBlocker } from '@tanstack/react-router'
 import {
   ArrowLeft,
-  ArrowUpRight,
+  ChartSpline,
   ChevronLeft,
   ChevronRight,
   ChevronUp,
   ExternalLink,
   GripHorizontal,
-  Lock,
   Mic,
+  Pin,
   Play,
   Settings,
   Shuffle,
   Square,
-  Star,
   StopCircle,
 } from 'lucide-react'
 import {
@@ -29,12 +42,22 @@ import {
   useRef,
   useState,
 } from 'react'
+import { useHotkeys } from 'react-hotkeys-hook'
 
 import { AudioSettingsModal } from '#/components/AudioSettingsModal'
 import { Button } from '#/components/ui/button'
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '#/components/ui/dialog'
+import {
   Drawer,
   DrawerContent,
+  DrawerDescription,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
@@ -74,9 +97,11 @@ import type {
 } from '#/lib/audio/AudioRope'
 import { AudioRope as AudioRopeClass } from '#/lib/audio/AudioRope'
 import type { AudioSpan } from '#/lib/audio/AudioSpan'
+import { readAudioSpan } from '#/lib/audio/AudioSpan'
 import { getOrCreateSharedAudioContext } from '#/lib/audio/sharedAudioContext'
 import { RopeGainCache } from '#/lib/loudness/ropeLoudness'
 import { passages } from '#/lib/passages'
+import { stashTake } from '#/lib/practiceHandoff'
 import type { PracticeTextSize } from '#/lib/settings'
 import { preferredSampleRate } from '#/lib/settings'
 import { assertUnreachable, cn } from '#/lib/utils'
@@ -109,7 +134,7 @@ type PracticeState = {
   sessionPhase: 'idle' | 'recording' | 'playback'
   echoWasHearing: boolean
   echoGateUntilTs: number
-  echoAutoRestart: boolean
+  pendingRestart: boolean
   error: string | null
   recordingStartFrame: number
   shuttingDown: boolean
@@ -127,13 +152,13 @@ type PracticeAction =
     }
   | { type: 'START_PLAYBACK'; takeId: number; skipSilence: boolean }
   | { type: 'STOP_PLAYBACK' }
-  | { type: 'STAR_TAKE'; takeId: number }
+  | { type: 'PIN_TAKE'; takeId: number }
   | { type: 'CLEAR_SESSION' }
   | { type: 'SET_SESSION_PHASE'; phase: PracticeState['sessionPhase'] }
   | { type: 'STOP_SESSION' }
   | { type: 'ECHO_SPEECH_HEARD' }
   | { type: 'ECHO_UTTERANCE_DONE' }
-  | { type: 'ECHO_AUTO_RESTART' }
+  | { type: 'PENDING_RESTART' }
   | { type: 'ECHO_COOLDOWN'; untilTs: number }
   | { type: 'ECHO_GATE_BLOCK' }
   | { type: 'ECHO_RESET_GATE' }
@@ -158,7 +183,7 @@ function initialPracticeState(): PracticeState {
     sessionPhase: 'idle',
     echoWasHearing: false,
     echoGateUntilTs: 0,
-    echoAutoRestart: false,
+    pendingRestart: false,
     error: null,
     recordingStartFrame: 0,
     shuttingDown: false,
@@ -180,7 +205,7 @@ function practiceReducer(
         sessionPhase: 'recording',
         echoWasHearing: false,
         echoGateUntilTs: 0,
-        echoAutoRestart: false,
+        pendingRestart: false,
         recordingStartFrame: 0,
         shuttingDown: false,
       }
@@ -200,7 +225,6 @@ function practiceReducer(
         nextTakeId: state.nextTakeId + 1,
         recording: false,
         recordingStartTime: null,
-        referenceTakeId: state.referenceTakeId ?? newTake.id,
       }
     }
 
@@ -214,7 +238,7 @@ function practiceReducer(
     case 'STOP_PLAYBACK':
       return { ...state, playingTakeId: null, playingSkipSilence: false }
 
-    case 'STAR_TAKE':
+    case 'PIN_TAKE':
       return {
         ...state,
         referenceTakeId:
@@ -233,7 +257,7 @@ function practiceReducer(
         sessionPhase: 'idle',
         echoWasHearing: false,
         echoGateUntilTs: 0,
-        echoAutoRestart: false,
+        pendingRestart: false,
         shuttingDown: false,
       }
 
@@ -247,8 +271,8 @@ function practiceReducer(
         echoGateUntilTs: Infinity,
       }
 
-    case 'ECHO_AUTO_RESTART':
-      return { ...state, echoAutoRestart: true }
+    case 'PENDING_RESTART':
+      return { ...state, pendingRestart: true }
 
     case 'ECHO_COOLDOWN':
       return { ...state, echoGateUntilTs: action.untilTs }
@@ -455,7 +479,6 @@ function LevelMeter({
 
 function StatusRow({
   phase,
-  mode,
   playing,
   timerActive,
   elapsedMs,
@@ -466,7 +489,6 @@ function StatusRow({
   numTakes,
 }: {
   phase: 'idle' | 'recording' | 'playback'
-  mode: 'echo' | 'on-demand'
   playing: boolean
   timerActive: boolean
   elapsedMs: number
@@ -480,20 +502,16 @@ function StatusRow({
   if (phase === 'idle') {
     return (
       <div className="flex flex-col items-center gap-2 px-4 py-4">
-        <button
-          type="button"
-          onClick={onStartSession}
-          className="flex items-center gap-2 rounded-full bg-red-500 px-6 py-3 text-base font-medium text-white shadow-md hover:bg-red-600 active:scale-95 transition-all cursor-pointer"
-        >
-          <Mic className="size-5" />
-          {numTakes > 0
-            ? 'Continue practice session'
-            : 'Start practice session'}
-        </button>
-        <p className="flex items-center gap-1.5 text-xs text-muted-foreground italic">
-          <Lock className="size-3" />
-          Free and open source. Audio stays in your browser.
-        </p>
+        <Button size="lg" onClick={onStartSession}>
+          <Mic />
+          {numTakes > 0 ? 'Resume recording' : 'Start recording'}
+        </Button>
+        {numTakes > 0 ? null : (
+          <p className="max-w-md text-center text-xs text-muted-foreground">
+            Recording and analysis happen in your browser; nothing is uploaded.
+            Takes are kept in memory and discarded when you leave the page.
+          </p>
+        )}
       </div>
     )
   }
@@ -504,34 +522,6 @@ function StatusRow({
       <span className="relative inline-flex size-3 rounded-full bg-red-500" />
     </span>
   )
-
-  if (mode === 'echo') {
-    const statusText = playing
-      ? 'Playing back…'
-      : voiced
-        ? 'Recording…'
-        : 'Listening…'
-    return (
-      <div className="relative flex items-center px-4 py-3">
-        <div className="absolute left-0 right-0 top-0 bottom-0 flex justify-center">
-          <Button
-            aria-label="End session"
-            onClick={onEndSession}
-            size="icon-lg"
-            className="rounded-full bg-red-500 text-white hover:bg-red-600 self-center"
-          >
-            <Square className="size-4 fill-current" />
-          </Button>
-        </div>
-        <div className="flex items-center gap-2 shrink-0 z-1">
-          {playing ? <Play className="size-4" /> : indicator}
-          <span className="text-sm font-medium">{statusText}</span>
-        </div>
-        <div className="flex-1" />
-        <LevelMeter intensity={voiced ? 1.0 : 0.0} voiced={voiced} />
-      </div>
-    )
-  }
 
   return (
     <div className="relative flex items-center px-4 py-3">
@@ -632,11 +622,8 @@ function PracticeSettings({
           />
         </div>
         <div className="pt-3 px-2 flex items-center justify-between">
-          <Label className="text-xs">End take</Label>
+          <Label className="text-xs">Stop take when I stop speaking</Label>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">
-              {mode === 'echo' ? 'Automatic' : 'On-demand'}
-            </span>
             <Switch
               checked={mode === 'echo'}
               onCheckedChange={(checked) =>
@@ -740,10 +727,10 @@ function DrillPager({
           <ChevronRight className="size-4" />
         </TooltipButton>
       </div>
-      <div className="flex items-center justify-center gap-6">
+      <div className="flex items-center justify-center gap-x-6 gap-y-2 flex-wrap">
         <Label className="flex items-center gap-2 text-xs text-muted-foreground">
           <Switch checked={autoAdvance} onCheckedChange={onAutoAdvanceChange} />
-          Auto-advance per take
+          Next sentence after each take
         </Label>
         <Label className="flex items-center gap-2 text-xs text-muted-foreground">
           <Switch checked={randomize} onCheckedChange={onRandomizeChange} />
@@ -794,6 +781,352 @@ function PassageFooter({
 }
 
 // ---------------------------------------------------------------------------
+// Practice — sub-components
+// ---------------------------------------------------------------------------
+
+function PracticeTakeRow({
+  take,
+  isLatest,
+  referenceTakeId,
+  playingTakeId,
+  onPlay,
+  onAnalyze,
+  onStar,
+}: {
+  take: Take
+  isLatest: boolean
+  referenceTakeId: number | null
+  playingTakeId: number | null
+  onPlay: (take: Take) => void
+  onAnalyze: (take: Take) => void
+  onStar: (takeId: number) => void
+}) {
+  const isReference = referenceTakeId === take.id
+  const isPlaying = playingTakeId === take.id
+
+  const approxDuration =
+    take.voicedRanges.length > 0
+      ? formatDuration(
+          take.voicedRanges[take.voicedRanges.length - 1]!.endSec -
+            take.voicedRanges[0]!.startSec,
+        )
+      : '…'
+
+  return (
+    <div
+      className={cn(
+        'flex items-center gap-2 rounded-lg px-3 py-2.5 hover:bg-muted/50 transition-colors',
+        isReference && 'bg-muted/30',
+      )}
+    >
+      <span className="text-sm font-medium tabular-nums">#{take.id}</span>
+      <span className="text-sm tabular-nums text-muted-foreground">
+        {approxDuration}
+      </span>
+      {isLatest && (
+        <span className="text-xs text-muted-foreground">just now</span>
+      )}
+      <div className="ml-auto flex items-center gap-1">
+        <TooltipButton
+          label={isPlaying ? 'Stop' : 'Play'}
+          variant="ghost"
+          size="icon-sm"
+          onClick={() => onPlay(take)}
+        >
+          {isPlaying ? (
+            <StopCircle className="size-3" />
+          ) : (
+            <Play className="size-3" />
+          )}
+        </TooltipButton>
+        <TooltipButton
+          label="Analyze"
+          variant="ghost"
+          size="icon-sm"
+          onClick={() => onAnalyze(take)}
+        >
+          <ChartSpline className="size-3" />
+        </TooltipButton>
+        <TooltipButton
+          label={isReference ? 'Unpin reference' : 'Star as reference'}
+          variant="ghost"
+          size="icon-sm"
+          onClick={() => onStar(take.id)}
+        >
+          <Pin
+            className={cn(
+              'size-3',
+              isReference
+                ? 'fill-sky-400 text-sky-400'
+                : 'text-muted-foreground',
+            )}
+          />
+        </TooltipButton>
+      </div>
+    </div>
+  )
+}
+
+function PracticeTakesList({
+  takes,
+  referenceTakeId,
+  playingTakeId,
+  onPlayTake,
+  onAnalyzeTake,
+  onStarTake,
+  onClearSession,
+}: {
+  takes: Take[]
+  referenceTakeId: number | null
+  playingTakeId: number | null
+  onPlayTake: (take: Take) => void
+  onAnalyzeTake: (take: Take) => void
+  onStarTake: (takeId: number) => void
+  onClearSession: () => void
+}) {
+  const referenceTake = takes.find((t) => t.id === referenceTakeId)
+
+  return (
+    <>
+      {referenceTake && (
+        <div className="rounded-lg border border-border bg-muted/30 p-3">
+          <div className="flex items-center gap-2 text-sm">
+            <Pin className="size-4 fill-sky-400 text-sky-400" />
+            <span className="font-medium">Reference</span>
+            <span className="text-muted-foreground tabular-nums">
+              #{referenceTake.id}
+            </span>
+            <div className="ml-auto flex items-center gap-1">
+              <TooltipButton
+                label="Play"
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => onPlayTake(referenceTake)}
+              >
+                <Play className="size-3" />
+              </TooltipButton>
+            </div>
+          </div>
+        </div>
+      )}
+      {takes.map((t, i) => (
+        <PracticeTakeRow
+          key={t.id}
+          take={t}
+          isLatest={i === 0}
+          referenceTakeId={referenceTakeId}
+          playingTakeId={playingTakeId}
+          onPlay={onPlayTake}
+          onAnalyze={onAnalyzeTake}
+          onStar={onStarTake}
+        />
+      ))}
+      {takes.length > 0 && (
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button variant="ghost" onClick={onClearSession}>
+                Clear session
+              </Button>
+            }
+          />
+          <TooltipContent sideOffset={8}>
+            Remove all takes from this session
+          </TooltipContent>
+        </Tooltip>
+      )}
+      {takes.length === 0 && (
+        <p className="text-center text-sm text-muted-foreground py-8">
+          No takes yet. Record your first take to get started.
+        </p>
+      )}
+    </>
+  )
+}
+
+function PracticeLatestTakeRow({
+  latestTake,
+  playingTakeId,
+  referenceTakeId,
+  takeCount,
+  onPlayTake,
+  onStarTake,
+}: {
+  latestTake: Take | undefined
+  playingTakeId: number | null
+  referenceTakeId: number | null
+  takeCount: number
+  onPlayTake: (take: Take) => void
+  onStarTake: (takeId: number) => void
+}) {
+  if (!latestTake) {
+    return (
+      <DrawerTrigger asChild>
+        <button
+          type="button"
+          className="flex w-full items-center border-t border-border px-4 py-3 text-sm text-muted-foreground hover:bg-muted/50 transition-colors cursor-pointer"
+        >
+          <span>No takes yet</span>
+          <span className="ml-auto flex items-center gap-1 text-xs">
+            Takes
+            <ChevronUp className="size-4" />
+          </span>
+        </button>
+      </DrawerTrigger>
+    )
+  }
+
+  const isPlaying = playingTakeId === latestTake.id
+  const isReference = referenceTakeId === latestTake.id
+  const vr = latestTake.voicedRanges
+  const duration =
+    vr.length > 0
+      ? formatDuration(vr[vr.length - 1]!.endSec - vr[0]!.startSec)
+      : '…'
+
+  return (
+    <div className="flex items-center gap-1 border-t border-border px-2">
+      <TooltipButton
+        label={isPlaying ? 'Stop' : 'Play'}
+        variant="ghost"
+        size="icon"
+        onClick={() => onPlayTake(latestTake)}
+      >
+        {isPlaying ? (
+          <StopCircle className="size-4" />
+        ) : (
+          <Play className="size-4" />
+        )}
+      </TooltipButton>
+      <DrawerTrigger asChild>
+        <button
+          type="button"
+          className="flex min-w-0 flex-1 items-center gap-2 self-stretch rounded-md px-2 py-3 text-sm hover:bg-muted/50 transition-colors cursor-pointer"
+        >
+          <span className="font-medium tabular-nums">#{latestTake.id}</span>
+          <span className="tabular-nums text-muted-foreground">{duration}</span>
+          <span className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
+            Takes ({takeCount})
+            <ChevronUp className="size-4" />
+          </span>
+        </button>
+      </DrawerTrigger>
+      <TooltipButton
+        label={isReference ? 'Unpin reference' : 'Star as reference'}
+        variant="ghost"
+        size="icon"
+        onClick={() => onStarTake(latestTake.id)}
+      >
+        <Pin
+          className={cn(
+            'size-4',
+            isReference ? 'fill-sky-400 text-sky-400' : 'text-muted-foreground',
+          )}
+        />
+      </TooltipButton>
+    </div>
+  )
+}
+
+function PracticeTakesDrawer({
+  open,
+  onOpenChange,
+  takes,
+  referenceTakeId,
+  playingTakeId,
+  takeCount,
+  onPlayTake,
+  onAnalyzeTake,
+  onStarTake,
+  onClearSession,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  takes: Take[]
+  referenceTakeId: number | null
+  playingTakeId: number | null
+  takeCount: number
+  onPlayTake: (take: Take) => void
+  onAnalyzeTake: (take: Take) => void
+  onStarTake: (takeId: number) => void
+  onClearSession: () => void
+}) {
+  return (
+    <Drawer open={open} onOpenChange={onOpenChange}>
+      <PracticeLatestTakeRow
+        latestTake={takes[0]}
+        playingTakeId={playingTakeId}
+        referenceTakeId={referenceTakeId}
+        takeCount={takeCount}
+        onPlayTake={onPlayTake}
+        onStarTake={onStarTake}
+      />
+      <DrawerContent className="max-h-[70vh]">
+        <DrawerHeader>
+          <DrawerTitle className="flex items-center justify-center gap-2">
+            <GripHorizontal className="size-4 text-muted-foreground" />
+            Takes ({takeCount})
+          </DrawerTitle>
+          <DrawerDescription />
+        </DrawerHeader>
+        <div className="flex flex-col gap-1 overflow-y-auto px-4 pb-4">
+          <PracticeTakesList
+            takes={takes}
+            referenceTakeId={referenceTakeId}
+            playingTakeId={playingTakeId}
+            onPlayTake={onPlayTake}
+            onAnalyzeTake={onAnalyzeTake}
+            onStarTake={onStarTake}
+            onClearSession={onClearSession}
+          />
+        </div>
+      </DrawerContent>
+    </Drawer>
+  )
+}
+
+function PracticeTakesSidebar({
+  takes,
+  referenceTakeId,
+  playingTakeId,
+  takeCount,
+  onPlayTake,
+  onAnalyzeTake,
+  onStarTake,
+  onClearSession,
+}: {
+  takes: Take[]
+  referenceTakeId: number | null
+  playingTakeId: number | null
+  takeCount: number
+  onPlayTake: (take: Take) => void
+  onAnalyzeTake: (take: Take) => void
+  onStarTake: (takeId: number) => void
+  onClearSession: () => void
+}) {
+  return (
+    <>
+      <div className="flex items-center justify-center gap-2 px-4 py-3 border-b border-border">
+        <span className="text-sm font-medium">Takes ({takeCount})</span>
+      </div>
+      <div className="flex-1 overflow-y-auto">
+        <div className="flex flex-col gap-1 px-4 py-3">
+          <PracticeTakesList
+            takes={takes}
+            referenceTakeId={referenceTakeId}
+            playingTakeId={playingTakeId}
+            onPlayTake={onPlayTake}
+            onAnalyzeTake={onAnalyzeTake}
+            onStarTake={onStarTake}
+            onClearSession={onClearSession}
+          />
+        </div>
+      </div>
+    </>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Practice — main component
 // ---------------------------------------------------------------------------
 
@@ -812,6 +1145,7 @@ function Practice() {
 
   const micActive = state.sessionPhase === 'recording'
   const [voicedStartMs, setVoicedStartMs] = useState<number | null>(null)
+  const voicedStartMsRef = useRef<number | null>(null)
   const [elapsedMs, setElapsedMs] = useState(0)
   const [displayLevel, setDisplayLevel] = useState({
     intensity: 0,
@@ -820,6 +1154,14 @@ function Practice() {
 
   // UI toggles
   const [audioSettingsOpen, setAudioSettingsOpen] = useState(false)
+  const [takesDrawerOpen, setTakesDrawerOpen] = useState(false)
+  const [confirmingClearSession, setConfirmingClearSession] = useState(false)
+
+  const blocker = useBlocker({
+    shouldBlockFn: () => state.takes.length > 0,
+    enableBeforeUnload: true,
+    withResolver: true,
+  })
 
   // Refs — mutable state that shouldn't trigger re-renders
   const sessionRopeRef = useRef<AudioRopeClass | null>(null)
@@ -844,6 +1186,7 @@ function Practice() {
     sessionRopeRef.current = null
     paramsRef.current = null
     levelRef.current = { rms: 0, speechDetected: false }
+    voicedStartMsRef.current = null
     setVoicedStartMs(null)
     dispatch({ type: 'START_RECORDING', startTime: Date.now() })
   }, [])
@@ -864,15 +1207,15 @@ function Practice() {
       return
     }
     dispatch({ type: 'STOP_PLAYBACK' })
-    if (autoAdvance && stateRef.current.sentenceCount > 0) {
-      const next = Math.min(
-        stateRef.current.sentenceCount - 1,
-        stateRef.current.drillIndex + 1,
-      )
-      dispatch({ type: 'SET_DRILL_INDEX', index: next })
-    }
-    const echoAutoRestart = stateRef.current.echoAutoRestart
-    if (echoAutoRestart) {
+    const pendingRestart = stateRef.current.pendingRestart
+    if (pendingRestart) {
+      if (autoAdvance && stateRef.current.sentenceCount > 0) {
+        const next = Math.min(
+          stateRef.current.sentenceCount - 1,
+          stateRef.current.drillIndex + 1,
+        )
+        dispatch({ type: 'SET_DRILL_INDEX', index: next })
+      }
       startPipelineAndRecord()
       dispatch({
         type: 'ECHO_COOLDOWN',
@@ -931,13 +1274,14 @@ function Practice() {
     const id = setInterval(() => {
       const { rms, speechDetected } = levelRef.current
       const intensity = Math.min(1, Math.sqrt(rms) * 5)
-      if (speechDetected && voicedStartMs === null) {
-        setVoicedStartMs(Date.now())
+      if (speechDetected && voicedStartMsRef.current === null) {
+        voicedStartMsRef.current = Date.now()
+        setVoicedStartMs(voicedStartMsRef.current)
       }
       setDisplayLevel({ intensity, voiced: speechDetected })
     }, 60)
     return () => clearInterval(id)
-  }, [micActive, voicedStartMs])
+  }, [micActive])
 
   // Elapsed timer during recording — only starts once the first voiced frame is detected
   useEffect(() => {
@@ -1045,7 +1389,10 @@ function Practice() {
     dispatch({ type: 'ECHO_GATE_BLOCK' })
 
     void (async () => {
-      if (stateRef.current.recording && stateRef.current.echoWasHearing) {
+      if (
+        stateRef.current.recording &&
+        (stateRef.current.echoWasHearing || modeRef.current === 'on-demand')
+      ) {
         await closePipeline()
 
         const startFrame = stateRef.current.recordingStartFrame
@@ -1115,8 +1462,8 @@ function Practice() {
 
     const takeId = state.nextTakeId
     dispatch({ type: 'STOP_RECORDING', span, voicedRanges, endTimeSec })
-    dispatch({ type: 'START_PLAYBACK', takeId, skipSilence: false })
-    dispatch({ type: 'ECHO_AUTO_RESTART' })
+    dispatch({ type: 'START_PLAYBACK', takeId, skipSilence: true })
+    dispatch({ type: 'PENDING_RESTART' })
     forceRender((n) => n + 1)
   }, [state.recording, state.nextTakeId, closePipeline])
 
@@ -1137,16 +1484,34 @@ function Practice() {
 
   // Star a take as reference
   const handleStarTake = useCallback((takeId: number) => {
-    dispatch({ type: 'STAR_TAKE', takeId })
+    dispatch({ type: 'PIN_TAKE', takeId })
+  }, [])
+
+  const handleAnalyzeTake = useCallback(async (take: Take) => {
+    const newWindow = window.open('/', '_blank')
+    if (!newWindow) return
+    const pcm = await readAudioSpan(take.span)
+    stashTake({ pcm, sampleRate: take.span.rope.sampleRate })
+    newWindow.postMessage('braat:handoff', window.location.origin)
   }, [])
 
   // Clear session
-  const handleClearSession = useCallback(() => {
+  const doClearSession = useCallback(() => {
     dispatch({ type: 'CLEAR_SESSION' })
     frameCountRef.current = 0
     decisionsRef.current = []
     levelRef.current = { rms: 0, speechDetected: false }
     forceRender((n) => n + 1)
+    setConfirmingClearSession(false)
+  }, [])
+
+  const handleClearSession = useCallback(() => {
+    setTakesDrawerOpen(false)
+    setConfirmingClearSession(true)
+  }, [])
+
+  const handleCancelClearSession = useCallback(() => {
+    setConfirmingClearSession(false)
   }, [])
 
   // --- Derived data ---
@@ -1213,6 +1578,56 @@ function Practice() {
     }
   }, [])
 
+  useHotkeys(
+    'space',
+    (e) => {
+      e.preventDefault()
+      if (stateRef.current.sessionPhase === 'idle') {
+        handleStartSession()
+      } else if (stateRef.current.recording) {
+        if (voicedStartMsRef.current === null) {
+          handleEndSession()
+        } else {
+          void handleNextTake()
+        }
+      }
+    },
+    [stateRef, handleStartSession, handleEndSession, handleNextTake],
+  )
+
+  useHotkeys(
+    'esc',
+    (e) => {
+      e.preventDefault()
+      handleEndSession()
+    },
+    [handleEndSession],
+  )
+
+  useHotkeys(
+    'arrowleft',
+    (e) => {
+      if (passage.kind === 'sentenceLists') {
+        e.preventDefault()
+        handleDrillPrev()
+      }
+    },
+    [passage.kind, handleDrillPrev],
+    { enabled: passage.kind === 'sentenceLists' },
+  )
+
+  useHotkeys(
+    'arrowright',
+    (e) => {
+      if (passage.kind === 'sentenceLists') {
+        e.preventDefault()
+        handleDrillNext()
+      }
+    },
+    [passage.kind, handleDrillNext],
+    { enabled: passage.kind === 'sentenceLists' },
+  )
+
   const textSizeClass = TEXT_SIZE_CLASS[settings.practiceTextSize]
 
   const sentences: readonly string[] = useMemo(() => {
@@ -1232,260 +1647,6 @@ function Practice() {
   })
 
   const selectedTitle = passage.title
-
-  const referenceTake = state.referenceTakeId
-    ? state.takes.find((t) => t.id === state.referenceTakeId)
-    : state.takes[0]
-
-  const takeCount = state.takes.length
-
-  // --- Render helpers ---
-  const renderTakeRow = (take: Take, isLatest: boolean) => {
-    const isReference = state.referenceTakeId === take.id
-    const isPlaying = state.playingTakeId === take.id
-
-    const approxDuration =
-      take.voicedRanges.length > 0
-        ? formatDuration(
-            take.voicedRanges[take.voicedRanges.length - 1]!.endSec -
-              take.voicedRanges[0]!.startSec,
-          )
-        : '…'
-
-    return (
-      <div
-        key={take.id}
-        className={cn(
-          'flex items-center gap-2 rounded-lg px-3 py-2.5 hover:bg-muted/50 transition-colors',
-          isReference && 'bg-muted/30',
-        )}
-      >
-        <span className="text-sm font-medium tabular-nums">#{take.id}</span>
-        <span className="text-sm tabular-nums text-muted-foreground">
-          {approxDuration}
-        </span>
-        {isLatest && (
-          <span className="text-xs text-muted-foreground">just now</span>
-        )}
-        <div className="ml-auto flex items-center gap-1">
-          <TooltipButton
-            label={isPlaying ? 'Stop' : 'Play'}
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => handlePlayTake(take, false)}
-          >
-            {isPlaying ? (
-              <StopCircle className="size-3" />
-            ) : (
-              <Play className="size-3" />
-            )}
-          </TooltipButton>
-          <TooltipButton
-            label="Analyze"
-            variant="ghost"
-            size="icon-sm"
-            disabled
-          >
-            <ArrowUpRight className="size-3" />
-          </TooltipButton>
-          <TooltipButton
-            label={isReference ? 'Unstar reference' : 'Star as reference'}
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => handleStarTake(take.id)}
-          >
-            <Star
-              className={cn(
-                'size-3',
-                isReference
-                  ? 'fill-yellow-400 text-yellow-400'
-                  : 'text-muted-foreground',
-              )}
-            />
-          </TooltipButton>
-        </div>
-      </div>
-    )
-  }
-
-  const renderTakesList = () => (
-    <>
-      {referenceTake && (
-        <div className="rounded-lg border border-border bg-muted/30 p-3">
-          <div className="flex items-center gap-2 text-sm">
-            <Star className="size-4 fill-yellow-400 text-yellow-400" />
-            <span className="font-medium">Reference</span>
-            <span className="text-muted-foreground tabular-nums">
-              #{referenceTake.id}
-            </span>
-            <div className="ml-auto flex items-center gap-1">
-              <TooltipButton
-                label="Play"
-                variant="ghost"
-                size="icon-sm"
-                onClick={() => handlePlayTake(referenceTake, false)}
-              >
-                <Play className="size-3" />
-              </TooltipButton>
-              <TooltipButton
-                label="A/B latest"
-                variant="ghost"
-                size="icon-sm"
-                onClick={() => {
-                  const latest = state.takes[0]
-                  if (latest && latest.id !== referenceTake.id) {
-                    handlePlayTake(referenceTake, false)
-                  }
-                }}
-              >
-                A/B
-              </TooltipButton>
-            </div>
-          </div>
-        </div>
-      )}
-      {state.takes.map((t, i) => renderTakeRow(t, i === 0))}
-      {state.takes.length > 0 && (
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Button
-                variant="outline"
-                className="mt-3 w-full text-sm"
-                onClick={handleClearSession}
-              >
-                Clear session
-              </Button>
-            }
-          />
-          <TooltipContent sideOffset={8}>
-            Remove all takes from this session
-          </TooltipContent>
-        </Tooltip>
-      )}
-      {state.takes.length === 0 && (
-        <p className="text-center text-sm text-muted-foreground py-8">
-          No takes yet. Record your first take to get started.
-        </p>
-      )}
-    </>
-  )
-
-  const latestTake = state.takes[0]
-
-  const renderLatestTakeRow = () => {
-    if (!latestTake) {
-      return (
-        <DrawerTrigger asChild>
-          <Button
-            variant="ghost"
-            className="w-full justify-start border-t border-b-0! border-x-0! border-border rounded-none px-4 py-3 text-left group"
-          >
-            <span className="text-sm text-muted-foreground">No takes yet</span>
-            <ChevronUp className="absolute left-1/2 -translate-x-1/2 size-4 text-muted-foreground/40 transition-transform" />
-          </Button>
-        </DrawerTrigger>
-      )
-    }
-
-    const isPlaying = state.playingTakeId === latestTake.id
-    return (
-      <DrawerTrigger asChild>
-        <button
-          type="button"
-          className="w-full justify-start border-t border-b-0! border-x-0! border-border rounded-none px-4 py-3 text-left group flex gap-1 align-center"
-        >
-          <span className="flex size-6 items-center justify-center rounded-full bg-muted text-xs">
-            {isPlaying ? (
-              <StopCircle className="size-3" />
-            ) : (
-              <Play className="size-3" />
-            )}
-          </span>
-          <span className="text-sm font-medium tabular-nums">
-            #{latestTake.id}
-          </span>
-          <span className="text-sm tabular-nums text-muted-foreground">
-            {(() => {
-              const vr = latestTake.voicedRanges
-              if (vr.length > 0) {
-                return formatDuration(
-                  vr[vr.length - 1]!.endSec - vr[0]!.startSec,
-                )
-              }
-              return '…'
-            })()}
-          </span>
-          <ChevronUp className="size-4 text-muted-foreground/40 transition-transform" />
-          <span className="ml-auto flex items-center gap-2">
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <span className="inline-flex">
-                    <ArrowUpRight className="size-4 text-muted-foreground" />
-                  </span>
-                }
-              />
-              <TooltipContent sideOffset={8}>Analyze in Braat</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <span
-                    className="inline-flex cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleStarTake(latestTake.id)
-                    }}
-                  >
-                    <Star
-                      className={cn(
-                        'size-4',
-                        state.referenceTakeId === latestTake.id
-                          ? 'fill-yellow-400 text-yellow-400'
-                          : 'text-muted-foreground',
-                      )}
-                    />
-                  </span>
-                }
-              />
-              <TooltipContent sideOffset={8}>
-                {state.referenceTakeId === latestTake.id
-                  ? 'Unstar reference'
-                  : 'Reference take'}
-              </TooltipContent>
-            </Tooltip>
-          </span>
-        </button>
-      </DrawerTrigger>
-    )
-  }
-
-  const renderTakesDrawer = () => (
-    <Drawer>
-      {renderLatestTakeRow()}
-      <DrawerContent className="max-h-[70vh]">
-        <DrawerHeader>
-          <DrawerTitle className="flex items-center justify-center gap-2">
-            <GripHorizontal className="size-4 text-muted-foreground" />
-            Takes ({takeCount})
-          </DrawerTitle>
-        </DrawerHeader>
-        <div className="flex flex-col gap-1 px-4 pb-4">{renderTakesList()}</div>
-      </DrawerContent>
-    </Drawer>
-  )
-
-  const renderTakesSidebar = () => (
-    <>
-      <div className="flex items-center justify-center gap-2 px-4 py-3 border-b border-border">
-        <span className="text-sm font-medium">Takes ({takeCount})</span>
-      </div>
-      <div className="flex-1 overflow-y-auto">
-        <div className="flex flex-col gap-1 px-4 py-3">{renderTakesList()}</div>
-      </div>
-    </>
-  )
 
   // --- Main render ---
   return (
@@ -1528,12 +1689,12 @@ function Practice() {
       </header>
 
       <div className="flex-1 flex flex-col lg:flex-row min-h-0">
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto lg:pb-32">
           {passage.kind === 'passage' ? (
             <div className="mx-auto max-w-3xl px-4 py-6">
               <div
                 className={cn(
-                  'leading-relaxed text-justify font-serif',
+                  'leading-relaxed text-justify hyphens-auto font-serif',
                   textSizeClass,
                 )}
               >
@@ -1580,11 +1741,33 @@ function Practice() {
         </div>
 
         <div className="hidden lg:flex flex-col w-72 shrink-0 border-l border-border">
-          {renderTakesSidebar()}
+          <PracticeTakesSidebar
+            takes={state.takes}
+            referenceTakeId={state.referenceTakeId}
+            playingTakeId={state.playingTakeId}
+            takeCount={state.takes.length}
+            onPlayTake={(take) => handlePlayTake(take, true)}
+            onAnalyzeTake={handleAnalyzeTake}
+            onStarTake={handleStarTake}
+            onClearSession={handleClearSession}
+          />
         </div>
       </div>
 
-      <div className="lg:hidden">{renderTakesDrawer()}</div>
+      <div className="lg:hidden">
+        <PracticeTakesDrawer
+          open={takesDrawerOpen}
+          onOpenChange={setTakesDrawerOpen}
+          takes={state.takes}
+          referenceTakeId={state.referenceTakeId}
+          playingTakeId={state.playingTakeId}
+          takeCount={state.takes.length}
+          onPlayTake={(take) => handlePlayTake(take, true)}
+          onAnalyzeTake={handleAnalyzeTake}
+          onStarTake={handleStarTake}
+          onClearSession={handleClearSession}
+        />
+      </div>
 
       <AudioSettingsModal
         open={audioSettingsOpen}
@@ -1604,10 +1787,15 @@ function Practice() {
         </div>
       )}
 
-      <div className="shrink-0 border-t border-border">
+      <div
+        className={cn(
+          'shrink-0 border-t border-border',
+          state.sessionPhase !== 'idle' &&
+            'lg:fixed lg:bottom-4 lg:left-4 lg:z-20 lg:w-80 lg:rounded-xl lg:border lg:bg-background lg:shadow-lg',
+        )}
+      >
         <StatusRow
           phase={state.sessionPhase}
-          mode={mode}
           playing={state.playingTakeId !== null}
           timerActive={voicedStartMs !== null}
           elapsedMs={elapsedMs}
@@ -1619,6 +1807,48 @@ function Practice() {
           numTakes={state.takes.length}
         />
       </div>
+
+      {blocker.status === 'blocked' && (
+        <Dialog open onOpenChange={() => blocker.reset()}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Discard practice session?</DialogTitle>
+            </DialogHeader>
+            <DialogDescription>
+              Your takes will be lost if you leave this page.
+            </DialogDescription>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => blocker.reset()}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={() => blocker.proceed()}>
+                Leave
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+      {confirmingClearSession && (
+        <Dialog
+          open
+          onOpenChange={(open) => !open && handleCancelClearSession()}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Discard practice session?</DialogTitle>
+            </DialogHeader>
+            <DialogDescription>All takes will be removed.</DialogDescription>
+            <DialogFooter>
+              <Button variant="outline" onClick={handleCancelClearSession}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={doClearSession}>
+                Discard
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </main>
   )
 }
