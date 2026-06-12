@@ -4,7 +4,6 @@
 
 import type { AudioRope } from '#/lib/audio/AudioRope'
 import type { AudioRopeSourceNode } from '#/lib/audio/AudioRopeSourceNode'
-import audioWorkletUrl from '#/lib/audio/AudioRopeSourceNode?worker&url'
 import { TypedEventTarget } from '#/lib/TypedEventTarget'
 import { assertUnreachable } from '#/lib/utils'
 
@@ -19,8 +18,12 @@ type AudioPlaybackOutEvents = {
 /**
  * Plays one or more `AudioRope`s laid end-to-end through the
  * `AudioRopeSourceNode` worklet. The worklet handles the seek and any
- * per-rope resampling; this wrapper owns the `AudioContext` and tracks the
- * playback position off `context.currentTime`.
+ * per-rope resampling; this wrapper tracks the playback position off
+ * `context.currentTime`.
+ *
+ * The caller owns the `AudioContext` and is responsible for its lifecycle.
+ * This pipeline suspends the context on stop rather than closing it so the
+ * same context can be reused across plays without requiring a new gesture.
  *
  * Stopping is driven by the worklet: it posts a `RopeEndEvent` when it reaches
  * the end of the final (sealed) rope, carrying the context time its last sample
@@ -54,18 +57,22 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
     gains,
     startAtSec,
     signal,
-    sampleRate,
+    context,
+    moduleReady,
   }: {
     ropes: Array<AudioRope>
     /** Loudness-normalization gain per rope, aligned to `ropes`. */
     gains: Array<number>
     startAtSec: number
     signal: AbortSignal
-    sampleRate?: number
+    /** Shared AudioContext to play through. Must already be resumed or resuming. */
+    context: AudioContext
+    /** Promise that resolves once the audio-rope-source-node worklet is registered. */
+    moduleReady: Promise<void>
   }) {
     super()
     signal.addEventListener('abort', this.#stop)
-    this.#play(ropes, gains, startAtSec, sampleRate).catch((err) => {
+    this.#play(context, moduleReady, ropes, gains, startAtSec).catch((err) => {
       console.error(LOG, 'playback failed:', err)
       this.emit('error', {
         error: err instanceof Error ? err.message : String(err),
@@ -74,10 +81,11 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
   }
 
   async #play(
+    context: AudioContext,
+    moduleReady: Promise<void>,
     ropes: Array<AudioRope>,
     gains: Array<number>,
     requestedStartAtSec: number,
-    sampleRate?: number,
   ) {
     this.#duration = ropes.reduce(
       (sum, rope) => sum + rope.length / rope.sampleRate,
@@ -87,16 +95,15 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
       requestedStartAtSec <= this.#duration - 0.05 ? requestedStartAtSec : 0
     this.#startTimeSec = startAtSec
 
-    const context = new AudioContext({ sampleRate, latencyHint: 'interactive' })
     this.#context = context
 
-    await context.audioWorklet.addModule(audioWorkletUrl)
-    // Aborted while the module was loading -- release the context and bail.
+    // Belt-and-suspenders resume before waiting on the module: a UA-initiated
+    // suspension (tab switch) may have hit between the gesture unlock and now.
+    await context.resume()
+    await moduleReady
+
+    // Aborted while awaiting module load -- #stop has already suspended the context.
     if (this.#stopCtrl.signal.aborted) {
-      void context.close().catch((err) => {
-        console.warn(LOG, 'context.close during abort:', err)
-      })
-      this.#context = null
       return
     }
 
@@ -158,18 +165,21 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
       cancelAnimationFrame(this.#animFrameId)
       this.#animFrameId = null
     }
-    if (this.#node && this.#context) {
-      try {
-        this.#node.port.postMessage(null)
-        this.#node.disconnect()
-      } catch (err) {
-        console.warn(LOG, 'stop cleanup error:', err)
+    if (this.#context) {
+      if (this.#node) {
+        try {
+          this.#node.port.postMessage(null)
+          this.#node.disconnect()
+        } catch (err) {
+          console.warn(LOG, 'stop cleanup error:', err)
+        }
+        this.#node = null
       }
-      // close() is async; swallow its rejection rather than floating it.
-      void this.#context.close().catch((err) => {
-        console.warn(LOG, 'context.close during stop:', err)
+      // Suspend rather than close: the shared context persists for reuse, so
+      // the next play does not need a new gesture on iOS Safari.
+      void this.#context.suspend().catch((err) => {
+        console.warn(LOG, 'context.suspend during stop:', err)
       })
-      this.#node = null
       this.#context = null
     }
     this.#stopCtrl.abort()

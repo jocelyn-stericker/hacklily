@@ -10,7 +10,6 @@ import type {
   AnalysisParams,
 } from '#/lib/analysis/AnalysisFrame'
 import { resolveSpectrogramParams } from '#/lib/analysis/SpectrogramProcessor'
-import audioWorkletUrl from '#/lib/audio/AudioRingWriter?worker&url'
 import type { AudioRingWriterNode } from '#/lib/audio/AudioRingWriter'
 import type {
   AudioRopeGrow,
@@ -21,7 +20,6 @@ import type { AudioCaptureSettings } from '#/lib/settings'
 import {
   buildAudioConstraints,
   DEFAULT_SETTINGS,
-  preferredSampleRate,
   updateSettings,
 } from '#/lib/settings'
 import { TypedEventTarget } from '#/lib/TypedEventTarget'
@@ -180,10 +178,16 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
     signal,
     settings = DEFAULT_SETTINGS,
     features = {},
+    context,
+    captureModuleReady,
   }: {
     signal: AbortSignal
     settings?: AudioCaptureSettings
     features?: MicCaptureFeatures
+    /** Shared AudioContext to record through. Must already be resumed or resuming. */
+    context: AudioContext
+    /** Promise that resolves once the audio-ring-writer worklet is registered. */
+    captureModuleReady: Promise<void>
   }) {
     super()
     this.#settings = settings
@@ -197,10 +201,10 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
       this.#resolveInitComplete = resolve
     })
     signal.addEventListener('abort', this.#stop)
-    void this.#start()
+    void this.#start(context, captureModuleReady)
   }
 
-  async #start() {
+  async #start(context: AudioContext, captureModuleReady: Promise<void>) {
     const settings = this.#settings
     try {
       const key = streamKey(settings)
@@ -218,21 +222,14 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
       if (this.#features.formant) this.#formantWorker = new FormantWorker()
       if (this.#features.vad) this.#vadWorker = new VadWorker()
 
-      const preferredRate = preferredSampleRate(settings)
+      this.#context = context
       console.log(
         LOG,
-        'start: creating AudioContext with sampleRate:',
-        preferredRate ?? '(browser default)',
-      )
-      this.#context = new AudioContext({
-        sampleRate: preferredRate,
-        latencyHint: 'interactive',
-      })
-      console.log(
-        LOG,
-        'start: AudioContext actual sampleRate:',
+        'start: AudioContext sampleRate:',
         this.#context.sampleRate,
       )
+
+      await captureModuleReady
 
       const constraints = buildAudioConstraints(settings)
       console.log(LOG, 'start: requested audio constraints:', constraints)
@@ -273,7 +270,6 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
       console.log(LOG, 'start: track label:', track?.label)
 
       this.#sampleRate = this.#context.sampleRate
-      await this.#context.audioWorklet.addModule(audioWorkletUrl)
       this.#workletNode = new AudioWorkletNode(
         this.#context,
         'audio-ring-writer',
@@ -683,7 +679,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
 
     this.#sourceNode?.disconnect()
     this.#workletNode?.disconnect()
-    await this.#context?.close()
+    await this.#context?.suspend()
     if (this.#sab) {
       const ctrl = new Int32Array(this.#sab, 0, 2)
       Atomics.store(ctrl, 1, 1)

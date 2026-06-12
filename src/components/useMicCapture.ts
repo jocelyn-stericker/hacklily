@@ -19,6 +19,11 @@ import {
   preInitPersistentStream,
 } from '#/lib/audio/MicCapturePipeline'
 import type { MicCaptureFeatures } from '#/lib/audio/MicCapturePipeline'
+import {
+  getOrCreateSharedAudioContext,
+  resumeSharedAudioContext,
+} from '#/lib/audio/sharedAudioContext'
+import { preferredSampleRate } from '#/lib/settings'
 
 export function useMicCapture({
   enabled,
@@ -82,9 +87,25 @@ export function useMicCapture({
     onAudioRopeSealRef.current = onAudioRopeSeal
   })
 
+  // Re-resume after a UA-initiated suspension (tab switch, app backgrounding).
+  useEffect(() => {
+    const onVisibility = () => {
+      if (!document.hidden) resumeSharedAudioContext()
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
+  }, [])
+
+  const preferredRate = preferredSampleRate(audioSettings)
+
   useEffect(() => {
     if (!enabled) return
     const ctrl = new AbortController()
+    // Fallback context creation: the caller should have called
+    // getOrCreateSharedAudioContext() in a gesture handler (handleStart) before
+    // enabling capture, but this ensures we always have a context to work with.
+    const { context, captureModuleReady } =
+      getOrCreateSharedAudioContext(preferredRate)
     const pipeline = new MicCapturePipeline({
       signal: ctrl.signal,
       settings: {
@@ -98,6 +119,8 @@ export function useMicCapture({
         formant: formantEnabled,
         vad: JSON.parse(vadSettingsKey) as MicCaptureFeatures['vad'],
       },
+      context,
+      captureModuleReady,
     })
     pipeline.addEventListener(
       'append',
@@ -146,6 +169,7 @@ export function useMicCapture({
     enabled,
     inputDeviceId,
     sampleRate,
+    preferredRate,
     persistentMic,
     browserPreprocessing,
     spectrogramEnabled,

@@ -18,6 +18,8 @@ const mockAudioAPI = vi.hoisted(() => {
     currentTime: 0,
     destination: {},
     audioWorklet: { addModule: vi.fn(async () => {}) },
+    resume: vi.fn(async () => {}),
+    suspend: vi.fn(async () => {}),
     close: vi.fn(async () => {}),
   }
   return { workletNode, context }
@@ -27,12 +29,8 @@ class MockAudioContext {
   destination = mockAudioAPI.context.destination
   audioWorklet = mockAudioAPI.context.audioWorklet
   sampleRate = 44100
-  static called = false
-  static lastOptions: any = null
 
   constructor(options?: { sampleRate?: number; latencyHint?: string }) {
-    MockAudioContext.called = true
-    MockAudioContext.lastOptions = options
     if (options?.sampleRate) {
       this.sampleRate = options.sampleRate
     }
@@ -40,6 +38,14 @@ class MockAudioContext {
 
   get currentTime() {
     return mockAudioAPI.context.currentTime
+  }
+
+  async resume() {
+    return mockAudioAPI.context.resume()
+  }
+
+  async suspend() {
+    return mockAudioAPI.context.suspend()
   }
 
   async close() {
@@ -60,7 +66,6 @@ class MockAudioWorkletNode {
   }
 }
 
-vi.stubGlobal('AudioContext', MockAudioContext as any)
 vi.stubGlobal('AudioWorkletNode', MockAudioWorkletNode as any)
 
 let animFrameId = 1
@@ -73,7 +78,7 @@ vi.stubGlobal(
 )
 vi.stubGlobal('cancelAnimationFrame', vi.fn())
 
-// Lets the async #play (which awaits addModule) run to completion.
+// Lets the async #play (which awaits moduleReady) run to completion.
 const flush = () => new Promise<void>((resolve) => setTimeout(resolve, 0))
 
 function makeRope(lengthSamples: number, sampleRate = 44100): AudioRope {
@@ -104,19 +109,19 @@ function workletPost(msg: unknown) {
 
 describe('AudioPlaybackPipeline', () => {
   let abortController: AbortController
+  let mockContext: AudioContext
+  const moduleReady = Promise.resolve()
 
   beforeEach(() => {
     abortController = new AbortController()
     vi.clearAllMocks()
     mockAudioAPI.context.currentTime = 0
-    mockAudioAPI.context.audioWorklet.addModule.mockImplementation(
-      async () => {},
-    )
-    mockAudioAPI.context.close.mockImplementation(async () => {})
-    MockAudioContext.called = false
-    MockAudioContext.lastOptions = null
+    mockAudioAPI.context.resume.mockResolvedValue(undefined)
+    mockAudioAPI.context.suspend.mockResolvedValue(undefined)
+    mockAudioAPI.context.close.mockResolvedValue(undefined)
     MockAudioWorkletNode.count = 0
     MockAudioWorkletNode.lastName = null
+    mockContext = new MockAudioContext() as unknown as AudioContext
   })
 
   afterEach(() => {
@@ -124,53 +129,36 @@ describe('AudioPlaybackPipeline', () => {
   })
 
   describe('initialization', () => {
-    it('creates an AudioContext with interactive latency hint', async () => {
+    it('creates the rope source worklet node and connects it', async () => {
       new AudioPlaybackPipeline({
         ropes: [makeRope(44100)],
         gains: [],
         startAtSec: 0,
         signal: abortController.signal,
+        context: mockContext,
+        moduleReady,
       })
       await flush()
 
-      expect(MockAudioContext.called).toBe(true)
-      expect(MockAudioContext.lastOptions).toEqual({
-        sampleRate: undefined,
-        latencyHint: 'interactive',
-      })
-    })
-
-    it('creates an AudioContext with specified sampleRate', async () => {
-      new AudioPlaybackPipeline({
-        ropes: [makeRope(48000, 48000)],
-        gains: [],
-        startAtSec: 0,
-        signal: abortController.signal,
-        sampleRate: 48000,
-      })
-      await flush()
-
-      expect(MockAudioContext.lastOptions).toEqual({
-        sampleRate: 48000,
-        latencyHint: 'interactive',
-      })
-    })
-
-    it('loads the worklet module and creates the rope source node', async () => {
-      new AudioPlaybackPipeline({
-        ropes: [makeRope(44100)],
-        gains: [],
-        startAtSec: 0,
-        signal: abortController.signal,
-      })
-      await flush()
-
-      expect(mockAudioAPI.context.audioWorklet.addModule).toHaveBeenCalled()
       expect(MockAudioWorkletNode.count).toBe(1)
       expect(MockAudioWorkletNode.lastName).toBe('audio-rope-source-node')
       expect(mockAudioAPI.workletNode.connect).toHaveBeenCalledWith(
         mockAudioAPI.context.destination,
       )
+    })
+
+    it('resumes the context before starting playback', async () => {
+      new AudioPlaybackPipeline({
+        ropes: [makeRope(44100)],
+        gains: [],
+        startAtSec: 0,
+        signal: abortController.signal,
+        context: mockContext,
+        moduleReady,
+      })
+      await flush()
+
+      expect(mockAudioAPI.context.resume).toHaveBeenCalled()
     })
 
     it('posts setBuffer with rope shares then start', async () => {
@@ -179,6 +167,8 @@ describe('AudioPlaybackPipeline', () => {
         gains: [],
         startAtSec: 0.5,
         signal: abortController.signal,
+        context: mockContext,
+        moduleReady,
       })
       await flush()
 
@@ -196,6 +186,8 @@ describe('AudioPlaybackPipeline', () => {
         gains: [],
         startAtSec: 1.0,
         signal: abortController.signal,
+        context: mockContext,
+        moduleReady,
       })
       await flush()
 
@@ -209,6 +201,8 @@ describe('AudioPlaybackPipeline', () => {
         gains: [],
         startAtSec: 1.5,
         signal: abortController.signal,
+        context: mockContext,
+        moduleReady,
       })
       await flush()
 
@@ -221,6 +215,8 @@ describe('AudioPlaybackPipeline', () => {
         gains: [],
         startAtSec: 0,
         signal: abortController.signal,
+        context: mockContext,
+        moduleReady,
       })
 
       expect(pipeline.stopSignal).toBeInstanceOf(AbortSignal)
@@ -235,6 +231,8 @@ describe('AudioPlaybackPipeline', () => {
         gains: [],
         startAtSec: 0.5,
         signal: abortController.signal,
+        context: mockContext,
+        moduleReady,
       })
       await flush()
       // No `started` yet; even with the clock advanced, position stays put.
@@ -255,6 +253,8 @@ describe('AudioPlaybackPipeline', () => {
         gains: [],
         startAtSec: 0.5,
         signal: abortController.signal,
+        context: mockContext,
+        moduleReady,
       })
       await flush()
       // Worklet's first sample plays out at context time 0.1; 0.4s later the
@@ -277,6 +277,8 @@ describe('AudioPlaybackPipeline', () => {
         gains: [],
         startAtSec: 0,
         signal: abortController.signal,
+        context: mockContext,
+        moduleReady,
       })
       await flush()
       workletPost({ type: 'started', contextTime: 0 })
@@ -302,6 +304,8 @@ describe('AudioPlaybackPipeline', () => {
         gains: [],
         startAtSec: 0,
         signal: abortController.signal,
+        context: mockContext,
+        moduleReady,
       })
       await flush()
 
@@ -317,7 +321,8 @@ describe('AudioPlaybackPipeline', () => {
         mockAudioAPI.workletNode.port.postMessage,
       ).toHaveBeenLastCalledWith(null)
       expect(mockAudioAPI.workletNode.disconnect).toHaveBeenCalled()
-      expect(mockAudioAPI.context.close).toHaveBeenCalled()
+      expect(mockAudioAPI.context.suspend).toHaveBeenCalled()
+      expect(mockAudioAPI.context.close).not.toHaveBeenCalled()
       expect(pipeline.stopSignal.aborted).toBe(true)
     })
 
@@ -327,6 +332,8 @@ describe('AudioPlaybackPipeline', () => {
         gains: [],
         startAtSec: 0,
         signal: abortController.signal,
+        context: mockContext,
+        moduleReady,
       })
       await flush()
 
@@ -347,6 +354,8 @@ describe('AudioPlaybackPipeline', () => {
         gains: [],
         startAtSec: 0,
         signal: abortController.signal,
+        context: mockContext,
+        moduleReady,
       })
       await flush()
 
@@ -362,12 +371,14 @@ describe('AudioPlaybackPipeline', () => {
   })
 
   describe('abort handling', () => {
-    it('pauses the node and closes the context on abort', async () => {
+    it('pauses the node and suspends the context on abort', async () => {
       const pipeline = new AudioPlaybackPipeline({
         ropes: [makeRope(44100)],
         gains: [],
         startAtSec: 0,
         signal: abortController.signal,
+        context: mockContext,
+        moduleReady,
       })
       await flush()
 
@@ -377,45 +388,48 @@ describe('AudioPlaybackPipeline', () => {
         mockAudioAPI.workletNode.port.postMessage,
       ).toHaveBeenLastCalledWith(null)
       expect(mockAudioAPI.workletNode.disconnect).toHaveBeenCalled()
-      expect(mockAudioAPI.context.close).toHaveBeenCalled()
+      expect(mockAudioAPI.context.suspend).toHaveBeenCalled()
+      expect(mockAudioAPI.context.close).not.toHaveBeenCalled()
       expect(pipeline.stopSignal.aborted).toBe(true)
       expect(cancelAnimationFrame).toHaveBeenCalled()
     })
 
     it('bails out without creating a node when aborted during module load', async () => {
-      let resolveAddModule = () => {}
-      mockAudioAPI.context.audioWorklet.addModule.mockImplementation(
-        () =>
-          new Promise<void>((resolve) => {
-            resolveAddModule = resolve
-          }),
-      )
+      let resolveModuleReady = () => {}
+      const slowModuleReady = new Promise<void>((resolve) => {
+        resolveModuleReady = resolve
+      })
 
       const pipeline = new AudioPlaybackPipeline({
         ropes: [makeRope(44100)],
         gains: [],
         startAtSec: 0,
         signal: abortController.signal,
+        context: mockContext,
+        moduleReady: slowModuleReady,
       })
 
       abortController.abort()
-      resolveAddModule()
+      resolveModuleReady()
       await flush()
 
       expect(MockAudioWorkletNode.count).toBe(0)
-      expect(mockAudioAPI.context.close).toHaveBeenCalled()
       expect(pipeline.stopSignal.aborted).toBe(true)
     })
 
-    it('does not throw when the context close rejects', async () => {
+    it('does not throw when the context suspend rejects', async () => {
       const pipeline = new AudioPlaybackPipeline({
         ropes: [makeRope(44100)],
         gains: [],
         startAtSec: 0,
         signal: abortController.signal,
+        context: mockContext,
+        moduleReady,
       })
       await flush()
-      mockAudioAPI.context.close.mockRejectedValue(new Error('already closed'))
+      mockAudioAPI.context.suspend.mockRejectedValue(
+        new Error('already closed'),
+      )
 
       expect(() => abortController.abort()).not.toThrow()
       expect(pipeline.stopSignal.aborted).toBe(true)
@@ -426,18 +440,24 @@ describe('AudioPlaybackPipeline', () => {
     it('can create independent pipelines', async () => {
       const ac1 = new AbortController()
       const ac2 = new AbortController()
+      const ctx1 = new MockAudioContext() as unknown as AudioContext
+      const ctx2 = new MockAudioContext() as unknown as AudioContext
 
       const p1 = new AudioPlaybackPipeline({
         ropes: [makeRope(44100)],
         gains: [],
         startAtSec: 0,
         signal: ac1.signal,
+        context: ctx1,
+        moduleReady,
       })
       const p2 = new AudioPlaybackPipeline({
         ropes: [makeRope(44100)],
         gains: [],
         startAtSec: 0,
         signal: ac2.signal,
+        context: ctx2,
+        moduleReady,
       })
       await flush()
 

@@ -38,9 +38,10 @@ import { reconcileVoicingAt, totalFrames } from '#/lib/analysis/AnalysisFrame'
 import { AudioRope } from '#/lib/audio/AudioRope'
 import type { AudioRopeGrow, AudioRopeShare } from '#/lib/audio/AudioRope'
 import { exportWav } from '#/lib/audio/exportWav'
+import { getOrCreateSharedAudioContext } from '#/lib/audio/sharedAudioContext'
 import type { Viewport } from '#/lib/jobs/schedule'
 import { RopeGainCache } from '#/lib/loudness/ropeLoudness'
-import { updateSettings } from '#/lib/settings'
+import { preferredSampleRate, updateSettings } from '#/lib/settings'
 import { consumeBundledCrashFlag } from '#/lib/transcription/transcribeBundled'
 import { cn } from '#/lib/utils'
 
@@ -78,7 +79,7 @@ function App() {
     handlePlotClick,
     handlePlotHover,
     handlePlotZoom,
-    handlePlay,
+    handlePlay: triggerPlay,
     handleStart: startRecording,
     handlePause,
     handleBackToStart,
@@ -177,14 +178,25 @@ function App() {
     })
   }, [])
 
+  const preferredRate = preferredSampleRate(settings)
+
+  const handlePlay = useCallback(() => {
+    // Unlock the shared AudioContext synchronously in the gesture handler so
+    // iOS Safari starts it in a running state.
+    getOrCreateSharedAudioContext(preferredRate)
+    triggerPlay()
+  }, [triggerPlay, preferredRate])
+
   const handleStart = useCallback(() => {
+    // Unlock here too so playback after a recording session needs no further gesture.
+    getOrCreateSharedAudioContext(preferredRate)
     recordingStartIndexRef.current = totalFrames(analysisMutRef.current)
     recordingDurationSecRef.current = analysisMutRef.current.reduce(
       (t, c) => t + (c.frames.length * c.timeStepSamples) / c.sampleRate,
       0,
     )
     startRecording()
-  }, [startRecording])
+  }, [startRecording, preferredRate])
 
   const ropesRef = useRef<AudioRope[]>(ropes)
   useEffect(() => {

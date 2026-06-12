@@ -7,6 +7,10 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useSettings } from '#/components/useSettings'
 import { AudioPlaybackPipeline } from '#/lib/audio/AudioPlaybackPipeline'
 import type { AudioRope } from '#/lib/audio/AudioRope'
+import {
+  getOrCreateSharedAudioContext,
+  resumeSharedAudioContext,
+} from '#/lib/audio/sharedAudioContext'
 import type { RopeGainCache } from '#/lib/loudness/ropeLoudness'
 import { preferredSampleRate } from '#/lib/settings'
 
@@ -37,12 +41,15 @@ export function useAudioPlayback({
     onErrorRef.current = onError
   })
 
+  // Re-resume after a UA-initiated suspension (tab switch, app backgrounding).
+  // Returning to the tab is treated as sufficient user interaction on iOS Safari
+  // for a context that was previously gesture-unlocked, so no new gesture needed.
   useEffect(() => {
-    if ('audioSession' in navigator) {
-      // This makes it so that even when the ringer is set to silent on iOS, we still get playback!
-      // @ts-expect-error this is not standard
-      navigator.audioSession.type = 'play-and-record'
+    const onVisibility = () => {
+      if (!document.hidden) resumeSharedAudioContext()
     }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
   }, [])
 
   const [audioSettings] = useSettings()
@@ -100,6 +107,12 @@ export function useAudioPlayback({
       reportedHighWater: cursorSec,
     }
 
+    // Fallback context creation: the caller should have called
+    // getOrCreateSharedAudioContext() in a gesture handler before enabling
+    // playback, but this ensures we always have a context to work with.
+    const { context, playbackModuleReady } =
+      getOrCreateSharedAudioContext(preferredRate)
+
     const pipeline = new AudioPlaybackPipeline({
       ropes,
       // Measured once per play (recording never overlaps playback, so the
@@ -107,7 +120,8 @@ export function useAudioPlayback({
       gains: gainCache.gainsFor(ropes),
       startAtSec: cursorSec,
       signal: ctrl.signal,
-      sampleRate: preferredRate,
+      context,
+      moduleReady: playbackModuleReady,
     })
 
     const listenerOpts = { signal: pipeline.stopSignal }

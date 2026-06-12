@@ -11,6 +11,19 @@ import type { PatchFrameMessage } from '#/lib/workers/workerMessages'
 
 import { useMicCapture } from './useMicCapture'
 
+// Mutable holder updated in beforeEach so the mock factory closes over a
+// stable reference while each test gets a fresh mockAudioContext.
+const sharedCtxHolder = vi.hoisted(() => ({ current: null as any }))
+
+vi.mock('#/lib/audio/sharedAudioContext', () => ({
+  getOrCreateSharedAudioContext: vi.fn(() => ({
+    context: sharedCtxHolder.current,
+    playbackModuleReady: Promise.resolve(),
+    captureModuleReady: Promise.resolve(),
+  })),
+  resumeSharedAudioContext: vi.fn(),
+}))
+
 type MicCaptureProps = Parameters<typeof useMicCapture>[0]
 // `onAudioRopeSeal` is irrelevant to these tests; default it so each case can
 // omit it.
@@ -401,8 +414,10 @@ describe('AudioRecorder', () => {
         addModule: vi.fn().mockResolvedValue(undefined),
       },
       createMediaStreamSource: vi.fn(() => mockSourceNode),
+      suspend: vi.fn().mockResolvedValue(undefined),
       close: vi.fn(),
     }
+    sharedCtxHolder.current = mockAudioContext
 
     // Wrap the constructors to return our mocks
     const MockAudioContextClass = function (options: any) {
@@ -456,55 +471,6 @@ describe('AudioRecorder', () => {
       expect(mockGetUserMedia).toHaveBeenCalledWith(
         expect.objectContaining({ video: false }),
       )
-    })
-  })
-
-  it('creates AudioContext with 44100 sample rate', async () => {
-    const onAppend = vi.fn()
-    const onRecordingComplete = vi.fn()
-    const onError = vi.fn()
-    const onAudioRopeGrow = vi.fn()
-    const onAudioRopeShare = vi.fn()
-
-    render(
-      <TestRecorder
-        enabled={true}
-        onAppend={onAppend}
-        onRecordingComplete={onRecordingComplete}
-        onError={onError}
-        onAudioRopeGrow={onAudioRopeGrow}
-        onAudioRopeShare={onAudioRopeShare}
-      />,
-    )
-
-    await waitFor(() => {
-      expect((global.AudioContext as any).lastCall).toEqual({
-        sampleRate: 44100,
-        latencyHint: 'interactive',
-      })
-    })
-  })
-
-  it('loads audioWorklet module', async () => {
-    const onAppend = vi.fn()
-    const onRecordingComplete = vi.fn()
-    const onError = vi.fn()
-    const onAudioRopeGrow = vi.fn()
-    const onAudioRopeShare = vi.fn()
-
-    render(
-      <TestRecorder
-        enabled={true}
-        onAppend={onAppend}
-        onRecordingComplete={onRecordingComplete}
-        onError={onError}
-        onAudioRopeGrow={onAudioRopeGrow}
-        onAudioRopeShare={onAudioRopeShare}
-      />,
-    )
-
-    await waitFor(() => {
-      expect(mockAudioContext.audioWorklet.addModule).toHaveBeenCalled()
     })
   })
 
@@ -833,12 +799,12 @@ describe('AudioRecorder', () => {
     await waitFor(() => {
       expect(mockSourceNode.disconnect).toHaveBeenCalled()
       expect(mockWorkletNode.disconnect).toHaveBeenCalled()
-      expect(mockAudioContext.close).toHaveBeenCalled()
+      expect(mockAudioContext.suspend).toHaveBeenCalled()
       expect(mockMediaStreamTrack.stop).toHaveBeenCalled()
     })
   })
 
-  it('closes audio context before signalling workers (no flush message sent)', async () => {
+  it('suspends audio context before signalling workers (no flush message sent)', async () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()
@@ -865,7 +831,7 @@ describe('AudioRecorder', () => {
     unmount()
 
     await waitFor(() => {
-      expect(mockAudioContext.close).toHaveBeenCalled()
+      expect(mockAudioContext.suspend).toHaveBeenCalled()
       const allCalls = getMockWorker().postMessage.mock.calls
       expect(allCalls.every((c: any[]) => c[0]?.type !== 'flush')).toBe(true)
     })
@@ -914,7 +880,7 @@ describe('AudioRecorder', () => {
     // Wait for the setup to complete and teardown to happen
     await waitFor(
       () => {
-        expect(mockAudioContext.close).toHaveBeenCalled()
+        expect(mockAudioContext.suspend).toHaveBeenCalled()
       },
       { timeout: 1000 },
     )

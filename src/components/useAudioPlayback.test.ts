@@ -10,6 +10,19 @@ import type * as SettingsModule from '#/components/useSettings'
 
 import { useAudioPlayback } from './useAudioPlayback'
 
+vi.mock('#/lib/audio/sharedAudioContext', () => ({
+  getOrCreateSharedAudioContext: vi.fn(() => ({
+    context: {
+      state: 'running',
+      resume: vi.fn(async () => {}),
+      suspend: vi.fn(async () => {}),
+    },
+    playbackModuleReady: Promise.resolve(),
+    captureModuleReady: Promise.resolve(),
+  })),
+  resumeSharedAudioContext: vi.fn(),
+}))
+
 let mockPipelineInstances: any[] = []
 
 vi.mock('#/components/useSettings', async (importOriginal) => {
@@ -85,14 +98,6 @@ describe('useAudioPlayback', () => {
     // A AudioRope stand-in -- the mocked pipeline ignores the data, so we only
     // need enough shape for `ropes.length` checks in the hook.
     mockRopes = [{ length: 220500, sampleRate: 44100, shareRope: vi.fn() }]
-
-    // Mock navigator.audioSession if needed
-    if (!('audioSession' in navigator)) {
-      Object.defineProperty(navigator, 'audioSession', {
-        value: { type: 'default' },
-        configurable: true,
-      })
-    }
   })
 
   afterEach(() => {
