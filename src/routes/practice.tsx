@@ -59,6 +59,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '#/components/ui/tooltip'
+import { useAudioPlayback } from '#/components/useAudioPlayback'
 import { useMicCapture } from '#/components/useMicCapture'
 import { useSettings } from '#/components/useSettings'
 import type {
@@ -72,11 +73,12 @@ import type {
   AudioRopeShare,
 } from '#/lib/audio/AudioRope'
 import { AudioRope as AudioRopeClass } from '#/lib/audio/AudioRope'
-import workletUrl from '#/lib/audio/AudioRopeSourceNode?worker&url'
 import type { AudioSpan } from '#/lib/audio/AudioSpan'
+import { getOrCreateSharedAudioContext } from '#/lib/audio/sharedAudioContext'
 import { RopeGainCache } from '#/lib/loudness/ropeLoudness'
 import { passages } from '#/lib/passages'
 import type { PracticeTextSize } from '#/lib/settings'
+import { preferredSampleRate } from '#/lib/settings'
 import { assertUnreachable, cn } from '#/lib/utils'
 
 // ---------------------------------------------------------------------------
@@ -91,6 +93,7 @@ type VoicedRange = {
 type Take = {
   id: number
   span: AudioSpan
+  endTimeSec: number
   createdAt: number
   voicedRanges: VoicedRange[]
 }
@@ -116,7 +119,12 @@ type PracticeState = {
 
 type PracticeAction =
   | { type: 'START_RECORDING'; startTime: number }
-  | { type: 'STOP_RECORDING'; span: AudioSpan; voicedRanges: VoicedRange[] }
+  | {
+      type: 'STOP_RECORDING'
+      span: AudioSpan
+      voicedRanges: VoicedRange[]
+      endTimeSec: number
+    }
   | { type: 'START_PLAYBACK'; takeId: number; skipSilence: boolean }
   | { type: 'STOP_PLAYBACK' }
   | { type: 'STAR_TAKE'; takeId: number }
@@ -181,6 +189,7 @@ function practiceReducer(
       const newTake: Take = {
         id: state.nextTakeId,
         span: action.span,
+        endTimeSec: action.endTimeSec,
         createdAt: Date.now(),
         voicedRanges: action.voicedRanges,
       }
@@ -436,130 +445,6 @@ function LevelMeter({
       ))}
     </div>
   )
-}
-
-// ---------------------------------------------------------------------------
-// Playback manager
-// ---------------------------------------------------------------------------
-
-type PlaybackRef = {
-  context: AudioContext
-  node: AudioWorkletNode
-  ropeShare: AudioRopeShare
-  done: (() => void) | null
-  ranges: VoicedRange[] | null
-  rangeIdx: number
-}
-
-function usePlaybackManager({
-  onPlaybackEnd,
-  gainCache,
-}: {
-  onPlaybackEnd: () => void
-  gainCache: RopeGainCache
-}) {
-  const playbackRef = useRef<PlaybackRef | null>(null)
-
-  const stopPlayback = useCallback(() => {
-    const pb = playbackRef.current
-    if (!pb) return
-    try {
-      pb.node.port.postMessage(null)
-      pb.node.disconnect()
-    } catch {
-      /* node may already be dead */
-    }
-    void pb.context.close().catch(() => {})
-    playbackRef.current = null
-  }, [])
-
-  const playSpan = useCallback(
-    async (
-      sessionRope: AudioRope,
-      span: AudioSpan,
-      voicedRanges: VoicedRange[],
-      skipSilence: boolean,
-    ) => {
-      stopPlayback()
-
-      const context = new AudioContext({
-        sampleRate: sessionRope.sampleRate,
-        latencyHint: 'interactive',
-      })
-      await context.audioWorklet.addModule(workletUrl)
-
-      const node = new AudioWorkletNode(context, 'audio-rope-source-node')
-      node.connect(context.destination)
-
-      const ropeShare = sessionRope.shareRope()
-      let doneSent = false
-      const done = () => {
-        if (doneSent) return
-        doneSent = true
-        stopPlayback()
-        onPlaybackEnd()
-      }
-
-      node.port.onmessage = ({ data }: MessageEvent<{ type: string }>) => {
-        if (data.type === 'end') {
-          const pb = playbackRef.current
-          if (!pb || pb.node !== node) return
-          if (pb.ranges && pb.rangeIdx + 1 < pb.ranges.length) {
-            pb.rangeIdx++
-            const r = pb.ranges[pb.rangeIdx]!
-            node.port.postMessage({ type: 'start', timeSec: r.startSec })
-            node.port.postMessage({ type: 'end', timeSec: r.endSec })
-          } else {
-            done()
-          }
-        }
-      }
-
-      node.port.postMessage({
-        type: 'setBuffer',
-        ropes: [ropeShare],
-        gains: [gainCache.gainFor(sessionRope)],
-      })
-
-      if (skipSilence && voicedRanges.length > 0) {
-        playbackRef.current = {
-          context,
-          node,
-          ropeShare,
-          done,
-          ranges: voicedRanges,
-          rangeIdx: 0,
-        }
-        const r = voicedRanges[0]!
-        node.port.postMessage({ type: 'start', timeSec: r.startSec })
-        node.port.postMessage({ type: 'end', timeSec: r.endSec })
-      } else {
-        const endTime = await span.endTime
-        const playStart =
-          voicedRanges.length > 0 ? voicedRanges[0]!.startSec : span.startTime
-        const playEnd =
-          voicedRanges.length > 0
-            ? voicedRanges[voicedRanges.length - 1]!.endSec
-            : endTime
-        playbackRef.current = {
-          context,
-          node,
-          ropeShare,
-          done,
-          ranges: null,
-          rangeIdx: 0,
-        }
-        node.port.postMessage({ type: 'start', timeSec: playStart })
-        node.port.postMessage({ type: 'end', timeSec: playEnd })
-      }
-    },
-    [stopPlayback, onPlaybackEnd, gainCache],
-  )
-
-  // Cleanup on unmount
-  useEffect(() => () => stopPlayback(), [stopPlayback])
-
-  return { playSpan, stopPlayback }
 }
 
 // ---------------------------------------------------------------------------
@@ -995,9 +880,39 @@ function Practice() {
       dispatch({ type: 'STOP_SESSION' })
     }
   }, [autoAdvance, startPipelineAndRecord])
-  const { playSpan, stopPlayback } = usePlaybackManager({
-    onPlaybackEnd: handlePlaybackEnd,
+
+  const preferredRate = preferredSampleRate(settings)
+
+  const playbackTake =
+    state.playingTakeId !== null
+      ? (state.takes.find((t) => t.id === state.playingTakeId) ?? null)
+      : null
+
+  const playbackCursorSec = useMemo(() => {
+    if (!playbackTake) return 0
+    const vr = playbackTake.voicedRanges
+    return vr.length > 0 ? vr[0]!.startSec : playbackTake.span.startTime
+  }, [playbackTake])
+
+  const playbackEndAtSec = useMemo(() => {
+    if (!playbackTake) return undefined
+    const vr = playbackTake.voicedRanges
+    return vr.length > 0 ? vr[vr.length - 1]!.endSec : playbackTake.endTimeSec
+  }, [playbackTake])
+
+  const playbackRopes = useMemo<AudioRope[]>(
+    () => (playbackTake ? [playbackTake.span.rope] : []),
+    [playbackTake],
+  )
+
+  useAudioPlayback({
+    enabled: state.playingTakeId !== null,
+    ropes: playbackRopes,
     gainCache,
+    cursorSec: playbackCursorSec,
+    endAtSec: playbackEndAtSec,
+    onStop: handlePlaybackEnd,
+    onPlaybackPositionChanged: () => {},
   })
 
   // Document title
@@ -1116,14 +1031,14 @@ function Practice() {
   // Start session — immediately begin recording the first take
   const handleStartSession = useCallback(() => {
     dispatch({ type: 'SET_ERROR', error: null })
+    getOrCreateSharedAudioContext(preferredRate)
     startPipelineAndRecord()
-  }, [startPipelineAndRecord])
+  }, [startPipelineAndRecord, preferredRate])
 
   // End session — stop mic and playback, but keep takes
   const handleEndSession = useCallback(() => {
     if (stateRef.current.shuttingDown) return
     dispatch({ type: 'SET_SHUTTING_DOWN', value: true })
-    stopPlayback()
     dispatch({ type: 'STOP_PLAYBACK' })
     dispatch({ type: 'ECHO_GATE_BLOCK' })
 
@@ -1140,6 +1055,7 @@ function Practice() {
         if (rope && params) {
           const timePerFrame = params.timeStepSamples / params.sampleRate
           const baseTimeSec = startFrame * timePerFrame
+          const endTimeSec = endFrame * timePerFrame
           const voicedRanges = computeVoicedRanges(
             decisions,
             startFrame,
@@ -1150,10 +1066,10 @@ function Practice() {
           const span: AudioSpan = {
             rope,
             startTime: baseTimeSec,
-            endTime: Promise.resolve(endFrame * timePerFrame),
+            endTime: Promise.resolve(endTimeSec),
             signal: new AbortController().signal,
           }
-          dispatch({ type: 'STOP_RECORDING', span, voicedRanges })
+          dispatch({ type: 'STOP_RECORDING', span, voicedRanges, endTimeSec })
           forceRender((n) => n + 1)
         }
       }
@@ -1161,7 +1077,7 @@ function Practice() {
       dispatch({ type: 'STOP_SESSION' })
       setElapsedMs(0)
     })()
-  }, [stopPlayback, closePipeline])
+  }, [closePipeline])
 
   // Finish current take, tear down pipeline, then play back
   const handleNextTake = useCallback(async () => {
@@ -1179,6 +1095,7 @@ function Practice() {
 
     const timePerFrame = params.timeStepSamples / params.sampleRate
     const baseTimeSec = startFrame * timePerFrame
+    const endTimeSec = endFrame * timePerFrame
     const voicedRanges = computeVoicedRanges(
       decisions,
       startFrame,
@@ -1190,33 +1107,30 @@ function Practice() {
     const span: AudioSpan = {
       rope,
       startTime: baseTimeSec,
-      endTime: Promise.resolve(endFrame * timePerFrame),
+      endTime: Promise.resolve(endTimeSec),
       signal: new AbortController().signal,
     }
 
     const takeId = state.nextTakeId
-    dispatch({ type: 'STOP_RECORDING', span, voicedRanges })
+    dispatch({ type: 'STOP_RECORDING', span, voicedRanges, endTimeSec })
     dispatch({ type: 'START_PLAYBACK', takeId, skipSilence: false })
     dispatch({ type: 'ECHO_AUTO_RESTART' })
-    void playSpan(rope, span, voicedRanges, false)
     forceRender((n) => n + 1)
-  }, [state.recording, state.nextTakeId, closePipeline, playSpan])
+  }, [state.recording, state.nextTakeId, closePipeline])
 
   // Play a take
   const handlePlayTake = useCallback(
     (take: Take, skipSilence: boolean) => {
       if (state.playingTakeId === take.id) {
-        stopPlayback()
         dispatch({ type: 'STOP_PLAYBACK' })
         dispatch({ type: 'ECHO_RESET_GATE' })
         return
       }
-      const rope = take.span.rope
+      getOrCreateSharedAudioContext(preferredRate)
       dispatch({ type: 'ECHO_GATE_BLOCK' })
       dispatch({ type: 'START_PLAYBACK', takeId: take.id, skipSilence })
-      void playSpan(rope, take.span, take.voicedRanges, skipSilence)
     },
-    [state.playingTakeId, stopPlayback, playSpan],
+    [state.playingTakeId, preferredRate],
   )
 
   // Star a take as reference
@@ -1226,13 +1140,12 @@ function Practice() {
 
   // Clear session
   const handleClearSession = useCallback(() => {
-    stopPlayback()
     dispatch({ type: 'CLEAR_SESSION' })
     frameCountRef.current = 0
     decisionsRef.current = []
     levelRef.current = { rms: 0, speechDetected: false }
     forceRender((n) => n + 1)
-  }, [stopPlayback])
+  }, [])
 
   // --- Derived data ---
   const passage = passages.find((p) => p.id === passageId) ?? passages[0]!

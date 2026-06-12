@@ -19,6 +19,7 @@ export function useAudioPlayback({
   ropes,
   gainCache,
   cursorSec,
+  endAtSec,
   onStop,
   onPlaybackPositionChanged,
   onError,
@@ -27,6 +28,7 @@ export function useAudioPlayback({
   ropes: Array<AudioRope>
   gainCache: RopeGainCache
   cursorSec: number
+  endAtSec?: number
   onStop: () => void
   onPlaybackPositionChanged: (timeSec: number) => void
   onError?: (error: string) => void
@@ -115,10 +117,9 @@ export function useAudioPlayback({
 
     const pipeline = new AudioPlaybackPipeline({
       ropes,
-      // Measured once per play (recording never overlaps playback, so the
-      // last rope isn't growing here); cached for reuse across seeks.
       gains: gainCache.gainsFor(ropes),
       startAtSec: cursorSec,
+      endAtSec,
       signal: ctrl.signal,
       context,
       moduleReady: playbackModuleReady,
@@ -156,7 +157,7 @@ export function useAudioPlayback({
       (e) => onErrorRef.current?.(e.detail.error),
       listenerOpts,
     )
-  }, [enabled, ropes, gainCache, preferredRate, cursorSec])
+  }, [enabled, ropes, gainCache, preferredRate, cursorSec, endAtSec])
 
   // Unmount cleanup -- the main effect intentionally has no cleanup return
   // so the pipeline survives across cursorSec feedback-loop re-runs.

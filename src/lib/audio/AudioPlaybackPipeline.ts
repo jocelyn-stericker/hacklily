@@ -56,28 +56,29 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
     ropes,
     gains,
     startAtSec,
+    endAtSec,
     signal,
     context,
     moduleReady,
   }: {
     ropes: Array<AudioRope>
-    /** Loudness-normalization gain per rope, aligned to `ropes`. */
     gains: Array<number>
     startAtSec: number
+    endAtSec?: number
     signal: AbortSignal
-    /** Shared AudioContext to play through. Must already be resumed or resuming. */
     context: AudioContext
-    /** Promise that resolves once the audio-rope-source-node worklet is registered. */
     moduleReady: Promise<void>
   }) {
     super()
     signal.addEventListener('abort', this.#stop)
-    this.#play(context, moduleReady, ropes, gains, startAtSec).catch((err) => {
-      console.error(LOG, 'playback failed:', err)
-      this.emit('error', {
-        error: err instanceof Error ? err.message : String(err),
-      })
-    })
+    this.#play(context, moduleReady, ropes, gains, startAtSec, endAtSec).catch(
+      (err) => {
+        console.error(LOG, 'playback failed:', err)
+        this.emit('error', {
+          error: err instanceof Error ? err.message : String(err),
+        })
+      },
+    )
   }
 
   async #play(
@@ -86,11 +87,15 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
     ropes: Array<AudioRope>,
     gains: Array<number>,
     requestedStartAtSec: number,
+    endAtSec?: number,
   ) {
     this.#duration = ropes.reduce(
       (sum, rope) => sum + rope.length / rope.sampleRate,
       0,
     )
+    if (endAtSec !== undefined && endAtSec < this.#duration) {
+      this.#duration = endAtSec
+    }
     const startAtSec =
       requestedStartAtSec <= this.#duration - 0.05 ? requestedStartAtSec : 0
     this.#startTimeSec = startAtSec
@@ -133,6 +138,9 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
       gains,
     })
     node.port.postMessage({ type: 'start', timeSec: startAtSec })
+    if (endAtSec !== undefined) {
+      node.port.postMessage({ type: 'end', timeSec: endAtSec })
+    }
 
     this.#animFrameId = requestAnimationFrame(this.#animate)
   }
