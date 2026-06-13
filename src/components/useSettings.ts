@@ -4,13 +4,13 @@
 
 import { useSyncExternalStore } from 'react'
 
+import type { SettingsRow } from '#/lib/settings'
 import {
   subscribe,
   getSnapshot,
   DEFAULT_SETTINGS,
   updateSettings,
 } from '#/lib/settings.ts'
-import type { SettingsRow } from '#/lib/settings.ts'
 
 export function useSettings(): [
   SettingsRow,

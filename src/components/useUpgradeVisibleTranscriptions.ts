@@ -4,7 +4,7 @@
 
 import { useMemo } from 'react'
 
-import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame.ts'
+import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
 import { bestResult, needsTier } from '#/lib/transcription'
 import type { TranscriptTier } from '#/lib/transcription'
 
