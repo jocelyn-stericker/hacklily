@@ -334,9 +334,14 @@ function Practice() {
     sessionRopeRef.current?.seal()
   }, [])
 
-  // useMicCapture — runs for the whole session
+  console.log('xx', state.sessionPhase)
+
+  // useMicCapture — kept warm for the whole session (and always, with a
+  // persistent mic) so each take starts recording quickly; `recording` gates
+  // when audio is actually streamed.
   useMicCapture({
-    enabled: micActive,
+    active: settings.persistentMic || state.sessionPhase !== 'idle',
+    recording: micActive,
     features: {
       spectrogram: false,
       formant: false,

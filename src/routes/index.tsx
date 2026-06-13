@@ -443,7 +443,8 @@ function App() {
   )
 
   useMicCapture({
-    enabled: status.value === 'recording',
+    active: settings.persistentMic || status.value === 'recording',
+    recording: status.value === 'recording',
     onChunkStart: handleChunkStart,
     onAppend: handleAppend,
     onPatch: handlePatch,

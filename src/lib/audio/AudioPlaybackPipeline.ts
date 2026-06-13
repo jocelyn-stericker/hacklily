@@ -21,9 +21,9 @@ type AudioPlaybackOutEvents = {
  * per-rope resampling; this wrapper tracks the playback position off
  * `context.currentTime`.
  *
- * The caller owns the `AudioContext` and is responsible for its lifecycle.
- * This pipeline suspends the context on stop rather than closing it so the
- * same context can be reused across plays without requiring a new gesture.
+ * The caller owns the `AudioContext` and is responsible for its lifecycle
+ * via the shared context lease system. This pipeline does not suspend or
+ * close the context — that is handled by the shared context layer.
  *
  * Stopping is driven by the worklet: it posts a `RopeEndEvent` when it reaches
  * the end of the final (sealed) rope, carrying the context time its last sample
@@ -107,7 +107,7 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
     await context.resume()
     await moduleReady
 
-    // Aborted while awaiting module load -- #stop has already suspended the context.
+    // Aborted while awaiting module load.
     if (this.#stopCtrl.signal.aborted) {
       return
     }
@@ -183,11 +183,6 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
         }
         this.#node = null
       }
-      // Suspend rather than close: the shared context persists for reuse, so
-      // the next play does not need a new gesture on iOS Safari.
-      void this.#context.suspend().catch((err) => {
-        console.warn(LOG, 'context.suspend during stop:', err)
-      })
       this.#context = null
     }
     this.#stopCtrl.abort()

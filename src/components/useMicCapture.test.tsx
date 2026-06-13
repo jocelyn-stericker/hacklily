@@ -21,7 +21,14 @@ vi.mock('#/lib/audio/sharedAudioContext', () => ({
     playbackModuleReady: Promise.resolve(),
     captureModuleReady: Promise.resolve(),
   })),
+  acquireSharedAudioContext: vi.fn(() => ({
+    context: sharedCtxHolder.current,
+    playbackModuleReady: Promise.resolve(),
+    captureModuleReady: Promise.resolve(),
+    release: vi.fn(() => sharedCtxHolder.current?.suspend()),
+  })),
   resumeSharedAudioContext: vi.fn(),
+  suspendSharedAudioContext: vi.fn(() => sharedCtxHolder.current?.suspend()),
 }))
 
 type MicCaptureProps = Parameters<typeof useMicCapture>[0]
@@ -458,7 +465,8 @@ describe('AudioRecorder', () => {
 
     render(
       <TestRecorder
-        enabled={true}
+        active={true}
+        recording={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -483,7 +491,8 @@ describe('AudioRecorder', () => {
 
     render(
       <TestRecorder
-        enabled={true}
+        active={true}
+        recording={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -509,7 +518,8 @@ describe('AudioRecorder', () => {
 
     render(
       <TestRecorder
-        enabled={true}
+        active={true}
+        recording={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -535,7 +545,8 @@ describe('AudioRecorder', () => {
 
     render(
       <TestRecorder
-        enabled={true}
+        active={true}
+        recording={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -578,7 +589,8 @@ describe('AudioRecorder', () => {
 
     render(
       <TestRecorder
-        enabled={true}
+        active={true}
+        recording={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -613,7 +625,8 @@ describe('AudioRecorder', () => {
 
     render(
       <TestRecorder
-        enabled={true}
+        active={true}
+        recording={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -642,7 +655,8 @@ describe('AudioRecorder', () => {
 
     render(
       <TestRecorder
-        enabled={true}
+        active={true}
+        recording={true}
         onAppend={onAppend}
         onPatch={onPatch}
         onRecordingComplete={onRecordingComplete}
@@ -686,7 +700,8 @@ describe('AudioRecorder', () => {
 
     render(
       <TestRecorder
-        enabled={true}
+        active={true}
+        recording={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -718,7 +733,8 @@ describe('AudioRecorder', () => {
 
     render(
       <TestRecorder
-        enabled={true}
+        active={true}
+        recording={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -756,7 +772,8 @@ describe('AudioRecorder', () => {
 
     render(
       <TestRecorder
-        enabled={true}
+        active={true}
+        recording={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -779,7 +796,8 @@ describe('AudioRecorder', () => {
 
     const { unmount } = render(
       <TestRecorder
-        enabled={true}
+        active={true}
+        recording={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -813,7 +831,8 @@ describe('AudioRecorder', () => {
 
     const { unmount } = render(
       <TestRecorder
-        enabled={true}
+        active={true}
+        recording={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -865,7 +884,8 @@ describe('AudioRecorder', () => {
 
     const { unmount } = render(
       <TestRecorder
-        enabled={true}
+        active={true}
+        recording={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -895,7 +915,8 @@ describe('AudioRecorder', () => {
 
     const { rerender } = render(
       <TestRecorder
-        enabled={true}
+        active={true}
+        recording={true}
         onAppend={onAppend1}
         onRecordingComplete={onRecordingComplete1}
         onError={onError1}
@@ -914,7 +935,8 @@ describe('AudioRecorder', () => {
 
     rerender(
       <TestRecorder
-        enabled={true}
+        active={true}
+        recording={true}
         onAppend={onAppend2}
         onRecordingComplete={onRecordingComplete2}
         onError={onError2}
@@ -948,7 +970,8 @@ describe('AudioRecorder', () => {
 
     render(
       <TestRecorder
-        enabled={true}
+        active={true}
+        recording={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -1000,7 +1023,8 @@ describe('AudioRecorder', () => {
 
     render(
       <TestRecorder
-        enabled={true}
+        active={true}
+        recording={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -1026,6 +1050,149 @@ describe('AudioRecorder', () => {
       // recordingComplete fires as a final fallback even with no frames,
       // so callers are never left waiting for a transition that will never come.
       expect(onRecordingComplete).toHaveBeenCalled()
+    })
+  })
+
+  const baseHandlers = () => ({
+    onAppend: vi.fn(),
+    onRecordingComplete: vi.fn(),
+    onError: vi.fn(),
+    onAudioRopeGrow: vi.fn(),
+    onAudioRopeShare: vi.fn(),
+  })
+
+  // Wait until warm setup has progressed past getUserMedia by observing the
+  // worklet 'init' message — the last thing warm setup posts before recording.
+  const waitForWarm = async () => {
+    await waitFor(() => {
+      expect(mockWorkletNode.port.postMessage).toHaveBeenCalled()
+    })
+  }
+
+  it('active but not recording: workers run but nothing streams', async () => {
+    render(<TestRecorder active={true} recording={false} {...baseHandlers()} />)
+
+    await waitForMockRopeWriterWorker()
+    await waitForWarm()
+
+    // Worklet and all consumer workers are instantiated (warm)...
+    expect(mockRopeWriterWorkerInstances).toHaveLength(1)
+    expect(mockWorkerInstances).toHaveLength(1)
+    expect(mockFormantWorkerInstances).toHaveLength(1)
+    expect(mockVadWorkerInstances).toHaveLength(1)
+
+    // ...but no audio flows: the rope writer is never inited (no rope exists),
+    // the consumer workers are never inited, and the source is never connected.
+    expect(getMockRopeWriterWorker().postMessage).not.toHaveBeenCalled()
+    expect(getMockWorker().postMessage).not.toHaveBeenCalled()
+    expect(mockSourceNode.connect).not.toHaveBeenCalled()
+  })
+
+  it('flipping recording on starts streaming on the same warm workers', async () => {
+    const { rerender } = render(
+      <TestRecorder active={true} recording={false} {...baseHandlers()} />,
+    )
+
+    await waitForMockRopeWriterWorker()
+    await waitForWarm()
+
+    const ropeWriter = getMockRopeWriterWorker()
+    const spectrogram = getMockWorker()
+
+    rerender(
+      <TestRecorder active={true} recording={true} {...baseHandlers()} />,
+    )
+
+    await dispatchRopeReady()
+    await waitFor(() => {
+      expect(mockSourceNode.connect).toHaveBeenCalledWith(mockWorkletNode)
+    })
+
+    // The pipeline was not rebuilt: the warm workers themselves began streaming.
+    expect(mockRopeWriterWorkerInstances).toHaveLength(1)
+    expect(mockWorkerInstances).toHaveLength(1)
+    expect(getMockRopeWriterWorker()).toBe(ropeWriter)
+    expect(getMockWorker()).toBe(spectrogram)
+  })
+
+  it('warm-but-never-recording teardown does not depend on a rope-ready', async () => {
+    const { unmount } = render(
+      <TestRecorder active={true} recording={false} {...baseHandlers()} />,
+    )
+
+    await waitForMockRopeWriterWorker()
+    await waitForWarm()
+
+    // No rope writer init, no rope-ready, no SAB end-signal — yet unmount must
+    // still tear the warm workers down rather than leak them.
+    unmount()
+
+    await waitFor(() => {
+      expect(getMockRopeWriterWorker().terminate).toHaveBeenCalled()
+      expect(getMockWorker().terminate).toHaveBeenCalled()
+      expect(getMockFormantWorker().terminate).toHaveBeenCalled()
+      expect(getMockVadWorker().terminate).toHaveBeenCalled()
+    })
+  })
+
+  it('recording falling edge soft-resets the pipeline with fresh workers', async () => {
+    const onRecordingComplete = vi.fn()
+    const { rerender } = render(
+      <TestRecorder
+        active={true}
+        recording={true}
+        {...baseHandlers()}
+        onRecordingComplete={onRecordingComplete}
+      />,
+    )
+
+    await waitForMockRopeWriterWorker()
+    await dispatchRopeReady()
+    await waitForConsumerInit()
+    const firstRopeWriter = getMockRopeWriterWorker()
+    const firstSpectrogram = getMockWorker()
+    const firstFormant = getMockFormantWorker()
+    const firstVad = getMockVadWorker()
+
+    // Stop recording while staying active.
+    rerender(
+      <TestRecorder
+        active={true}
+        recording={false}
+        {...baseHandlers()}
+        onRecordingComplete={onRecordingComplete}
+      />,
+    )
+
+    // softReset awaits workersDone — dispatch ended so it can proceed.
+    firstRopeWriter.dispatchMessage({ type: 'ended' })
+    firstSpectrogram.dispatchMessage({ type: 'ended' })
+    firstFormant.dispatchMessage({ type: 'ended' })
+    firstVad.dispatchMessage({ type: 'ended' })
+
+    // softReset recreates workers once old ones finish.
+    await waitFor(() => {
+      expect(mockRopeWriterWorkerInstances).toHaveLength(2)
+    })
+    expect(getMockRopeWriterWorker()).not.toBe(firstRopeWriter)
+
+    // Source is disconnected before the new workers connect it for the next take.
+    expect(mockSourceNode.disconnect).toHaveBeenCalled()
+    await waitFor(() => {
+      expect(onRecordingComplete).toHaveBeenCalled()
+    })
+  })
+
+  it('records immediately when mounted already recording (no warm phase)', async () => {
+    // Mirrors a caller with persistentMic off: active and recording rise
+    // together, so there is no warm phase — recording must still begin.
+    render(<TestRecorder active={true} recording={true} {...baseHandlers()} />)
+
+    await waitForMockRopeWriterWorker()
+    await dispatchRopeReady()
+
+    await waitFor(() => {
+      expect(mockSourceNode.connect).toHaveBeenCalledWith(mockWorkletNode)
     })
   })
 })

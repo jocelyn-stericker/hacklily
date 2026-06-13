@@ -321,7 +321,6 @@ describe('AudioPlaybackPipeline', () => {
         mockAudioAPI.workletNode.port.postMessage,
       ).toHaveBeenLastCalledWith(null)
       expect(mockAudioAPI.workletNode.disconnect).toHaveBeenCalled()
-      expect(mockAudioAPI.context.suspend).toHaveBeenCalled()
       expect(mockAudioAPI.context.close).not.toHaveBeenCalled()
       expect(pipeline.stopSignal.aborted).toBe(true)
     })
@@ -388,7 +387,6 @@ describe('AudioPlaybackPipeline', () => {
         mockAudioAPI.workletNode.port.postMessage,
       ).toHaveBeenLastCalledWith(null)
       expect(mockAudioAPI.workletNode.disconnect).toHaveBeenCalled()
-      expect(mockAudioAPI.context.suspend).toHaveBeenCalled()
       expect(mockAudioAPI.context.close).not.toHaveBeenCalled()
       expect(pipeline.stopSignal.aborted).toBe(true)
       expect(cancelAnimationFrame).toHaveBeenCalled()
@@ -414,24 +412,6 @@ describe('AudioPlaybackPipeline', () => {
       await flush()
 
       expect(MockAudioWorkletNode.count).toBe(0)
-      expect(pipeline.stopSignal.aborted).toBe(true)
-    })
-
-    it('does not throw when the context suspend rejects', async () => {
-      const pipeline = new AudioPlaybackPipeline({
-        ropes: [makeRope(44100)],
-        gains: [],
-        startAtSec: 0,
-        signal: abortController.signal,
-        context: mockContext,
-        moduleReady,
-      })
-      await flush()
-      mockAudioAPI.context.suspend.mockRejectedValue(
-        new Error('already closed'),
-      )
-
-      expect(() => abortController.abort()).not.toThrow()
       expect(pipeline.stopSignal.aborted).toBe(true)
     })
   })

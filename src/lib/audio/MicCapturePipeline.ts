@@ -169,6 +169,27 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
   #pendingWorkers = 0
   #numFreqs = 0
   #recordingCompleteEmitted = false
+  // Per-worker abort controllers so workers can be torn down independently (e.g.
+  // during a soft-reset for a new recording) without killing the main #destroyed
+  // signal that governs the full pipeline lifecycle.
+  #ropeWriterSignal = new AbortController()
+  #spectrogramSignal = new AbortController()
+  #formantSignal = new AbortController()
+  #vadSignal = new AbortController()
+  // Resolved when all workers from the current recording have terminated.
+  #resolveWorkersDone = () => {}
+  #workersDone: Promise<void> = Promise.resolve()
+  // Split lifecycle: the constructor warms up (workers, worklet, stream, SAB)
+  // but does not stream audio. `record()` flips `#wantRecording`; once warm
+  // setup has finished, `#beginRecording` initialises the rope writer, which in
+  // turn inits the consumer workers and connects the source — only then does
+  // audio reach the ring buffer and rope. `#recordingBegun` guards both against
+  // double-starting and against signalling a rope writer that was never inited.
+  #wantRecording = false
+  #recordingBegun = false
+  // Set during softReset() so that race-condition record() calls are deferred
+  // until the new workers are ready.
+  #resetting = false
 
   get destroyed(): AbortSignal {
     return this.#destroyed.signal
@@ -284,63 +305,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
         bufSamples: SAB_BUF_SAMPLES,
       })
 
-      this.#ropeWriterWorker.postMessage({
-        type: 'init',
-        sab: this.#sab,
-        sampleRate: this.#sampleRate,
-        bufSamples: SAB_BUF_SAMPLES,
-      })
-      this.#pendingWorkers++
-
-      this.#ropeWriterWorker.addEventListener(
-        'error',
-        this.#handleRopeWriterWorkerError,
-        { signal: this.destroyed, once: true },
-      )
-
-      this.#ropeWriterWorker.addEventListener(
-        'message',
-        this.#handleRopeWriterWorkerOutMessage,
-        { signal: this.destroyed },
-      )
-
-      if (this.#spectrogramWorker) {
-        this.#spectrogramWorker.addEventListener(
-          'error',
-          this.#handleSpectrogramWorkerError,
-          { signal: this.destroyed, once: true },
-        )
-        this.#spectrogramWorker.addEventListener(
-          'message',
-          this.#handleSpectrogramWorkerOutMessage,
-          { signal: this.destroyed },
-        )
-      }
-
-      if (this.#formantWorker) {
-        this.#formantWorker.addEventListener(
-          'error',
-          this.#handleFormantWorkerError,
-          { signal: this.destroyed, once: true },
-        )
-        this.#formantWorker.addEventListener(
-          'message',
-          this.#handleFormantWorkerOutMessage,
-          { signal: this.destroyed },
-        )
-      }
-
-      if (this.#vadWorker) {
-        this.#vadWorker.addEventListener('error', this.#handleVadWorkerError, {
-          signal: this.destroyed,
-          once: true,
-        })
-        this.#vadWorker.addEventListener(
-          'message',
-          this.#handleVadWorkerOutMessage,
-          { signal: this.destroyed },
-        )
-      }
+      this.#setupWorkerListeners()
     } catch (err) {
       const settingsChanged = await fixSettingsConstraint(settings, err)
       if (settingsChanged) {
@@ -353,17 +318,189 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
     }
 
     this.#resolveInitComplete()
+    // If `record()` was called while warm setup was still in flight, start
+    // streaming now that the rope writer, worklet, and SAB exist.
+    if (this.#wantRecording) this.#beginRecording()
+  }
+
+  /**
+   * Begin streaming audio into the ring buffer and rope. Safe to call before
+   * warm setup finishes (it will start once `#start` completes) and idempotent
+   * across repeated calls. Without this, `active` keeps the pipeline warm but
+   * silent.
+   */
+  record() {
+    this.#wantRecording = true
+    if (this.#resetting) return
+    this.#beginRecording()
+  }
+
+  #beginRecording() {
+    if (this.#recordingBegun) return
+    // Warm setup not finished yet (or failed). The tail of `#start` re-checks
+    // `#wantRecording` and calls us again once everything exists.
+    if (!this.#ropeWriterWorker || !this.#sab || this.#sampleRate === null) {
+      return
+    }
+    this.#recordingBegun = true
+    // Reset the workers-done promise so softReset can await this recording's workers.
+    this.#workersDone = new Promise<void>((resolve) => {
+      this.#resolveWorkersDone = resolve
+    })
+    // Initing the rope writer kicks off `rope-ready`, which inits the consumer
+    // workers and connects the source node (see #initConsumerWorkers).
+    this.#ropeWriterWorker.postMessage({
+      type: 'init',
+      sab: this.#sab,
+      sampleRate: this.#sampleRate,
+      bufSamples: SAB_BUF_SAMPLES,
+    })
+    this.#pendingWorkers++
+  }
+
+  /**
+   * Prepare the pipeline for a new recording without tearing down the audio
+   * graph (stream, source node, worklet). Signals the current recording to end,
+   * waits for workers to finish, then creates fresh workers and a new SAB.
+   */
+  async softReset(features?: MicCaptureFeatures): Promise<void> {
+    if (this.#destroyed.signal.aborted) return
+    await this.#started
+    this.#resetting = true
+    // Clear the previous recording's request. If record() is called during the
+    // reset it will re-raise the flag; the tail below picks it up.
+    this.#wantRecording = false
+
+    if (features) {
+      this.#features = {
+        spectrogram: true,
+        formant: true,
+        vad: true,
+        ...features,
+      }
+    }
+
+    // Signal the current recording to end so the rope writer flushes and seals.
+    if (this.#recordingBegun && this.#sab) {
+      const ctrl = new Int32Array(this.#sab, 0, 2)
+      Atomics.store(ctrl, 1, 1)
+      Atomics.notify(ctrl, 0)
+      this.#recordingBegun = false
+    }
+
+    // Wait for workers from the current recording to finish processing.
+    await this.#workersDone
+
+    // Disconnect source from worklet so the new recording gets a clean connection.
+    this.#sourceNode?.disconnect()
+
+    // Fresh SAB and worklet init.
+    this.#sab = new SharedArrayBuffer(8 + SAB_BUF_SAMPLES * 4)
+    this.#workletNode?.port.postMessage({
+      type: 'init',
+      sab: this.#sab,
+      bufSamples: SAB_BUF_SAMPLES,
+    })
+
+    // Create fresh workers.
+    this.#ropeWriterWorker = new RopeWriterWorker()
+    if (this.#features.spectrogram)
+      this.#spectrogramWorker = new SpectrogramWorker()
+    if (this.#features.formant) this.#formantWorker = new FormantWorker()
+    if (this.#features.vad) this.#vadWorker = new VadWorker()
+
+    this.#setupWorkerListeners()
+
+    // Reset per-recording state.
+    this.#recordingCompleteEmitted = false
+    this.#pendingWorkers = 0
+    this.#analysis = null
+
+    this.#resetting = false
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- record() may re-raise during the await
+    if (this.#wantRecording) this.#beginRecording()
+  }
+
+  #setupWorkerListeners() {
+    if (!this.#ropeWriterWorker) return
+    this.#ropeWriterWorker.addEventListener(
+      'error',
+      this.#handleRopeWriterWorkerError,
+      { signal: this.#ropeWriterSignal.signal, once: true },
+    )
+    this.#ropeWriterWorker.addEventListener(
+      'message',
+      this.#handleRopeWriterWorkerOutMessage,
+      { signal: this.#ropeWriterSignal.signal },
+    )
+
+    if (this.#spectrogramWorker) {
+      this.#spectrogramWorker.addEventListener(
+        'error',
+        this.#handleSpectrogramWorkerError,
+        { signal: this.#spectrogramSignal.signal, once: true },
+      )
+      this.#spectrogramWorker.addEventListener(
+        'message',
+        this.#handleSpectrogramWorkerOutMessage,
+        { signal: this.#spectrogramSignal.signal },
+      )
+    }
+
+    if (this.#formantWorker) {
+      this.#formantWorker.addEventListener(
+        'error',
+        this.#handleFormantWorkerError,
+        { signal: this.#formantSignal.signal, once: true },
+      )
+      this.#formantWorker.addEventListener(
+        'message',
+        this.#handleFormantWorkerOutMessage,
+        { signal: this.#formantSignal.signal },
+      )
+    }
+
+    if (this.#vadWorker) {
+      this.#vadWorker.addEventListener('error', this.#handleVadWorkerError, {
+        signal: this.#vadSignal.signal,
+        once: true,
+      })
+      this.#vadWorker.addEventListener(
+        'message',
+        this.#handleVadWorkerOutMessage,
+        { signal: this.#vadSignal.signal },
+      )
+    }
+  }
+
+  // Terminate workers and clean up their listeners without aborting the main
+  // pipeline signal. Used both for full teardown (via #teardown) and soft-reset
+  // (where the audio graph lives on).
+  #teardownWorkers() {
+    this.#ropeWriterWorker?.terminate()
+    this.#ropeWriterWorker = null
+    this.#ropeWriterSignal.abort()
+    this.#ropeWriterSignal = new AbortController()
+
+    this.#spectrogramWorker?.terminate()
+    this.#spectrogramWorker = null
+    this.#spectrogramSignal.abort()
+    this.#spectrogramSignal = new AbortController()
+
+    this.#formantWorker?.terminate()
+    this.#formantWorker = null
+    this.#formantSignal.abort()
+    this.#formantSignal = new AbortController()
+
+    this.#vadWorker?.terminate()
+    this.#vadWorker = null
+    this.#vadSignal.abort()
+    this.#vadSignal = new AbortController()
   }
 
   #teardown() {
-    this.#ropeWriterWorker?.terminate()
-    this.#ropeWriterWorker = null
-    this.#spectrogramWorker?.terminate()
-    this.#spectrogramWorker = null
-    this.#formantWorker?.terminate()
-    this.#formantWorker = null
-    this.#vadWorker?.terminate()
-    this.#vadWorker = null
+    this.#teardownWorkers()
     this.#destroyed.abort()
   }
 
@@ -376,7 +513,8 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
         this.#recordingCompleteEmitted = true
         this.emit('recordingComplete')
       }
-      this.#teardown()
+      this.#teardownWorkers()
+      this.#resolveWorkersDone()
     }
   }
 
@@ -679,11 +817,13 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
 
     this.#sourceNode?.disconnect()
     this.#workletNode?.disconnect()
-    await this.#context?.suspend()
-    if (this.#sab) {
+    if (this.#recordingBegun && this.#sab) {
       const ctrl = new Int32Array(this.#sab, 0, 2)
       Atomics.store(ctrl, 1, 1)
       Atomics.notify(ctrl, 0)
+      this.#recordingBegun = false
+      // Teardown after workers finish, in the background.
+      void this.#workersDone.then(() => this.#teardown())
     } else {
       this.#teardown()
     }

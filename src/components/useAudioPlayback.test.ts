@@ -20,6 +20,16 @@ vi.mock('#/lib/audio/sharedAudioContext', () => ({
     playbackModuleReady: Promise.resolve(),
     captureModuleReady: Promise.resolve(),
   })),
+  acquireSharedAudioContext: vi.fn(() => ({
+    context: {
+      state: 'running',
+      resume: vi.fn(async () => {}),
+      suspend: vi.fn(async () => {}),
+    },
+    playbackModuleReady: Promise.resolve(),
+    captureModuleReady: Promise.resolve(),
+    release: vi.fn(),
+  })),
   resumeSharedAudioContext: vi.fn(),
 }))
 

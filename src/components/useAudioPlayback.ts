@@ -8,7 +8,7 @@ import { useSettings } from '#/components/useSettings'
 import { AudioPlaybackPipeline } from '#/lib/audio/AudioPlaybackPipeline'
 import type { AudioRope } from '#/lib/audio/AudioRope'
 import {
-  getOrCreateSharedAudioContext,
+  acquireSharedAudioContext,
   resumeSharedAudioContext,
 } from '#/lib/audio/sharedAudioContext'
 import type { RopeGainCache } from '#/lib/loudness/ropeLoudness'
@@ -68,10 +68,16 @@ export function useAudioPlayback({
     reportedHighWater: number
   } | null>(null)
 
+  // Release function for the shared audio context lease. Set when a pipeline is
+  // created; called when the pipeline is torn down for good (not recreated).
+  const releaseRef = useRef<(() => void) | null>(null)
+
   useEffect(() => {
     if (!enabled || ropes.length === 0) {
       playbackRef.current?.ctrl.abort()
       playbackRef.current = null
+      releaseRef.current?.()
+      releaseRef.current = null
       return
     }
 
@@ -109,11 +115,11 @@ export function useAudioPlayback({
       reportedHighWater: cursorSec,
     }
 
-    // Fallback context creation: the caller should have called
-    // getOrCreateSharedAudioContext() in a gesture handler before enabling
-    // playback, but this ensures we always have a context to work with.
-    const { context, playbackModuleReady } =
-      getOrCreateSharedAudioContext(preferredRate)
+    const shared = acquireSharedAudioContext(preferredRate)
+    // Swap leases atomically: hold the new one before releasing the old so the
+    // refcount never drops to zero while both pipelines overlap.
+    releaseRef.current?.()
+    releaseRef.current = () => shared.release()
 
     const pipeline = new AudioPlaybackPipeline({
       ropes,
@@ -121,8 +127,8 @@ export function useAudioPlayback({
       startAtSec: cursorSec,
       endAtSec,
       signal: ctrl.signal,
-      context,
-      moduleReady: playbackModuleReady,
+      context: shared.context,
+      moduleReady: shared.playbackModuleReady,
     })
 
     const listenerOpts = { signal: pipeline.stopSignal }
@@ -165,6 +171,8 @@ export function useAudioPlayback({
     return () => {
       playbackRef.current?.ctrl.abort()
       playbackRef.current = null
+      releaseRef.current?.()
+      releaseRef.current = null
     }
   }, [])
 }

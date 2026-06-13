@@ -20,13 +20,29 @@ import {
 } from '#/lib/audio/MicCapturePipeline'
 import type { MicCaptureFeatures } from '#/lib/audio/MicCapturePipeline'
 import {
-  getOrCreateSharedAudioContext,
+  acquireSharedAudioContext,
   resumeSharedAudioContext,
 } from '#/lib/audio/sharedAudioContext'
 import { preferredSampleRate } from '#/lib/settings'
 
+/**
+ * Drives the mic-capture pipeline with two independent levers:
+ *
+ * - `active` controls the pipeline's *lifetime*. While active, the context,
+ *   worklet, and workers are spun up and kept warm so that starting a recording
+ *   is fast. The decision of when to stay warm (e.g. always, with a persistent
+ *   mic) belongs to the caller — pass `active` accordingly.
+ * - `recording` controls *streaming*. Audio only reaches the ring buffer and
+ *   rope while recording; an active-but-not-recording pipeline is idle.
+ *
+ * A recording is one rope, and the consumer workers are bound to it at init, so
+ * each recording needs fresh workers. On the recording falling edge we call
+ * `softReset()` on the existing pipeline to create new workers without tearing
+ * down the audio graph (stream, source node, worklet).
+ */
 export function useMicCapture({
-  enabled,
+  active,
+  recording,
   features,
   onAppend,
   onChunkStart,
@@ -37,7 +53,8 @@ export function useMicCapture({
   onAudioRopeShare,
   onAudioRopeSeal,
 }: {
-  enabled: boolean
+  active: boolean
+  recording: boolean
   features?: MicCaptureFeatures
   onAppend: (frame: AnalysisFrame) => void
   onChunkStart?: (params: AnalysisParams) => void
@@ -50,7 +67,9 @@ export function useMicCapture({
 }) {
   const [audioSettings] = useSettings()
 
-  // Pre-open the mic when persistentMic is enabled so the connection is warm.
+  // persistentMic is still passed through to the pipeline for cross-instance
+  // stream caching, but the hook no longer reads it to decide warmth — that's
+  // `active`, which the caller derives.
   const { inputDeviceId, sampleRate, persistentMic, browserPreprocessing } =
     audioSettings
   const spectrogramEnabled = features?.spectrogram ?? true
@@ -58,14 +77,6 @@ export function useMicCapture({
   // Serialize to a primitive dep: prevents pipeline restarts when the caller
   // passes an un-memoized VadParams object literal (new reference each render).
   const vadSettingsKey = JSON.stringify(features?.vad ?? true)
-  useEffect(() => {
-    void preInitPersistentStream({
-      inputDeviceId,
-      sampleRate,
-      persistentMic,
-      browserPreprocessing,
-    })
-  }, [inputDeviceId, sampleRate, persistentMic, browserPreprocessing])
 
   const onAppendRef = useRef(onAppend)
   const onChunkStartRef = useRef(onChunkStart)
@@ -75,6 +86,10 @@ export function useMicCapture({
   const onAudioRopeGrowRef = useRef(onAudioRopeGrow)
   const onAudioRopeShareRef = useRef(onAudioRopeShare)
   const onAudioRopeSealRef = useRef(onAudioRopeSeal)
+  // Lets the lifetime effect see the current `recording` without depending on
+  // it (which would tear the pipeline down on every record toggle). Used so a
+  // pipeline rebuilt mid-recording — e.g. on a settings change — keeps streaming.
+  const recordingRef = useRef(recording)
 
   useLayoutEffect(() => {
     onAppendRef.current = onAppend
@@ -85,6 +100,7 @@ export function useMicCapture({
     onAudioRopeGrowRef.current = onAudioRopeGrow
     onAudioRopeShareRef.current = onAudioRopeShare
     onAudioRopeSealRef.current = onAudioRopeSeal
+    recordingRef.current = recording
   })
 
   // Re-resume after a UA-initiated suspension (tab switch, app backgrounding).
@@ -96,16 +112,44 @@ export function useMicCapture({
     return () => document.removeEventListener('visibilitychange', onVisibility)
   }, [])
 
+  // Release the cached persistent stream when the mic is no longer meant to be
+  // kept open. Warming it while persistentMic is on is now the caller's job (it
+  // sets `active`), but the cached stream still has to be torn down when the
+  // setting flips off — otherwise an idle warm pipeline's stale snapshot would
+  // keep the mic open.
+  useEffect(() => {
+    if (persistentMic) return
+    void preInitPersistentStream({
+      inputDeviceId,
+      sampleRate,
+      persistentMic: false,
+      browserPreprocessing,
+    })
+  }, [persistentMic, inputDeviceId, sampleRate, browserPreprocessing])
+
   const preferredRate = preferredSampleRate(audioSettings)
 
+  // The current warm pipeline, so the recording effect can start streaming on it.
+  const pipelineRef = useRef<MicCapturePipeline | null>(null)
+  // Holds the release function for the current shared context lease. Swapped
+  // atomically on pipeline recreation so the refcount never hits zero while
+  // both the old and new pipeline exist.
+  const releaseRef = useRef<(() => void) | null>(null)
+
+  // Pipeline lifetime — keyed on `active` (and settings), never on `recording`,
+  // so starting/stopping a recording does not tear down and rebuild the workers.
   useEffect(() => {
-    if (!enabled) return
+    if (!active) {
+      releaseRef.current?.()
+      releaseRef.current = null
+      return
+    }
     const ctrl = new AbortController()
-    // Fallback context creation: the caller should have called
-    // getOrCreateSharedAudioContext() in a gesture handler (handleStart) before
-    // enabling capture, but this ensures we always have a context to work with.
-    const { context, captureModuleReady } =
-      getOrCreateSharedAudioContext(preferredRate)
+    const shared = acquireSharedAudioContext(preferredRate)
+    // Swap leases atomically: hold the new one before releasing the old so the
+    // refcount never drops to zero across the pipeline recreation.
+    releaseRef.current?.()
+    releaseRef.current = () => shared.release()
     const pipeline = new MicCapturePipeline({
       signal: ctrl.signal,
       settings: {
@@ -119,8 +163,8 @@ export function useMicCapture({
         formant: formantEnabled,
         vad: JSON.parse(vadSettingsKey) as MicCaptureFeatures['vad'],
       },
-      context,
-      captureModuleReady,
+      context: shared.context,
+      captureModuleReady: shared.captureModuleReady,
     })
     pipeline.addEventListener(
       'append',
@@ -164,9 +208,17 @@ export function useMicCapture({
       (e) => onAudioRopeSealRef.current(e.detail),
       { signal: pipeline.destroyed },
     )
-    return () => ctrl.abort()
+    pipelineRef.current = pipeline
+    // If we're created (or rebuilt) while already recording — a simultaneous
+    // active+recording start, or a settings change mid-recording — begin
+    // streaming now; the `recording` effect's rising edge won't fire for us.
+    if (recordingRef.current) pipeline.record()
+    return () => {
+      ctrl.abort()
+      if (pipelineRef.current === pipeline) pipelineRef.current = null
+    }
   }, [
-    enabled,
+    active,
     inputDeviceId,
     sampleRate,
     preferredRate,
@@ -176,4 +228,27 @@ export function useMicCapture({
     formantEnabled,
     vadSettingsKey,
   ])
+
+  // Streaming — keyed only on `recording`. Rising edge: start streaming on the
+  // existing warm pipeline. Falling edge: soft-reset the pipeline so workers are
+  // rebuilt for the next take without tearing down the audio graph.
+  const prevRecordingRef = useRef(false)
+  useEffect(() => {
+    const wasRecording = prevRecordingRef.current
+    prevRecordingRef.current = recording
+    if (recording && !wasRecording) {
+      resumeSharedAudioContext()
+      pipelineRef.current?.record()
+    } else if (!recording && wasRecording) {
+      void pipelineRef.current?.softReset()
+    }
+  }, [recording])
+
+  // Unmount cleanup: release the shared context lease.
+  useEffect(() => {
+    return () => {
+      releaseRef.current?.()
+      releaseRef.current = null
+    }
+  }, [])
 }

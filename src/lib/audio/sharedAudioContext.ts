@@ -12,6 +12,11 @@ let CAPTURE_MODULE_READY: Promise<void> | null = null
 // The sampleRate argument used when CONTEXT was created. Tracked so a changed
 // preference triggers a fresh context rather than silently using the old rate.
 let CONTEXT_SAMPLE_RATE: number | undefined = undefined
+// Number of active leases. Each hook that needs the context calls
+// acquireSharedAudioContext and must call release(). The context is only
+// suspended when all leases are released, preventing one hook from killing the
+// context while another is still using it.
+let ACTIVE_LEASES = 0
 
 export type SharedAudioContext = {
   context: AudioContext
@@ -31,6 +36,8 @@ export type SharedAudioContext = {
  *
  * If `sampleRate` differs from the one used at creation, the old context is
  * closed and a fresh one is created on the next gesture call.
+ *
+ * This does NOT acquire a lease — use `acquireSharedAudioContext` for that.
  */
 export function getOrCreateSharedAudioContext(
   sampleRate?: number,
@@ -95,6 +102,33 @@ export function getOrCreateSharedAudioContext(
 }
 
 /**
+ * Like `getOrCreateSharedAudioContext` but also acquires a lease. The returned
+ * `release` function must be called when the caller no longer needs the audio
+ * context. When all leases are released the context is suspended to release the
+ * audio hardware.
+ *
+ * Use this from hook effects that hold a long-lived reference to the context.
+ * Gesture handlers that only touch the context to ensure it exists should use
+ * `getOrCreateSharedAudioContext` directly.
+ */
+export function acquireSharedAudioContext(
+  sampleRate?: number,
+): SharedAudioContext & { release(): void } {
+  const shared = getOrCreateSharedAudioContext(sampleRate)
+  ACTIVE_LEASES++
+  let released = false
+  return {
+    ...shared,
+    release: () => {
+      if (released) return
+      released = true
+      ACTIVE_LEASES--
+      if (ACTIVE_LEASES <= 0) suspendSharedAudioContext()
+    },
+  }
+}
+
+/**
  * Resume the shared context if it exists and is not closed. Call from a
  * `visibilitychange` handler to recover from a UA-initiated suspension (tab
  * switch, app backgrounding) without needing a new user gesture.
@@ -102,5 +136,16 @@ export function getOrCreateSharedAudioContext(
 export function resumeSharedAudioContext(): void {
   if (CONTEXT && CONTEXT.state !== 'closed') {
     void CONTEXT.resume()
+  }
+}
+
+/**
+ * Suspend the shared context. Called automatically when the last lease is
+ * released. Also callable directly if the context must be released outside the
+ * lease system. No-op if absent or already suspended/closed.
+ */
+export function suspendSharedAudioContext(): void {
+  if (CONTEXT && CONTEXT.state === 'running') {
+    void CONTEXT.suspend()
   }
 }
