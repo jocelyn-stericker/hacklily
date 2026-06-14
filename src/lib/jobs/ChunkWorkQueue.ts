@@ -6,6 +6,7 @@ import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
 import type { AudioRope } from '#/lib/audio/AudioRope'
 import { locateChunkRope, chunkAudioFromRopes } from '#/lib/audio/AudioSpan'
 import type { AudioSpan } from '#/lib/audio/AudioSpan'
+import { Sink } from '#/lib/Sink'
 
 import { ModelUnavailableError } from './ModelUnavailableError'
 import { computeSealResolutions, reconcileLiveSpans } from './schedule'
@@ -85,28 +86,26 @@ export class ChunkWorkQueue {
   // kinds. A kind's `liveSpans` flag only decides whether it helps create them
   // (and may be scheduled before a chunk's audio is complete).
   #liveSpans = new Map<AnalysisChunk, LiveSpanEntry>()
-  // Passes are serialised through one chain so a re-fired scan queues behind the
-  // running pass rather than racing it.
-  #chain: Promise<void> = Promise.resolve()
-  // Bumped to supersede an in-flight pass (config change / teardown) so it can't
-  // keep writing results from a stale context.
   #generation = 0
+  #sink = new Sink<void>()
+  #abortController = new AbortController()
 
   constructor(kinds: readonly ChunkWork[], pickNext: PickNext, deps: WorkDeps) {
     this.#kinds = kinds
     this.#pickNext = pickNext
     this.#deps = deps
     for (const kind of kinds) this.#byId.set(kind.kind, kind)
+    void this.#loop()
   }
 
   /**
-   * Re-evaluate: reconcile live spans against the current timeline, then ensure a
-   * pass is running. Idempotent and cheap to call often (structural changes,
-   * viewport moves, a job finishing).
+   * Re-evaluate: reconcile live spans against the current timeline, then signal
+   * the loop to run a pass. Idempotent and cheap to call often (structural
+   * changes, viewport moves, a job finishing).
    */
   scan(): void {
     this.#reconcile()
-    this.#pump()
+    this.#sink.push(undefined)
   }
 
   /** The recording rope sealed: resolve every pending live endTime, then re-scan. */
@@ -128,11 +127,25 @@ export class ChunkWorkQueue {
     this.scan()
   }
 
-  /** Abort all live spans and supersede any pass (owner teardown). */
+  /** Abort the loop, abort all live spans, and supersede any pass (owner teardown). */
   dispose(): void {
+    this.#abortController.abort()
     this.#generation += 1
     for (const span of this.#liveSpans.values()) span.abortController.abort()
     this.#liveSpans.clear()
+  }
+
+  // Background loop: driven by the sink, runs one pass per signal. The sink
+  // serialises passes so only one runs at a time; a push during a pass queues
+  // the next wake-up after the current pass finishes.
+  async #loop(): Promise<void> {
+    while ((await this.#sink.next(this.#abortController.signal)) !== null) {
+      try {
+        await this.#pass()
+      } catch (err) {
+        console.warn(LOG, 'pass failed', err)
+      }
+    }
   }
 
   // Apply the live-span lifecycle synchronously so aborts take effect even while
@@ -169,21 +182,7 @@ export class ChunkWorkQueue {
     }
   }
 
-  #passQueued = false
-  #pump(): void {
-    if (!this.#passQueued) {
-      this.#passQueued = true
-
-      this.#chain = this.#chain
-        .then(() => this.#pass())
-        .catch((err: unknown) => {
-          console.warn(LOG, 'pass failed', err)
-        })
-    }
-  }
-
   async #pass(): Promise<void> {
-    this.#passQueued = false
     const generation = this.#generation
     // Resolved per kind this pass: a runner, or null once a kind has stood down
     // (resolve returned null, or a run threw ModelUnavailableError).

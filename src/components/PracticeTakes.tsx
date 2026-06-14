@@ -26,7 +26,7 @@ import {
   TooltipTrigger,
 } from '#/components/ui/tooltip'
 import type { PracticeTake } from '#/lib/practiceState'
-import { cn, formatDuration } from '#/lib/utils.ts'
+import { cn, formatDuration } from '#/lib/utils'
 
 import { TooltipButton } from './ui/tooltipButton'
 
@@ -37,7 +37,7 @@ export function PracticeTakeRow({
   playingTakeId,
   onPlay,
   onAnalyze,
-  onStar,
+  onPin,
 }: {
   take: PracticeTake
   isLatest: boolean
@@ -45,18 +45,14 @@ export function PracticeTakeRow({
   playingTakeId: number | null
   onPlay: (take: PracticeTake) => void
   onAnalyze: (take: PracticeTake) => void
-  onStar: (takeId: number) => void
+  onPin: (takeId: number) => void
 }) {
   const isReference = referenceTakeId === take.id
   const isPlaying = playingTakeId === take.id
 
-  const approxDuration =
-    take.voicedRanges.length > 0
-      ? formatDuration(
-          take.voicedRanges[take.voicedRanges.length - 1]!.endSec -
-            take.voicedRanges[0]!.startSec,
-        )
-      : '…'
+  const approxDuration = formatDuration(
+    take.voicedRange.endSec - take.voicedRange.startSec,
+  )
 
   return (
     <div
@@ -94,10 +90,10 @@ export function PracticeTakeRow({
           <ChartSpline className="size-3" />
         </TooltipButton>
         <TooltipButton
-          label={isReference ? 'Unpin reference' : 'Star as reference'}
+          label={isReference ? 'Unpin reference' : 'Pin as reference'}
           variant="ghost"
           size="icon-sm"
-          onClick={() => onStar(take.id)}
+          onClick={() => onPin(take.id)}
         >
           <Pin
             className={cn(
@@ -119,7 +115,7 @@ export function PracticeTakesList({
   playingTakeId,
   onPlayTake,
   onAnalyzeTake,
-  onStarTake,
+  onPinTake,
   onClearSession,
 }: {
   takes: PracticeTake[]
@@ -127,7 +123,7 @@ export function PracticeTakesList({
   playingTakeId: number | null
   onPlayTake: (take: PracticeTake) => void
   onAnalyzeTake: (take: PracticeTake) => void
-  onStarTake: (takeId: number) => void
+  onPinTake: (takeId: number) => void
   onClearSession: () => void
 }) {
   const referenceTake = takes.find((t) => t.id === referenceTakeId)
@@ -164,7 +160,7 @@ export function PracticeTakesList({
           playingTakeId={playingTakeId}
           onPlay={onPlayTake}
           onAnalyze={onAnalyzeTake}
-          onStar={onStarTake}
+          onPin={onPinTake}
         />
       ))}
       {takes.length > 0 && (
@@ -196,14 +192,14 @@ export function PracticeLatestTakeRow({
   referenceTakeId,
   takeCount,
   onPlayTake,
-  onStarTake,
+  onPinTake,
 }: {
   latestTake: PracticeTake | undefined
   playingTakeId: number | null
   referenceTakeId: number | null
   takeCount: number
   onPlayTake: (take: PracticeTake) => void
-  onStarTake: (takeId: number) => void
+  onPinTake: (takeId: number) => void
 }) {
   if (!latestTake) {
     return (
@@ -224,11 +220,8 @@ export function PracticeLatestTakeRow({
 
   const isPlaying = playingTakeId === latestTake.id
   const isReference = referenceTakeId === latestTake.id
-  const vr = latestTake.voicedRanges
-  const duration =
-    vr.length > 0
-      ? formatDuration(vr[vr.length - 1]!.endSec - vr[0]!.startSec)
-      : '…'
+  const vr = latestTake.voicedRange
+  const duration = formatDuration(vr.endSec - vr.startSec)
 
   return (
     <div className="flex items-center gap-1 border-t border-border px-2">
@@ -258,10 +251,10 @@ export function PracticeLatestTakeRow({
         </button>
       </DrawerTrigger>
       <TooltipButton
-        label={isReference ? 'Unpin reference' : 'Star as reference'}
+        label={isReference ? 'Unpin reference' : 'Pin as reference'}
         variant="ghost"
         size="icon"
-        onClick={() => onStarTake(latestTake.id)}
+        onClick={() => onPinTake(latestTake.id)}
       >
         <Pin
           className={cn(
@@ -283,7 +276,7 @@ export function PracticeTakesDrawer({
   takeCount,
   onPlayTake,
   onAnalyzeTake,
-  onStarTake,
+  onPinTake,
   onClearSession,
 }: {
   open: boolean
@@ -294,7 +287,7 @@ export function PracticeTakesDrawer({
   takeCount: number
   onPlayTake: (take: PracticeTake) => void
   onAnalyzeTake: (take: PracticeTake) => void
-  onStarTake: (takeId: number) => void
+  onPinTake: (takeId: number) => void
   onClearSession: () => void
 }) {
   return (
@@ -305,7 +298,7 @@ export function PracticeTakesDrawer({
         referenceTakeId={referenceTakeId}
         takeCount={takeCount}
         onPlayTake={onPlayTake}
-        onStarTake={onStarTake}
+        onPinTake={onPinTake}
       />
       <DrawerContent className="max-h-[70vh]">
         <DrawerHeader>
@@ -322,7 +315,7 @@ export function PracticeTakesDrawer({
             playingTakeId={playingTakeId}
             onPlayTake={onPlayTake}
             onAnalyzeTake={onAnalyzeTake}
-            onStarTake={onStarTake}
+            onPinTake={onPinTake}
             onClearSession={onClearSession}
           />
         </div>
@@ -338,7 +331,7 @@ export function PracticeTakesSidebar({
   takeCount,
   onPlayTake,
   onAnalyzeTake,
-  onStarTake,
+  onPinTake,
   onClearSession,
 }: {
   takes: PracticeTake[]
@@ -347,7 +340,7 @@ export function PracticeTakesSidebar({
   takeCount: number
   onPlayTake: (take: PracticeTake) => void
   onAnalyzeTake: (take: PracticeTake) => void
-  onStarTake: (takeId: number) => void
+  onPinTake: (takeId: number) => void
   onClearSession: () => void
 }) {
   return (
@@ -363,7 +356,7 @@ export function PracticeTakesSidebar({
             playingTakeId={playingTakeId}
             onPlayTake={onPlayTake}
             onAnalyzeTake={onAnalyzeTake}
-            onStarTake={onStarTake}
+            onPinTake={onPinTake}
             onClearSession={onClearSession}
           />
         </div>

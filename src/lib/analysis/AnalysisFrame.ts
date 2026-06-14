@@ -22,7 +22,7 @@ export type AnalysisFrame = {
   // True when pitch analysis detected a voiced frame (f0 > 0)
   pitchDetected: boolean
   // True when VAD determined we are in a voiced speech segment (includes pre-roll and post-roll)
-  speechDetected: boolean
+  speechDetected: boolean | null
   f0: number // 0 when unvoiced
   f1: number | null // null when pitch undetected or formant not detected
   f2: number | null
@@ -38,8 +38,8 @@ export type AnalysisChunk = AnalysisParams & {
   // boundaries, so every frame in a chunk shares this value (invariant), and
   // `voiced` is that value -- equivalently `framesVoiced(frames)`. Maintained in
   // batch by `framesToChunks` (offline) and incrementally by `reconcileVoicingAt`
-  // (realtime patches).
-  voiced: boolean
+  // (realtime patches). `null` means pending.
+  voiced: boolean | null
   // True for the first chunk of a recording session. Recordings are independent
   // -- they may use different sample rates / analysis params, and the spectrogram
   // dB-normalizes within a chunk -- so a chunk must never span a recording
@@ -97,10 +97,9 @@ export function totalFrames(chunks: AnalysisChunk[]): number {
 }
 
 // Split a flat, time-ordered frame list into chunks at every speechDetected
-// transition. Each resulting chunk holds frames of a single speechDetected
-// value with `voiced` set to match, satisfying the AnalysisChunk invariants by
-// construction. Used by offline analysis; the realtime path keeps the same
-// invariants incrementally via reconcileVoicingAt.
+// transition.
+//
+// Offlien analysis only. The realtime path keeps invariants via reconcileVoicingAt.
 export function framesToChunks(
   frames: AnalysisFrame[],
   params: AnalysisParams,
@@ -112,7 +111,13 @@ export function framesToChunks(
   while (start < frames.length) {
     const voiced = frames[start]!.speechDetected
     let end = start + 1
-    while (end < frames.length && frames[end]!.speechDetected === voiced) end++
+    while (
+      end < frames.length &&
+      (frames[end]!.speechDetected === voiced ||
+        // i.e., if speech analysis isn't complete yet, assume it's the same as the previous frame until we know more.
+        frames[end]!.speechDetected === null)
+    )
+      end++
     chunks.push({
       ...params,
       startTimeSec: startTimeSec + start * timeStepSec,
@@ -173,14 +178,29 @@ export function mergeChunkAt(
   return false
 }
 
+// The settled voicing of a chunk: chunk.voiced once confirmed, or -- while the
+// chunk is still pending (voiced === null) -- the value shared by its other
+// non-pending frames. Returns null only when no sibling has resolved yet.
+function settledVoicing(
+  chunk: AnalysisChunk,
+  exclude: AnalysisFrame,
+): boolean | null {
+  if (chunk.voiced !== null) return chunk.voiced
+  for (const f of chunk.frames) {
+    if (f !== exclude && f.speechDetected !== null) return f.speechDetected
+  }
+  return null
+}
+
 // Re-establish the AnalysisChunk invariants after the frame at globalIndex
 // changed its speechDetected value (e.g. a VAD patch): every chunk holds frames
-// of a single speechDetected value, and chunk.voiced equals that value. Only the
+// of a single speechDetected value (modulo trailing pending nulls in the last
+// chunk), and chunk.voiced equals that value (or null while pending). Only the
 // boundaries immediately before and after the changed frame can be affected, so
 // this isolates that frame and then coalesces it with like-voiced neighbours --
 // an O(local) fix rather than re-splitting the whole timeline. Returns true if
-// the frame's chunk actually changed voicing (so callers can refresh dependent
-// state); false for a no-op re-confirmation.
+// the chunk structure actually changed (so callers can refresh dependent state);
+// false for a no-op re-confirmation.
 export function reconcileVoicingAt(
   chunks: AnalysisChunk[],
   globalIndex: number,
@@ -190,19 +210,73 @@ export function reconcileVoicingAt(
   if (!chunk || !frame) return false
 
   const voiced = frame.speechDetected
-  // Coming in, the chunk was uniform (invariant held), so its `voiced` flag
-  // still reflects the frame's previous value. If it already matches, the patch
-  // didn't flip this frame and the layout is unchanged.
-  if (chunk.voiced === voiced) return false
 
-  // Isolate the changed frame so no chunk is left holding mixed values, then
-  // merge it back into either neighbour that shares its voicing.
+  // The frame's VAD result is still pending. It tells us nothing about chunk
+  // boundaries, so leave the layout untouched until it resolves. Pending frames
+  // only ever arise at the tail (where handleAppend has already marked the last
+  // chunk pending), and never break a confirmed run -- framesToChunks groups a
+  // null with its neighbours rather than splitting on it -- so a no-op here can
+  // never strand a pending frame as a chunk of its own.
+  if (voiced === null) return false
+
+  // Coming in, the chunk shared a single settled voicing across its confirmed
+  // frames. If the patch agrees with it, the layout is unchanged -- but it may
+  // have resolved the chunk's last pending frame, letting it un-pend.
+  const settled = settledVoicing(chunk, frame)
+  if (settled === voiced) {
+    if (
+      chunk.voiced === null &&
+      !chunk.frames.some((f) => f.speechDetected === null)
+    ) {
+      chunk.voiced = voiced
+    }
+    return false
+  }
+
+  // The frame now disagrees with its chunk. Isolate it so no chunk holds mixed
+  // values, then merge it back into either neighbour that shares its voicing.
   splitChunkAt(chunks, globalIndex)
   splitChunkAt(chunks, globalIndex + 1)
   if (getFrame(chunks, globalIndex - 1)?.speechDetected === voiced)
     mergeChunkAt(chunks, globalIndex)
   if (getFrame(chunks, globalIndex + 1)?.speechDetected === voiced)
     mergeChunkAt(chunks, globalIndex + 1)
+  return true
+}
+
+// Append a freshly captured frame onto the timeline during live recording.
+// Frames arrive pending (speechDetected === null) and resolve later via a VAD
+// patch, so the common case is a pending append: it extends the last chunk and
+// optimistically keeps that chunk's voicing, avoiding flicker -- reconcile splits
+// it off later if the VAD resolves it to the opposite value. A frame that already
+// agrees with the chunk likewise just extends it. A frame that arrives already
+// resolved to the opposite voicing starts a new chunk. Returns true on a
+// structural change (a new chunk), which the transcript overlay must re-publish
+// for; a plain extension returns false, since the snapshot holds the live chunk
+// objects and the next render already reads the new extent.
+export function appendFrame(
+  chunks: AnalysisChunk[],
+  frame: AnalysisFrame,
+): boolean {
+  const lastChunk = chunks[chunks.length - 1]!
+  const voiced = frame.speechDetected
+
+  if (voiced === null || voiced === lastChunk.voiced) {
+    lastChunk.frames.push(frame)
+    return false
+  }
+
+  const timeStepSec = lastChunk.timeStepSamples / lastChunk.sampleRate
+  chunks.push({
+    timeStepSamples: lastChunk.timeStepSamples,
+    sampleRate: lastChunk.sampleRate,
+    freqStepHz: lastChunk.freqStepHz,
+    firstBinHz: lastChunk.firstBinHz,
+    startTimeSec:
+      lastChunk.startTimeSec + lastChunk.frames.length * timeStepSec,
+    frames: [frame],
+    voiced,
+  })
   return true
 }
 

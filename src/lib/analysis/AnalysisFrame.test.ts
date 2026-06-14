@@ -6,6 +6,7 @@ import { describe, it, expect } from 'vitest'
 
 import type { AnalysisChunk, AnalysisFrame } from './AnalysisFrame'
 import {
+  appendFrame,
   computeDbMax,
   frameTimeSec,
   framesToChunks,
@@ -313,7 +314,7 @@ function voicePattern(values: boolean[]): AnalysisChunk[] {
 }
 
 // Flatten the per-frame speechDetected stream across chunks.
-function voicing(chunks: AnalysisChunk[]): boolean[] {
+function voicing(chunks: AnalysisChunk[]): (boolean | null)[] {
   return chunks.flatMap((c) => c.frames.map((f) => f.speechDetected))
 }
 
@@ -406,6 +407,147 @@ describe('reconcileVoicingAt', () => {
     expect(chunks.map((c) => c.voiced)).toEqual([false, true, false])
     expect(chunks.map((c) => c.frames.length)).toEqual([2, 4, 2])
     expectInvariants(chunks)
+  })
+})
+
+// Variant helpers for the nullable (pending) world.
+function voicePatternNullable(values: (boolean | null)[]): AnalysisChunk[] {
+  const frames = values.map((v) =>
+    makeFrame(new Float32Array([1]), { speechDetected: v }),
+  )
+  return framesToChunks(frames, DEFAULT_PARAMS, 0)
+}
+
+// Apply a nullable patch and reconcile, as a VAD update would once a frame's
+// speechDetected becomes known.
+function flipNullable(
+  chunks: AnalysisChunk[],
+  globalIndex: number,
+  value: boolean | null,
+): boolean {
+  getFrame(chunks, globalIndex)!.speechDetected = value
+  return reconcileVoicingAt(chunks, globalIndex)
+}
+
+// In the realtime path handleAppend sets the last chunk's voiced to null when
+// a pending frame lands in it. The offline builder leaves voiced at the first
+// frame's value, so mark those chunks here to model the realtime state.
+function markPendingChunks(chunks: AnalysisChunk[]): void {
+  for (const chunk of chunks) {
+    if (chunk.frames.some((f) => f.speechDetected === null)) {
+      chunk.voiced = null
+    }
+  }
+}
+
+describe('reconcileVoicingAt with pending frames', () => {
+  it('is a no-op when a trailing frame is still pending', () => {
+    // A trailing null frame matches the chunk's pending voiced flag, so the
+    // patch didn't flip anything -- nothing to do.
+    const chunks = voicePatternNullable([true, true, null])
+    markPendingChunks(chunks)
+    expect(reconcileVoicingAt(chunks, 2)).toBe(false)
+    expect(chunks).toHaveLength(1)
+    expect(chunks[0]!.voiced).toBe(null)
+  })
+
+  it('un-pends the chunk when a trailing frame resolves to its value', () => {
+    // The trailing null resolves to the chunk's confirmed value: it should
+    // coalesce in place, with voiced transitioning from null to true.
+    const chunks = voicePatternNullable([true, true, null])
+    markPendingChunks(chunks)
+    expect(flipNullable(chunks, 2, true)).toBe(false)
+    expect(chunks).toHaveLength(1)
+    expect(chunks[0]!.voiced).toBe(true)
+  })
+
+  it('splits off a trailing frame that resolves to a different value', () => {
+    // The trailing null resolves to the opposite value: it should split off as
+    // a new last chunk, with the original chunk un-pending to true.
+    const chunks = voicePatternNullable([true, true, null])
+    markPendingChunks(chunks)
+    expect(flipNullable(chunks, 2, false)).toBe(true)
+    expect(chunks).toHaveLength(2)
+    expect(chunks[0]!.voiced).toBe(true)
+    expect(chunks[0]!.frames.length).toBe(2)
+    expect(chunks[1]!.voiced).toBe(false)
+    expect(chunks[1]!.frames.length).toBe(1)
+  })
+
+  it('leaves a frame reverting to pending in place', () => {
+    // A confirmed middle frame going null can't happen in the real pipeline
+    // (the VAD only ever resolves pending frames, never un-resolves them), so
+    // reconcile treats it as a no-op rather than reordering the timeline: the
+    // frame stays where it is, grouped with its chunk.
+    const chunks = voicePattern([true, true, true, true])
+    expect(flipNullable(chunks, 1, null)).toBe(false)
+    expect(chunks).toHaveLength(1)
+    expect(getFrame(chunks, 1)!.speechDetected).toBe(null)
+    expect(voicing(chunks)).toEqual([true, null, true, true])
+  })
+
+  it('never leaves a pending frame as the only frame of its chunk', () => {
+    // A no-op on pending never splits a null off, so it can't be stranded as a
+    // chunk of its own -- it always stays grouped with its neighbours.
+    const chunks = voicePattern([true, true, true, true])
+    flipNullable(chunks, 1, null)
+    for (const chunk of chunks) {
+      if (chunk.frames.some((f) => f.speechDetected === null)) {
+        expect(chunk.frames.length).toBeGreaterThan(1)
+      }
+    }
+  })
+})
+
+describe('appendFrame', () => {
+  it('splits a voiced frame off the end of an unvoiced chunk', () => {
+    // A frame that arrives already voiced must start its own chunk, not flip the
+    // whole preceding unvoiced run to voiced. The legacy `||=` absorbed it:
+    // `false || true === true` voiced every prior frame with no split.
+    const chunks = voicePattern([false, false])
+    appendFrame(
+      chunks,
+      makeFrame(new Float32Array([1]), { speechDetected: true }),
+    )
+    expect(chunks.map((c) => c.voiced)).toEqual([false, true])
+    expect(chunks.map((c) => c.frames.length)).toEqual([2, 1])
+    expectInvariants(chunks)
+  })
+
+  it('splits an unvoiced frame off the end of a voiced chunk', () => {
+    // The symmetric case: a frame that arrives unvoiced after a voiced run must
+    // split rather than be absorbed. The legacy `||=` left it voiced:
+    // `true || false === true`.
+    const chunks = voicePattern([true, true])
+    appendFrame(
+      chunks,
+      makeFrame(new Float32Array([1]), { speechDetected: false }),
+    )
+    expect(chunks.map((c) => c.voiced)).toEqual([true, false])
+    expect(chunks.map((c) => c.frames.length)).toEqual([2, 1])
+    expectInvariants(chunks)
+  })
+
+  it('leaves the last chunk voicing unchanged when a pending frame is appended', () => {
+    // A pending (null) frame optimistically continues the current run: we keep
+    // calling the chunk by its existing voicing to avoid flicker, and split only
+    // later if the VAD resolves the frame to the opposite value. So voiced is
+    // unchanged either way. The legacy `||=` got the voiced case right
+    // (`true || null === true`) but nulled an unvoiced chunk
+    // (`false || null === null`).
+    const onVoiced = voicePattern([true, true])
+    appendFrame(
+      onVoiced,
+      makeFrame(new Float32Array([1]), { speechDetected: null }),
+    )
+    expect(onVoiced.at(-1)!.voiced).toBe(true)
+
+    const onUnvoiced = voicePattern([false, false])
+    appendFrame(
+      onUnvoiced,
+      makeFrame(new Float32Array([1]), { speechDetected: null }),
+    )
+    expect(onUnvoiced.at(-1)!.voiced).toBe(false)
   })
 })
 

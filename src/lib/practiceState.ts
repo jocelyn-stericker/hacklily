@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
+import type { AnalysisFrame } from './analysis/AnalysisFrame'
 import type { AudioSpan } from './audio/AudioSpan'
 
-export type VoicedRange = {
+export type Range = {
   startSec: number
   endSec: number
 }
@@ -13,21 +14,21 @@ export type PracticeTake = {
   span: AudioSpan
   endTimeSec: number
   createdAt: number
-  voicedRanges: VoicedRange[]
+  voicedRange: Range
 }
 
 export type PracticeState = {
   takes: PracticeTake[]
   nextTakeId: number
   referenceTakeId: number | null
-  recording: boolean
   recordingStartTime: number | null
   playingTakeId: number | null
   playingSkipSilence: boolean
   sessionPhase: 'idle' | 'recording' | 'playback'
-  echoWasHearing: boolean
-  echoGateUntilTs: number
+  audioStartMs: number | null
+  voicedStartMs: number | null
   pendingRestart: boolean
+  pendingRecordRestart: boolean
   error: string | null
   recordingStartFrame: number
   shuttingDown: boolean
@@ -38,41 +39,69 @@ export type PracticeState = {
 export type PracticeAction =
   | { type: 'START_RECORDING'; startTime: number }
   | {
-      type: 'STOP_RECORDING'
+      type: 'END_TAKE'
       span: AudioSpan
-      voicedRanges: VoicedRange[]
+      voicedRange: Range
       endTimeSec: number
     }
   | { type: 'START_PLAYBACK'; takeId: number; skipSilence: boolean }
   | { type: 'STOP_PLAYBACK' }
+  | { type: 'PLAYBACK_ENDED'; autoAdvance: boolean }
   | { type: 'PIN_TAKE'; takeId: number }
   | { type: 'CLEAR_SESSION' }
   | { type: 'SET_SESSION_PHASE'; phase: PracticeState['sessionPhase'] }
   | { type: 'STOP_SESSION' }
-  | { type: 'ECHO_SPEECH_HEARD' }
-  | { type: 'ECHO_UTTERANCE_DONE' }
+  | { type: 'AUDIO_START' }
+  | { type: 'UTTERANCE_START' }
   | { type: 'PENDING_RESTART' }
-  | { type: 'ECHO_COOLDOWN'; untilTs: number }
-  | { type: 'ECHO_GATE_BLOCK' }
-  | { type: 'ECHO_RESET_GATE' }
   | { type: 'SET_ERROR'; error: string | null }
   | { type: 'SET_SHUTTING_DOWN'; value: boolean }
   | { type: 'SET_DRILL_INDEX'; index: number }
   | { type: 'SET_SENTENCE_COUNT'; count: number }
+  | { type: 'DRILL_PREV' }
+  | { type: 'DRILL_NEXT' }
+
+export function computeVoicedRange(
+  analysis: AnalysisFrame[],
+  fromIdx: number,
+  toIdx: number,
+  timePerFrame: number,
+  baseTimeSec: number,
+): Range {
+  let firstVoicedIdx = -1
+  let lastVoicedIdx = -1
+  const end = Math.min(toIdx, analysis.length)
+  for (let i = fromIdx; i < end; i++) {
+    if (analysis[i]?.speechDetected) {
+      if (firstVoicedIdx === -1) firstVoicedIdx = i
+      lastVoicedIdx = i
+    }
+  }
+  return {
+    startSec:
+      firstVoicedIdx !== -1
+        ? baseTimeSec + (firstVoicedIdx - fromIdx) * timePerFrame
+        : 0,
+    endSec:
+      lastVoicedIdx !== -1
+        ? baseTimeSec + (lastVoicedIdx - fromIdx) * timePerFrame
+        : 0,
+  }
+}
 
 export function initialPracticeState(): PracticeState {
   return {
     takes: [],
     nextTakeId: 1,
     referenceTakeId: null,
-    recording: false,
     recordingStartTime: null,
     playingTakeId: null,
     playingSkipSilence: false,
     sessionPhase: 'idle',
-    echoWasHearing: false,
-    echoGateUntilTs: 0,
+    voicedStartMs: null,
+    audioStartMs: null,
     pendingRestart: false,
+    pendingRecordRestart: false,
     error: null,
     recordingStartFrame: 0,
     shuttingDown: false,
@@ -85,34 +114,36 @@ export function practiceReducer(
   state: PracticeState,
   action: PracticeAction,
 ): PracticeState {
+  console.log(action)
   switch (action.type) {
     case 'START_RECORDING':
       return {
         ...state,
-        recording: true,
         recordingStartTime: action.startTime,
         sessionPhase: 'recording',
-        echoWasHearing: false,
-        echoGateUntilTs: 0,
+        voicedStartMs: null,
+        audioStartMs: null,
         pendingRestart: false,
+        pendingRecordRestart: false,
         recordingStartFrame: 0,
         shuttingDown: false,
+        playingTakeId: null,
+        playingSkipSilence: false,
       }
 
-    case 'STOP_RECORDING': {
+    case 'END_TAKE': {
       const newTake: PracticeTake = {
         id: state.nextTakeId,
         span: action.span,
         endTimeSec: action.endTimeSec,
         createdAt: Date.now(),
-        voicedRanges: action.voicedRanges,
+        voicedRange: action.voicedRange,
       }
       const takes = [newTake, ...state.takes]
       return {
         ...state,
         takes,
         nextTakeId: state.nextTakeId + 1,
-        recording: false,
         recordingStartTime: null,
       }
     }
@@ -130,11 +161,43 @@ export function practiceReducer(
         playingTakeId: null,
         playingSkipSilence: false,
         sessionPhase: 'idle',
-        echoWasHearing: false,
-        echoGateUntilTs: 0,
+        voicedStartMs: null,
+        audioStartMs: null,
         pendingRestart: false,
+        pendingRecordRestart: false,
         shuttingDown: false,
       }
+
+    case 'PLAYBACK_ENDED': {
+      const base = {
+        ...state,
+        playingTakeId: null,
+        playingSkipSilence: false,
+      }
+      if (state.shuttingDown || !state.pendingRestart) {
+        return {
+          ...base,
+          sessionPhase:
+            state.sessionPhase === 'playback' ? 'idle' : state.sessionPhase,
+          voicedStartMs: null,
+          audioStartMs: null,
+          pendingRestart: false,
+          pendingRecordRestart: false,
+          shuttingDown: false,
+        }
+      }
+      const drillIndex =
+        action.autoAdvance && state.sentenceCount > 0
+          ? (state.drillIndex + 1) % state.sentenceCount
+          : state.drillIndex
+      return {
+        ...base,
+        drillIndex,
+        audioStartMs: null,
+        pendingRestart: false,
+        pendingRecordRestart: true,
+      }
+    }
 
     case 'PIN_TAKE':
       return {
@@ -153,33 +216,21 @@ export function practiceReducer(
       return {
         ...state,
         sessionPhase: 'idle',
-        echoWasHearing: false,
-        echoGateUntilTs: 0,
+        voicedStartMs: null,
+        audioStartMs: null,
         pendingRestart: false,
+        pendingRecordRestart: false,
         shuttingDown: false,
       }
 
-    case 'ECHO_SPEECH_HEARD':
-      return { ...state, echoWasHearing: true }
+    case 'AUDIO_START':
+      return { ...state, audioStartMs: Date.now() }
 
-    case 'ECHO_UTTERANCE_DONE':
-      return {
-        ...state,
-        echoWasHearing: false,
-        echoGateUntilTs: Infinity,
-      }
+    case 'UTTERANCE_START':
+      return { ...state, voicedStartMs: Date.now() }
 
     case 'PENDING_RESTART':
       return { ...state, pendingRestart: true }
-
-    case 'ECHO_COOLDOWN':
-      return { ...state, echoGateUntilTs: action.untilTs }
-
-    case 'ECHO_GATE_BLOCK':
-      return { ...state, echoGateUntilTs: Infinity }
-
-    case 'ECHO_RESET_GATE':
-      return { ...state, echoGateUntilTs: 0 }
 
     case 'SET_ERROR':
       return { ...state, error: action.error }
@@ -192,5 +243,23 @@ export function practiceReducer(
 
     case 'SET_SENTENCE_COUNT':
       return { ...state, sentenceCount: action.count }
+
+    case 'DRILL_PREV':
+      return {
+        ...state,
+        drillIndex:
+          state.sentenceCount > 0
+            ? (state.drillIndex + state.sentenceCount - 1) % state.sentenceCount
+            : state.drillIndex,
+      }
+
+    case 'DRILL_NEXT':
+      return {
+        ...state,
+        drillIndex:
+          state.sentenceCount > 0
+            ? (state.drillIndex + 1) % state.sentenceCount
+            : state.drillIndex,
+      }
   }
 }

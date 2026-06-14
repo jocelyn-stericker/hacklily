@@ -2,15 +2,16 @@
 
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
-import { Mic, Play, Square } from 'lucide-react'
+import { Loader2, Mic, Play, Square } from 'lucide-react'
 
-import { formatDuration } from '#/lib/utils.ts'
+import { formatDuration } from '#/lib/utils'
 
 import { Button } from './ui/button'
 
 export function PracticeStatusRow({
   phase,
   playing,
+  audioActive,
   timerActive,
   elapsedMs,
   onStartSession,
@@ -20,10 +21,9 @@ export function PracticeStatusRow({
 }: {
   phase: 'idle' | 'recording' | 'playback'
   playing: boolean
+  audioActive: boolean
   timerActive: boolean
   elapsedMs: number
-  level: number
-  voiced: boolean
   onStartSession: () => void
   onNextTake: () => void
   onEndSession: () => void
@@ -67,10 +67,16 @@ export function PracticeStatusRow({
             onClick={onNextTake}
             className="px-3"
           >
-            {indicator}
-            {timerActive
-              ? `Next · ${formatDuration(elapsedMs / 1000)}`
-              : 'Listening…'}
+            {audioActive ? (
+              <>
+                {indicator}
+                {timerActive
+                  ? `Next · ${formatDuration(elapsedMs / 1000)}`
+                  : 'Listening…'}
+              </>
+            ) : (
+              <Loader2 className="animate-spin" />
+            )}
           </Button>
         )}
       </div>

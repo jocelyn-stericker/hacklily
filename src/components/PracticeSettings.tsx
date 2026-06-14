@@ -4,7 +4,7 @@
 
 import { ExternalLink, Mic, Settings, Shuffle } from 'lucide-react'
 
-import type { PracticeTextSize } from '#/lib/settings.ts'
+import type { PracticeTextSize } from '#/lib/settings'
 
 import { Button } from './ui/button'
 import {

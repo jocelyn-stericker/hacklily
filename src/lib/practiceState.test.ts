@@ -4,37 +4,16 @@
 
 import { describe, it, expect } from 'vitest'
 
+import type { AnalysisFrame } from '#/lib/analysis/AnalysisFrame'
 import type { AudioSpan } from '#/lib/audio/AudioSpan'
-import { initialPracticeState, practiceReducer } from '#/lib/practiceState'
+import {
+  computeVoicedRange,
+  initialPracticeState,
+  practiceReducer,
+} from '#/lib/practiceState'
 
-function computeVoicedRanges(
-  decisions: boolean[],
-  fromIdx: number,
-  toIdx: number,
-  timePerFrame: number,
-  baseTimeSec: number,
-): Array<{ startSec: number; endSec: number }> {
-  const ranges: Array<{ startSec: number; endSec: number }> = []
-  let runStart = -1
-  const end = Math.min(toIdx, decisions.length)
-  for (let i = fromIdx; i < end; i++) {
-    if (decisions[i]) {
-      if (runStart === -1) runStart = i
-    } else if (runStart !== -1) {
-      ranges.push({
-        startSec: baseTimeSec + (runStart - fromIdx) * timePerFrame,
-        endSec: baseTimeSec + (i - fromIdx) * timePerFrame,
-      })
-      runStart = -1
-    }
-  }
-  if (runStart !== -1) {
-    ranges.push({
-      startSec: baseTimeSec + (runStart - fromIdx) * timePerFrame,
-      endSec: baseTimeSec + (end - fromIdx) * timePerFrame,
-    })
-  }
-  return ranges
+function frame(speechDetected: boolean | null): AnalysisFrame {
+  return { speechDetected } as AnalysisFrame
 }
 
 // ---------------------------------------------------------------------------
@@ -51,65 +30,99 @@ function mockSpan(): AudioSpan {
   }
 }
 
-describe('computeVoicedRanges', () => {
-  it('returns empty for all-silence', () => {
-    const decisions = [false, false, false]
-    expect(computeVoicedRanges(decisions, 0, 3, 0.002, 0)).toEqual([])
+describe('computeVoicedRange', () => {
+  it('returns zeroed range for all-silence', () => {
+    const analysis = [frame(null), frame(false), frame(null)]
+    expect(computeVoicedRange(analysis, 0, 3, 0.002, 0)).toEqual({
+      startSec: 0,
+      endSec: 0,
+    })
   })
 
-  it('returns one range for all-speech', () => {
-    const decisions = [true, true, true]
-    expect(computeVoicedRanges(decisions, 0, 3, 0.01, 0)).toEqual([
-      { startSec: 0, endSec: 0.03 },
-    ])
+  it('spans all-speech', () => {
+    const analysis = [frame(true), frame(true), frame(true)]
+    expect(computeVoicedRange(analysis, 0, 3, 0.01, 0)).toEqual({
+      startSec: 0,
+      endSec: 0.02,
+    })
   })
 
-  it('returns multiple ranges separated by silence', () => {
-    const decisions = [true, false, false, true, true]
-    expect(computeVoicedRanges(decisions, 0, 5, 0.01, 0)).toEqual([
-      { startSec: 0, endSec: 0.01 },
-      { startSec: 0.03, endSec: 0.05 },
-    ])
+  it('spans first-to-last voiced frame across silence', () => {
+    const analysis = [
+      frame(true),
+      frame(false),
+      frame(false),
+      frame(true),
+      frame(true),
+    ]
+    expect(computeVoicedRange(analysis, 0, 5, 0.01, 0)).toEqual({
+      startSec: 0,
+      endSec: 0.04,
+    })
   })
 
   it('respects fromIdx/toIdx window', () => {
-    const decisions = [true, true, true, false, true]
-    expect(computeVoicedRanges(decisions, 1, 4, 0.01, 0)).toEqual([
-      { startSec: 0, endSec: 0.02 },
-    ])
+    // The window covers indices 1-3: [true, true, false]
+    // last voiced frame is at index 2
+    const analysis = [
+      frame(true),
+      frame(true),
+      frame(true),
+      frame(false),
+      frame(true),
+    ]
+    expect(computeVoicedRange(analysis, 1, 4, 0.01, 0)).toEqual({
+      startSec: 0,
+      endSec: 0.01,
+    })
   })
 
   it('applies baseTimeSec offset', () => {
-    const decisions = [true, true]
-    expect(computeVoicedRanges(decisions, 0, 2, 0.01, 0.5)).toEqual([
-      { startSec: 0.5, endSec: 0.52 },
-    ])
+    const analysis = [frame(true), frame(true)]
+    expect(computeVoicedRange(analysis, 0, 2, 0.01, 0.5)).toEqual({
+      startSec: 0.5,
+      endSec: 0.51,
+    })
   })
 
-  it('closes final run even if end is at decisions length', () => {
-    const decisions = [false, true, true]
-    expect(computeVoicedRanges(decisions, 0, 3, 0.01, 0)).toEqual([
-      { startSec: 0.01, endSec: 0.03 },
-    ])
+  it('handles leading silence', () => {
+    const analysis = [frame(false), frame(true), frame(true)]
+    expect(computeVoicedRange(analysis, 0, 3, 0.01, 0)).toEqual({
+      startSec: 0.01,
+      endSec: 0.02,
+    })
   })
 
   it('handles fromIdx not at zero correctly', () => {
-    const decisions = [true, false, false, true, true, false]
+    const analysis = [
+      frame(true),
+      frame(false),
+      frame(false),
+      frame(true),
+      frame(true),
+      frame(false),
+    ]
     // Only look at indices 2-5: [false, true, true]
-    expect(computeVoicedRanges(decisions, 2, 5, 0.1, 0.5)).toEqual([
-      { startSec: 0.6, endSec: 0.8 },
-    ])
+    // last voiced frame is at index 4
+    expect(computeVoicedRange(analysis, 2, 5, 0.1, 0.5)).toEqual({
+      startSec: 0.6,
+      endSec: 0.7,
+    })
   })
 
-  it('works with empty decisions array', () => {
-    expect(computeVoicedRanges([], 0, 0, 0.01, 0)).toEqual([])
+  it('works with empty analysis array', () => {
+    expect(computeVoicedRange([], 0, 0, 0.01, 0)).toEqual({
+      startSec: 0,
+      endSec: 0,
+    })
   })
 
-  it('clamps toIdx to decisions length', () => {
-    const decisions = [true]
-    expect(computeVoicedRanges(decisions, 0, 10, 0.01, 0)).toEqual([
-      { startSec: 0, endSec: 0.01 },
-    ])
+  it('clamps toIdx to analysis length', () => {
+    const analysis = [frame(true)]
+    expect(computeVoicedRange(analysis, 0, 10, 0.01, 0)).toEqual({
+      startSec: 0,
+      endSec: 0,
+    })
   })
 })
 
@@ -119,14 +132,13 @@ describe('practiceReducer', () => {
     expect(state.takes).toEqual([])
     expect(state.nextTakeId).toBe(1)
     expect(state.referenceTakeId).toBeNull()
-    expect(state.recording).toBe(false)
     expect(state.recordingStartTime).toBeNull()
     expect(state.playingTakeId).toBeNull()
     expect(state.playingSkipSilence).toBe(false)
     expect(state.sessionPhase).toBe('idle')
-    expect(state.echoWasHearing).toBe(false)
-    expect(state.echoGateUntilTs).toBe(0)
+    expect(state.voicedStartMs).toBeNull()
     expect(state.pendingRestart).toBe(false)
+    expect(state.pendingRecordRestart).toBe(false)
     expect(state.error).toBeNull()
     expect(state.recordingStartFrame).toBe(0)
     expect(state.shuttingDown).toBe(false)
@@ -135,48 +147,45 @@ describe('practiceReducer', () => {
   })
 
   describe('START_RECORDING', () => {
-    it('sets recording to true, resets echo state, and sets session phase', () => {
+    it('sets recording to true and resets session state', () => {
       const state = practiceReducer(initialPracticeState(), {
         type: 'START_RECORDING',
         startTime: 1000,
       })
-      expect(state.recording).toBe(true)
       expect(state.recordingStartTime).toBe(1000)
       expect(state.sessionPhase).toBe('recording')
-      expect(state.echoWasHearing).toBe(false)
-      expect(state.echoGateUntilTs).toBe(0)
+      expect(state.voicedStartMs).toBeNull()
       expect(state.pendingRestart).toBe(false)
       expect(state.recordingStartFrame).toBe(0)
       expect(state.shuttingDown).toBe(false)
     })
   })
 
-  describe('STOP_RECORDING', () => {
+  describe('END_TAKE', () => {
     it('creates a new take and adds it to the front of the list', () => {
       const span = mockSpan()
-      const voicedRanges = [{ startSec: 0, endSec: 1 }]
+      const voicedRange = { startSec: 0, endSec: 1 }
       const state = practiceReducer(initialPracticeState(), {
-        type: 'STOP_RECORDING',
+        type: 'END_TAKE',
         span,
-        voicedRanges,
+        voicedRange,
         endTimeSec: 0,
       })
 
       expect(state.takes).toHaveLength(1)
       expect(state.takes[0]!.id).toBe(1)
       expect(state.takes[0]!.span).toBe(span)
-      expect(state.takes[0]!.voicedRanges).toEqual(voicedRanges)
+      expect(state.takes[0]!.voicedRange).toEqual(voicedRange)
       expect(state.takes[0]!.endTimeSec).toBe(0)
       expect(state.nextTakeId).toBe(2)
-      expect(state.recording).toBe(false)
       expect(state.recordingStartTime).toBeNull()
     })
 
     it('does not auto-set reference on first take', () => {
       const state = practiceReducer(initialPracticeState(), {
-        type: 'STOP_RECORDING',
+        type: 'END_TAKE',
         span: mockSpan(),
-        voicedRanges: [],
+        voicedRange: { startSec: 0, endSec: 0 },
         endTimeSec: 0,
       })
 
@@ -186,9 +195,9 @@ describe('practiceReducer', () => {
     it('keeps existing reference when new take arrives', () => {
       let state = initialPracticeState()
       state = practiceReducer(state, {
-        type: 'STOP_RECORDING',
+        type: 'END_TAKE',
         span: mockSpan(),
-        voicedRanges: [],
+        voicedRange: { startSec: 0, endSec: 0 },
         endTimeSec: 0,
       })
       state = practiceReducer(state, {
@@ -198,9 +207,9 @@ describe('practiceReducer', () => {
       expect(state.referenceTakeId).toBe(1)
 
       state = practiceReducer(state, {
-        type: 'STOP_RECORDING',
+        type: 'END_TAKE',
         span: mockSpan(),
-        voicedRanges: [],
+        voicedRange: { startSec: 0, endSec: 0 },
         endTimeSec: 0,
       })
       // Reference should still be the first take
@@ -214,9 +223,9 @@ describe('practiceReducer', () => {
       let state = initialPracticeState()
       for (let i = 0; i < 3; i++) {
         state = practiceReducer(state, {
-          type: 'STOP_RECORDING',
+          type: 'END_TAKE',
           span: mockSpan(),
-          voicedRanges: [],
+          voicedRange: { startSec: 0, endSec: 0 },
           endTimeSec: 0,
         })
       }
@@ -227,15 +236,15 @@ describe('practiceReducer', () => {
     it('newest take appears first (newest-first ordering)', () => {
       let state = initialPracticeState()
       state = practiceReducer(state, {
-        type: 'STOP_RECORDING',
+        type: 'END_TAKE',
         span: mockSpan(),
-        voicedRanges: [{ startSec: 0, endSec: 1 }],
+        voicedRange: { startSec: 0, endSec: 1 },
         endTimeSec: 0,
       })
       state = practiceReducer(state, {
-        type: 'STOP_RECORDING',
+        type: 'END_TAKE',
         span: mockSpan(),
-        voicedRanges: [{ startSec: 0, endSec: 2 }],
+        voicedRange: { startSec: 0, endSec: 2 },
         endTimeSec: 0,
       })
       expect(state.takes[0]!.id).toBe(2)
@@ -256,7 +265,7 @@ describe('practiceReducer', () => {
   })
 
   describe('STOP_PLAYBACK', () => {
-    it('clears playback state and resets echo/phase', () => {
+    it('clears playback state and resets phase', () => {
       let state = practiceReducer(initialPracticeState(), {
         type: 'START_PLAYBACK',
         takeId: 1,
@@ -266,8 +275,7 @@ describe('practiceReducer', () => {
       expect(state.playingTakeId).toBeNull()
       expect(state.playingSkipSilence).toBe(false)
       expect(state.sessionPhase).toBe('idle')
-      expect(state.echoWasHearing).toBe(false)
-      expect(state.echoGateUntilTs).toBe(0)
+      expect(state.voicedStartMs).toBeNull()
       expect(state.pendingRestart).toBe(false)
       expect(state.shuttingDown).toBe(false)
     })
@@ -302,15 +310,15 @@ describe('practiceReducer', () => {
       let state = initialPracticeState()
       // Build up some state
       state = practiceReducer(state, {
-        type: 'STOP_RECORDING',
+        type: 'END_TAKE',
         span: mockSpan(),
-        voicedRanges: [],
+        voicedRange: { startSec: 0, endSec: 0 },
         endTimeSec: 0,
       })
       state = practiceReducer(state, {
-        type: 'STOP_RECORDING',
+        type: 'END_TAKE',
         span: mockSpan(),
-        voicedRanges: [],
+        voicedRange: { startSec: 0, endSec: 0 },
         endTimeSec: 0,
       })
       state = practiceReducer(state, {
@@ -329,7 +337,7 @@ describe('practiceReducer', () => {
   })
 
   describe('combined scenarios', () => {
-    it('recording does not interact with playback state', () => {
+    it('recording stops playback', () => {
       let state = initialPracticeState()
       state = practiceReducer(state, {
         type: 'START_PLAYBACK',
@@ -340,8 +348,8 @@ describe('practiceReducer', () => {
         type: 'START_RECORDING',
         startTime: 1000,
       })
-      expect(state.recording).toBe(true)
-      expect(state.playingTakeId).toBe(1)
+      expect(state.sessionPhase).toBe('recording')
+      expect(state.playingTakeId).toBe(null)
     })
 
     it('clear session during recording stops everything', () => {
@@ -351,24 +359,23 @@ describe('practiceReducer', () => {
         startTime: 1000,
       })
       state = practiceReducer(state, { type: 'CLEAR_SESSION' })
-      expect(state.recording).toBe(false)
+      expect(state.sessionPhase).toBe('idle')
       expect(state.recordingStartTime).toBeNull()
       expect(state.takes).toHaveLength(0)
       expect(state.nextTakeId).toBe(1)
     })
 
-    it('clear session resets session phase and echo state', () => {
+    it('clear session resets session phase', () => {
       let state = initialPracticeState()
       state = practiceReducer(state, {
         type: 'START_RECORDING',
         startTime: 1000,
       })
-      state = practiceReducer(state, { type: 'ECHO_SPEECH_HEARD' })
+      state = practiceReducer(state, { type: 'UTTERANCE_START' })
       state = practiceReducer(state, { type: 'PENDING_RESTART' })
       state = practiceReducer(state, { type: 'CLEAR_SESSION' })
       expect(state.sessionPhase).toBe('idle')
-      expect(state.echoWasHearing).toBe(false)
-      expect(state.echoGateUntilTs).toBe(0)
+      expect(state.voicedStartMs).toBeNull()
       expect(state.pendingRestart).toBe(false)
     })
   })
@@ -387,8 +394,8 @@ describe('practiceReducer', () => {
       let state = initialPracticeState()
       state = {
         ...state,
-        recording: true,
-        echoWasHearing: true,
+        sessionPhase: 'recording',
+        voicedStartMs: 1000,
         pendingRestart: true,
       }
       state = practiceReducer(state, {
@@ -396,27 +403,24 @@ describe('practiceReducer', () => {
         phase: 'playback',
       })
       expect(state.sessionPhase).toBe('playback')
-      expect(state.recording).toBe(true)
-      expect(state.echoWasHearing).toBe(true)
+      expect(state.voicedStartMs).toBe(1000)
       expect(state.pendingRestart).toBe(true)
     })
   })
 
   describe('STOP_SESSION', () => {
-    it('sets session to idle, resets echo state and shuttingDown', () => {
+    it('sets session to idle and resets shuttingDown', () => {
       let state = initialPracticeState()
       state = {
         ...state,
         sessionPhase: 'recording',
-        echoWasHearing: true,
-        echoGateUntilTs: 999,
+        voicedStartMs: 999,
         pendingRestart: true,
         shuttingDown: true,
       }
       state = practiceReducer(state, { type: 'STOP_SESSION' })
       expect(state.sessionPhase).toBe('idle')
-      expect(state.echoWasHearing).toBe(false)
-      expect(state.echoGateUntilTs).toBe(0)
+      expect(state.voicedStartMs).toBeNull()
       expect(state.pendingRestart).toBe(false)
       expect(state.shuttingDown).toBe(false)
     })
@@ -424,9 +428,9 @@ describe('practiceReducer', () => {
     it('does not affect takes or playback state', () => {
       let state = initialPracticeState()
       state = practiceReducer(state, {
-        type: 'STOP_RECORDING',
+        type: 'END_TAKE',
         span: mockSpan(),
-        voicedRanges: [],
+        voicedRange: { startSec: 0, endSec: 0 },
         endTimeSec: 0,
       })
       state = practiceReducer(state, {
@@ -441,30 +445,24 @@ describe('practiceReducer', () => {
     })
   })
 
-  describe('ECHO_SPEECH_HEARD', () => {
-    it('sets echoWasHearing to true', () => {
+  describe('UTTERANCE_START', () => {
+    it('sets voicedStartMs to non-null', () => {
+      const before = Date.now()
       const state = practiceReducer(initialPracticeState(), {
-        type: 'ECHO_SPEECH_HEARD',
+        type: 'UTTERANCE_START',
       })
-      expect(state.echoWasHearing).toBe(true)
+      expect(state.voicedStartMs).not.toBeNull()
+      expect(state.voicedStartMs!).toBeGreaterThanOrEqual(before)
     })
 
     it('is idempotent', () => {
       let state = practiceReducer(initialPracticeState(), {
-        type: 'ECHO_SPEECH_HEARD',
+        type: 'UTTERANCE_START',
       })
-      state = practiceReducer(state, { type: 'ECHO_SPEECH_HEARD' })
-      expect(state.echoWasHearing).toBe(true)
-    })
-  })
-
-  describe('ECHO_UTTERANCE_DONE', () => {
-    it('clears hearing and blocks gate', () => {
-      let state = initialPracticeState()
-      state = { ...state, echoWasHearing: true, echoGateUntilTs: 0 }
-      state = practiceReducer(state, { type: 'ECHO_UTTERANCE_DONE' })
-      expect(state.echoWasHearing).toBe(false)
-      expect(state.echoGateUntilTs).toBe(Infinity)
+      const first = state.voicedStartMs
+      state = practiceReducer(state, { type: 'UTTERANCE_START' })
+      expect(state.voicedStartMs).not.toBeNull()
+      expect(state.voicedStartMs!).toBeGreaterThanOrEqual(first!)
     })
   })
 
@@ -474,35 +472,6 @@ describe('practiceReducer', () => {
         type: 'PENDING_RESTART',
       })
       expect(state.pendingRestart).toBe(true)
-    })
-  })
-
-  describe('ECHO_COOLDOWN', () => {
-    it('sets the gate timestamp', () => {
-      const now = performance.now()
-      const state = practiceReducer(initialPracticeState(), {
-        type: 'ECHO_COOLDOWN',
-        untilTs: now,
-      })
-      expect(state.echoGateUntilTs).toBe(now)
-    })
-  })
-
-  describe('ECHO_GATE_BLOCK', () => {
-    it('sets gate to Infinity', () => {
-      const state = practiceReducer(initialPracticeState(), {
-        type: 'ECHO_GATE_BLOCK',
-      })
-      expect(state.echoGateUntilTs).toBe(Infinity)
-    })
-  })
-
-  describe('ECHO_RESET_GATE', () => {
-    it('resets gate to 0', () => {
-      let state = initialPracticeState()
-      state = { ...state, echoGateUntilTs: Infinity }
-      state = practiceReducer(state, { type: 'ECHO_RESET_GATE' })
-      expect(state.echoGateUntilTs).toBe(0)
     })
   })
 
@@ -524,7 +493,7 @@ describe('practiceReducer', () => {
   })
 
   describe('echo state machine integration', () => {
-    it('full echo cycle: start → hear → utter → autoRestart → playback → cooldown', () => {
+    it('full echo cycle: start → utter → playback → restart', () => {
       let state = initialPracticeState()
 
       // Start session
@@ -533,24 +502,17 @@ describe('practiceReducer', () => {
         startTime: 1000,
       })
       expect(state.sessionPhase).toBe('recording')
-      expect(state.recording).toBe(true)
-      expect(state.echoWasHearing).toBe(false)
-      expect(state.echoGateUntilTs).toBe(0)
+      expect(state.voicedStartMs).toBeNull()
 
       // Speech detected
-      state = practiceReducer(state, { type: 'ECHO_SPEECH_HEARD' })
-      expect(state.echoWasHearing).toBe(true)
-
-      // Utterance ends (silence confirmed)
-      state = practiceReducer(state, { type: 'ECHO_UTTERANCE_DONE' })
-      expect(state.echoWasHearing).toBe(false)
-      expect(state.echoGateUntilTs).toBe(Infinity)
+      state = practiceReducer(state, { type: 'UTTERANCE_START' })
+      expect(state.voicedStartMs).not.toBeNull()
 
       // Take created, playback starts (auto-restart)
       state = practiceReducer(state, {
-        type: 'STOP_RECORDING',
+        type: 'END_TAKE',
         span: mockSpan(),
-        voicedRanges: [],
+        voicedRange: { startSec: 0, endSec: 0 },
         endTimeSec: 0,
       })
       state = practiceReducer(state, {
@@ -562,20 +524,14 @@ describe('practiceReducer', () => {
       expect(state.pendingRestart).toBe(true)
       expect(state.playingTakeId).toBe(1)
 
-      // Playback ends → restart recording with cooldown
+      // Playback ends → restart recording
       state = practiceReducer(state, { type: 'STOP_PLAYBACK' })
       state = practiceReducer(state, {
         type: 'START_RECORDING',
         startTime: 2000,
       })
-      const cooldownTs = performance.now() + 250
-      state = practiceReducer(state, {
-        type: 'ECHO_COOLDOWN',
-        untilTs: cooldownTs,
-      })
       expect(state.sessionPhase).toBe('recording')
       expect(state.pendingRestart).toBe(false) // reset by START_RECORDING
-      expect(state.echoGateUntilTs).toBe(cooldownTs)
     })
 
     it('explicit playback does not auto-restart', () => {
@@ -587,20 +543,18 @@ describe('practiceReducer', () => {
         startTime: 1000,
       })
       state = practiceReducer(state, {
-        type: 'STOP_RECORDING',
+        type: 'END_TAKE',
         span: mockSpan(),
-        voicedRanges: [],
+        voicedRange: { startSec: 0, endSec: 0 },
         endTimeSec: 0,
       })
 
       // Explicit playback (user clicked play on a take)
-      state = practiceReducer(state, { type: 'ECHO_GATE_BLOCK' })
       state = practiceReducer(state, {
         type: 'START_PLAYBACK',
         takeId: 1,
         skipSilence: false,
       })
-      expect(state.echoGateUntilTs).toBe(Infinity)
       expect(state.pendingRestart).toBe(false)
 
       // Playback ends → stop session (no auto-restart)
@@ -617,25 +571,24 @@ describe('practiceReducer', () => {
         type: 'START_RECORDING',
         startTime: 1000,
       })
-      state = practiceReducer(state, { type: 'ECHO_SPEECH_HEARD' })
+      state = practiceReducer(state, { type: 'UTTERANCE_START' })
 
-      // End session with speech detected → block gate, close pipeline, save take
-      state = practiceReducer(state, { type: 'ECHO_GATE_BLOCK' })
+      // End session with speech detected → close pipeline, save take
       state = practiceReducer(state, {
         type: 'SET_SESSION_PHASE',
         phase: 'playback',
       })
       state = practiceReducer(state, {
-        type: 'STOP_RECORDING',
+        type: 'END_TAKE',
         span: mockSpan(),
-        voicedRanges: [],
+        voicedRange: { startSec: 0, endSec: 0 },
         endTimeSec: 0,
       })
       state = practiceReducer(state, { type: 'STOP_SESSION' })
 
       expect(state.takes).toHaveLength(1)
       expect(state.sessionPhase).toBe('idle')
-      expect(state.echoWasHearing).toBe(false)
+      expect(state.voicedStartMs).toBeNull()
     })
   })
 
@@ -669,6 +622,165 @@ describe('practiceReducer', () => {
         count: 42,
       })
       expect(state.sentenceCount).toBe(42)
+    })
+  })
+
+  describe('DRILL_PREV', () => {
+    it('wraps from index 0 to the last sentence', () => {
+      let state = practiceReducer(initialPracticeState(), {
+        type: 'SET_SENTENCE_COUNT',
+        count: 5,
+      })
+      state = { ...state, drillIndex: 0 }
+      state = practiceReducer(state, { type: 'DRILL_PREV' })
+      expect(state.drillIndex).toBe(4)
+    })
+
+    it('decrements normally', () => {
+      let state = practiceReducer(initialPracticeState(), {
+        type: 'SET_SENTENCE_COUNT',
+        count: 5,
+      })
+      state = { ...state, drillIndex: 3 }
+      state = practiceReducer(state, { type: 'DRILL_PREV' })
+      expect(state.drillIndex).toBe(2)
+    })
+
+    it('is a no-op when sentenceCount is 0', () => {
+      const state = practiceReducer(initialPracticeState(), {
+        type: 'DRILL_PREV',
+      })
+      expect(state.drillIndex).toBe(0)
+    })
+  })
+
+  describe('DRILL_NEXT', () => {
+    it('wraps from the last sentence to index 0', () => {
+      let state = practiceReducer(initialPracticeState(), {
+        type: 'SET_SENTENCE_COUNT',
+        count: 5,
+      })
+      state = { ...state, drillIndex: 4 }
+      state = practiceReducer(state, { type: 'DRILL_NEXT' })
+      expect(state.drillIndex).toBe(0)
+    })
+
+    it('increments normally', () => {
+      let state = practiceReducer(initialPracticeState(), {
+        type: 'SET_SENTENCE_COUNT',
+        count: 5,
+      })
+      state = { ...state, drillIndex: 2 }
+      state = practiceReducer(state, { type: 'DRILL_NEXT' })
+      expect(state.drillIndex).toBe(3)
+    })
+
+    it('is a no-op when sentenceCount is 0', () => {
+      const state = practiceReducer(initialPracticeState(), {
+        type: 'DRILL_NEXT',
+      })
+      expect(state.drillIndex).toBe(0)
+    })
+  })
+
+  describe('PLAYBACK_ENDED', () => {
+    it('transitions to idle when shuttingDown', () => {
+      let state = initialPracticeState()
+      state = {
+        ...state,
+        playingTakeId: 1,
+        shuttingDown: true,
+        pendingRestart: true,
+      }
+      state = practiceReducer(state, {
+        type: 'PLAYBACK_ENDED',
+        autoAdvance: false,
+      })
+      expect(state.playingTakeId).toBeNull()
+      expect(state.sessionPhase).toBe('idle')
+      expect(state.shuttingDown).toBe(false)
+      expect(state.pendingRecordRestart).toBe(false)
+    })
+
+    it('transitions to idle when no pending restart', () => {
+      let state = initialPracticeState()
+      state = { ...state, playingTakeId: 1, pendingRestart: false }
+      state = practiceReducer(state, {
+        type: 'PLAYBACK_ENDED',
+        autoAdvance: false,
+      })
+      expect(state.playingTakeId).toBeNull()
+      expect(state.sessionPhase).toBe('idle')
+      expect(state.pendingRecordRestart).toBe(false)
+    })
+
+    it('sets pendingRecordRestart when restart is pending', () => {
+      let state = initialPracticeState()
+      state = {
+        ...state,
+        playingTakeId: 1,
+        pendingRestart: true,
+        sentenceCount: 5,
+        drillIndex: 2,
+      }
+      state = practiceReducer(state, {
+        type: 'PLAYBACK_ENDED',
+        autoAdvance: false,
+      })
+      expect(state.pendingRecordRestart).toBe(true)
+      expect(state.pendingRestart).toBe(false)
+      expect(state.playingTakeId).toBeNull()
+      expect(state.drillIndex).toBe(2)
+    })
+
+    it('advances drill index when autoAdvance is true', () => {
+      let state = initialPracticeState()
+      state = {
+        ...state,
+        playingTakeId: 1,
+        pendingRestart: true,
+        sentenceCount: 5,
+        drillIndex: 2,
+      }
+      state = practiceReducer(state, {
+        type: 'PLAYBACK_ENDED',
+        autoAdvance: true,
+      })
+      expect(state.pendingRecordRestart).toBe(true)
+      expect(state.drillIndex).toBe(3)
+    })
+
+    it('wraps drill index on autoAdvance at last sentence', () => {
+      let state = initialPracticeState()
+      state = {
+        ...state,
+        playingTakeId: 1,
+        pendingRestart: true,
+        sentenceCount: 5,
+        drillIndex: 4,
+      }
+      state = practiceReducer(state, {
+        type: 'PLAYBACK_ENDED',
+        autoAdvance: true,
+      })
+      expect(state.drillIndex).toBe(0)
+    })
+
+    it('does not advance drill when sentenceCount is 0 even with autoAdvance', () => {
+      let state = initialPracticeState()
+      state = {
+        ...state,
+        playingTakeId: 1,
+        pendingRestart: true,
+        sentenceCount: 0,
+        drillIndex: 0,
+      }
+      state = practiceReducer(state, {
+        type: 'PLAYBACK_ENDED',
+        autoAdvance: true,
+      })
+      expect(state.pendingRecordRestart).toBe(true)
+      expect(state.drillIndex).toBe(0)
     })
   })
 })

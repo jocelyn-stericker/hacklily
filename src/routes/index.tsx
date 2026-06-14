@@ -16,9 +16,8 @@ import type { SpeechStripHandle } from '#/components/SpeechStrip'
 import { Toolbar } from '#/components/Toolbar'
 import { TranscriptStore } from '#/components/TranscriptStore'
 import { importMonoPcm, useAudioImport } from '#/components/useAudioImport'
-import { useAudioPlayback } from '#/components/useAudioPlayback'
+import { useAudioManager } from '#/components/useAudioManager'
 import { autoTier, useChunkWorkQueue } from '#/components/useChunkWorkQueue'
-import { useMicCapture } from '#/components/useMicCapture'
 import { usePreemptibleCallback } from '#/components/usePreemptibleCallback'
 import { useSettings } from '#/components/useSettings'
 import { useTimelineState } from '#/components/useTimelineState'
@@ -34,15 +33,18 @@ import type {
   AnalysisFrame,
   AnalysisParams,
 } from '#/lib/analysis/AnalysisFrame'
-import { reconcileVoicingAt, totalFrames } from '#/lib/analysis/AnalysisFrame'
+import {
+  appendFrame,
+  reconcileVoicingAt,
+  totalFrames,
+} from '#/lib/analysis/AnalysisFrame'
 import { AudioRope } from '#/lib/audio/AudioRope'
 import type { AudioRopeGrow, AudioRopeShare } from '#/lib/audio/AudioRope'
 import { exportWav } from '#/lib/audio/exportWav'
-import { getOrCreateSharedAudioContext } from '#/lib/audio/sharedAudioContext'
 import type { Viewport } from '#/lib/jobs/schedule'
 import { RopeGainCache } from '#/lib/loudness/ropeLoudness'
 import { takePracticeData } from '#/lib/practiceHandoff'
-import { preferredSampleRate, updateSettings } from '#/lib/settings'
+import { updateSettings } from '#/lib/settings'
 import { consumeBundledCrashFlag } from '#/lib/transcription/transcribeBundled'
 import { cn } from '#/lib/utils'
 
@@ -207,26 +209,6 @@ function App() {
     })
   }, [])
 
-  const preferredRate = preferredSampleRate(settings)
-
-  const handlePlay = useCallback(() => {
-    // Unlock the shared AudioContext synchronously in the gesture handler so
-    // iOS Safari starts it in a running state.
-    getOrCreateSharedAudioContext(preferredRate)
-    triggerPlay()
-  }, [triggerPlay, preferredRate])
-
-  const handleStart = useCallback(() => {
-    // Unlock here too so playback after a recording session needs no further gesture.
-    getOrCreateSharedAudioContext(preferredRate)
-    recordingStartIndexRef.current = totalFrames(analysisMutRef.current)
-    recordingDurationSecRef.current = analysisMutRef.current.reduce(
-      (t, c) => t + (c.frames.length * c.timeStepSamples) / c.sampleRate,
-      0,
-    )
-    startRecording()
-  }, [startRecording, preferredRate])
-
   const ropesRef = useRef<AudioRope[]>(ropes)
   useEffect(() => {
     ropesRef.current = ropes
@@ -344,7 +326,7 @@ function App() {
         ...params,
         startTimeSec,
         frames: [],
-        voiced: false,
+        voiced: null,
         recordingStart: true,
       })
       transcriptStore.publishChunkList(analysisMutRef.current)
@@ -359,9 +341,7 @@ function App() {
     (frame: AnalysisFrame) => {
       const lastChunk =
         analysisMutRef.current[analysisMutRef.current.length - 1]!
-      const wasVoiced = lastChunk.voiced
-      lastChunk.frames.push(frame)
-      lastChunk.voiced ||= frame.speechDetected
+      const structuralChange = appendFrame(analysisMutRef.current, frame)
       const globalIndex = totalFrames(analysisMutRef.current) - 1
       waveformRef.current?.append(globalIndex)
       spectrogramRef.current?.append(globalIndex)
@@ -372,7 +352,7 @@ function App() {
       // holds the live chunk objects, so the next render (e.g. the viewport
       // auto-scrolling) already reads the new extent. Skipping it avoids a
       // redundant overlay re-render on every recorded frame.
-      if (!wasVoiced && lastChunk.voiced) {
+      if (structuralChange) {
         transcriptStore.publishChunkList(analysisMutRef.current)
       }
       recordingDurationSecRef.current +=
@@ -442,33 +422,49 @@ function App() {
     [transcriptStore],
   )
 
-  useMicCapture({
+  const handleNotification = useCallback((message: string) => {
+    toast(message)
+  }, [])
+
+  const audioManager = useAudioManager({
     active: settings.persistentMic || status.value === 'recording',
     recording: status.value === 'recording',
-    onChunkStart: handleChunkStart,
-    onAppend: handleAppend,
-    onPatch: handlePatch,
-    onRecordingComplete: handleRecordingComplete,
-    onError: handleError,
+    onCaptureChunkStart: handleChunkStart,
+    onCaptureAppend: handleAppend,
+    onCapturePatch: handlePatch,
+    onCaptureComplete: handleRecordingComplete,
+    onCaptureNotification: handleNotification,
     onAudioRopeGrow: handleAudioRopeGrow,
     onAudioRopeShare: handleAudioRopeShare,
     onAudioRopeSeal: handleAudioRopeSeal,
-    features: {
+    captureFeatures: {
       spectrogram: true,
       formant: true,
       vad: true,
     },
-  })
-
-  useAudioPlayback({
-    enabled: status.value === 'playing',
-    ropes,
-    gainCache,
-    cursorSec: timelineState.cursorSec,
-    onStop: handlePause,
+    playing: status.value === 'playing',
+    playbackRopes: ropes,
+    playbackGainCache: gainCache,
+    playbackCursorSec: timelineState.cursorSec,
+    onPlaybackStop: handlePause,
     onPlaybackPositionChanged: handlePlaybackPositionChanged,
     onError: handleError,
   })
+
+  const handlePlay = useCallback(() => {
+    void audioManager?.unlockForGesture()
+    triggerPlay()
+  }, [audioManager, triggerPlay])
+
+  const handleStart = useCallback(() => {
+    void audioManager?.unlockForGesture()
+    recordingStartIndexRef.current = totalFrames(analysisMutRef.current)
+    recordingDurationSecRef.current = analysisMutRef.current.reduce(
+      (t, c) => t + (c.frames.length * c.timeStepSamples) / c.sampleRate,
+      0,
+    )
+    startRecording()
+  }, [audioManager, startRecording])
 
   const playDisabled = !ropes.some((rope) => rope.length > 0)
   const exportAudioDisabled = playDisabled || isExporting
@@ -698,7 +694,7 @@ function App() {
           </div>
           <WelcomeModal
             open={showWelcome}
-            onStartRecording={startRecording}
+            onStartRecording={handleStart}
             onOpenFile={openFilePicker}
           />
         </div>

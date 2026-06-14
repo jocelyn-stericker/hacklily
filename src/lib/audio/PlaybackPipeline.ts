@@ -3,48 +3,28 @@
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import type { AudioRope } from '#/lib/audio/AudioRope'
-import type { AudioRopeSourceNode } from '#/lib/audio/AudioRopeSourceNode'
+import type {
+  AudioRopeSourceNode,
+  AudioRopeSourceNodeMessage,
+} from '#/lib/audio/AudioRopeSourceNode'
 import { TypedEventTarget } from '#/lib/TypedEventTarget'
 import { assertUnreachable } from '#/lib/utils'
 
-const LOG = '[AudioPlaybackPipeline]'
+const LOG_PLAYBACK = '[PlaybackPipeline]'
 
-type AudioPlaybackOutEvents = {
+type PlaybackPipelineEventMap = {
   stop: Event
   positionChanged: CustomEvent<{ timeSec: number }>
   error: CustomEvent<{ error: string }>
 }
 
-/**
- * Plays one or more `AudioRope`s laid end-to-end through the
- * `AudioRopeSourceNode` worklet. The worklet handles the seek and any
- * per-rope resampling; this wrapper tracks the playback position off
- * `context.currentTime`.
- *
- * The caller owns the `AudioContext` and is responsible for its lifecycle
- * via the shared context lease system. This pipeline does not suspend or
- * close the context — that is handled by the shared context layer.
- *
- * Stopping is driven by the worklet: it posts a `RopeEndEvent` when it reaches
- * the end of the final (sealed) rope, carrying the context time its last sample
- * plays out. We stop once `context.currentTime` reaches that. Playback only
- * ever runs on finished recordings, so the final rope is always sealed and the
- * end always arrives.
- */
-export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEvents> {
+export class PlaybackPipeline extends TypedEventTarget<PlaybackPipelineEventMap> {
   #context: AudioContext | null = null
   #node: AudioRopeSourceNode | null = null
   #animFrameId: number | null = null
   #startTimeSec = 0
-  // `context.currentTime` at which the worklet's first kept sample plays out,
-  // from its `RopeStartedEvent`. Null until that lands (module load + resampler
-  // warm-up take a variable, unpredictable moment); position holds at
-  // `#startTimeSec` until then, then tracks `currentTime` exactly off this.
   #anchorContextTime: number | null = null
   #duration = 0
-  // `context.currentTime` at which the worklet's final sample plays out, from
-  // its `RopeEndEvent`. Null until the worklet reports the end; we stop once
-  // `currentTime` reaches it.
   #stopAtContextTime: number | null = null
   #stopCtrl = new AbortController()
 
@@ -73,7 +53,7 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
     signal.addEventListener('abort', this.#stop)
     this.#play(context, moduleReady, ropes, gains, startAtSec, endAtSec).catch(
       (err) => {
-        console.error(LOG, 'playback failed:', err)
+        console.error(LOG_PLAYBACK, 'playback failed:', err)
         this.emit('error', {
           error: err instanceof Error ? err.message : String(err),
         })
@@ -88,7 +68,7 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
     gains: Array<number>,
     requestedStartAtSec: number,
     endAtSec?: number,
-  ) {
+  ): Promise<void> {
     this.#duration = ropes.reduce(
       (sum, rope) => sum + rope.length / rope.sampleRate,
       0,
@@ -102,12 +82,9 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
 
     this.#context = context
 
-    // Belt-and-suspenders resume before waiting on the module: a UA-initiated
-    // suspension (tab switch) may have hit between the gesture unlock and now.
     await context.resume()
     await moduleReady
 
-    // Aborted while awaiting module load.
     if (this.#stopCtrl.signal.aborted) {
       return
     }
@@ -118,8 +95,6 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
     )
     this.#node = node
     node.connect(context.destination)
-    // Listen before starting so an immediate `started`/`end` (e.g. a seek
-    // already at the tail) isn't missed.
     node.port.onmessage = ({ data }) => {
       switch (data.type) {
         case 'started':
@@ -132,11 +107,13 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
           assertUnreachable(data)
       }
     }
-    node.port.postMessage({
+    const shares = ropes.map((rope) => rope.shareRope())
+    const setBufferMsg: AudioRopeSourceNodeMessage = {
       type: 'setBuffer',
-      ropes: ropes.map((rope) => rope.shareRope()),
+      ropes: shares,
       gains,
-    })
+    }
+    node.port.postMessage(setBufferMsg)
     node.port.postMessage({ type: 'start', timeSec: startAtSec })
     if (endAtSec !== undefined) {
       node.port.postMessage({ type: 'end', timeSec: endAtSec })
@@ -145,18 +122,15 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
     this.#animFrameId = requestAnimationFrame(this.#animate)
   }
 
-  #animate = () => {
+  #animate = (): void => {
     const context = this.#context
     if (context === null) return
-    // Until the worklet anchors the clock, hold at the seek target; after, track
-    // the context clock exactly (playback is 1:1 real time).
     const elapsed =
       this.#anchorContextTime === null
         ? 0
         : Math.max(0, context.currentTime - this.#anchorContextTime)
     const timeSec = Math.min(this.#startTimeSec + elapsed, this.#duration)
     this.emit('positionChanged', { timeSec })
-    // Stop once the worklet's final sample has actually played out.
     if (
       this.#stopAtContextTime !== null &&
       context.currentTime >= this.#stopAtContextTime
@@ -168,7 +142,7 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
     this.#animFrameId = requestAnimationFrame(this.#animate)
   }
 
-  #stop = () => {
+  #stop = (): void => {
     if (this.#animFrameId !== null) {
       cancelAnimationFrame(this.#animFrameId)
       this.#animFrameId = null
@@ -179,7 +153,7 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
           this.#node.port.postMessage(null)
           this.#node.disconnect()
         } catch (err) {
-          console.warn(LOG, 'stop cleanup error:', err)
+          console.warn(LOG_PLAYBACK, 'stop cleanup error:', err)
         }
         this.#node = null
       }
