@@ -2,16 +2,8 @@
 
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
-import {
-  CaptionsOff,
-  Check,
-  Cloud,
-  Loader2,
-  Sparkle,
-  Sparkles,
-} from 'lucide-react'
+import { CaptionsOff, Cloud, Loader2, Sparkle, Sparkles } from 'lucide-react'
 import type { LucideProps } from 'lucide-react'
-import type { ReactNode } from 'react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -27,6 +19,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '#/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from '#/components/ui/select'
 import { Switch } from '#/components/ui/switch'
 import { useBrowserSpeechRecognitionAvailable } from '#/components/useBrowserSpeechRecognitionAvailable'
 import {
@@ -38,7 +40,6 @@ import type { DownloadModel } from '#/lib/modelDownload'
 import { cancelDownload, startDownload } from '#/lib/modelDownload'
 import type { TranscriptionMode } from '#/lib/settings'
 import { resolveSmallEngine } from '#/lib/transcription'
-import { cn } from '#/lib/utils'
 
 const LOG = '[TranscriptionSettings]'
 
@@ -272,77 +273,6 @@ function AccurateDownloadControls({
   )
 }
 
-function ModeCard({
-  selected,
-  disabled = false,
-  onSelect,
-  title,
-  icon,
-  description,
-  badge,
-  footer,
-}: {
-  selected: boolean
-  disabled?: boolean
-  onSelect: () => void
-  title: string
-  icon?: TranscriptionMode
-  description?: string
-  badge?: ReactNode
-  footer?: ReactNode
-}) {
-  return (
-    <div
-      className={cn(
-        'rounded-lg border transition-colors',
-        disabled
-          ? 'border-border opacity-55'
-          : selected
-            ? 'border-primary bg-primary/5'
-            : 'border-border',
-      )}
-    >
-      <button
-        type="button"
-        role="radio"
-        aria-checked={selected}
-        disabled={disabled}
-        onClick={onSelect}
-        className={cn(
-          'flex w-full flex-col gap-1 rounded-lg p-3 text-left outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
-          disabled
-            ? 'cursor-not-allowed'
-            : selected
-              ? 'cursor-pointer'
-              : 'cursor-pointer hover:bg-muted/50',
-        )}
-      >
-        <div className="flex items-center justify-between gap-2">
-          <span className="flex items-center gap-2 text-sm font-medium">
-            <span
-              className={cn(
-                'flex size-4 shrink-0 items-center justify-center rounded-full border transition-colors',
-                selected
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-muted-foreground/40',
-              )}
-            >
-              {selected && <Check className="size-3" />}
-            </span>
-            {title}
-            {badge}
-          </span>
-          {icon ? <TranscriptIcon mode={icon} /> : null}
-        </div>
-        {description ? (
-          <p className="pl-6 text-xs text-muted-foreground">{description}</p>
-        ) : null}
-      </button>
-      {footer ? <div className="px-3 pb-3 pl-9">{footer}</div> : null}
-    </div>
-  )
-}
-
 export function TranscriptionSettingsModal({
   open,
   onOpenChange,
@@ -462,6 +392,16 @@ export function TranscriptionSettingsModal({
       ? 'A fast, lightweight model. Transcribes automatically'
       : 'Your browser’s own on-device speech recognition. Transcribes automatically'
 
+  // Trigger/label text for the model dropdown.
+  const modeTitle = (m: TranscriptionMode) =>
+    m === 'disabled'
+      ? 'Don’t transcribe'
+      : m === 'small'
+        ? smallTitle
+        : m === 'large'
+          ? 'Accurate (Whisper Turbo)'
+          : 'Cloud transcription'
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
@@ -474,111 +414,172 @@ export function TranscriptionSettingsModal({
         </DialogHeader>
 
         <DialogBody>
-          <div
-            role="radiogroup"
-            aria-label="Transcription method"
-            className="flex flex-col gap-5 py-1"
-          >
+          <div className="flex flex-col gap-5 py-1">
             <section className="flex flex-col gap-3">
-              <ModeCard
-                selected={draft === 'disabled'}
-                onSelect={() => setDraft('disabled')}
-                icon={'disabled'}
-                title="Don’t transcribe"
-              />
-            </section>
-
-            <section className="flex flex-col gap-3 border-t border-border/60 pt-5">
               <header className="flex flex-col gap-0.5">
                 <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                  On your device
+                  Transcription
                 </h3>
-                <p className="text-xs text-muted-foreground">
-                  Private — your audio never leaves this browser.
-                </p>
               </header>
 
-              <ModeCard
-                selected={draft === 'small'}
-                onSelect={() => setDraft('small')}
-                icon={'small'}
-                title={smallTitle}
-                description={smallDescription}
-                badge={
-                  local === null ? (
-                    <Badge variant="outline">Checking…</Badge>
-                  ) : smallReady ? (
-                    <Badge variant="secondary">Ready</Badge>
-                  ) : null
-                }
-                footer={
-                  local !== null && !smallReady ? (
-                    <DownloadControls
-                      model={smallDownloadModel}
-                      sizeLabel={
-                        smallEngine === 'moonshine' ? '70 MB' : '<100 MB'
-                      }
-                      onDownload={() => setDraft('small')}
-                    />
-                  ) : null
-                }
-              />
+              <Select
+                value={draft}
+                onValueChange={(v) => {
+                  if (v) setDraft(v)
+                }}
+              >
+                <SelectTrigger
+                  className="w-full"
+                  aria-label="Transcription model"
+                >
+                  <SelectValue>
+                    {(v: TranscriptionMode | null) =>
+                      v ? (
+                        <span className="flex items-center gap-2">
+                          <TranscriptIcon
+                            mode={v}
+                            className="size-4 text-muted-foreground"
+                          />
+                          {modeTitle(v)}
+                        </span>
+                      ) : null
+                    }
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="disabled">
+                      <CaptionsOff className="text-muted-foreground self-center" />
+                      Don’t transcribe
+                    </SelectItem>
+                  </SelectGroup>
+                  <SelectSeparator />
+                  <SelectGroup>
+                    <SelectLabel>On your device · private</SelectLabel>
+                    <SelectItem value="small">
+                      <Sparkle className="text-muted-foreground self-center" />
+                      {smallTitle}
+                      {smallReady ? (
+                        <span className="ml-auto text-xs text-muted-foreground">
+                          Ready
+                        </span>
+                      ) : null}
+                    </SelectItem>
+                    <SelectItem value="large" disabled={!largeAvailable}>
+                      <Sparkles className="text-muted-foreground self-center" />
+                      Accurate (Whisper Turbo)
+                      {!largeAvailable ? (
+                        <span className="ml-auto text-xs text-muted-foreground">
+                          Needs WebGPU
+                        </span>
+                      ) : accurateReady ? (
+                        <span className="ml-auto text-xs text-muted-foreground">
+                          Ready
+                        </span>
+                      ) : null}
+                    </SelectItem>
+                  </SelectGroup>
+                  <SelectSeparator />
+                  <SelectGroup>
+                    <SelectLabel>Off your device</SelectLabel>
+                    <SelectItem value="cloud" disabled={!cloudAvailable}>
+                      <Cloud className="text-muted-foreground self-center" />
+                      Cloud transcription
+                      {cloudAvailable ? null : (
+                        <span className="ml-auto text-xs text-muted-foreground">
+                          Unavailable
+                        </span>
+                      )}
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
 
-              <ModeCard
-                selected={draft === 'large'}
-                disabled={!largeAvailable}
-                onSelect={() => setDraft('large')}
-                icon={'large'}
-                title="Accurate (Whisper Turbo)"
-                description="A rough draft appears right away; refine segments on demand. Needs significant compute and memory"
-                badge={
-                  !largeAvailable ? (
-                    <Badge variant="outline">Needs WebGPU</Badge>
-                  ) : webgpu === null || local === null ? (
-                    <Badge variant="outline">Checking…</Badge>
-                  ) : accurateReady ? (
-                    <Badge variant="secondary">Ready</Badge>
-                  ) : null
-                }
-                footer={
-                  // Wait for WebGPU confirmation before offering ~600 MB download,
-                  // and for local to resolve so we know which draft model to fetch.
-                  webgpu === true && local !== null && !accurateReady ? (
-                    <AccurateDownloadControls
-                      draftModel={smallDownloadModel}
-                      draftReady={smallReady}
-                      sizeLabel={accurateDownloadLabel}
-                      enabled={open}
-                      onStart={() => setDraft('large')}
-                    />
-                  ) : null
-                }
-              />
-            </section>
-
-            <section className="flex flex-col gap-3 border-t border-border/60 pt-5">
-              <header className="flex flex-col gap-0.5">
-                <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                  Off your device
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Sent to a remote service — only if you allow it.
-                </p>
-              </header>
-
-              <ModeCard
-                selected={draft === 'cloud'}
-                disabled={!cloudAvailable}
-                onSelect={() => setDraft('cloud')}
-                title="Cloud transcription"
-                icon={'cloud'}
-                badge={
-                  cloudAvailable ? null : (
-                    <Badge variant="outline">Unavailable</Badge>
-                  )
-                }
-                description="Uses your browser or operating system's transcription service, subject to that vendor's privacy policy. Transcribes automatically. Whisper Turbo is more accurate"
-              />
+              {/* Status, privacy framing, and download for the selected model.
+                  Mirrors the dropdown's on-device / off-device grouping. */}
+              <div className="rounded-lg border border-border bg-muted/30 p-3">
+                {draft === 'disabled' ? (
+                  <p className="text-xs text-muted-foreground">
+                    Braat won’t transcribe your speech.
+                  </p>
+                ) : draft === 'small' ? (
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-xs font-medium">
+                        Private — your audio never leaves this browser.
+                      </p>
+                      {local === null ? (
+                        <Badge variant="outline">Checking…</Badge>
+                      ) : smallReady ? (
+                        <Badge variant="secondary">Ready</Badge>
+                      ) : null}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {smallDescription}.
+                    </p>
+                    {local !== null && !smallReady ? (
+                      <DownloadControls
+                        model={smallDownloadModel}
+                        sizeLabel={
+                          smallEngine === 'moonshine' ? '70 MB' : '<100 MB'
+                        }
+                        onDownload={() => setDraft('small')}
+                      />
+                    ) : null}
+                  </div>
+                ) : draft === 'large' ? (
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-xs font-medium">
+                        Private — your audio never leaves this browser.
+                      </p>
+                      {!largeAvailable ? (
+                        <Badge variant="outline">Needs WebGPU</Badge>
+                      ) : webgpu === null || local === null ? (
+                        <Badge variant="outline">Checking…</Badge>
+                      ) : accurateReady ? (
+                        <Badge variant="secondary">Ready</Badge>
+                      ) : null}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      A rough draft appears right away; refine segments on
+                      demand. Needs significant compute and memory.
+                    </p>
+                    {!largeAvailable ? (
+                      <p className="text-xs text-muted-foreground">
+                        Requires a browser with WebGPU support.
+                      </p>
+                    ) : // Wait for WebGPU confirmation before offering the
+                    // ~600 MB download, and for local to resolve so we know
+                    // which draft model to fetch.
+                    webgpu === true && local !== null && !accurateReady ? (
+                      <AccurateDownloadControls
+                        draftModel={smallDownloadModel}
+                        draftReady={smallReady}
+                        sizeLabel={accurateDownloadLabel}
+                        enabled={open}
+                        onStart={() => setDraft('large')}
+                      />
+                    ) : null}
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-xs font-medium">
+                        Sent to a remote service — only if you choose it.
+                      </p>
+                      {cloudAvailable ? null : (
+                        <Badge variant="outline">Unavailable</Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Uses your browser or operating system’s transcription
+                      service, subject to that vendor’s privacy policy.
+                      Transcribes automatically. Whisper Turbo is more accurate.
+                    </p>
+                  </div>
+                )}
+              </div>
             </section>
 
             <section className="flex flex-col gap-4 border-t border-border/60 pt-5">
@@ -600,7 +601,7 @@ export function TranscriptionSettingsModal({
                     Forced alignment and brightness
                   </span>
                   <p className="text-xs text-muted-foreground">
-                    Aligns transcriptions to audio using a port of{' '}
+                    Aligns transcriptions to audio using a port of the{' '}
                     <a
                       href="https://github.com/tabahi/bournemouth-forced-aligner"
                       target="_blank"
@@ -636,10 +637,9 @@ export function TranscriptionSettingsModal({
                     Run heavy computation while recording
                   </span>
                   <p className="text-xs text-muted-foreground">
-                    The browser&apos;s built-in speech recognition and cloud
-                    engines always run during recording. This setting only
-                    restricts Moonshine, Whisper Turbo, and alignment workers,
-                    which are paused to free memory.
+                    This setting restricts Moonshine, Whisper Turbo, and
+                    alignment workers to reduce memory and compute while
+                    recording.
                   </p>
                 </div>
               </label>
