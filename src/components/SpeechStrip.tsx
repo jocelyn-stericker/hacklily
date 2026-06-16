@@ -38,6 +38,7 @@ import {
 import { useAnalysisChunks, useTranscript } from './TranscriptStore'
 import type { TranscriptStore } from './TranscriptStore'
 import { Button } from './ui/button'
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 import { useColourScheme } from './useColourScheme'
 import { useSettings } from './useSettings'
@@ -255,7 +256,7 @@ function ChunkOverlay({
   let topText: React.ReactNode = result?.text?.trim() ?? null
 
   if (!topText) {
-    topText = <span className="text-primary-foreground/50 italic">Voiced</span>
+    topText = <span className="italic">Voiced</span>
   }
 
   // HACK: f0 is set in-place on frames, and then doesn't change; memoize on countt
@@ -270,37 +271,42 @@ function ChunkOverlay({
     sortedPitches[Math.floor(sortedPitches.length / 2)] ?? 0,
   )
 
+  const alignmentEnabled = settings.forcedAlignment
+
   return (
     <div
       className="absolute overflow-hidden text-black"
       style={{ left, width, top: 0, height }}
     >
-      <div className="flex items-center gap-1 px-1" style={{ height: '50%' }}>
+      <div
+        className="flex items-center gap-1 px-1"
+        style={{ height: alignmentEnabled ? '50%' : '100%' }}
+      >
         {renderIcon()}
         {topText || medianF0 > 0 || brightness > 0 ? (
-          <Tooltip>
-            <TooltipTrigger
-              render={<span className="truncate text-[10px] leading-tight" />}
+          <Popover>
+            <PopoverTrigger
+              render={
+                <button className="truncate text-[10px] leading-tight underline cursor-pointer" />
+              }
             >
               {topText}
-            </TooltipTrigger>
-            <TooltipContent>
-              <div className="flex flex-col">
-                <div>{topText}</div>
-                {medianF0 > 0 || brightness > 0 ? (
-                  <div className="flex flex-row text-primary-foreground/70 gap-3">
-                    {medianF0 > 0 ? <div>{medianF0} Hz</div> : null}
-                    {brightness > 0 ? (
-                      <div>{`${toPercent(brightness)} bright`}</div>
-                    ) : null}
-                  </div>
-                ) : null}
-              </div>
-            </TooltipContent>
-          </Tooltip>
+            </PopoverTrigger>
+            <PopoverContent className={result?.text ? 'w-64' : 'w-24'}>
+              <div>{topText}</div>
+              {medianF0 > 0 || brightness > 0 ? (
+                <div className="flex flex-row gap-3 text-sm">
+                  {medianF0 > 0 ? <div>{medianF0} Hz</div> : null}
+                  {brightness > 0 ? (
+                    <div>{`${toPercent(brightness)} bright`}</div>
+                  ) : null}
+                </div>
+              ) : null}
+            </PopoverContent>
+          </Popover>
         ) : null}
       </div>
-      {phonemes && phonemes.length > 0 ? (
+      {alignmentEnabled && phonemes && phonemes.length > 0 ? (
         <div className="relative" style={{ height: '50%' }}>
           {phonemes.map((ph, i) => {
             const phLeft = timeToXDom(ph.startMs / 1000) - plotPad.left - left

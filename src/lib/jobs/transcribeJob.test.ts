@@ -13,6 +13,7 @@ import { priorityPickNext } from './schedule'
 import type { Viewport } from './schedule'
 import { createTranscribeJob, requestUpgrade } from './transcribeJob'
 import type { TranscribeJobDeps, TranscriptSink } from './transcribeJob'
+import { WorkerTerminatedError } from './WorkerTerminatedError'
 
 vi.mock('#/lib/transcription/transcribeBundled', () => ({
   transcribeWithWorker: vi.fn(),
@@ -71,6 +72,8 @@ function makeQueue(deps: Deps): ChunkWorkQueue {
     sink: deps.sink,
     autoTier: deps.autoTier,
     onModelUnavailable: deps.onModelUnavailable,
+    isHeavyAllowed: deps.isHeavyAllowed,
+    isHeavyTier: deps.isHeavyTier,
   })
   return new ChunkWorkQueue([transcribe], priorityPickNext(['transcribe']), {
     getChunks: deps.getChunks,
@@ -100,6 +103,8 @@ describe('transcribe kind', () => {
       getViewport: () => null,
       autoTier: () => 'cloud',
       onModelUnavailable: () => {},
+      isHeavyAllowed: () => true,
+      isHeavyTier: () => false,
     })
 
     queue.scan()
@@ -125,6 +130,8 @@ describe('transcribe kind', () => {
       getViewport: () => null,
       autoTier: () => 'cloud',
       onModelUnavailable: () => {},
+      isHeavyAllowed: () => true,
+      isHeavyTier: () => false,
     })
 
     // While recording, the chunk is claimed but its audio end isn't known yet, so
@@ -157,6 +164,8 @@ describe('transcribe kind', () => {
       getViewport: () => null,
       autoTier: () => 'cloud',
       onModelUnavailable: () => {},
+      isHeavyAllowed: () => true,
+      isHeavyTier: () => false,
     })
 
     queue.scan()
@@ -179,6 +188,8 @@ describe('transcribe kind', () => {
       getViewport: () => null,
       autoTier: () => 'large', // whisper -> checks isModelDownloaded
       onModelUnavailable,
+      isHeavyAllowed: () => true,
+      isHeavyTier: () => false,
     })
 
     queue.scan()
@@ -204,6 +215,8 @@ describe('transcribe kind', () => {
       getViewport: () => null,
       autoTier,
       onModelUnavailable: () => {},
+      isHeavyAllowed: () => true,
+      isHeavyTier: () => false,
     }
     const queue = makeQueue(deps)
 
@@ -241,6 +254,8 @@ describe('transcribe kind', () => {
       getViewport: () => null,
       autoTier: (highQuality) => (highQuality ? 'large' : 'small'),
       onModelUnavailable: () => {},
+      isHeavyAllowed: () => true,
+      isHeavyTier: () => false,
     }
     const queue = makeQueue(deps)
 
@@ -252,5 +267,93 @@ describe('transcribe kind', () => {
       large: { text: 'large text' },
       small: { text: 'small text' },
     })
+  })
+})
+
+describe('recording mode', () => {
+  // Exercises the isHeavyAllowed + isHeavyTier guard in needsWork: heavy jobs are
+  // silently skipped while recording and picked up by the next invalidate() after.
+  it('skips heavy work while blocked and runs it when re-enabled', async () => {
+    const c0 = chunk(5, true)
+    const sink = makeSink()
+    let isHeavyAllowed = false
+
+    // Use cloud tier but mark it "heavy" so the recording-mode guard blocks it.
+    const queue = makeQueue({
+      sink,
+      getChunks: () => [c0],
+      getRopes: () => [sealedRope(100)],
+      getViewport: () => null,
+      autoTier: () => 'cloud',
+      onModelUnavailable: () => {},
+      isHeavyAllowed: () => isHeavyAllowed,
+      isHeavyTier: () => true,
+    })
+
+    queue.scan()
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    expect(sink.get(c0)).toBeUndefined()
+
+    isHeavyAllowed = true
+    queue.invalidate()
+    await settle(() => sink.get(c0)?.cloud?.text !== undefined)
+
+    expect(sink.get(c0)?.cloud?.text).toBe('cloud text')
+  })
+
+  // Regression: when recording started while a heavy transcription was in flight,
+  // terminateBundledWorker left the pending promise hanging. The #loop() was stuck
+  // at `await this.#pass()` forever, so the queue never resumed after recording ended.
+  it('resumes after recording ends when the worker was terminated mid-flight', async () => {
+    const { transcribeWithWorker } =
+      await import('#/lib/transcription/transcribeBundled')
+
+    let rejectInFlight: ((err: Error) => void) | undefined
+    vi.mocked(transcribeWithWorker)
+      .mockImplementationOnce(
+        () =>
+          new Promise<string>((_, reject) => {
+            rejectInFlight = reject
+          }),
+      )
+      .mockResolvedValueOnce('text after recording')
+
+    const c0 = chunk(5, true)
+    const sink = makeSink()
+    let isHeavyAllowed = true
+
+    const queue = makeQueue({
+      sink,
+      getChunks: () => [c0],
+      getRopes: () => [sealedRope(100)],
+      getViewport: () => null,
+      autoTier: () => 'small',
+      onModelUnavailable: () => {},
+      isHeavyAllowed: () => isHeavyAllowed,
+      isHeavyTier: () => true,
+    })
+
+    // Transcription starts in-flight.
+    queue.scan()
+    await settle(() => sink.get(c0)?.small?.job?.status === 'transcribing')
+
+    // Recording starts: block heavy work and simulate worker termination.
+    isHeavyAllowed = false
+    queue.invalidate()
+    rejectInFlight!(new WorkerTerminatedError())
+
+    // Pass unblocks; chunk must be clean -- no error status, no stale 'transcribing'.
+    await settle(
+      () => sink.get(c0) !== undefined && sink.get(c0)?.small === undefined,
+    )
+    expect(sink.get(c0)?.small).toBeUndefined()
+
+    // Recording ends: re-enable heavy work.
+    isHeavyAllowed = true
+    queue.invalidate()
+
+    // Queue must resume and successfully retranscribe.
+    await settle(() => sink.get(c0)?.small?.text !== undefined)
+    expect(sink.get(c0)).toEqual({ small: { text: 'text after recording' } })
   })
 })

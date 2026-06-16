@@ -15,19 +15,34 @@ import type { PhonemeTimestamp } from '../alignment'
 import type { ChunkWork } from './ChunkWorkQueue'
 import { withoutTier } from './transcribeJob'
 import type { TranscriptSink } from './transcribeJob'
+import { WorkerTerminatedError } from './WorkerTerminatedError'
 
 export type AlignJobDeps = {
   sink: TranscriptSink
   onModelUnavailable: () => void
+  enabled: () => boolean
+  isHeavyAllowed: () => boolean
 }
 
 let worker: AlignWorker | null = null
+let pendingAlignReject: ((err: Error) => void) | null = null
+
+/** Terminate the align worker and free its memory. Safe to call with no worker running. */
+export function terminateAlignWorker(): void {
+  if (!worker) return
+  worker.terminate()
+  worker = null
+  pendingAlignReject?.(new WorkerTerminatedError())
+  pendingAlignReject = null
+}
 
 export function createAlignJob(deps: AlignJobDeps): ChunkWork {
   return {
     kind: 'align',
     liveSpans: false,
     needsWork: (chunk) => {
+      if (!deps.enabled()) return false
+      if (!deps.isHeavyAllowed()) return false
       const t = deps.sink.get(chunk)
       for (const tier of TRANSCRIPT_TIERS) {
         if (t?.[tier]?.text) {
@@ -57,15 +72,24 @@ async function runAlignmentOnWorker(
   }
 
   return new Promise<PhonemeTimestamp[]>((resolve, reject) => {
+    const cleanup = () => {
+      pendingAlignReject = null
+      worker!.removeEventListener('message', onMessage)
+    }
     const onMessage = (ev: MessageEvent<AlignOutMessage>) => {
       const msg = ev.data
       if (msg.type === 'result') {
-        worker!.removeEventListener('message', onMessage)
+        cleanup()
         resolve(msg.phonemeTimestamps)
       } else if (msg.type === 'error') {
-        worker!.removeEventListener('message', onMessage)
+        cleanup()
         reject(new Error(msg.message))
       }
+    }
+
+    pendingAlignReject = (err) => {
+      cleanup()
+      reject(err)
     }
 
     worker!.addEventListener('message', onMessage)
@@ -147,9 +171,7 @@ async function alignOne(
     }
   } catch (err) {
     const cur = deps.sink.get(chunk)
-    if (audio.signal.aborted) {
-      // Cancelled (re-chunked, or too short to be speech): remove alignment
-      // Should not happen for alignment, since we don't process live audio.
+    if (audio.signal.aborted || err instanceof WorkerTerminatedError) {
       deps.sink.set(chunk, withoutTier(deps.sink.get(chunk), tier))
       return
     }

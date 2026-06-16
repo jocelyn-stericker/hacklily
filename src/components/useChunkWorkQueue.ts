@@ -7,16 +7,19 @@ import type { RefObject } from 'react'
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
 import type { AudioRope } from '#/lib/audio/AudioRope'
-import { createAlignJob } from '#/lib/jobs/alignJob'
+import { createAlignJob, terminateAlignWorker } from '#/lib/jobs/alignJob'
 import { ChunkWorkQueue } from '#/lib/jobs/ChunkWorkQueue'
 import { priorityPickNext } from '#/lib/jobs/schedule'
 import type { Viewport } from '#/lib/jobs/schedule'
 import { createTranscribeJob, requestUpgrade } from '#/lib/jobs/transcribeJob'
 import type { TranscriptSink } from '#/lib/jobs/transcribeJob'
 import type { TranscriptionMode } from '#/lib/settings'
+import { resolveSmallEngine } from '#/lib/transcription'
 import type { TranscriptTier } from '#/lib/transcription'
+import { terminateBundledWorker } from '#/lib/transcription/transcribeBundled'
 
 import type { TranscriptStore } from './TranscriptStore'
+import { useBrowserSpeechRecognitionAvailable } from './useBrowserSpeechRecognitionAvailable'
 
 /**
  * v1 tier policy: only ever auto-run `small` or `cloud`. `large` falls back to
@@ -50,6 +53,9 @@ export function useChunkWorkQueue({
   ropesRef,
   getViewport,
   transcriptionMode,
+  forcedAlignment,
+  runHeavyWhileRecording,
+  isRecording,
   onModelUnavailable,
 }: {
   store: TranscriptStore
@@ -57,6 +63,9 @@ export function useChunkWorkQueue({
   ropesRef: RefObject<AudioRope[]>
   getViewport: () => Viewport | null
   transcriptionMode: TranscriptionMode
+  forcedAlignment: boolean
+  runHeavyWhileRecording: boolean
+  isRecording: boolean
   onModelUnavailable: () => void
 }): {
   /** Re-transcribe one chunk on demand (the SpeechStrip button). */
@@ -72,6 +81,23 @@ export function useChunkWorkQueue({
   useEffect(() => {
     onModelUnavailableRef.current = onModelUnavailable
   }, [onModelUnavailable])
+
+  const forcedAlignmentRef = useRef(forcedAlignment)
+  const isHeavyAllowedRef = useRef(!isRecording || runHeavyWhileRecording)
+
+  // Determine whether the "small" tier maps to a heavy engine (Moonshine vs.
+  // browser's native SR). Null while the availability probe is pending -- in
+  // that case, treat small as light so transcription isn't blocked at startup.
+  const availability = useBrowserSpeechRecognitionAvailable()
+  const local = availability?.local ?? null
+  const smallEngine = local !== null ? resolveSmallEngine(local) : null
+  const isHeavyTierRef = useRef((tier: TranscriptTier): boolean => {
+    return tier === 'large' || (tier === 'small' && smallEngine === 'moonshine')
+  })
+  useEffect(() => {
+    isHeavyTierRef.current = (tier: TranscriptTier): boolean =>
+      tier === 'large' || (tier === 'small' && smallEngine === 'moonshine')
+  }, [smallEngine])
 
   // The transcript sink closes over `store` (a prop), not a ref, so it's stable
   // and safe to share between the queue and the upgrade trigger. The tier/ref
@@ -91,10 +117,14 @@ export function useChunkWorkQueue({
           sink: transcribeSink,
           autoTier: (upgrade) => autoTier(modeRef.current, upgrade),
           onModelUnavailable: () => onModelUnavailableRef.current(),
+          isHeavyAllowed: () => isHeavyAllowedRef.current,
+          isHeavyTier: (tier) => isHeavyTierRef.current(tier),
         }),
         createAlignJob({
           sink: transcribeSink,
           onModelUnavailable: () => onModelUnavailableRef.current(),
+          enabled: () => forcedAlignmentRef.current,
+          isHeavyAllowed: () => isHeavyAllowedRef.current,
         }),
       ],
       priorityPickNext(['align', 'transcribe']),
@@ -122,6 +152,24 @@ export function useChunkWorkQueue({
     modeRef.current = transcriptionMode
     queue.current?.invalidate()
   }, [transcriptionMode, queue])
+
+  useEffect(() => {
+    forcedAlignmentRef.current = forcedAlignment
+    queue.current?.invalidate()
+  }, [forcedAlignment, queue])
+
+  // When heavy work becomes disallowed (recording starts while setting is off, or
+  // setting is turned off mid-recording), terminate the heavy workers immediately
+  // to free their memory. Workers rebuild lazily from cache on next use.
+  useEffect(() => {
+    isHeavyAllowedRef.current = !isRecording || runHeavyWhileRecording
+    queue.current?.invalidate()
+    if (isRecording && !runHeavyWhileRecording) {
+      terminateBundledWorker('moonshine')
+      terminateBundledWorker('whisper')
+      terminateAlignWorker()
+    }
+  }, [isRecording, runHeavyWhileRecording, queue])
 
   const request = useCallback(
     (chunk: AnalysisChunk) => {

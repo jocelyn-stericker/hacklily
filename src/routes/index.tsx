@@ -268,6 +268,9 @@ function App() {
       ropesRef,
       getViewport,
       transcriptionMode: settings.transcriptionMode,
+      forcedAlignment: settings.forcedAlignment,
+      runHeavyWhileRecording: settings.runHeavyWhileRecording,
+      isRecording: status.value === 'recording',
       onModelUnavailable: handleModelUnavailable,
     })
 
@@ -660,7 +663,7 @@ function App() {
               virtualWidthSec={virtualWidthSec}
               className="flex-1"
               hideScrollBar={isRecording}
-              speechStripHeight={60}
+              speechStripHeight={settings.forcedAlignment ? 60 : 30}
             >
               <Spectrogram
                 analysisMut={analysisMut}

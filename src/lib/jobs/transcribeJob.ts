@@ -18,6 +18,7 @@ import type {
 } from '#/lib/transcription'
 
 import type { ChunkWork } from './ChunkWorkQueue'
+import { WorkerTerminatedError } from './WorkerTerminatedError'
 
 /** The transcript state the job reads and writes (satisfied by TranscriptStore). */
 export interface TranscriptSink {
@@ -31,6 +32,10 @@ export type TranscribeJobDeps = {
   autoTier: (highQuality: boolean) => TranscriptTier | null
   /** Invoked when the resolved engine's model isn't downloaded. */
   onModelUnavailable: () => void
+  /** Whether heavy (Moonshine / Whisper) work is currently permitted. */
+  isHeavyAllowed: () => boolean
+  /** Whether a tier maps to a heavy engine (Moonshine or Whisper). */
+  isHeavyTier: (tier: TranscriptTier) => boolean
 }
 
 // The resolved context for one transcription pass: which engine does the work,
@@ -49,14 +54,17 @@ export function createTranscribeJob(deps: TranscribeJobDeps): ChunkWork {
     liveSpans: true,
     needsWork: (chunk) => {
       const t = deps.sink.get(chunk)
-      // A queued job is an explicit upgrade request -- always work, at its tier.
+      // A queued job is an explicit upgrade request -- work unless it's heavy and heavy is blocked.
       for (const tier of TRANSCRIPT_TIERS) {
         if (t?.[tier]?.job?.status === 'queued') {
+          if (!deps.isHeavyAllowed() && deps.isHeavyTier(tier)) continue
           return true
         }
       }
       const tier = deps.autoTier(false)
-      return tier !== null && needsTier(t, tier)
+      if (tier === null) return false
+      if (!deps.isHeavyAllowed() && deps.isHeavyTier(tier)) return false
+      return needsTier(t, tier)
     },
     resolve: async () => {
       const auto = await resolveCtx(deps.autoTier(false))
@@ -141,8 +149,8 @@ async function transcribeOne(
     const cur = deps.sink.get(chunk)
     deps.sink.set(chunk, { ...cur, [tier]: { text } })
   } catch (err) {
-    if (audio.signal.aborted) {
-      // Cancelled (re-chunked, or too short to be speech): leave untranscribed.
+    if (audio.signal.aborted || err instanceof WorkerTerminatedError) {
+      // Cancelled: leave untranscribed so the queue retries when work resumes.
       deps.sink.set(chunk, withoutTier(deps.sink.get(chunk), tier))
       return
     }

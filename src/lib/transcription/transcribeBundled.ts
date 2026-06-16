@@ -4,6 +4,7 @@
 
 import { readAudioSpan } from '#/lib/audio/AudioSpan'
 import type { AudioSpan } from '#/lib/audio/AudioSpan'
+import { WorkerTerminatedError } from '#/lib/jobs/WorkerTerminatedError'
 import TranscribeWorkerCtor from '#/lib/workers/TranscribeWorker?worker'
 import type {
   TranscribeWorker,
@@ -23,7 +24,11 @@ const workers = new Map<TranscribeWorkerModel, TranscribeWorker>()
 let nextTranscribeId = 0
 const pendingTranscriptions = new Map<
   number,
-  { resolve: (text: string) => void; reject: (error: Error) => void }
+  {
+    model: TranscribeWorkerModel
+    resolve: (text: string) => void
+    reject: (error: Error) => void
+  }
 >()
 
 // After this idle period, terminate the worker to free its weights. Long enough
@@ -101,11 +106,28 @@ function onTranscriptionSettled(): void {
 }
 
 // Terminate a worker and remove it from the pool so the next request rebuilds.
+// Rejects any pending transcriptions for this model so in-flight passes unblock.
 function teardownWorker(model: TranscribeWorkerModel): void {
   const worker = workers.get(model)
   if (!worker) return
   worker.terminate()
   workers.delete(model)
+  const terminated = new WorkerTerminatedError()
+  for (const [id, pending] of pendingTranscriptions) {
+    if (pending.model === model) {
+      pendingTranscriptions.delete(id)
+      pending.reject(terminated)
+    }
+  }
+  if (pendingTranscriptions.size === 0) {
+    clearBundledActive()
+    scheduleIdleTeardown()
+  }
+}
+
+/** Terminate a bundled model worker and free its memory. Safe to call with no worker running. */
+export function terminateBundledWorker(model: TranscribeWorkerModel): void {
+  teardownWorker(model)
 }
 
 function getWorker(model: TranscribeWorkerModel): TranscribeWorker {
@@ -168,6 +190,7 @@ export async function transcribeWithWorker(
       reject(audio.signal.reason)
     }
     pendingTranscriptions.set(id, {
+      model,
       resolve: (text) => {
         detach()
         resolve(text)

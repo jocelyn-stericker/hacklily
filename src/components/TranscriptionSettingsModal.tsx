@@ -27,6 +27,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '#/components/ui/dialog'
+import { Switch } from '#/components/ui/switch'
 import { useBrowserSpeechRecognitionAvailable } from '#/components/useBrowserSpeechRecognitionAvailable'
 import {
   useDownloadState,
@@ -160,7 +161,7 @@ function DownloadControls({
             Try again
           </Button>
           <p className="text-xs text-muted-foreground">
-            Try again re-downloads from scratch.
+            This re-downloads the model from scratch.
           </p>
         </div>
       </div>
@@ -399,10 +400,19 @@ export function TranscriptionSettingsModal({
 
   // Draft resets to saved value on open (during render, per React docs).
   const [draft, setDraft] = useState<TranscriptionMode>(mode)
+  const [draftForcedAlignment, setDraftForcedAlignment] = useState(
+    settings.forcedAlignment,
+  )
+  const [draftRunHeavyWhileRecording, setDraftRunHeavyWhileRecording] =
+    useState(settings.runHeavyWhileRecording)
   const [wasOpen, setWasOpen] = useState(open)
   if (open !== wasOpen) {
     setWasOpen(open)
-    if (open) setDraft(mode)
+    if (open) {
+      setDraft(mode)
+      setDraftForcedAlignment(settings.forcedAlignment)
+      setDraftRunHeavyWhileRecording(settings.runHeavyWhileRecording)
+    }
   }
 
   // Cancel any in-flight downloads when the modal closes.
@@ -414,7 +424,11 @@ export function TranscriptionSettingsModal({
   }, [open])
 
   const save = () =>
-    updateSettings({ transcriptionMode: draft })
+    updateSettings({
+      transcriptionMode: draft,
+      forcedAlignment: draftForcedAlignment,
+      runHeavyWhileRecording: draftRunHeavyWhileRecording,
+    })
       .then(() => {
         toast('Setting applied')
         onOpenChange(false)
@@ -435,6 +449,11 @@ export function TranscriptionSettingsModal({
   const draftNeedsDownload =
     (draft === 'small' && !smallReady) || (draft === 'large' && !accurateReady)
 
+  const nothingChanged =
+    draft === mode &&
+    draftForcedAlignment === settings.forcedAlignment &&
+    draftRunHeavyWhileRecording === settings.runHeavyWhileRecording
+
   const smallTitle =
     smallEngine === 'moonshine' ? 'Fast (Moonshine)' : 'Fast (built-in)'
 
@@ -449,8 +468,8 @@ export function TranscriptionSettingsModal({
         <DialogHeader>
           <DialogTitle>Transcription settings</DialogTitle>
           <DialogDescription>
-            Choose how Braat turns your speech into text. Language features
-            currently rely on <strong>North American English</strong> speech.
+            Choose how Braat transcribes and analyzes your speech. Language
+            features currently rely on <strong>North American English</strong>.
           </DialogDescription>
         </DialogHeader>
 
@@ -511,7 +530,7 @@ export function TranscriptionSettingsModal({
                 onSelect={() => setDraft('large')}
                 icon={'large'}
                 title="Accurate (Whisper Turbo)"
-                description="A rough draft appears right away; sharpen segments on demand. Needs significant compute and memory"
+                description="A rough draft appears right away; refine segments on demand. Needs significant compute and memory"
                 badge={
                   !largeAvailable ? (
                     <Badge variant="outline">Needs WebGPU</Badge>
@@ -558,8 +577,72 @@ export function TranscriptionSettingsModal({
                     <Badge variant="outline">Unavailable</Badge>
                   )
                 }
-                description="Use your browser or operating system's transcription service, subject to that vendor's privacy policy. Transcribes automatically. Whisper Turbo is more accurate"
+                description="Uses your browser or operating system's transcription service, subject to that vendor's privacy policy. Transcribes automatically. Whisper Turbo is more accurate"
               />
+            </section>
+
+            <section className="flex flex-col gap-4 border-t border-border/60 pt-5">
+              <header className="flex flex-col gap-0.5">
+                <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                  Analysis
+                </h3>
+              </header>
+
+              <label className="flex cursor-pointer items-start gap-3">
+                <Switch
+                  size="sm"
+                  checked={draftForcedAlignment}
+                  onCheckedChange={setDraftForcedAlignment}
+                  className="mt-0.5 shrink-0"
+                />
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm font-medium">
+                    Forced alignment and brightness
+                  </span>
+                  <p className="text-xs text-muted-foreground">
+                    Aligns transcriptions to audio using a port of{' '}
+                    <a
+                      href="https://github.com/tabahi/bournemouth-forced-aligner"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:no-underline"
+                    >
+                      Bournemouth Forced Aligner
+                    </a>
+                    . Enables a brightness (resonance) score, based on{' '}
+                    <a
+                      href="https://acousticgender.space"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:no-underline"
+                    >
+                      acousticgender.space
+                    </a>
+                    . This runs on your device. Enabling it triggers a one-time
+                    ~30 MB download.
+                  </p>
+                </div>
+              </label>
+
+              <label className="flex cursor-pointer items-start gap-3">
+                <Switch
+                  size="sm"
+                  checked={draftRunHeavyWhileRecording}
+                  onCheckedChange={setDraftRunHeavyWhileRecording}
+                  className="mt-0.5 shrink-0"
+                />
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm font-medium">
+                    Run heavy computation while recording
+                  </span>
+                  <p className="text-xs text-muted-foreground">
+                    The browser&apos;s built-in speech recognition and cloud
+                    engines always run during recording. This setting only
+                    restricts Moonshine, Whisper Turbo, and alignment workers,
+                    which are paused to free memory.
+                  </p>
+                </div>
+              </label>
             </section>
           </div>
         </DialogBody>
@@ -581,7 +664,7 @@ export function TranscriptionSettingsModal({
             <Button
               onClick={save}
               className="w-full"
-              disabled={draft === mode || draftNeedsDownload || anyDownloading}
+              disabled={nothingChanged || draftNeedsDownload || anyDownloading}
             >
               {saveLabel}
             </Button>

@@ -89,6 +89,8 @@ export type SettingsRow = {
   persistentMic: boolean
   browserPreprocessing: BrowserPreprocessing
   transcriptionMode: TranscriptionMode
+  forcedAlignment: boolean
+  runHeavyWhileRecording: boolean
   vowelChartAverages: VowelChartAverages
   practiceTextSize: PracticeTextSize
   practicePassageId: string
@@ -109,6 +111,8 @@ export const DEFAULT_SETTINGS: SettingsRow = {
   persistentMic: false,
   browserPreprocessing: 'default',
   transcriptionMode: 'disabled',
+  forcedAlignment: false,
+  runHeavyWhileRecording: false,
   vowelChartAverages: 'hidden',
   practiceTextSize: 'lg',
   practicePassageId: 'rainbow',
