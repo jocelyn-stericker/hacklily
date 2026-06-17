@@ -22,13 +22,13 @@ export { ModelUnavailableError }
 export type TranscriptionEngine = 'cloud' | 'browser' | 'moonshine' | 'whisper'
 
 /** The quality tier a transcript result came from. */
-export type TranscriptTier = 'small' | 'large' | 'cloud'
+export type TranscriptTier = 'small' | 'large' | 'cloud' | 'manual'
 
 /**
  * Tiers ordered lowest to highest quality. This order is load-bearing: result
  * preference and the order tiers are scanned for pending work both walk it.
  */
-export const TRANSCRIPT_TIERS = ['small', 'cloud', 'large'] as const
+export const TRANSCRIPT_TIERS = ['small', 'cloud', 'large', 'manual'] as const
 
 /**
  * A transcription job at a tier: `queued` until it starts, `transcribing` while
@@ -62,8 +62,12 @@ export type TranscriptResult = {
  */
 export type ChunkTranscript = Partial<Record<TranscriptTier, TranscriptResult>>
 
-/** Highest-tier result available, preferring large > cloud > small. */
+/** Highest-tier result available, preferring manual > large > cloud > small. */
 export function bestResult(t: ChunkTranscript): TranscriptResult | undefined {
+  if (t.manual?.text !== undefined) {
+    return t.manual
+  }
+
   if (t.large?.text !== undefined) {
     return t.large
   }

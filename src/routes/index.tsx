@@ -261,29 +261,21 @@ function App() {
     })
   }, [])
 
-  const { request: requestTranscription, onSeal: handleTranscriptionSeal } =
-    useChunkWorkQueue({
-      store: transcriptStore,
-      analysisMutRef,
-      ropesRef,
-      getViewport,
-      transcriptionMode: settings.transcriptionMode,
-      forcedAlignment: settings.forcedAlignment,
-      runHeavyWhileRecording: settings.runHeavyWhileRecording,
-      isRecording: status.value === 'recording',
-      onModelUnavailable: handleModelUnavailable,
-    })
-
-  const handleTranscribeButton = useCallback(
-    (chunk: AnalysisChunk) => {
-      if (settings.transcriptionMode === 'disabled') {
-        setShowTranscriptionSettings(true)
-      } else {
-        requestTranscription(chunk)
-      }
-    },
-    [requestTranscription, settings.transcriptionMode],
-  )
+  const {
+    request: requestTranscription,
+    onSeal: handleTranscriptionSeal,
+    rescan: rescanTranscription,
+  } = useChunkWorkQueue({
+    store: transcriptStore,
+    analysisMutRef,
+    ropesRef,
+    getViewport,
+    transcriptionMode: settings.transcriptionMode,
+    forcedAlignment: settings.forcedAlignment,
+    runHeavyWhileRecording: settings.runHeavyWhileRecording,
+    isRecording: status.value === 'recording',
+    onModelUnavailable: handleModelUnavailable,
+  })
 
   const upgradeVisibleTranscriptions = useUpgradeVisibleTranscriptions(
     transcriptStore,
@@ -673,7 +665,11 @@ function App() {
               <SpeechStrip
                 analysisMut={analysisMut}
                 store={transcriptStore}
-                onTranscribe={handleTranscribeButton}
+                onTranscribe={requestTranscription}
+                onOpenTranscriptionSettings={() =>
+                  setShowTranscriptionSettings(true)
+                }
+                onManualSave={rescanTranscription}
                 ref={speechStripRef}
               />
               {status.value !== 'recording' &&

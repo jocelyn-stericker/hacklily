@@ -28,7 +28,15 @@ vi.mock('#/lib/browserFeatures', () => ({
 }))
 
 describe('bestResult', () => {
-  it('prefers large over cloud over small', () => {
+  it('prefers manual > large > cloud > small', () => {
+    expect(
+      bestResult({
+        small: { text: 's' },
+        cloud: { text: 'c' },
+        large: { text: 'l' },
+        manual: { text: 'm' },
+      })?.text,
+    ).toBe('m')
     expect(
       bestResult({
         small: { text: 's' },
@@ -103,7 +111,15 @@ describe('transcriptIndicator', () => {
     expect(transcriptIndicator({})).toEqual({ kind: 'none' })
   })
 
-  it('prefers the best completed tier (large > cloud > small)', () => {
+  it('prefers the best completed tier (manual > large > cloud > small)', () => {
+    expect(
+      transcriptIndicator({
+        small: { text: 's' },
+        cloud: { text: 'c' },
+        large: { text: 'l' },
+        manual: { text: 'm' },
+      }),
+    ).toEqual({ kind: 'done', tier: 'manual' })
     expect(
       transcriptIndicator({
         small: { text: 's' },

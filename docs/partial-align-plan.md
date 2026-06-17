@@ -2,7 +2,7 @@
 
 ## Goal
 
-For the **practice route**, a take is a recording of *some contiguous chunk* of a
+For the **practice route**, a take is a recording of _some contiguous chunk_ of a
 known practice text — we don't know which part. Given:
 
 - the practice text in **English** (orthographic), and
@@ -27,11 +27,11 @@ transcribe-then-align path.
 
 The current alignment path (`src/lib/jobs/alignJob.ts` → `src/lib/workers/AlignWorker.ts`)
 does **full forced alignment**: it takes an ASR transcript for the chunk, espeak's
-it to IPA, phonemizes to ph66, and forces a Viterbi path through the *entire*
+it to IPA, phonemizes to ph66, and forces a Viterbi path through the _entire_
 phoneme sequence (`PhonemeTimestampAligner.align`). That assumes the transcript and
 the audio cover exactly the same span.
 
-For a practice take the reference is the *whole passage* (hundreds of phonemes) but
+For a practice take the reference is the _whole passage_ (hundreds of phonemes) but
 the audio is a short contiguous slice. Forcing the whole reference into the clip is
 wrong. We need to first **find the matched region** in the reference, then align
 only that region.
@@ -54,11 +54,11 @@ text), and degrades gracefully when the model mis-hears a phoneme.
   stitched CUPE log-probs (`cupePrediction` → `logSoftmaxFrames`), then
   `decodeAlignmentsSimple` (forced CTC Viterbi) + post-processing. The log-probs are
   **not currently exposed**; we'll need to expose them.
-- `src/lib/alignment/decoder.ts` — `viterbiDecode` is a *forced* decoder: it seeds
+- `src/lib/alignment/decoder.ts` — `viterbiDecode` is a _forced_ decoder: it seeds
   `dp[0]` only at states 0/1, bands around the full-sequence diagonal
   (`pace = (ctcLen-1)/(T-1)`), and the stride heuristic assumes `S ≈ T`. None of
   this suits a short clip vs. a long reference — which is exactly why we localize
-  first and only ever forced-decode the *sub-sequence*.
+  first and only ever forced-decode the _sub-sequence_.
 - `src/lib/alignment/phonemizer.ts` — `phonemizeTranscript(ipa)` →
   `PhonemizedTranscript { ph66, pg16, mipa, eipa, wordNum, words }`. `pg16` is the
   16-way phoneme-group index (`phonemeGroupsIndex` in `ph66Data.ts`:
@@ -134,17 +134,17 @@ contractions):
 
 ```ts
 type RefToken = {
-  text: string            // orthographic word, e.g. "rainbow"
-  charStart: number       // offset into the original passage string
+  text: string // orthographic word, e.g. "rainbow"
+  charStart: number // offset into the original passage string
   charEnd: number
-  ph66: number[]          // phonemes for this word
+  ph66: number[] // phonemes for this word
   pg16: number[]
 }
 type ReferenceIndex = {
   tokens: RefToken[]
-  ph66: number[]          // flat, concatenated
-  pg16: number[]          // flat, parallel
-  phonemeWord: number[]   // ref phoneme idx -> token index (parallel to ph66)
+  ph66: number[] // flat, concatenated
+  pg16: number[] // flat, parallel
+  phonemeWord: number[] // ref phoneme idx -> token index (parallel to ph66)
 }
 ```
 
@@ -172,7 +172,7 @@ Scoring:
   - different group → negative (`mismatchScore`, e.g. `-1`)
   - involving `SIL`/`noise` → near-neutral so model silence/junk doesn't wreck the
     path.
-  Encode this as a `(refPhoneme, hypPhoneme) -> score` function driven by `pg16`.
+    Encode this as a `(refPhoneme, hypPhoneme) -> score` function driven by `pg16`.
 - **Gap**: a single linear gap penalty to start (e.g. `-1.5`). If insertions/
   deletions cluster (they will, around dropped weak phones), upgrade to **affine
   gaps** (Gotoh): `gapOpen` + `gapExtend`.
@@ -184,7 +184,7 @@ unit-testable in isolation.
 ### Step 5 — map the span back to English + refine the alignment
 
 - **English substring (transcription)**: `s0,s1 → ReferenceIndex.phonemeWord →
-  token indices → charStart/charEnd` → slice the original passage string. Snap to
+token indices → charStart/charEnd` → slice the original passage string. Snap to
   whole words; optionally allow partial leading/trailing words and mark them.
 - **IPA alignment**: take `r[s0..s1]` (the sub-sequence ph66) and run the existing
   forced path — `decodeAlignmentsSimple` + `ensureTargetCoverage` +
@@ -224,16 +224,16 @@ type PartialAlignInMessage = {
   pcm: Float32Array
   sampleRate: number
   startTime: number
-  referenceIpa: string      // espeak IPA of the whole passage (or sentence)
+  referenceIpa: string // espeak IPA of the whole passage (or sentence)
   // plus the orthographic token/char map, or a key to a cached ReferenceIndex
 }
 type PartialAlignOutMessage = {
   type: 'result'
-  text: string              // matched English substring
+  text: string // matched English substring
   charStart: number
   charEnd: number
   phonemeTimestamps: PhonemeTimestamp[]
-  score: number             // SW score, for gating/telemetry
+  score: number // SW score, for gating/telemetry
 }
 ```
 
@@ -290,7 +290,7 @@ forced decode.
    reuse it (verify `bfa-e2e.test.ts` still passes — parity must hold).
 4. `referenceIndex.ts` + tests (orthographic ↔ phoneme ↔ char mapping).
 5. Glue: `localizeAndAlign(logProbs, referenceIndex)` → `{ text, span, phonemes,
-   score }`, with the substitution-cost function over `pg16`.
+score }`, with the substitution-cost function over `pg16`.
 6. Worker `partialAlign` message + `ReferenceIndex` caching.
 7. `practiceAlignJob.ts` + wire into the practice route's queue (`kindOrder`),
    sink, and status UI. Gate on score.
@@ -305,7 +305,7 @@ forced decode.
 - Needleman–Wunsch (global alignment) for contrast — same DP, different
   initialization/traceback:
   https://en.wikipedia.org/wiki/Needleman%E2%80%93Wunsch_algorithm
-- Durbin, Eddy, Krogh & Mitchison, *Biological Sequence Analysis* (1998), ch. 2 —
+- Durbin, Eddy, Krogh & Mitchison, _Biological Sequence Analysis_ (1998), ch. 2 —
   the standard rigorous treatment of global/local alignment and substitution
   scoring. The mental model (substitution matrix + gap penalty) transfers directly;
   our "substitution matrix" is the `pg16` phoneme-group cost.
@@ -317,14 +317,14 @@ forced decode.
 **Subsequence alignment / "find a short query in a long reference"** (the framing
 that makes "audio fully consumed, reference entered/exited freely" rigorous)
 
-- Meinard Müller, *Fundamentals of Music Processing* (FMP), subsequence DTW —
+- Meinard Müller, _Fundamentals of Music Processing_ (FMP), subsequence DTW —
   free notebooks with figures and code:
   https://www.audiolabs-erlangen.de/resources/MIR/FMP/C3/C3S2_DTWbasic.html
   (and the subsequence variant in the same C3 chapter). Audio-to-reference
   localization is the same problem we're solving at the phoneme level.
 
 **Forced alignment & CTC segmentation** (the speech-specific background, and the
-principled single-pass alternative we chose *not* to start with)
+principled single-pass alternative we chose _not_ to start with)
 
 - Kürzinger et al. (2020), "CTC-Segmentation of Large Corpora for German End-to-end
   Speech Recognition", arXiv:2007.09127 — aligning text to audio that's a partial /

@@ -88,6 +88,26 @@ export class TranscriptStore {
     this.#transcripts.delete(chunk)
     for (const cb of this.#chunkSubscribers.get(chunk) ?? []) cb()
   }
+
+  /** Set or replace the manual transcript text for a chunk, preserving other tiers. */
+  setManualTranscript(chunk: AnalysisChunk, text: string): void {
+    const existing = this.#transcripts.get(chunk) ?? {}
+    this.#transcripts.set(chunk, { ...existing, manual: { text } })
+    for (const cb of this.#chunkSubscribers.get(chunk) ?? []) cb()
+  }
+
+  /** Remove the manual transcript for a chunk, preserving other tiers. No-op if absent. */
+  clearManualTranscript(chunk: AnalysisChunk): void {
+    const existing = this.#transcripts.get(chunk)
+    if (!existing?.manual) return
+    const { manual: _manual, ...rest } = existing
+    if (Object.keys(rest).length === 0) {
+      this.#transcripts.delete(chunk)
+    } else {
+      this.#transcripts.set(chunk, rest)
+    }
+    for (const cb of this.#chunkSubscribers.get(chunk) ?? []) cb()
+  }
 }
 
 export function useAnalysisChunks(store: TranscriptStore) {

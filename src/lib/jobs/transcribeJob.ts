@@ -94,11 +94,12 @@ export function requestUpgrade(
 }
 
 // Resolve a tier to a concrete engine context, or null to stand down. A null
-// tier (disabled) is silent; a missing model reverts the mode.
+// tier (disabled) is silent; a missing model reverts the mode; the 'manual'
+// tier has no engine and is never auto-run.
 async function resolveCtx(
   tier: TranscriptTier | null,
 ): Promise<TranscribeCtx | null> {
-  if (!tier) return null
+  if (!tier || tier === 'manual') return null
   const engine = await tryResolveEngine(tier)
   return engine ? { engine, tier } : null
 }
@@ -134,9 +135,14 @@ async function transcribeOne(
 
   try {
     // Reuse the pass engine when the tier matches; resolve an upgrade tier lazily
-    // (only for the chunk that requested it).
+    // (only for the chunk that requested it). 'manual' can’t arrive here via a
+    // queued job, but guard the call so the types stay sound.
     let engine = auto.engine
     if (tier !== auto.tier) {
+      if (tier === 'manual') {
+        deps.sink.set(chunk, withoutTier(deps.sink.get(chunk), tier))
+        return
+      }
       const upgraded = await tryResolveEngine(tier)
       if (!upgraded) {
         throw new ModelUnavailableError(

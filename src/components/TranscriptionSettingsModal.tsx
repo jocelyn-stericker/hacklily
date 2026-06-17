@@ -395,7 +395,7 @@ export function TranscriptionSettingsModal({
   // Trigger/label text for the model dropdown.
   const modeTitle = (m: TranscriptionMode) =>
     m === 'disabled'
-      ? 'Don’t transcribe'
+      ? 'Transcribe manually'
       : m === 'small'
         ? smallTitle
         : m === 'large'
@@ -450,7 +450,7 @@ export function TranscriptionSettingsModal({
                   <SelectGroup>
                     <SelectItem value="disabled">
                       <CaptionsOff className="text-muted-foreground self-center" />
-                      Don’t transcribe
+                      Transcribe manually
                     </SelectItem>
                   </SelectGroup>
                   <SelectSeparator />

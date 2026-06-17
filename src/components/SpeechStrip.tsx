@@ -5,6 +5,8 @@
 import {
   AlertTriangle,
   Cloud,
+  Pencil,
+  Save,
   SpeechIcon,
   Loader2,
   Sparkle,
@@ -52,14 +54,23 @@ export function SpeechStrip({
   analysisMut,
   store,
   onTranscribe,
+  onOpenTranscriptionSettings,
+  onManualSave,
   ref,
 }: {
   analysisMut: AnalysisChunk[]
   // Render source for the DOM overlay: structural changes and per-chunk
   // transcripts, both subscribed via useSyncExternalStore.
   store: TranscriptStore
-  // Transcribe a single chunk on demand (the per-chunk button below).
+  // Upgrade a single chunk's transcription to the active tier (the popover's
+  // "Improve transcription" button).
   onTranscribe?: (chunk: AnalysisChunk) => void
+  // Open the transcription settings modal (the popover's "Set up
+  // transcription" button, shown when transcription is disabled).
+  onOpenTranscriptionSettings?: () => void
+  // Invoked after a manual transcript is saved, so the caller can wake the
+  // job queue (manual changes don't reach it through the chunk-list stream).
+  onManualSave?: () => void
   ref: RefObject<SpeechStripHandle | null>
 }) {
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
@@ -155,6 +166,8 @@ export function SpeechStrip({
         stripTop={stripTop}
         height={speechStripHeight}
         onTranscribe={onTranscribe}
+        onOpenTranscriptionSettings={onOpenTranscriptionSettings}
+        onManualSave={onManualSave}
       />
     </>
   )
@@ -168,12 +181,16 @@ function ChunkOverlayContainer({
   stripTop,
   height,
   onTranscribe,
+  onOpenTranscriptionSettings,
+  onManualSave,
 }: {
   store: TranscriptStore
   stripWidth: number
   stripTop: number
   height: number
   onTranscribe?: (chunk: AnalysisChunk) => void
+  onOpenTranscriptionSettings?: () => void
+  onManualSave?: () => void
 }) {
   const plotPad = usePlotPad()
   const timeToXDom = useTimeToX(InCanvas.No)
@@ -211,6 +228,8 @@ function ChunkOverlayContainer({
             width={Math.max(right - left, 30)}
             height={height}
             onTranscribe={onTranscribe}
+            onOpenTranscriptionSettings={onOpenTranscriptionSettings}
+            onManualSave={onManualSave}
           />
         )
       })}
@@ -222,7 +241,7 @@ function toPercent(value: number): string {
   return `${Math.round(value * 100)}%`
 }
 
-// One voiced chunk's overlay: a transcribe button, transcript text, and
+// One voiced chunk's overlay: a status icon, transcript text, and
 // phoneme labels. Subscribes to only this chunk's transcript, so a result
 // re-renders this row alone rather than the whole strip.
 function ChunkOverlay({
@@ -232,6 +251,8 @@ function ChunkOverlay({
   width,
   height,
   onTranscribe,
+  onOpenTranscriptionSettings,
+  onManualSave,
 }: {
   chunk: AnalysisChunk
   store: TranscriptStore
@@ -239,6 +260,8 @@ function ChunkOverlay({
   width: number
   height: number
   onTranscribe?: (chunk: AnalysisChunk) => void
+  onOpenTranscriptionSettings?: () => void
+  onManualSave?: () => void
 }) {
   const [settings] = useSettings()
   const plotPad = usePlotPad()
@@ -247,6 +270,36 @@ function ChunkOverlay({
   const transcript = useTranscript(store, chunk)
   const result = transcript ? bestResult(transcript) : undefined
   const phonemes = result?.phonemes
+  const indicator = transcriptIndicator(transcript)
+
+  // Editor state for the popover. Resets from the current best result each
+  // time the popover opens, so an in-flight upgrade that lands while the
+  // popover is closed is reflected on reopen.
+  const [popoverOpen, setPopoverOpen] = useState(false)
+  const [editableText, setEditableText] = useState('')
+
+  const handlePopoverOpenChange = (open: boolean) => {
+    setPopoverOpen(open)
+    if (open) {
+      setEditableText(result?.text?.trim() ?? '')
+    }
+  }
+
+  const handleSave = () => {
+    store.setManualTranscript(chunk, editableText.trim())
+    setPopoverOpen(false)
+    onManualSave?.()
+  }
+
+  const handleImprove = () => {
+    setPopoverOpen(false)
+    onTranscribe?.(chunk)
+  }
+
+  const handleSetUpTranscription = () => {
+    setPopoverOpen(false)
+    onOpenTranscriptionSettings?.()
+  }
 
   const brightness = chunk.frames
     .map((f) => f.lunaBrightness)
@@ -284,7 +337,7 @@ function ChunkOverlay({
       >
         {renderIcon()}
         {topText || medianF0 > 0 || brightness > 0 ? (
-          <Popover>
+          <Popover open={popoverOpen} onOpenChange={handlePopoverOpenChange}>
             <PopoverTrigger
               render={
                 <button className="truncate text-[10px] leading-tight underline cursor-pointer" />
@@ -292,8 +345,7 @@ function ChunkOverlay({
             >
               {topText}
             </PopoverTrigger>
-            <PopoverContent className={result?.text ? 'w-64' : 'w-24'}>
-              <div>{topText}</div>
+            <PopoverContent className="w-70">
               {medianF0 > 0 || brightness > 0 ? (
                 <div className="flex flex-row gap-3 text-sm">
                   {medianF0 > 0 ? <div>{medianF0} Hz</div> : null}
@@ -302,6 +354,50 @@ function ChunkOverlay({
                   ) : null}
                 </div>
               ) : null}
+              <textarea
+                value={editableText}
+                onChange={(e) => setEditableText(e.target.value)}
+                rows={2}
+                spellCheck={false}
+                placeholder="Type a transcription…"
+                className="w-full resize-y rounded-lg border border-input bg-transparent px-2.5 py-1.5 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+              />
+              <div className="flex flex-row justify-end gap-1.5">
+                {indicator.kind === 'done' &&
+                indicator.tier === 'small' &&
+                settings.transcriptionMode === 'large' ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="xs"
+                    className="justify-start"
+                    onClick={handleImprove}
+                  >
+                    <Sparkles className="size-3" />
+                    Improve transcription
+                  </Button>
+                ) : null}
+                {settings.transcriptionMode === 'disabled' ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="xs"
+                    className="justify-start"
+                    onClick={handleSetUpTranscription}
+                  >
+                    Settings
+                  </Button>
+                ) : null}
+                <Button
+                  type="button"
+                  size="xs"
+                  className="justify-start"
+                  onClick={handleSave}
+                >
+                  <Save className="size-3" />
+                  Save
+                </Button>
+              </div>
             </PopoverContent>
           </Popover>
         ) : null}
@@ -343,7 +439,6 @@ function ChunkOverlay({
   )
 
   function renderIcon() {
-    const indicator = transcriptIndicator(transcript)
     switch (indicator.kind) {
       case 'transcribing':
         return (
@@ -361,6 +456,13 @@ function ChunkOverlay({
           </Tooltip>
         )
       case 'done':
+        if (indicator.tier === 'manual') {
+          return (
+            <StdPadding>
+              <Pencil className="size-3" />
+            </StdPadding>
+          )
+        }
         if (indicator.tier === 'large') {
           return (
             <StdPadding>
@@ -375,30 +477,8 @@ function ChunkOverlay({
             </StdPadding>
           )
         }
-        // small: offer an on-demand upgrade in large mode, else just mark it.
-        if (settings.transcriptionMode === 'large') {
-          return (
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button
-                    type="button"
-                    className="cursor-pointer shrink-0 bg-transparent dark:border-white"
-                    variant="outline"
-                    size="icon-xs"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onTranscribe?.(chunk)
-                    }}
-                  />
-                }
-              >
-                <Sparkle className="size-3" />
-              </TooltipTrigger>
-              <TooltipContent>Improve transcription</TooltipContent>
-            </Tooltip>
-          )
-        }
+        // small: the "Improve transcription" affordance lives in the popover,
+        // so the icon is purely a status mark here.
         return (
           <StdPadding>
             <Sparkle className="size-3" />
@@ -407,25 +487,9 @@ function ChunkOverlay({
       case 'none':
         if (settings.transcriptionMode === 'disabled') {
           return (
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button
-                    type="button"
-                    className="cursor-pointer shrink-0 bg-transparent dark:border-white"
-                    variant="outline"
-                    size="icon-xs"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onTranscribe?.(chunk)
-                    }}
-                  />
-                }
-              >
-                <SpeechIcon className="size-3" />
-              </TooltipTrigger>
-              <TooltipContent>Set up transcription</TooltipContent>
-            </Tooltip>
+            <StdPadding>
+              <SpeechIcon className="size-3" />
+            </StdPadding>
           )
         }
         return (

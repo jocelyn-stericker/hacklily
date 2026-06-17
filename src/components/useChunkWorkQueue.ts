@@ -72,6 +72,8 @@ export function useChunkWorkQueue({
   request: (chunk: AnalysisChunk) => void
   /** The recording rope sealed -- finish in-flight live spans. */
   onSeal: () => void
+  /** Wake the queue to re-evaluate chunks (e.g. after a manual transcript save). */
+  rescan: () => void
 } {
   // Latest mode/callback behind refs so the queue (which calls these later, off
   // the render path) reads current values without being rebuilt. Synced in
@@ -185,5 +187,10 @@ export function useChunkWorkQueue({
     [transcribeSink, queue],
   )
   const onSeal = useCallback(() => queue.current?.seal(), [queue])
-  return { request, onSeal }
+  // Poke the queue to re-evaluate: a manual transcript save changes a chunk's
+  // state (so its `needsWork` may flip, or a queued upgrade may now be backed
+  // by manual text on the lower tier), but doesn't change the chunk list, so
+  // the list subscription won't wake the queue on its own.
+  const rescan = useCallback(() => queue.current?.scan(), [queue])
+  return { request, onSeal, rescan }
 }
