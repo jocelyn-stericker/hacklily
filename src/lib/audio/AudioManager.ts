@@ -6,7 +6,6 @@ import type {
   AnalysisFrame,
   AnalysisParams,
 } from '#/lib/analysis/AnalysisFrame'
-import ringWriterUrl from '#/lib/audio/AudioRingWriter?worker&url'
 import type {
   AudioRope,
   AudioRopeGrow,
@@ -14,6 +13,7 @@ import type {
   AudioRopeShare,
 } from '#/lib/audio/AudioRope'
 import ropeSourceUrl from '#/lib/audio/AudioRopeSourceNode?worker&url'
+import ropeWriterUrl from '#/lib/audio/RopeWriterNode?worker&url'
 import type { AudioCaptureSettings } from '#/lib/settings'
 import {
   buildAudioConstraints,
@@ -635,7 +635,7 @@ export class AudioManager extends TypedEventTarget<OutboundEventMap> {
           throw err
         })
       this.#captureModuleReady = ctx.audioWorklet
-        .addModule(ringWriterUrl)
+        .addModule(ropeWriterUrl)
         .catch((err: unknown) => {
           console.error(`${LOG} failed to load capture worklet:`, err)
           resetOnFail()

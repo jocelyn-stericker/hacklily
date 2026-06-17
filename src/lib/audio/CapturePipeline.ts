@@ -8,19 +8,20 @@ import type {
   AnalysisParams,
 } from '#/lib/analysis/AnalysisFrame'
 import { resolveSpectrogramParams } from '#/lib/analysis/SpectrogramProcessor'
-import type { AudioRingWriterNode } from '#/lib/audio/AudioRingWriter'
 import type {
   AudioRopeGrow,
   AudioRopeSeal,
   AudioRopeShare,
 } from '#/lib/audio/AudioRope'
+import type {
+  RopeWriterNode,
+  RopeWriterOutMessage,
+} from '#/lib/audio/RopeWriterNode'
 import type { AudioCaptureSettings } from '#/lib/settings'
 import { DEFAULT_SETTINGS } from '#/lib/settings'
 import { TypedEventTarget } from '#/lib/TypedEventTarget'
 import FormantWorker from '#/lib/workers/FormantWorker?worker'
 import type { FormantWorkerOutMessage } from '#/lib/workers/FormantWorker'
-import RopeWriterWorker from '#/lib/workers/RopeWriterWorker?worker'
-import type { RopeWriterWorkerOutMessage } from '#/lib/workers/RopeWriterWorker'
 import SpectrogramWorker from '#/lib/workers/SpectrogramWorker?worker'
 import type { SpectrogramWorkerOutMessage } from '#/lib/workers/SpectrogramWorker'
 import VadWorker from '#/lib/workers/VadWorker?worker'
@@ -51,7 +52,6 @@ export type CapturePipelineEventMap = {
   sabRopeSeal: CustomEvent<AudioRopeSeal>
 }
 
-const CAPTURE_SAB_BUF_SAMPLES = 8192
 const LOG_CAPTURE = '[CapturePipeline]'
 
 export class CapturePipeline extends TypedEventTarget<CapturePipelineEventMap> {
@@ -59,8 +59,7 @@ export class CapturePipeline extends TypedEventTarget<CapturePipelineEventMap> {
 
   #context: AudioContext | null = null
   #sourceNode: MediaStreamAudioSourceNode | null = null
-  #workletNode: AudioRingWriterNode | null = null
-  #ropeWriterWorker: InstanceType<typeof RopeWriterWorker> | null = null
+  #workletNode: RopeWriterNode | null = null
   #spectrogramWorker: InstanceType<typeof SpectrogramWorker> | null = null
   #formantWorker: InstanceType<typeof FormantWorker> | null = null
   #vadWorker: InstanceType<typeof VadWorker> | null = null
@@ -71,7 +70,6 @@ export class CapturePipeline extends TypedEventTarget<CapturePipelineEventMap> {
   #destroyed: AbortController = new AbortController()
   #settings: AudioCaptureSettings
   #features: Required<MicCaptureFeatures>
-  #sab: SharedArrayBuffer | null = null
   #pendingWorkers = 0
   #numFreqs = 0
   #recordingCompleteEmitted = false
@@ -137,7 +135,6 @@ export class CapturePipeline extends TypedEventTarget<CapturePipelineEventMap> {
         persistentMic: settings.persistentMic,
       })
 
-      this.#ropeWriterWorker = new RopeWriterWorker()
       if (this.#features.spectrogram)
         this.#spectrogramWorker = new SpectrogramWorker()
       if (this.#features.formant) this.#formantWorker = new FormantWorker()
@@ -170,20 +167,13 @@ export class CapturePipeline extends TypedEventTarget<CapturePipelineEventMap> {
       console.log(LOG_CAPTURE, 'start: track label:', track?.label)
 
       this.#sampleRate = this.#context.sampleRate
-      this.#workletNode = new AudioWorkletNode(
-        this.#context,
-        'audio-ring-writer',
-      )
+      this.#workletNode = new AudioWorkletNode(this.#context, 'rope-writer')
 
       this.#sourceNode = this.#context.createMediaStreamSource(this.#stream)
 
-      this.#sab = new SharedArrayBuffer(8 + CAPTURE_SAB_BUF_SAMPLES * 4)
-      this.#workletNode.port.postMessage({
-        type: 'init',
-        sab: this.#sab,
-        bufSamples: CAPTURE_SAB_BUF_SAMPLES,
-      })
-
+      // The worklet builds the rope directly from each process() quantum; no
+      // SAB ring buffer is involved. `init` is sent on #beginRecording so the
+      // rope starts at the first recorded quantum.
       this.#setupWorkerListeners()
     } catch (err) {
       this.emit('error', {
@@ -203,18 +193,16 @@ export class CapturePipeline extends TypedEventTarget<CapturePipelineEventMap> {
 
   #beginRecording(): void {
     if (this.#recordingBegun) return
-    if (!this.#ropeWriterWorker || !this.#sab || this.#sampleRate === null) {
+    if (!this.#workletNode || this.#sampleRate === null) {
       return
     }
     this.#recordingBegun = true
     this.#workersDone = new Promise<void>((resolve) => {
       this.#resolveWorkersDone = resolve
     })
-    this.#ropeWriterWorker.postMessage({
+    this.#workletNode.port.postMessage({
       type: 'init',
-      sab: this.#sab,
       sampleRate: this.#sampleRate,
-      bufSamples: CAPTURE_SAB_BUF_SAMPLES,
     })
     this.#pendingWorkers++
   }
@@ -234,10 +222,11 @@ export class CapturePipeline extends TypedEventTarget<CapturePipelineEventMap> {
       }
     }
 
-    if (this.#recordingBegun && this.#sab) {
-      const ctrl = new Int32Array(this.#sab, 0, 2)
-      Atomics.store(ctrl, 1, 1)
-      Atomics.notify(ctrl, 0)
+    if (this.#recordingBegun) {
+      // Ask the worklet to seal the current rope. It posts `audio-rope-seal`
+      // then `ended`; #onWorkerDone resolves #workersDone once every consumer
+      // has finished too.
+      this.#workletNode?.port.postMessage({ type: 'seal' })
       this.#recordingBegun = false
       await this.#workersDone
     } else {
@@ -248,14 +237,8 @@ export class CapturePipeline extends TypedEventTarget<CapturePipelineEventMap> {
 
     this.#sourceNode?.disconnect()
 
-    this.#sab = new SharedArrayBuffer(8 + CAPTURE_SAB_BUF_SAMPLES * 4)
-    this.#workletNode?.port.postMessage({
-      type: 'init',
-      sab: this.#sab,
-      bufSamples: CAPTURE_SAB_BUF_SAMPLES,
-    })
-
-    this.#ropeWriterWorker = new RopeWriterWorker()
+    // The worklet node is reused across recordings; a fresh `init` (sent by
+    // #beginRecording) resets its rope and activation state.
     if (this.#features.spectrogram)
       this.#spectrogramWorker = new SpectrogramWorker()
     if (this.#features.formant) this.#formantWorker = new FormantWorker()
@@ -274,17 +257,17 @@ export class CapturePipeline extends TypedEventTarget<CapturePipelineEventMap> {
   }
 
   #setupWorkerListeners(): void {
-    if (!this.#ropeWriterWorker) return
-    this.#ropeWriterWorker.addEventListener(
-      'error',
-      this.#handleRopeWriterWorkerError,
-      { signal: this.#ropeWriterSignal.signal, once: true },
-    )
-    this.#ropeWriterWorker.addEventListener(
-      'message',
-      this.#handleRopeWriterWorkerOutMessage,
-      { signal: this.#ropeWriterSignal.signal },
-    )
+    if (this.#workletNode) {
+      this.#workletNode.port.addEventListener(
+        'message',
+        this.#handleRopeWriterOutMessage,
+        { signal: this.#ropeWriterSignal.signal },
+      )
+      // addEventListener does not implicitly start the port (only onmessage
+      // does), so without this the worklet's rope-ready message is queued but
+      // never dispatched and no audio flows.
+      this.#workletNode.port.start()
+    }
 
     if (this.#spectrogramWorker) {
       this.#spectrogramWorker.addEventListener(
@@ -326,8 +309,7 @@ export class CapturePipeline extends TypedEventTarget<CapturePipelineEventMap> {
   }
 
   #teardownWorkers(): void {
-    this.#ropeWriterWorker?.terminate()
-    this.#ropeWriterWorker = null
+    // The worklet node is reused across recordings; only drop its listeners.
     this.#ropeWriterSignal.abort()
     this.#ropeWriterSignal = new AbortController()
 
@@ -363,13 +345,8 @@ export class CapturePipeline extends TypedEventTarget<CapturePipelineEventMap> {
     }
   }
 
-  #handleRopeWriterWorkerError = ({ error }: ErrorEvent): void => {
-    if (!this.#ropeWriterWorker) return
-    this.emit('error', {
-      error: error instanceof Error ? error.message : String(error),
-    })
-    this.#ropeWriterWorker.terminate()
-    this.#ropeWriterWorker = null
+  #handleRopeWriterError = (error: string): void => {
+    this.emit('error', { error })
     this.#forwardRopeSeal()
     this.#onWorkerDone()
   }
@@ -472,9 +449,9 @@ export class CapturePipeline extends TypedEventTarget<CapturePipelineEventMap> {
     this.emit('sabRopeSeal', { type: 'audio-rope-seal' })
   }
 
-  #handleRopeWriterWorkerOutMessage = ({
+  #handleRopeWriterOutMessage = ({
     data,
-  }: MessageEvent<RopeWriterWorkerOutMessage>): void => {
+  }: MessageEvent<RopeWriterOutMessage>): void => {
     switch (data.type) {
       case 'rope-ready': {
         this.#initConsumerWorkers(data.rope, data.sampleRate)
@@ -493,10 +470,13 @@ export class CapturePipeline extends TypedEventTarget<CapturePipelineEventMap> {
       }
 
       case 'ended': {
-        if (!this.#ropeWriterWorker) return
-        this.#ropeWriterWorker.terminate()
-        this.#ropeWriterWorker = null
+        // The worklet node is reused across recordings; don't tear it down.
         this.#onWorkerDone()
+        return
+      }
+
+      case 'error': {
+        this.#handleRopeWriterError(data.error)
         return
       }
     }
@@ -659,10 +639,8 @@ export class CapturePipeline extends TypedEventTarget<CapturePipelineEventMap> {
 
           this.#sourceNode?.disconnect()
           this.#workletNode?.disconnect()
-          if (this.#recordingBegun && this.#sab) {
-            const ctrl = new Int32Array(this.#sab, 0, 2)
-            Atomics.store(ctrl, 1, 1)
-            Atomics.notify(ctrl, 0)
+          if (this.#recordingBegun) {
+            this.#workletNode?.port.postMessage({ type: 'seal' })
             this.#recordingBegun = false
             void this.#workersDone.then(() => this.#teardown())
           } else {
