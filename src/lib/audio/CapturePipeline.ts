@@ -170,6 +170,10 @@ export class CapturePipeline extends TypedEventTarget<CapturePipelineEventMap> {
       this.#workletNode = new AudioWorkletNode(this.#context, 'rope-writer')
 
       this.#sourceNode = this.#context.createMediaStreamSource(this.#stream)
+      this.#sourceNode.connect(this.#workletNode)
+
+      // Attempt at convincing Safari to really process audio.
+      this.#workletNode.connect(this.#context.destination)
 
       // The worklet builds the rope directly from each process() quantum; no
       // SAB ring buffer is involved. `init` is sent on #beginRecording so the
@@ -428,10 +432,6 @@ export class CapturePipeline extends TypedEventTarget<CapturePipelineEventMap> {
           typeof this.#features.vad === 'boolean' ? {} : this.#features.vad,
       })
       this.#pendingWorkers++
-    }
-
-    if (this.#workletNode) {
-      this.#sourceNode?.connect(this.#workletNode)
     }
   }
 

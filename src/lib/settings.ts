@@ -181,7 +181,7 @@ export function buildAudioConstraints(
 ): MediaTrackConstraints {
   const minimal = settings.browserPreprocessing === 'minimal'
   const constraints: MediaTrackConstraints = {
-    echoCancellation: minimal ? false : undefined,
+    echoCancellation: false,
     noiseSuppression: minimal ? false : undefined,
     autoGainControl: minimal ? false : undefined,
   }
