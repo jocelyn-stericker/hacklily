@@ -38,14 +38,19 @@ import {
   reconcileVoicingAt,
   totalFrames,
 } from '#/lib/analysis/AnalysisFrame'
-import { AudioRope } from '#/lib/audio/AudioRope'
+import { AudioRope, SEG_SAMPLES } from '#/lib/audio/AudioRope'
 import type { AudioRopeGrow, AudioRopeShare } from '#/lib/audio/AudioRope'
 import { exportWav } from '#/lib/audio/exportWav'
+import { alignJobActive, alignWorkerLive } from '#/lib/jobs/alignJob'
 import type { Viewport } from '#/lib/jobs/schedule'
 import { RopeGainCache } from '#/lib/loudness/ropeLoudness'
+import { registerMemSource } from '#/lib/memProbe'
 import { takePracticeData } from '#/lib/practiceHandoff'
 import { updateSettings } from '#/lib/settings'
-import { consumeBundledCrashFlag } from '#/lib/transcription/transcribeBundled'
+import {
+  consumeBundledCrashFlag,
+  transcribeWorkerStats,
+} from '#/lib/transcription/transcribeBundled'
 import { cn } from '#/lib/utils'
 
 export const Route = createFileRoute('/')({
@@ -213,6 +218,44 @@ function App() {
   useEffect(() => {
     ropesRef.current = ropes
   }, [ropes])
+
+  // Dev-only: report the main route's retained structures to the memory probe.
+  useEffect(() => {
+    return registerMemSource('main-route', 'Main route state', () => {
+      const chunks = analysisMutRef.current
+      const frameCount = chunks.reduce((s, c) => s + c.frames.length, 0)
+      const spectrumBytes = chunks.reduce(
+        (s, c) => s + c.frames.reduce((cs, f) => cs + f.spectrum.byteLength, 0),
+        0,
+      )
+      const ropeCount = ropesRef.current.length
+      const ropeBytes = ropesRef.current.reduce((s, r) => s + r.length * 4, 0)
+      const ropeSegments = ropesRef.current.reduce(
+        (s, r) => s + Math.ceil(r.length / SEG_SAMPLES),
+        0,
+      )
+      return {
+        chunkCount: chunks.length,
+        frameCount,
+        spectrumBytes,
+        ropeCount,
+        ropeBytes,
+        ropeSegments,
+      }
+    })
+  }, [])
+
+  useEffect(() => {
+    return registerMemSource('workers', 'Background workers', () => {
+      const { workerCount, pendingCount } = transcribeWorkerStats()
+      return {
+        transcribeWorkers: workerCount,
+        pendingTranscriptions: pendingCount,
+        alignWorkerLive: alignWorkerLive() ? 1 : 0,
+        alignJobActive: alignJobActive() ? 1 : 0,
+      }
+    })
+  }, [])
 
   // Per-recording loudness-normalization gains, shared between playback and
   // export so the exported file sounds like what was played.

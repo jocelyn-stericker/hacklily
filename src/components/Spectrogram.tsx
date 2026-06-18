@@ -9,6 +9,7 @@ import type { RefObject } from 'react'
 
 import type { AnalysisChunk, AnalysisFrame } from '#/lib/analysis/AnalysisFrame'
 import { frameDbMax, totalFrames } from '#/lib/analysis/AnalysisFrame'
+import { registerMemSource } from '#/lib/memProbe'
 import {
   SPECTROGRAM_DARK_THEME,
   SPECTROGRAM_LIGHT_THEME,
@@ -586,6 +587,51 @@ export function Spectrogram({
   const allFormantOffRef = useRef<(FormantOffscreenState | null)[]>([])
   const displayBufRef = useRef<DisplayBufState | null>(null)
   const tilesGenRef = useRef(0)
+
+  // Dev-only: report retained tile memory to the probe. Tiles are kept for the
+  // whole recording (see docs/memory-improvements.md item 1) so this is the
+  // dominant resident.
+  useEffect(() => {
+    return registerMemSource(
+      'spectrogram',
+      'Spectrogram retained tiles',
+      () => {
+        let colorTiles = 0
+        let colorBytes = 0
+        for (const c of allColorsRef.current) {
+          colorTiles += c.colorTiles.length
+          for (const t of c.colorTiles) colorBytes += t.data.byteLength
+        }
+        let specTiles = 0
+        let specCanvasBytes = 0
+        for (const o of allOffRef.current) {
+          if (!o) continue
+          specTiles += o.tiles.length
+          for (const t of o.tiles)
+            specCanvasBytes += t.canvas.width * t.canvas.height * 4
+        }
+        let formantTiles = 0
+        let formantCanvasBytes = 0
+        for (const o of allFormantOffRef.current) {
+          if (!o) continue
+          formantTiles += o.tiles.length
+          for (const t of o.tiles)
+            formantCanvasBytes += t.canvas.width * t.canvas.height * 4
+        }
+        const db = displayBufRef.current
+        const displayBufBytes = db ? db.buf.width * db.buf.height * 4 : 0
+        return {
+          colorTiles,
+          colorBytes,
+          specTiles,
+          specCanvasBytes,
+          formantTiles,
+          formantCanvasBytes,
+          displayBufBytes,
+        }
+      },
+    )
+  }, [])
 
   const animationFrame = useRef<number | null>(null)
   const triggerDraw = useRef(() => {})

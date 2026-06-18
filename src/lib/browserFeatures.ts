@@ -68,7 +68,11 @@ export function resetTrackRecognitionProbeForTests(): void {
 }
 
 function probeTrackRecognition(): boolean {
-  if (typeof document === 'undefined') return false
+  // Skip the behavioral probe in automated browsing contexts (e.g. Playwright
+  // CDP sessions). Calling `recognition.start()` can crash the renderer in
+  // headless Chromium, and the answer isn't meaningful for mem profiling anyway.
+  if (typeof document === 'undefined' || (navigator as any).webdriver)
+    return false
   const frame = document.createElement('iframe')
   document.body.appendChild(frame)
   const win = frame.contentWindow as

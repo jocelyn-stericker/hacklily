@@ -250,6 +250,11 @@ export class CapturePipeline extends TypedEventTarget<CapturePipelineEventMap> {
 
     this.#setupWorkerListeners()
 
+    // Reconnect the source to the worklet for the next take. The connection
+    // is made in #start (not #beginRecording) since the Safari commit, so
+    // softReset must restore it after the disconnect above.
+    if (this.#workletNode) this.#sourceNode?.connect(this.#workletNode)
+
     this.#recordingCompleteEmitted = false
     this.#pendingWorkers = 0
     this.#analysis = null

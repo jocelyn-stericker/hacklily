@@ -2,8 +2,69 @@ import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import viteReact, { reactCompilerPreset } from '@vitejs/plugin-react'
+import type { Plugin } from 'vite'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
+
+/**
+ * Dev-only plugin: send `Cache-Control: no-store` for all script module
+ * responses so WebKit doesn't cache them.
+ *
+ * https://predr.ag/blog/debugging-safari-if-at-first-you-succeed/
+ *
+ * Under COEP `require-corp`, WebKit requires `Cross-Origin-Resource-Policy`
+ * on every script load. Vite's dev server sends it on `200 OK` responses
+ * but omits it on `304 Not Modified` (per RFC 9110 §15.4.5). WebKit fails
+ * to reuse the cached CORP header from the prior `200`, so it blocks the
+ * load with "Worker load was blocked by Cross-Origin-Embedder-Policy" (for
+ * worker scripts) or silently fails the import (for nested module imports
+ * inside workers). This is a known WebKit bug:
+ * https://bugs.webkit.org/show_bug.cgi?id=245346
+ *
+ * `no-store` prevents the 304 entirely — every request gets a fresh `200`
+ * with all headers. The cost is re-sending modules on each load, which is
+ * negligible in dev. Production is unaffected (Vite bundles everything,
+ * so there are no per-module requests).
+ *
+ * Applied to all JS/TS/MJS responses (not just `?worker_file`) because the
+ * bug affects both worker entrypoints and their nested module imports.
+ *
+ * Not needed in prod, because we have a web worker, and the caching seems
+ * to work okay there.
+ */
+function noStoreScriptDevPlugin(): Plugin {
+  return {
+    name: 'braat:no-store-script-dev',
+    apply: 'serve',
+    configureServer(server) {
+      // Vite sets Cache-Control: no-cache and an ETag on every response,
+      // then sends the body. To override for scripts, hook res.writeHead
+      // (called right before the body is sent) to swap the header. We
+      // detect script responses by Content-Type rather than URL path, so
+      // we catch Vite's special URLs like /@vite/client too.
+      server.middlewares.use((_req, res, next) => {
+        const origWriteHead = res.writeHead.bind(res)
+        res.writeHead = function (
+          this: typeof res,
+          ...args: unknown[]
+        ): typeof res {
+          const ct = res.getHeader('Content-Type')
+          if (
+            typeof ct === 'string' &&
+            (ct.includes('javascript') || ct.includes('text/jsx'))
+          ) {
+            res.setHeader('Cache-Control', 'no-store')
+            res.removeHeader('Etag')
+          }
+          return origWriteHead(
+            ...(args as unknown as Parameters<typeof origWriteHead>),
+          )
+        }
+        next()
+      })
+    },
+  }
+}
 
 const config = defineConfig({
   base: '/',
@@ -38,6 +99,7 @@ const config = defineConfig({
     },
   },
   plugins: [
+    noStoreScriptDevPlugin(),
     tailwindcss(),
     tanstackRouter({
       target: 'react',

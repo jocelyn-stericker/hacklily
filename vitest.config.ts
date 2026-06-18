@@ -10,6 +10,10 @@ const execArgv = Object.prototype.hasOwnProperty.call(
   ? ['--no-webstorage']
   : []
 
+// Expose gc for memory tests (*.memory.test.ts). Harmless for other tests;
+// just adds globalThis.gc which they never call.
+execArgv.push('--expose-gc')
+
 export default defineConfig({
   ...viteConfig,
   test: {

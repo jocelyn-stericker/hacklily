@@ -11,6 +11,7 @@ import { registerSW } from 'virtual:pwa-register'
 
 import { Toaster } from '#/components/ui/sonner'
 import { TooltipProvider } from '#/components/ui/tooltip'
+import { installMemProbe } from '#/lib/memProbe'
 
 export const Route = createRootRoute({
   component: RootDocument,
@@ -18,6 +19,7 @@ export const Route = createRootRoute({
 
 function RootDocument() {
   const needsRefreshPosted = useRef(false)
+  useEffect(() => installMemProbe(), [])
   useEffect(() => {
     const updateSW = registerSW({
       onNeedRefresh() {

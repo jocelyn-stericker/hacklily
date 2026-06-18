@@ -5,7 +5,7 @@
 import { isPowerOfTwo } from '#/lib/dsp/mathUtils'
 
 // About a second at 44100 Hz, power of 2
-const SEG_SAMPLES = 65536
+export const SEG_SAMPLES = 65536
 
 console.assert(isPowerOfTwo(SEG_SAMPLES))
 const SEG_SAMPLES_MASK = SEG_SAMPLES - 1

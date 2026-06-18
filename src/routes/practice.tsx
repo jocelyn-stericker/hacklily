@@ -71,6 +71,7 @@ import { AudioRope } from '#/lib/audio/AudioRope'
 import type { AudioSpan } from '#/lib/audio/AudioSpan'
 import { readAudioSpan } from '#/lib/audio/AudioSpan'
 import { RopeGainCache } from '#/lib/loudness/ropeLoudness'
+import { registerMemSource } from '#/lib/memProbe'
 import { passages } from '#/lib/passages'
 import { stashTake } from '#/lib/practiceHandoff'
 import {
@@ -173,6 +174,30 @@ function Practice() {
       document.title = 'Braat'
     }
   }, [])
+
+  // Dev-only: report practice route state to the memory probe.
+  useEffect(() => {
+    return registerMemSource('practice-route', 'Practice route state', () => {
+      // Single pass over analysisRef.current to avoid repeated iteration and
+      // the temporary array that .filter(...).length would allocate.
+      let analysisSpectrumBytes = 0
+      let speechDetectedCount = 0
+      for (const f of analysisRef.current) {
+        analysisSpectrumBytes += f.spectrum.byteLength
+        if (f.speechDetected === true) speechDetectedCount += 1
+      }
+      return {
+        takeCount: state.takes.length,
+        takeBytes: state.takes.reduce((s, t) => s + t.span.rope.length * 4, 0),
+        analysisFrameCount: analysisRef.current.length,
+        analysisSpectrumBytes,
+        speechDetectedCount,
+        sessionPhase: ({ idle: 0, recording: 1, playback: 2 } as const)[
+          state.sessionPhase
+        ],
+      }
+    })
+  }, [state.takes, state.sessionPhase])
 
   // Elapsed timer during recording — only starts once the first voiced frame is detected
   useEffect(() => {

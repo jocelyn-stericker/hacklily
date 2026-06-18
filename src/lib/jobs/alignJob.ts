@@ -36,6 +36,16 @@ export function terminateAlignWorker(): void {
   pendingAlignReject = null
 }
 
+/** True if the alignment worker is alive (weights loaded in memory). */
+export function alignWorkerLive(): boolean {
+  return worker !== null
+}
+
+/** True if an alignment job is currently running. */
+export function alignJobActive(): boolean {
+  return pendingAlignReject !== null
+}
+
 export function createAlignJob(deps: AlignJobDeps): ChunkWork {
   return {
     kind: 'align',

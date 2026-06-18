@@ -9,6 +9,7 @@ import type { RefObject } from 'react'
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
 import { getFrame, totalFrames } from '#/lib/analysis/AnalysisFrame'
+import { registerMemSource } from '#/lib/memProbe'
 import { SPEECH_U32, UNVOICED_U32 } from '#/lib/theme'
 
 import {
@@ -177,6 +178,27 @@ export function Waveform({
 
   const scheme = useColourScheme()
   const bgColor = scheme === 'dark' ? '#000000' : '#ffffff'
+
+  // Dev-only: report retained tile memory to the probe.
+  useEffect(() => {
+    return registerMemSource('waveform', 'Waveform retained tiles', () => {
+      const off = offRef.current
+      if (!off) {
+        return { tiles: 0, canvasBytes: 0, imgDataBytes: 0 }
+      }
+      let canvasBytes = 0
+      let imgDataBytes = 0
+      for (const t of off.tiles) {
+        canvasBytes += t.canvas.width * t.canvas.height * 4
+        imgDataBytes += t.imgData.data.byteLength
+      }
+      return {
+        tiles: off.tiles.length,
+        canvasBytes,
+        imgDataBytes,
+      }
+    })
+  }, [])
 
   useEffect(() => {
     if (analysisMut.length === 0) {

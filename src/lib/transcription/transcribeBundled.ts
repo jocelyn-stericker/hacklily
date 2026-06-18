@@ -130,6 +130,14 @@ export function terminateBundledWorker(model: TranscribeWorkerModel): void {
   teardownWorker(model)
 }
 
+/** Live counts for the memory probe. */
+export function transcribeWorkerStats(): {
+  workerCount: number
+  pendingCount: number
+} {
+  return { workerCount: workers.size, pendingCount: pendingTranscriptions.size }
+}
+
 function getWorker(model: TranscribeWorkerModel): TranscribeWorker {
   const existing = workers.get(model)
   if (existing) return existing
