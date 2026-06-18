@@ -2,12 +2,21 @@ import { defineConfig } from 'vitest/config'
 
 import viteConfig from './vite.config'
 
+// https://github.com/vitest-dev/vitest/issues/8757
+const execArgv = Object.prototype.hasOwnProperty.call(
+  globalThis,
+  'localStorage',
+)
+  ? ['--no-webstorage']
+  : []
+
 export default defineConfig({
   ...viteConfig,
   test: {
     environment: 'node',
     globals: true,
     silent: 'passed-only',
+    execArgv,
     coverage: {
       include: ['src/**/*.{ts,tsx}'],
     },
