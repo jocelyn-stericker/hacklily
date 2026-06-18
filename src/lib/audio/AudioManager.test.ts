@@ -2,7 +2,7 @@
 
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
-// @vitest-environment jsdom
+// @vitest-environment happy-dom
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -18,7 +18,7 @@ const captureStubs: any[] = vi.hoisted(() => [])
 const playbackStubs: any[] = vi.hoisted(() => [])
 
 // Mock CapturePipeline and PlaybackPipeline so the manager doesn't
-// attempt to construct AudioWorkletNodes or web workers under jsdom.
+// attempt to construct AudioWorkletNodes or web workers under happy-dom.
 vi.mock('./CapturePipeline', async () => {
   const { TypedEventTarget } = await import('../TypedEventTarget')
 
@@ -129,7 +129,7 @@ const flush = () => new Promise<void>((resolve) => setTimeout(resolve, 0))
 // ---------------------------------------------------------------------------
 // Global AudioContext stub.
 //
-// pipeline.ts calls `new AudioContext(...)`, which throws under jsdom. We
+// pipeline.ts calls `new AudioContext(...)`, which throws under happy-dom. We
 // provide a minimal stand-in: a class whose `audioWorklet.addModule` resolves,
 // whose lifecycle methods resolve, and whose `state` toggles so the cache is
 // happy across tests.
