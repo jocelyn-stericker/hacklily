@@ -79,31 +79,41 @@ async function runAlignmentOnWorker(
   if (!worker) {
     worker = new AlignWorkerCtor()
   }
+  // Capture the instance so teardown targets this worker even after the
+  // module-level `worker` is nulled (e.g. by terminateAlignWorker).
+  const activeWorker = worker
 
   return new Promise<PhonemeTimestamp[]>((resolve, reject) => {
+    // Aborting the signal detaches the listener regardless of whether the
+    // module still references this worker. terminate() stops the worker thread
+    // but does not remove listeners on the main-thread Worker object.
+    const ac = new AbortController()
     const cleanup = () => {
       pendingAlignReject = null
-      worker!.removeEventListener('message', onMessage)
+      ac.abort()
     }
-    const onMessage = (ev: MessageEvent<AlignOutMessage>) => {
-      const msg = ev.data
-      if (msg.type === 'result') {
-        cleanup()
-        resolve(msg.phonemeTimestamps)
-      } else if (msg.type === 'error') {
-        cleanup()
-        reject(new Error(msg.message))
-      }
-    }
+
+    activeWorker.addEventListener(
+      'message',
+      (ev: MessageEvent<AlignOutMessage>) => {
+        const msg = ev.data
+        if (msg.type === 'result') {
+          cleanup()
+          resolve(msg.phonemeTimestamps)
+        } else if (msg.type === 'error') {
+          cleanup()
+          reject(new Error(msg.message))
+        }
+      },
+      { signal: ac.signal },
+    )
 
     pendingAlignReject = (err) => {
       cleanup()
       reject(err)
     }
 
-    worker!.addEventListener('message', onMessage)
-
-    worker!.postMessage({
+    activeWorker.postMessage({
       type: 'align',
       pcm,
       sampleRate: audio.rope.sampleRate,
