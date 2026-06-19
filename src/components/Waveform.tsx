@@ -35,14 +35,31 @@ interface Tile {
   canvas: OffscreenCanvas
   ctx: OffscreenCanvasRenderingContext2D
   startFrame: number
-  imgData: ImageData
-  u32: Uint32Array
 }
 
 interface OffscreenState {
   tiles: Tile[]
   canvasHeight: number
   numFrames: number
+  // Shared write-only scratch for paintColumnsToOffscreen — one tile-wide
+  // ImageData reused across all tiles, never read back, so it doesn't need to
+  // be retained per tile.
+  scratch: ImageData
+  scratchU32: Uint32Array
+}
+
+function makeOffscreenState(
+  canvasHeight: number,
+  numFrames: number,
+): OffscreenState {
+  const scratch = new ImageData(TILE_WIDTH, canvasHeight)
+  return {
+    tiles: [],
+    canvasHeight,
+    numFrames,
+    scratch,
+    scratchU32: new Uint32Array(scratch.data.buffer),
+  }
 }
 
 function ensureTiles(
@@ -60,9 +77,7 @@ function ensureTiles(
       ctx.fillStyle = bgStyle
       ctx.fillRect(0, 0, TILE_WIDTH, off.canvasHeight)
     }
-    const imgData = ctx.createImageData(TILE_WIDTH, off.canvasHeight)
-    const u32 = new Uint32Array(imgData.data.buffer)
-    off.tiles.push({ canvas, ctx, startFrame, imgData, u32 })
+    off.tiles.push({ canvas, ctx, startFrame })
   }
 }
 
@@ -76,7 +91,7 @@ function paintColumnsToOffscreen(
 ): void {
   const bgU32 = parseInt(bgColor.replace('#', '').padEnd(8, 'ff'), 16)
   if (to <= from) return
-  const { tiles, canvasHeight } = off
+  const { tiles, canvasHeight, scratch: imgData, scratchU32: u32 } = off
   const firstTile = Math.floor(from / TILE_WIDTH)
   const lastTile = Math.floor((to - 1) / TILE_WIDTH)
   for (let t = firstTile; t <= lastTile && t < tiles.length; t++) {
@@ -85,7 +100,6 @@ function paintColumnsToOffscreen(
     const absTo = Math.min(to, tile.startFrame + TILE_WIDTH)
     const numCols = absTo - absFrom
     const localFrom = absFrom - tile.startFrame
-    const { imgData, u32 } = tile
     for (let f = absFrom; f < absTo; f++) {
       const localX = f - tile.startFrame
       const sample = getFrame(analysis, f)!
@@ -186,15 +200,14 @@ export function Waveform({
         return { tiles: 0, canvasBytes: 0, imgDataBytes: 0 }
       }
       let canvasBytes = 0
-      let imgDataBytes = 0
       for (const t of off.tiles) {
         canvasBytes += t.canvas.width * t.canvas.height * 4
-        imgDataBytes += t.imgData.data.byteLength
       }
       return {
         tiles: off.tiles.length,
         canvasBytes,
-        imgDataBytes,
+        // One shared scratch buffer (was previously retained per tile).
+        imgDataBytes: off.scratch.data.byteLength,
       }
     })
   }, [])
@@ -205,7 +218,7 @@ export function Waveform({
       return
     }
     const numFrames = totalFrames(analysisMut)
-    const off: OffscreenState = { tiles: [], canvasHeight, numFrames }
+    const off = makeOffscreenState(canvasHeight, numFrames)
     ensureTiles(off, numFrames, bgColor)
     offRef.current = off
     paintColumnsToOffscreen(off, analysisMut, 0, numFrames, ampToY, bgColor)
@@ -258,7 +271,7 @@ export function Waveform({
       if (!offRef.current && canvasHeight > 0) {
         if (pendingTo !== Infinity) return
         const to = totalFrames(analysisMut)
-        const off: OffscreenState = { tiles: [], canvasHeight, numFrames: to }
+        const off = makeOffscreenState(canvasHeight, to)
         ensureTiles(off, to, bgColor)
         offRef.current = off
         paintColumnsToOffscreen(off, analysisMut, 0, to, ampToY, bgColor)

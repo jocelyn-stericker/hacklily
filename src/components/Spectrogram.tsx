@@ -30,6 +30,14 @@ export const TILE_WIDTH = 256
 // Scratch ImageData for paintColumnsToOffscreen; narrower than TILE_WIDTH so one allocation serves all tiles.
 const SCRATCH_WIDTH = 256
 
+// Budget for materialized spec + formant canvas tiles (combined). Off-screen
+// tiles are evicted and re-rendered on demand from the retained color data
+// (spec) and analysis frames (formants), which together cost far less than the
+// rendered canvases. Sized to comfortably hold a couple of viewport-widths of
+// both layers so scrolling reuses cached tiles instead of thrashing. See
+// docs/memory-improvements.md item 1.
+const MAX_TILE_CANVAS_BYTES = 48 * 1024 * 1024
+
 const LN10_10 = 10 / Math.log(10)
 const DB_MAX_DEFAULT = -16
 
@@ -62,10 +70,82 @@ interface ChunkColorsState {
   dbMax: number
 }
 
+// canvas/ctx are null when the tile has been evicted (or not yet rendered).
+// They're rebuilt on demand by renderSpecTile / renderFormantTile from the
+// retained color data / frames when the tile scrolls into view.
 interface Tile {
-  canvas: OffscreenCanvas
-  ctx: OffscreenCanvasRenderingContext2D
+  canvas: OffscreenCanvas | null
+  ctx: OffscreenCanvasRenderingContext2D | null
   startFrame: number
+}
+
+// LRU over materialized canvas tiles (spec + formant share one budget). Tiles
+// are keyed by identity; insertion order in the Set is the LRU order (front =
+// least recently used). Re-rendering a tile is cheap, so evicting an
+// off-screen one and rebuilding it on scroll-back is a good memory trade.
+class TileLru {
+  private order = new Set<Tile>()
+  private tileBytes = 0
+  private capBytes = 0
+  // Bytes of tiles touched since the last evict() — i.e. what the current
+  // frame is actually drawing. evict() never drops below this, so on-screen
+  // tiles are never evicted out from under the draw (no thrash when the
+  // visible set alone exceeds the cap, e.g. fully zoomed out).
+  private touchedBytes = 0
+  totalBytes = 0
+
+  // tileBytes depends on canvas height (dpr/resize); a change invalidates the
+  // byte accounting, so drop everything and let the draw path re-render.
+  configure(tileBytes: number, capBytes: number): void {
+    if (tileBytes !== this.tileBytes) {
+      this.clear()
+      this.tileBytes = tileBytes
+    }
+    this.capBytes = capBytes
+  }
+
+  clear(): void {
+    this.order.clear()
+    this.totalBytes = 0
+    this.touchedBytes = 0
+  }
+
+  // Record a freshly materialized tile and mark it most-recently-used.
+  register(tile: Tile): void {
+    if (!this.order.has(tile)) this.totalBytes += this.tileBytes
+    this.order.delete(tile)
+    this.order.add(tile)
+    this.touchedBytes += this.tileBytes
+  }
+
+  // Mark an already-materialized tile most-recently-used.
+  touch(tile: Tile): void {
+    this.order.delete(tile)
+    this.order.add(tile)
+    this.touchedBytes += this.tileBytes
+  }
+
+  // Drop a tile from accounting without freeing its canvas (caller is
+  // discarding the tile object entirely, e.g. on chunk truncation).
+  forget(tile: Tile): void {
+    if (this.order.delete(tile)) this.totalBytes -= this.tileBytes
+  }
+
+  // Free least-recently-used canvases until under budget. The budget is at
+  // least the bytes touched this frame, so most-recently-used (on-screen)
+  // tiles survive. Call once per draw.
+  evict(): void {
+    const floor = Math.max(this.capBytes, this.touchedBytes)
+    this.touchedBytes = 0
+    if (floor <= 0) return
+    for (const tile of this.order) {
+      if (this.totalBytes <= floor) break
+      tile.canvas = null
+      tile.ctx = null
+      this.order.delete(tile)
+      this.totalBytes -= this.tileBytes
+    }
+  }
 }
 
 interface OffscreenState {
@@ -148,22 +228,115 @@ function ensureColorTiles(state: ChunkColorsState, needed: number): void {
   }
 }
 
-function ensureTiles(
-  off: { tiles: Tile[]; canvasHeight: number },
-  needed: number,
-  alpha = true,
-  bgStyle?: string,
-): void {
+// Grow the tile array with empty (unrendered) placeholders. Canvases are
+// allocated lazily by renderSpecTile / renderFormantTile when a tile is blitted.
+function ensureTiles(off: { tiles: Tile[] }, needed: number): void {
   const numTiles = Math.ceil(needed / TILE_WIDTH)
   while (off.tiles.length < numTiles) {
-    const startFrame = off.tiles.length * TILE_WIDTH
-    const canvas = new OffscreenCanvas(TILE_WIDTH, off.canvasHeight)
-    const ctx = canvas.getContext('2d', { alpha })!
-    if (bgStyle) {
-      ctx.fillStyle = bgStyle
-      ctx.fillRect(0, 0, TILE_WIDTH, off.canvasHeight)
+    off.tiles.push({
+      canvas: null,
+      ctx: null,
+      startFrame: off.tiles.length * TILE_WIDTH,
+    })
+  }
+}
+
+// Forget and truncate tiles at/after newLen (the tile objects are being
+// discarded). Keeps LRU byte accounting in sync.
+function truncateTiles(lru: TileLru, tiles: Tile[], newLen: number): void {
+  for (let i = newLen; i < tiles.length; i++) lru.forget(tiles[i]!)
+  tiles.length = newLen
+}
+
+// Materialize a spec tile's canvas (if evicted/unrendered) and mark it MRU.
+// Paints from the retained color data, so this is just a putImageData blit —
+// no per-bin colour recomputation.
+function renderSpecTile(
+  off: OffscreenState,
+  colors: ChunkColorsState,
+  t: number,
+  theme: SpectrogramTheme,
+  lru: TileLru,
+): void {
+  const tile = off.tiles[t]
+  if (!tile) return
+  if (tile.canvas) {
+    lru.touch(tile)
+    return
+  }
+  const canvas = new OffscreenCanvas(TILE_WIDTH, off.canvasHeight)
+  const ctx = canvas.getContext('2d', { alpha: false })!
+  ctx.fillStyle = theme.bgStyle
+  ctx.fillRect(0, 0, TILE_WIDTH, off.canvasHeight)
+  tile.canvas = canvas
+  tile.ctx = ctx
+  lru.register(tile)
+  const start = t * TILE_WIDTH
+  paintColumnsToOffscreen(
+    off,
+    colors,
+    start,
+    Math.min(start + TILE_WIDTH, colors.numFrames),
+    theme,
+  )
+}
+
+// Materialize a formant tile's canvas (if evicted/unrendered) and mark it MRU.
+function renderFormantTile(
+  off: FormantOffscreenState,
+  frames: AnalysisFrame[],
+  t: number,
+  freqToY: (hz: number) => number,
+  dpr: number,
+  lru: TileLru,
+): void {
+  const tile = off.tiles[t]
+  if (!tile) return
+  if (tile.canvas) {
+    lru.touch(tile)
+    return
+  }
+  const canvas = new OffscreenCanvas(TILE_WIDTH, off.canvasHeight)
+  const ctx = canvas.getContext('2d', { alpha: true })!
+  tile.canvas = canvas
+  tile.ctx = ctx
+  lru.register(tile)
+  drawFormantTile(tile, off.canvasHeight, frames, freqToY, dpr)
+}
+
+// Paint all of a single formant tile from frames (clears first).
+function drawFormantTile(
+  tile: Tile,
+  canvasHeight: number,
+  frames: AnalysisFrame[],
+  freqToY: (hz: number) => number,
+  dpr: number,
+): void {
+  const ctx = tile.ctx
+  if (!ctx) return
+  const start = tile.startFrame
+  const end = Math.min(frames.length, start + TILE_WIDTH)
+  ctx.clearRect(0, 0, TILE_WIDTH, canvasHeight)
+  for (const { key, color } of FORMANT_TRACKS) {
+    const r = FORMANT_LINE_WIDTH * dpr
+    ctx.beginPath()
+    for (let f = start; f < end; f++) {
+      const sample = frames[f]!
+      if (
+        !(sample.pitchDetected && sample.speechDetected) ||
+        sample[key] === null
+      )
+        continue
+      const x = f - start + 0.5
+      const y = freqToY(sample[key])
+      ctx.moveTo(x + r, y)
+      ctx.arc(x, y, r, 0, Math.PI * 2)
     }
-    off.tiles.push({ canvas, ctx, startFrame })
+    ctx.shadowColor = FORMANT_SHADOW_COLOUR
+    ctx.shadowBlur = FORMANT_SHADOW_BLUR * dpr
+    ctx.fillStyle = color
+    ctx.fill()
+    ctx.shadowBlur = 0
   }
 }
 
@@ -181,6 +354,8 @@ function paintColumnsToOffscreen(
   const lastTile = Math.floor((to - 1) / TILE_WIDTH)
   for (let t = firstTile; t <= lastTile && t < tiles.length; t++) {
     const tile = tiles[t]!
+    const ctx = tile.ctx
+    if (!ctx) continue // evicted/unrendered: rebuilt lazily
     const colorTile = colorTiles[t]!
     const localFrom = Math.max(from, tile.startFrame) - tile.startFrame
     const localTo = Math.min(to, tile.startFrame + TILE_WIDTH) - tile.startFrame
@@ -206,7 +381,7 @@ function paintColumnsToOffscreen(
           )
         }
       }
-      tile.ctx.putImageData(
+      ctx.putImageData(
         scratchData,
         batchStart,
         0,
@@ -235,10 +410,12 @@ function paintFormantTiles(
     const tile = off.tiles[t]!
     const frameEnd = Math.min(numFrames, tile.startFrame + TILE_WIDTH)
     if (frameEnd <= tile.startFrame) break
+    const ctx = tile.ctx
+    if (!ctx) continue // evicted/unrendered: rebuilt lazily
     // First tile: skip before fromFrame, preserve those pixels. Later tiles: repaint fully.
     const tileFromFrame = Math.max(tile.startFrame, fromFrame)
     const clearX = tileFromFrame - tile.startFrame
-    tile.ctx.clearRect(
+    ctx.clearRect(
       clearX,
       0,
       frameEnd - tile.startFrame - clearX,
@@ -246,7 +423,7 @@ function paintFormantTiles(
     )
     for (const { key, color } of FORMANT_TRACKS) {
       const r = FORMANT_LINE_WIDTH * dpr
-      tile.ctx.beginPath()
+      ctx.beginPath()
       for (let f = tileFromFrame; f < frameEnd; f++) {
         const sample = frames[f]!
         if (
@@ -256,14 +433,14 @@ function paintFormantTiles(
           continue
         const x = f - tile.startFrame + 0.5
         const y = freqToY(sample[key])
-        tile.ctx.moveTo(x + r, y)
-        tile.ctx.arc(x, y, r, 0, Math.PI * 2)
+        ctx.moveTo(x + r, y)
+        ctx.arc(x, y, r, 0, Math.PI * 2)
       }
-      tile.ctx.shadowColor = FORMANT_SHADOW_COLOUR
-      tile.ctx.shadowBlur = FORMANT_SHADOW_BLUR * dpr
-      tile.ctx.fillStyle = color
-      tile.ctx.fill()
-      tile.ctx.shadowBlur = 0
+      ctx.shadowColor = FORMANT_SHADOW_COLOUR
+      ctx.shadowBlur = FORMANT_SHADOW_BLUR * dpr
+      ctx.fillStyle = color
+      ctx.fill()
+      ctx.shadowBlur = 0
     }
   }
 }
@@ -282,11 +459,13 @@ function appendFormantTiles(
   const lastTile = Math.floor((to - 1) / TILE_WIDTH)
   for (let t = firstTile; t <= lastTile && t < off.tiles.length; t++) {
     const tile = off.tiles[t]!
+    const ctx = tile.ctx
+    if (!ctx) continue // evicted/unrendered: rebuilt lazily
     const absFrom = Math.max(from, tile.startFrame)
     const absTo = Math.min(to, tile.startFrame + TILE_WIDTH)
     for (const { key, color } of FORMANT_TRACKS) {
       const r = FORMANT_LINE_WIDTH * dpr
-      tile.ctx.beginPath()
+      ctx.beginPath()
       for (let f = absFrom; f < absTo; f++) {
         const sample = frames[f]!
         if (
@@ -296,14 +475,14 @@ function appendFormantTiles(
           continue
         const x = f - tile.startFrame + 0.5
         const y = freqToY(sample[key])
-        tile.ctx.moveTo(x + r, y)
-        tile.ctx.arc(x, y, r, 0, Math.PI * 2)
+        ctx.moveTo(x + r, y)
+        ctx.arc(x, y, r, 0, Math.PI * 2)
       }
-      tile.ctx.shadowColor = FORMANT_SHADOW_COLOUR
-      tile.ctx.shadowBlur = FORMANT_SHADOW_BLUR * dpr
-      tile.ctx.fillStyle = color
-      tile.ctx.fill()
-      tile.ctx.shadowBlur = 0
+      ctx.shadowColor = FORMANT_SHADOW_COLOUR
+      ctx.shadowBlur = FORMANT_SHADOW_BLUR * dpr
+      ctx.fillStyle = color
+      ctx.fill()
+      ctx.shadowBlur = 0
     }
   }
 }
@@ -334,7 +513,19 @@ function globalRangeToChunkRanges(
   return result
 }
 
-function blitTiles(
+// Context the blit path needs to lazily (re)render tiles that scroll into view.
+interface BlitContext {
+  allColors: ChunkColorsState[]
+  theme: SpectrogramTheme
+  freqToY: (hz: number) => number
+  dpr: number
+  lru: TileLru
+}
+
+// Blit one layer's tiles. `ensure(t)` materializes tile t (and marks it MRU)
+// before it's drawn; it's only called for tiles that actually overlap the
+// visible source range, so off-screen tiles stay evicted.
+function blitLayer(
   ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
   tiles: Tile[],
   canvasHeight: number,
@@ -342,12 +533,16 @@ function blitTiles(
   srcW: number,
   dxPerFrame: number,
   displayHeight: number,
+  ensure: (t: number) => void,
 ): void {
-  for (const tile of tiles) {
+  for (let t = 0; t < tiles.length; t++) {
+    const tile = tiles[t]!
     const tileSrcX = srcX0 - tile.startFrame
     const clippedSrcX = Math.max(0, tileSrcX)
     const clippedSrcW = Math.min(TILE_WIDTH, tileSrcX + srcW) - clippedSrcX
     if (clippedSrcW <= 0) continue
+    ensure(t)
+    if (!tile.canvas) continue
     const destX = (clippedSrcX - tileSrcX) * dxPerFrame
     const destW = clippedSrcW * dxPerFrame
     ctx.drawImage(
@@ -374,6 +569,7 @@ function blitChunks(
   srcWidthSec: number,
   dxPerSec: number,
   displayHeight: number,
+  bc: BlitContext,
 ): void {
   for (let i = 0; i < offs.length; i++) {
     const off = offs[i]
@@ -385,18 +581,22 @@ function blitChunks(
     // chunkSrcX0: the (possibly fractional) chunk-local frame index at display pixel 0.
     const chunkSrcX0 = (srcTimeSec - chunk.startTimeSec) / timeStepSec
     const chunkSrcW = srcWidthSec / timeStepSec
-    blitTiles(
-      ctx,
-      off.tiles,
-      off.canvasHeight,
-      chunkSrcX0,
-      chunkSrcW,
-      dxPerFrame,
-      displayHeight,
-    )
+    const colors = bc.allColors[i]
+    if (colors) {
+      blitLayer(
+        ctx,
+        off.tiles,
+        off.canvasHeight,
+        chunkSrcX0,
+        chunkSrcW,
+        dxPerFrame,
+        displayHeight,
+        (t) => renderSpecTile(off, colors, t, bc.theme, bc.lru),
+      )
+    }
     const formantOff = formantOffs[i]
     if (formantOff) {
-      blitTiles(
+      blitLayer(
         ctx,
         formantOff.tiles,
         formantOff.canvasHeight,
@@ -404,6 +604,15 @@ function blitChunks(
         chunkSrcW,
         dxPerFrame,
         displayHeight,
+        (t) =>
+          renderFormantTile(
+            formantOff,
+            chunk.frames,
+            t,
+            bc.freqToY,
+            bc.dpr,
+            bc.lru,
+          ),
       )
     }
   }
@@ -418,7 +627,7 @@ function updateDisplayBufForFrames(
   analysis: AnalysisChunk[],
   fromTimeSec: number,
   toTimeSec: number,
-  theme: SpectrogramTheme,
+  bc: BlitContext,
 ): void {
   if (!db || isNaN(db.lastSrcTimeSec) || isNaN(db.lastDxPerSec)) return
   const { lastSrcTimeSec, lastDxPerSec, width, height } = db
@@ -434,7 +643,7 @@ function updateDisplayBufForFrames(
   db.dirty = true
   const stripSrcTimeSec = lastSrcTimeSec + x1 / lastDxPerSec
   const stripWidthSec = (x2 - x1) / lastDxPerSec
-  db.ctx.fillStyle = theme.bgStyle
+  db.ctx.fillStyle = bc.theme.bgStyle
   db.ctx.fillRect(x1, 0, x2 - x1, height)
   db.ctx.save()
   db.ctx.translate(x1, 0)
@@ -447,6 +656,7 @@ function updateDisplayBufForFrames(
     stripWidthSec,
     lastDxPerSec,
     height,
+    bc,
   )
   db.ctx.restore()
 }
@@ -461,10 +671,11 @@ function draw(
   formantOffs: (FormantOffscreenState | null)[],
   analysis: AnalysisChunk[],
   timeToX: (timeSec: number) => number,
-  theme: SpectrogramTheme,
+  bc: BlitContext,
 ): void {
+  bc.lru.configure(TILE_WIDTH * height * 4, MAX_TILE_CANVAS_BYTES)
   if (offs.length === 0) {
-    mainCtx.fillStyle = theme.bgStyle
+    mainCtx.fillStyle = bc.theme.bgStyle
     mainCtx.fillRect(0, 0, width, height)
     return
   }
@@ -472,7 +683,7 @@ function draw(
   // timeToX is linear so dxPerSec is uniform across all chunks.
   const dxPerSec = timeToX(1) - timeToX(0)
   if (dxPerSec <= 0) {
-    mainCtx.fillStyle = theme.bgStyle
+    mainCtx.fillStyle = bc.theme.bgStyle
     mainCtx.fillRect(0, 0, width, height)
     return
   }
@@ -508,7 +719,7 @@ function draw(
 
   if (!canIncremental) {
     // Full repaint: composite all chunk layers into the display buffer.
-    db.ctx.fillStyle = theme.bgStyle
+    db.ctx.fillStyle = bc.theme.bgStyle
     db.ctx.fillRect(0, 0, width, height)
     blitChunks(
       db.ctx,
@@ -519,6 +730,7 @@ function draw(
       srcWidthSec,
       dxPerSec,
       height,
+      bc,
     )
     db.lastSrcTimeSec = srcTimeSec
     db.lastDxPerSec = dxPerSec
@@ -534,7 +746,7 @@ function draw(
     const stripSrcTimeSec = srcTimeSec + stripX / dxPerSec
     const stripWidthSec = stripW / dxPerSec
 
-    db.ctx.fillStyle = theme.bgStyle
+    db.ctx.fillStyle = bc.theme.bgStyle
     db.ctx.fillRect(stripX, 0, stripW, height)
     // translate shifts stripX to pixel 0 for blitChunks' coord logic.
     db.ctx.save()
@@ -548,6 +760,7 @@ function draw(
       stripWidthSec,
       dxPerSec,
       height,
+      bc,
     )
     db.ctx.restore()
   }
@@ -556,6 +769,9 @@ function draw(
     mainCtx.drawImage(db.buf, 0, 0)
     db.dirty = false
   }
+  // Free off-screen tiles that pushed us over budget. Tiles drawn this frame are
+  // MRU, so they survive.
+  bc.lru.evict()
 }
 
 export function Spectrogram({
@@ -586,10 +802,12 @@ export function Spectrogram({
   const allFormantOffRef = useRef<(FormantOffscreenState | null)[]>([])
   const displayBufRef = useRef<DisplayBufState | null>(null)
   const tilesGenRef = useRef(0)
+  const tileLruRef = useRef(new TileLru())
 
-  // Dev-only: report retained tile memory to the probe. Tiles are kept for the
-  // whole recording (see docs/memory-improvements.md item 1) so this is the
-  // dominant resident.
+  // Dev-only: report retained tile memory to the probe. colorTiles are the
+  // retained source (one Uint32Array per tile); canvas tiles are an
+  // LRU-bounded cache (see docs/memory-improvements.md item 1), so specTiles /
+  // formantTiles count only the materialized canvases, not the placeholders.
   useEffect(() => {
     return registerMemSource(
       'spectrogram',
@@ -605,17 +823,21 @@ export function Spectrogram({
         let specCanvasBytes = 0
         for (const o of allOffRef.current) {
           if (!o) continue
-          specTiles += o.tiles.length
-          for (const t of o.tiles)
+          for (const t of o.tiles) {
+            if (!t.canvas) continue
+            specTiles += 1
             specCanvasBytes += t.canvas.width * t.canvas.height * 4
+          }
         }
         let formantTiles = 0
         let formantCanvasBytes = 0
         for (const o of allFormantOffRef.current) {
           if (!o) continue
-          formantTiles += o.tiles.length
-          for (const t of o.tiles)
+          for (const t of o.tiles) {
+            if (!t.canvas) continue
+            formantTiles += 1
             formantCanvasBytes += t.canvas.width * t.canvas.height * 4
+          }
         }
         const db = displayBufRef.current
         const displayBufBytes = db ? db.buf.width * db.buf.height * 4 : 0
@@ -656,6 +878,7 @@ export function Spectrogram({
       allColorsRef.current = []
       allOffRef.current = []
       allFormantOffRef.current = []
+      tileLruRef.current.clear()
       return
     }
     const newColors: ChunkColorsState[] = []
@@ -679,10 +902,15 @@ export function Spectrogram({
 
   // ---- FALLS THROUGH TO NEXT EFFECT ----
 
-  // When freq scale, canvas height, or dpr changes, rebuild tile canvases.
+  // When freq scale, canvas height, or dpr changes, rebuild tile containers.
+  // Tiles start empty (no canvas); the draw path materializes the visible ones
+  // lazily and the LRU evicts the rest, so we don't paint anything here.
   useEffect(() => {
     const allColors = allColorsRef.current
     if (allColors.length === 0 || canvasHeight <= 0) return
+
+    // Old tile objects are about to be replaced; drop their LRU accounting.
+    tileLruRef.current.clear()
 
     const newOff: (OffscreenState | null)[] = []
     const newFormantOff: (FormantOffscreenState | null)[] = []
@@ -705,14 +933,12 @@ export function Spectrogram({
         scratchData,
         scratchU32: new Uint32Array(scratchData.data.buffer),
       }
-      ensureTiles(off, colors.numFrames, false, theme.bgStyle)
+      ensureTiles(off, colors.numFrames)
       newOff.push(off)
-      paintColumnsToOffscreen(off, colors, 0, colors.numFrames, theme)
 
       const formantOff: FormantOffscreenState = { tiles: [], canvasHeight }
       ensureTiles(formantOff, colors.numFrames)
       newFormantOff.push(formantOff)
-      paintFormantTiles(formantOff, chunk.frames, 0, freqToY, dpr)
     }
 
     allOffRef.current = newOff
@@ -755,7 +981,13 @@ export function Spectrogram({
           allFormantOffRef.current,
           analysisMut,
           timeToX,
-          theme,
+          {
+            allColors: allColorsRef.current,
+            theme,
+            freqToY,
+            dpr,
+            lru: tileLruRef.current,
+          },
         )
         if (debug) {
           fpsFrameTimesRef.current.push(performance.now())
@@ -820,6 +1052,13 @@ export function Spectrogram({
           acc += analysisMut[i]!.frames.length
         }
         if (firstDiverged < allColors.length) {
+          // Drop LRU accounting for tiles in the chunks being discarded.
+          for (let i = firstDiverged; i < allOff.length; i++) {
+            const o = allOff[i]
+            if (o) truncateTiles(tileLruRef.current, o.tiles, 0)
+            const fo = allFormantOff[i]
+            if (fo) truncateTiles(tileLruRef.current, fo.tiles, 0)
+          }
           allColors.length = firstDiverged
           allOff.length = firstDiverged
           allFormantOff.length = firstDiverged
@@ -838,9 +1077,10 @@ export function Spectrogram({
           colors.colorTiles.length = tileCount
           colors.dbMax = chunkDbMax(chunk)
           const off = allOff[i]
-          if (off) off.tiles.length = tileCount
+          if (off) truncateTiles(tileLruRef.current, off.tiles, tileCount)
           const formantOff = allFormantOff[i]
-          if (formantOff) formantOff.tiles.length = tileCount
+          if (formantOff)
+            truncateTiles(tileLruRef.current, formantOff.tiles, tileCount)
           needFullRedraw = true
         }
       }
@@ -942,17 +1182,16 @@ export function Spectrogram({
             scratchData,
             scratchU32: new Uint32Array(scratchData.data.buffer),
           }
-          ensureTiles(off, localTo, false, theme.bgStyle)
+          // Tiles start empty; the redraw below materializes the visible ones.
+          ensureTiles(off, localTo)
           allOff[chunkIdx] = off
-          paintColumnsToOffscreen(off, colors, 0, localTo, theme)
 
           formantOff = { tiles: [], canvasHeight }
           ensureTiles(formantOff, localTo)
           allFormantOff[chunkIdx] = formantOff
-          paintFormantTiles(formantOff, chunk.frames, 0, freqToY, dpr)
           needFullRedraw = true
         } else if (off) {
-          if (isExtending) ensureTiles(off, localTo, false, theme.bgStyle)
+          if (isExtending) ensureTiles(off, localTo)
           paintColumnsToOffscreen(
             off,
             colors,
@@ -966,8 +1205,7 @@ export function Spectrogram({
             formantOff = { tiles: [], canvasHeight }
             ensureTiles(formantOff, localTo)
             allFormantOff[chunkIdx] = formantOff
-            paintFormantTiles(formantOff, chunk.frames, 0, freqToY, dpr)
-            // formantOff newly created: full repaint needed to show historical lines.
+            // formantOff newly created: full repaint materializes visible tiles.
             needFullRedraw = true
           } else {
             if (isExtending) ensureTiles(formantOff, localTo)
@@ -998,7 +1236,13 @@ export function Spectrogram({
                 analysisMut,
                 fromTimeSec,
                 toTimeSec,
-                theme,
+                {
+                  allColors,
+                  theme,
+                  freqToY,
+                  dpr,
+                  lru: tileLruRef.current,
+                },
               )
             } else {
               // Patch or mixed: repaint only the affected range, then append any
@@ -1036,7 +1280,13 @@ export function Spectrogram({
                 analysisMut,
                 fromTimeSec,
                 toTimeSec,
-                theme,
+                {
+                  allColors,
+                  theme,
+                  freqToY,
+                  dpr,
+                  lru: tileLruRef.current,
+                },
               )
             }
           }
