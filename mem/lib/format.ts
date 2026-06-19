@@ -100,7 +100,7 @@ export function renderTable(result: ScenarioResult): string {
     'main-route': 'Main route state',
     'practice-route': 'Practice route state',
     spectrogram: 'Spectrogram retained tiles',
-    waveform: 'Waveform retained tiles',
+    waveform: 'Waveform overview canvas',
     workers: 'Background workers',
     chromium: 'Chromium CDP (after GC)',
     agentMemory: 'Agent memory (all threads)',

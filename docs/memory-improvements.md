@@ -22,22 +22,24 @@ What changed:
 - The retained **source** is `colorTiles` (one `Uint32Array(numBins × TILE_WIDTH)`
   per tile, ~15 MB for 60 s) plus `chunk.frames`. A canvas tile is a
   rebuildable function of those, so it's cheap to drop and re-render.
-- The blit path (`blitLayer` → `renderSpecTile` / `renderFormantTile`)
-  materializes a tile only when it actually overlaps the visible source range,
-  and marks it most-recently-used.
-- `TileLru` (cap `MAX_TILE_CANVAS_BYTES = 48 MB`, shared spec+formant) evicts
-  least-recently-used canvases once per `draw()`.
+- The blit path (`blitLayer` → `renderTile`) materializes a tile only when it
+  actually overlaps the visible source range, and marks it most-recently-used.
+  (Spec and formant share one tile since item 1b; see below.)
+- `TileLru` (cap `MAX_TILE_CANVAS_BYTES = 48 MB`) evicts least-recently-used
+  canvases once per `draw()`.
 - Waveform separately stopped retaining a **per-tile** `imgData`/`u32` scratch
-  (write-only, never read back) — one shared `OffscreenState.scratch` now, like
-  the spectrogram. −13.6 MB.
+  (write-only, never read back) — and was later rewritten entirely (item 1a).
 
 **Measured — `npm run mem -- --layer2 --scenario main-import` (60 s WAV,
-chromium L2), before → after:**
+chromium L2), original → after item 1 → after 1a+1b (this is cumulative; each
+row is the same scenario):**
 
-- Total retained: 208.5 MB → **82.9 MB**
-- Peak (afterImport): 457.8 MB → **206.7 MB**
-- spec canvas tiles: 68.6 MB (120) → 14.3 MB (25); formant tiles likewise
-- waveform `imgData`: 15.6 MB → 2.0 MB
+- Total retained: 208.5 MB → 82.9 MB → **52.9 MB**
+- Peak (afterImport): 457.8 MB → 206.7 MB → **146.8 MB**
+- spec canvas tiles: 68.6 MB (120) → 14.3 MB (25) spec + 14.3 MB formant →
+  **14.3 MB (25) combined** (formant tiles eliminated, item 1b)
+- waveform canvas: 15.6 MB (8 tiles, growing) → unchanged → **0.19 MB fixed**
+  (item 1a)
 - After "New": unchanged (~54 MB; that residual is unrelated to tiles)
 
 ### Invariants to preserve (don't regress these)
@@ -46,10 +48,10 @@ chromium L2), before → after:**
    canvas tiles are disposable. Don't free `colorTiles` without first adding a
    recompute-from-`spectrum` path (re-running the colourmap, not just a
    `putImageData` blit) — see item 1c.
-2. **Paint fns skip evicted tiles.** `paintColumnsToOffscreen`,
-   `paintFormantTiles`, `appendFormantTiles` all `continue` when `tile.ctx`
-   is null. This is what makes append/patch touch only materialized tiles while
-   off-screen tiles rebuild lazily. A new paint helper must keep that guard.
+2. **Paint fns skip evicted tiles.** `paintColumnsToOffscreen` and `paintTile` /
+   `repaintTile` `continue` / no-op when `tile.ctx` is null. This is what makes
+   append/patch touch only materialized tiles while off-screen tiles rebuild
+   lazily. A new paint helper must keep that guard.
 3. **Materialize only when visible.** `blitLayer` calls `ensure(t)` only for
    tiles whose clipped source width is > 0. Don't pre-render in the rebuild
    effect or the append path — that reintroduces the peak.
@@ -62,55 +64,76 @@ chromium L2), before → after:**
    clear, call `truncateTiles` / `lru.forget` / `lru.clear` so evicted-but-
    referenced canvases don't leak and `totalBytes` stays accurate.
 
-## 1a. Waveform canvas-tile LRU — TODO (next; same pattern as item 1)
+## 1a. Waveform overview at display resolution — DONE
 
-The waveform's `imgData` scratch is fixed, but the **canvas tiles** themselves
-(`Waveform.tsx`, `TILE_WIDTH = 4096`) are still retained for the whole recording
-(15.6 MB at 60 s, grows linearly). Apply the same treatment: lazy
-`canvas: … | null`, materialize on blit from `analysis` frames (the source is
-already retained — no color-data layer to keep), LRU-evict past a cap. Simpler
-than the spectrogram (one layer, no display buffer, no formant overlay), so this
-is the low-risk next step. Expect to bound waveform canvas to ~one viewport.
+**Shipped.** The waveform is the full-track **overview** (always fully zoomed
+out, with a `ViewportShade` marking the spectrogram's window), so unlike the
+spectrogram every part is always on-screen — a visibility-keyed LRU (the
+original 1a plan) would evict nothing. The real problem was that it held
+frame-resolution canvas tiles (`TILE_WIDTH = 4096`, 8 tiles / 15.6 MB at 60 s,
+growing linearly) only to draw them downscaled to ~viewport width.
 
-## 1b. Combine formant + spectrogram into one canvas tile — TODO (recommended)
+`Waveform.tsx` now renders straight into the visible canvas at display
+resolution: `drawColumns` walks the display columns in the changed range and,
+for each, takes the **peak RMS** of the analysis frames that map to it (frames
+are already retained — no tiles, no scratch `ImageData`). A `RenderMap` snapshot
+(`x0`, `dxPerFrame`, `paintedFrames`) decides incremental (more frames at the
+right edge, same scale) vs full repaint (scale change — crossing a 30 s overview
+boundary, resize, amp/theme change). Retained memory is now **one
+viewport-sized canvas, 0.19 MB, fixed** regardless of recording length.
 
-Today each chunk keeps two parallel tile sets — an opaque spectrogram tile and
-a transparent (`alpha: true`) formant tile — composited as two `drawImage`s per
-tile per `draw()`. Merge them into a single opaque tile with formant arcs drawn
-on top.
+Note: this is a peak-envelope overview, where the old tile path was a
+nearest-neighbour downscale (one arbitrary frame per column) — visually similar
+but not pixel-identical; the envelope is the more correct overview and avoids
+sampling flicker during recording. This is the waveform instance of item 1c's
+"render straight into the display buffer" idea.
 
-Why it's attractive *now*: the original reason to keep them separate was
-independent repaint (clear just the formant layer without disturbing the
-spectrogram). But (a) the component already patches both together in one
-`handleFrame` pass, and (b) tiles now rebuild cheaply from sources, so
-"re-render the whole combined tile" is just a `putImageData` (colours) + arc
-draw. Benefits: halves canvas tile count (~14 MB working set instead of ~28 MB),
-one blit per tile instead of two, and removes the alpha-canvas compositing /
-shadow-over-transparent surface.
+## 1b. Combine formant + spectrogram into one canvas tile — DONE
 
-Cost to weigh: a formant-only patch must re-blit the spectrogram colours
-underneath (can't `clearRect` just the arcs off a merged canvas) — but that blit
-is the cheap part. Note alpha is *not* a memory cost (RGBA is 4 B/px either way);
-the win is tile/blit count, not the transparency.
+**Shipped.** Each chunk kept two parallel tile sets — an opaque spectrogram tile
+and a transparent (`alpha: true`) formant tile — composited as two `drawImage`s
+per tile per `draw()`. They're now a single opaque tile with formant arcs drawn
+on top (`drawFormantArcs`), painted by `paintTile` (background → `putImageData`
+colours → arcs). `renderTile` materializes a tile; `repaintTile` refreshes an
+already-materialized one in place. `FormantOffscreenState`, `allFormantOffRef`,
+`paintFormantTiles`, and `appendFormantTiles` are gone.
 
-## 1c. Lower-resolution tiles when zoomed out — TODO
+Result: formant tiles eliminated — **14.3 MB (25 combined tiles)** does what spec
+(14.3 MB) + formant (14.3 MB) did, one blit per tile instead of two, and no more
+shadow-over-transparent compositing.
+
+Design note (the cost the original plan flagged): a merged opaque tile can't
+`clearRect` just the arcs, so any change to a tile's frames or colours repaints
+the **whole** tile (colours re-blitted from `colorTiles`, arcs redrawn). This
+replaced the old additive-append / surgical-patch formant paths with one
+`repaintTile` over the affected tiles — simpler, and cheap because the colour
+re-blit is a `putImageData` and tiles are only 256 frames wide. Append still only
+touches the growing edge tile(s). If this ever shows up on a profile during long
+live recordings, the escape hatch is to additively draw just the new arcs on a
+pure append (the new dots' left-bleeding shadow over older columns is benign),
+but whole-tile repaint kept the code far simpler and measured fine.
+
+## 1c. Lower-resolution spectrogram tiles when zoomed out — TODO
 
 The one weak spot left in item 1: eviction floors at the on-screen set
 (invariant 4), so a fully-zoomed-out view of a long recording still holds the
 whole visible span at full resolution — and re-renders full-res tiles only to
-scale them down (wasteful in memory and quality). Two options:
+scale them down (wasteful in memory and quality). (The waveform's version of this
+is already solved by item 1a; this item is the spectrogram.) Two options:
 
 - **Render straight into the display buffer past a zoom threshold**, bypassing
-  tile canvases entirely. The display buffer is already viewport-sized and
-  bounded, and the incremental scroll path (`pixelShift`) already recomputes
-  only the newly revealed strip. Avoids LOD cache-key machinery — preferred.
+  tile canvases entirely — the same move item 1a made for the waveform. The
+  display buffer is already viewport-sized and bounded, and the incremental
+  scroll path (`pixelShift`) already recomputes only the newly revealed strip.
+  Avoids LOD cache-key machinery — preferred.
 - **True LOD/mipmap tiles**, cache-keyed `(chunkIdx, tileIdx, lod)`.
 
 Either way: downsample the spectrogram from the **underlying `spectrum`/dB
 values** (max or mean per pixel column — Praat does per-column reduction), not
 by averaging already-colour-mapped RGBA, which looks wrong. Formants probably
 want to switch from dots to connected lines when zoomed out so track peaks
-don't vanish into the smear. Stacks with item 1b (one combined low-res tile).
+don't vanish into the smear. With item 1b done, a zoomed-out tile is one combined
+low-res tile (colours + line-mode formants), not two.
 
 ## 2. Bound VAD / formant worker accumulators
 
