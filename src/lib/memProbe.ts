@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@netcek.ca>
 
 // Dev-only memory probe. Components and routes register named "sources" that

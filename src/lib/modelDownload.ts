@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 // Download state for on-device transcription models, driven by the settings modal.

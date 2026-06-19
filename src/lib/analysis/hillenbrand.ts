@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>.
 
 // https://web.archive.org/web/20220203080937/https://homepages.wmich.edu/~hillenbr/voweldata/vowdata.ds

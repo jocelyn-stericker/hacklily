@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 // Pure scheduling decisions for a chunk work queue: which voiced chunk to handle

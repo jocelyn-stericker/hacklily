@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-
 // Braat, ITU-R BS.1770 loudness ported from jiixyj/libebur128 (ebur128/ebur128.c)
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 // Copyright (c) 2011 Jan Kokemüller (libebur128, MIT)

@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-
 // Braat, adapted from Praat
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 // Copyright (C) 1992-2008,2011,2012,2015-2020,2022-2024 Paul Boersma

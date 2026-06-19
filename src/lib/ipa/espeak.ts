@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 // Lazy, single-instance loader for the eSpeak NG phonemiser used by the /ipa

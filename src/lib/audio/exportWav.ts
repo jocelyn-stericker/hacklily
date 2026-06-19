@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-
 // Braat, originally from Experience-Monks/audiobuffer-to-wav
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 // Copyright (c) 2015 Jam3

@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import { CaptionsOff, Cloud, Loader2, Sparkle, Sparkles } from 'lucide-react'
