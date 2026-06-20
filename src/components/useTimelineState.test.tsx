@@ -337,6 +337,55 @@ describe('useTimelineState', () => {
     expect(result.current.status.value).toBe('recording')
   })
 
+  it('handleStart switches from playing to recording', () => {
+    const { result } = renderHook(() => useTimelineState(mockAnalysis))
+
+    act(() => {
+      result.current.handlePlay()
+    })
+    expect(result.current.status.value).toBe('playing')
+
+    act(() => {
+      result.current.handleStart()
+    })
+
+    expect(result.current.status.value).toBe('recording')
+  })
+
+  it('handlePlaybackStop transitions playing to inactive', () => {
+    const { result } = renderHook(() => useTimelineState(mockAnalysis))
+
+    act(() => {
+      result.current.handlePlay()
+    })
+
+    act(() => {
+      result.current.handlePlaybackStop()
+    })
+
+    expect(result.current.status.value).toBe('inactive')
+  })
+
+  it('handlePlaybackStop does not cancel recording', () => {
+    // The audio engine fires stop when playing is disabled during play→record.
+    // This must not transition recording → inactive.
+    const { result } = renderHook(() => useTimelineState(mockAnalysis))
+
+    act(() => {
+      result.current.handlePlay()
+    })
+    act(() => {
+      result.current.handleStart()
+    })
+    expect(result.current.status.value).toBe('recording')
+
+    act(() => {
+      result.current.handlePlaybackStop()
+    })
+
+    expect(result.current.status.value).toBe('recording')
+  })
+
   it('handlePause pauses playback', () => {
     const { result } = renderHook(() => useTimelineState(mockAnalysis))
 

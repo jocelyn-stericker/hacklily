@@ -89,6 +89,7 @@ function App() {
     handlePlay: triggerPlay,
     handleStart: startRecording,
     handlePause,
+    handlePlaybackStop,
     handleBackToStart,
     handleJump,
     handleAcknowledgeError,
@@ -483,7 +484,7 @@ function App() {
     playbackRopes: ropes,
     playbackGainCache: gainCache,
     playbackCursorSec: timelineState.cursorSec,
-    onPlaybackStop: handlePause,
+    onPlaybackStop: handlePlaybackStop,
     onPlaybackPositionChanged: handlePlaybackPositionChanged,
     onError: handleError,
   })

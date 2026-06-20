@@ -293,7 +293,7 @@ export interface VowelChartHandle {
 // case (cursor at the end) only touches the last TRAIL_LEN voiced frames.
 const trailOut: VoicedAnalysisFrame[] = []
 
-function voicedTrailUpToCursor(
+export function voicedTrailUpToCursor(
   analysis: AnalysisChunk[],
   cursorSec: number,
 ): VoicedAnalysisFrame[] {
@@ -318,12 +318,12 @@ function voicedTrailUpToCursor(
   // it, matching the old forward scan.
   const cursorChunk = analysis[ci]!
   const stepSec = cursorChunk.timeStepSamples / cursorChunk.sampleRate
-  const fi = Math.max(
-    0,
-    Math.min(
-      Math.ceil((cursorSec - cursorChunk.startTimeSec) / stepSec) - 1,
-      cursorChunk.frames.length - 1,
-    ),
+  // fi may be -1 when cursorChunk has no frames yet (e.g. a new recording chunk
+  // pushed before any frames arrive). The backward scan loop starts at -1 and
+  // immediately exits, falling through to the preceding chunk.
+  const fi = Math.min(
+    Math.ceil((cursorSec - cursorChunk.startTimeSec) / stepSec) - 1,
+    cursorChunk.frames.length - 1,
   )
 
   // Collect voiced frames backwards until full, then restore chronological order.

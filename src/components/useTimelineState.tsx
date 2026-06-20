@@ -178,6 +178,15 @@ export function useTimelineState(analysis: AnalysisChunk[]) {
     )
   }, [])
 
+  // Used as onPlaybackStop: only exits 'playing', never 'recording'. The audio
+  // engine fires stop when playback is disabled during a play→record handoff;
+  // handlePause would incorrectly cancel the recording in that case.
+  const handlePlaybackStop = useCallback(() => {
+    setStatus((oldStatus) =>
+      oldStatus.value === 'playing' ? { value: 'inactive' } : oldStatus,
+    )
+  }, [])
+
   const handleBackToStart = useCallback(() => {
     setTimelineState((prev) => {
       const width = prev.viewportRightSec - prev.viewportLeftSec
@@ -315,6 +324,7 @@ export function useTimelineState(analysis: AnalysisChunk[]) {
     handlePlay,
     handleStart,
     handlePause,
+    handlePlaybackStop,
     handleBackToStart,
     handleJump,
     handleAcknowledgeError,
