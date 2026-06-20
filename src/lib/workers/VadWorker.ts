@@ -11,6 +11,7 @@ import {
   VAD_CHUNK,
 } from '#/lib/analysis/VadProcessor'
 import { AudioRopeReader } from '#/lib/audio/AudioRopeReader'
+import { NumberRing } from '#/lib/NumberRing'
 
 import type {
   WorkerEndedMessage,
@@ -98,7 +99,18 @@ export async function runAnalysis(
 
   const CHUNK_SEC = VAD_CHUNK / VAD_RATE
   const timeStepSec = timeStepSamples / sampleRate
-  const vadProbs: number[] = []
+
+  // Per-VAD-chunk (32 ms) speech probabilities, read by the forward-only
+  // `gate.push` pointer (`coveringChunk`, monotonic with `nextFrame`). Each
+  // probability is consumed by `gateReadyFrames` in the same microtask that
+  // pushes it, so the read pointer tracks the write head within a chunk or two
+  // — only a small live window is ever needed. Bounded by a ring (cap is a
+  // generous ~66 s of slack at ~31 chunks/s; NumberRing throws if a read ever
+  // falls outside the retained window). NOTE: `frameHfEnergy` below is still
+  // unbounded — it's written ahead synchronously while the gate waits on async
+  // inference, so bounding it needs read-loop backpressure (see
+  // docs/memory-improvements.md item 2).
+  const vadProbs = new NumberRing(2048)
 
   let samplesPending = 0
   let frameIndex = 0
@@ -121,7 +133,7 @@ export async function runAnalysis(
       if (coveringChunk >= vadProbs.length) break
       gate.push(
         nextFrame,
-        vadProbs[coveringChunk]!,
+        vadProbs.get(coveringChunk),
         frameHfEnergy[nextFrame] ?? NaN,
       )
       flushDecisions()
@@ -180,7 +192,7 @@ export async function runAnalysis(
     )
     gate.push(
       nextFrame,
-      coveringChunk >= 0 ? vadProbs[coveringChunk]! : 0,
+      coveringChunk >= 0 ? vadProbs.get(coveringChunk) : 0,
       frameHfEnergy[nextFrame] ?? NaN,
     )
     flushDecisions()

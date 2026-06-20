@@ -135,18 +135,64 @@ want to switch from dots to connected lines when zoomed out so track peaks
 don't vanish into the smear. With item 1b done, a zoomed-out tile is one combined
 low-res tile (colours + line-mode formants), not two.
 
-## 2. Bound VAD / formant worker accumulators
+## 2. Bound VAD / formant worker accumulators — MOSTLY DONE (frameHfEnergy deferred)
 
-Both grow unbounded for the duration of a recording and are only cleared when
-the worker is terminated:
+Four arrays grew unbounded for the duration of a recording, cleared only when
+the worker was terminated. The shared insight: each is **append-only** and read
+by a **single forward-only pointer** that never revisits a lower index (the
+`patch` messages are _outputs_ via `postMessage`; rope-grow/seal only append new
+audio, never rewind). So only the small live window between the write head and
+that read pointer is ever needed — each becomes a fixed-size ring keyed by an
+absolute index, retaining the most-recent `capacity` values.
 
-- `vadProbs: number[]`, `frameHfEnergy: number[]` — `src/lib/workers/VadWorker.ts:102, 111`
-- `frameFormants: FrameFormant[]`, `pendingFormants: PendingFormant[]` — `src/lib/workers/FormantWorker.ts:117-118`
+**Shipped — `NumberRing` (`src/lib/NumberRing.ts`).** A fixed-capacity
+`Float64Array` ring addressed by absolute index (the count ever pushed),
+overwriting older slots in place. Reading an index below the retained window
+`[length - capacity, length)` **throws** rather than returning a since-
+overwritten value, so an undersized cap fails loudly instead of corrupting data.
+Null-valued fields are NaN-encoded (frequencies/timestamps are always finite).
+Gated by `NumberRing.test.ts`.
 
-**Fix:** flush per closed VAD segment (the segment is what's actually consumed
-downstream) and/or cap length once the main-thread analysis has acknowledged
-the range. If history is needed for late `patch` re-chunking, store it in a
-fixed-size ring that covers the maximum patch window only.
+- **`frameFormants`, `pendingFormants`** (`src/lib/workers/FormantWorker.ts`) —
+  **DONE.** Replaced the two `interface[]` arrays with `FrameFormantRing` /
+  `PendingFormantRing` (thin wrappers over parallel `NumberRing`s, one per
+  field). `frameFormants` is consumed by `lastEmittedFrame` in
+  `emitPitchPatches`; `pendingFormants` by `formantPtr`. The whole formant loop
+  is **synchronous**, so the read pointers inherently trail the write head by a
+  bounded amount (`emitPitchPatches` trails by ~`pitchEmitSamples` plus one
+  `PITCH_INTERVAL` batch — tens of 2 ms frames; pending frames sit a few ahead of
+  the current frame time). Caps are a generous `4096` (~8 s of frames). Also
+  eliminates the per-frame `{f1,f2,f3}` / `{timeSec,…}` object garbage that the
+  old `.push({…})` allocated. Existing `FormantWorker.test.ts` (11 cases,
+  output-structure / persistence / validity / indexing) stays green — the
+  behaviour is unchanged.
+
+- **`vadProbs`** (`src/lib/workers/VadWorker.ts`) — **DONE.** Now a
+  `NumberRing(2048)` (~66 s of slack at ~31 chunks/s). It's consumed by the
+  monotonic `coveringChunk` inside `gateReadyFrames`, which runs in the **same
+  microtask** that pushes each probability (inside the `vadChain` `.then`), so
+  the read pointer tracks the write head within a chunk or two even during
+  offline import (where the reader races ahead of inference, `vadProbs` still
+  only grows at inference rate). Existing `VadWorker.test.ts` (15 cases) stays
+  green.
+
+**Still TODO: `frameHfEnergy`** (`src/lib/workers/VadWorker.ts`). Same in-order
+read pattern (`frameHfEnergy[nextFrame]`, monotonic), so it _is_ boundable — but
+unlike the others its **write** (`frameHfEnergy[frameIndex]`) happens
+synchronously in the read loop while its **read** (`nextFrame`) is gated by the
+**async** VAD inference (`vadChain`). During offline import the reader blasts
+through the whole rope, so `frameIndex` (and the array) races to the end while
+`nextFrame` waits on inference — the write head outruns the read pointer
+unboundedly. A fixed ring would have its write head overrun the unconsumed read
+pointer. Bounding it therefore requires **backpressure**: cap how far the read
+loop runs ahead of the gate (e.g. await/bound the `vadChain` depth, or block
+while `frameIndex - nextFrame` exceeds the window) before swapping in a ring.
+That's a deliberate behavioural change (throttles the throughput-bound VAD reader
+to the gate's pace), left for a follow-up. `NumberRing` is ready to reuse for it.
+
+Not gated by `npm run mem` (the harness scenarios don't probe these worker
+internals); the change is mechanical bounded-reuse plus the existing worker test
+suites, landed on reasoning rather than aggressive measurement.
 
 ## 3. Stop the per-quantum `readBuf.slice()` — DONE
 
@@ -227,7 +273,7 @@ analysis, or accumulate across takes.
   recording. Recording is only entered via the lone `START_RECORDING` dispatch
   (`:124`) inside `startPipelineAndRecord`, which runs `analysisRef.current = []`
   immediately before it (`:121`). So every take starts from an empty array
-  *before* any frame is pushed — no cross-take contamination.
+  _before_ any frame is pushed — no cross-take contamination.
 - **No accumulation.** `:121` assigns a fresh `[]` (not `.length = 0`), dropping
   the prior take's array wholesale, so each take replaces rather than appends to
   the last.
@@ -238,7 +284,7 @@ analysis, or accumulate across takes.
   frames, so nothing downstream retains them.
 
 **Bounded residual, accepted.** After `handleEndSession` the session goes idle
-without an immediate re-record, so the *last* take's frames linger until the next
+without an immediate re-record, so the _last_ take's frames linger until the next
 session start or `CLEAR_SESSION`. That's one take's worth, never growing — exactly
 the "`computeVoicedRange` needs it at take end" case the item anticipated. An
 early-release `analysisRef.current = []` after the `computeVoicedRange` calls in
@@ -256,15 +302,15 @@ throughput-bound, so add an `AudioRope.openShare({ lookahead: 0 })` mode to free
 memory is shared by reference, not duplicated per consumer:
 
 - **The spare is a single SAB referenced everywhere.** Segments are only ever
-  allocated by the *producer* — the two `new SharedArrayBuffer` sites are the
+  allocated by the _producer_ — the two `new SharedArrayBuffer` sites are the
   constructor and `append`'s "always have one free buffer" loop (`:148-154`).
-  Consumers never allocate; they receive the producer's SAB *objects* via
+  Consumers never allocate; they receive the producer's SAB _objects_ via
   `grow()` (`:247-250`) or the `shareRope()` snapshot (`:282-289`). `shareRope`
-  does `this.#buffers.slice()`, which copies the *array* but shares the same
+  does `this.#buffers.slice()`, which copies the _array_ but shares the same
   `SharedArrayBuffer` instances (same backing memory).
 - **The producer holds the spare for the whole recording anyway.** Append is
   strictly ahead of every consumer, so the producer's buffer set is a superset
-  of each consumer's, and the consumer's spare *is* the producer's spare. That
+  of each consumer's, and the consumer's spare _is_ the producer's spare. That
   256 KB lives as long as the producer is recording, regardless of consumers.
 - **A consumer's per-spare cost is a view, not 256 KB.** It holds one array slot
   plus one `Float32Array` over the SAB (`#buffersView`) — a wrapper of tens of
@@ -272,7 +318,7 @@ memory is shared by reference, not duplicated per consumer:
   essentially nothing.
 - **The seal handshake corroborates this.** `seal()` trims the producer's spare
   (`:196-199`) and each consumer runs its own `seal()` to drop its reference,
-  precisely because the spare is *one* shared region collected only once the
+  precisely because the spare is _one_ shared region collected only once the
   producer and every consumer let go. Per-consumer 256 KB wouldn't need that
   coordinated drop.
 
@@ -294,7 +340,7 @@ array was pure waste that grew with the take.
   scrubbed it starts at the cursor chunk, not the beginning.
 - **Locates the cursor chunk via `chunk.startTimeSec`** (the authoritative
   per-chunk start time, accumulated the same way the old loop did its `elapsed`)
-  — a single pass over *chunks*, not frames — then computes the in-chunk frame
+  — a single pass over _chunks_, not frames — then computes the in-chunk frame
   index arithmetically.
 - **Reuses one module-level `trailOut` array** (`.length = 0` then push),
   bounded by `TRAIL_LEN`. Retained allocation is now fixed regardless of take

@@ -8,6 +8,7 @@ import type { FormantFrame } from '#/lib/analysis/FormantProcessor'
 import { PitchProcessor } from '#/lib/analysis/PitchProcessor'
 import { ResamplerStreamProcessor } from '#/lib/analysis/ResampleProcessor'
 import { AudioRopeReader } from '#/lib/audio/AudioRopeReader'
+import { NumberRing } from '#/lib/NumberRing'
 
 import type {
   WorkerEndedMessage,
@@ -67,17 +68,85 @@ self.onmessage = ({ data }: MessageEvent<FormantWorkerInMessage>) => {
   else ropeReader.seal()
 }
 
-interface FrameFormant {
-  f1: number | null
-  f2: number | null
-  f3: number | null
+// Both accumulators are append-only and read by a single forward-only pointer
+// (`lastEmittedFrame` for frames, `formantPtr` for pending), so only a small
+// live window between the write head and that pointer is ever needed. Bounding
+// them keeps memory O(window) regardless of recording length. The caps are
+// generous safety margins, far larger than the real lag: per-frame emission
+// trails the write head by at most ~`pitchEmitSamples` plus one `PITCH_INTERVAL`
+// batch (tens of 2 ms frames), and pending formant frames sit only a few ahead
+// of the current frame time. NumberRing throws if a read ever falls outside the
+// retained window, so an undersized cap would fail loudly rather than silently.
+const FRAME_RING_CAP = 4096 // ~8 s of 2 ms frames
+const PENDING_RING_CAP = 4096
+
+function nanToNull(v: number): number | null {
+  return Number.isNaN(v) ? null : v
 }
 
-interface PendingFormant {
-  timeSec: number
-  f1: number | null
-  f2: number | null
-  f3: number | null
+/** Per-frame carried-forward formant values, NaN-encoding null. */
+class FrameFormantRing {
+  readonly #f1 = new NumberRing(FRAME_RING_CAP)
+  readonly #f2 = new NumberRing(FRAME_RING_CAP)
+  readonly #f3 = new NumberRing(FRAME_RING_CAP)
+
+  /** Frames ever pushed; also the absolute index of the next frame. */
+  get length(): number {
+    return this.#f1.length
+  }
+
+  push(f1: number | null, f2: number | null, f3: number | null): void {
+    this.#f1.push(f1 ?? NaN)
+    this.#f2.push(f2 ?? NaN)
+    this.#f3.push(f3 ?? NaN)
+  }
+
+  f1(i: number): number | null {
+    return nanToNull(this.#f1.get(i))
+  }
+  f2(i: number): number | null {
+    return nanToNull(this.#f2.get(i))
+  }
+  f3(i: number): number | null {
+    return nanToNull(this.#f3.get(i))
+  }
+}
+
+/** Raw formant frames awaiting assignment to a time frame, NaN-encoding null. */
+class PendingFormantRing {
+  readonly #time = new NumberRing(PENDING_RING_CAP)
+  readonly #f1 = new NumberRing(PENDING_RING_CAP)
+  readonly #f2 = new NumberRing(PENDING_RING_CAP)
+  readonly #f3 = new NumberRing(PENDING_RING_CAP)
+
+  get length(): number {
+    return this.#time.length
+  }
+
+  push(
+    timeSec: number,
+    f1: number | null,
+    f2: number | null,
+    f3: number | null,
+  ): void {
+    this.#time.push(timeSec)
+    this.#f1.push(f1 ?? NaN)
+    this.#f2.push(f2 ?? NaN)
+    this.#f3.push(f3 ?? NaN)
+  }
+
+  timeSec(i: number): number {
+    return this.#time.get(i)
+  }
+  f1(i: number): number | null {
+    return nanToNull(this.#f1.get(i))
+  }
+  f2(i: number): number | null {
+    return nanToNull(this.#f2.get(i))
+  }
+  f3(i: number): number | null {
+    return nanToNull(this.#f3.get(i))
+  }
 }
 
 export async function runAnalysis(
@@ -113,8 +182,8 @@ export async function runAnalysis(
   let latestValidF2: number | null = null
   let latestValidF3: number | null = null
 
-  const frameFormants: FrameFormant[] = []
-  const pendingFormants: PendingFormant[] = []
+  const frameFormants = new FrameFormantRing()
+  const pendingFormants = new PendingFormantRing()
   let formantPtr = 0
 
   function emitPitchPatches(finalFlush: boolean): void {
@@ -140,7 +209,9 @@ export async function runAnalysis(
         f0 = pr.frames[pitchIdx]?.frequencyHz ?? 0
       }
       const pitchDetected = f0 > 0
-      const { f1, f2, f3 } = frameFormants[fi]!
+      const f1 = frameFormants.f1(fi)
+      const f2 = frameFormants.f2(fi)
+      const f3 = frameFormants.f3(fi)
       postMessage({
         type: 'patch',
         frameIndex: fi,
@@ -168,7 +239,7 @@ export async function runAnalysis(
       const f1 = ff.formantCount > 0 ? ff.formants[0]!.frequencyHz : null
       const f2 = ff.formantCount > 1 ? ff.formants[1]!.frequencyHz : null
       const f3 = ff.formantCount > 2 ? ff.formants[2]!.frequencyHz : null
-      pendingFormants.push({ timeSec: ff.timeSec, f1, f2, f3 })
+      pendingFormants.push(ff.timeSec, f1, f2, f3)
     }
 
     samplesPending += inp.length
@@ -176,9 +247,10 @@ export async function runAnalysis(
       const fi = frameFormants.length
       const tMid = ((fi + 0.5) * timeStepSamples) / sampleRate
       while (formantPtr < pendingFormants.length) {
-        const pf = pendingFormants[formantPtr]!
-        if (pf.timeSec > tMid) break
-        const { f1, f2, f3 } = pf
+        if (pendingFormants.timeSec(formantPtr) > tMid) break
+        const f1 = pendingFormants.f1(formantPtr)
+        const f2 = pendingFormants.f2(formantPtr)
+        const f3 = pendingFormants.f3(formantPtr)
         if (f1 && f1 >= 200 && f1 <= 1100 && f2 && f2 >= 650 && f2 <= 3500) {
           latestValidF1 = f1
           latestValidF2 = f2
@@ -186,11 +258,7 @@ export async function runAnalysis(
         }
         formantPtr++
       }
-      frameFormants.push({
-        f1: latestValidF1,
-        f2: latestValidF2,
-        f3: latestValidF3,
-      })
+      frameFormants.push(latestValidF1, latestValidF2, latestValidF3)
       samplesPending -= timeStepSamples
     }
 
