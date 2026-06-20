@@ -215,24 +215,68 @@ load in Node), so this change has no Node allocation gate. `VadProcessor.test.ts
 asserts the reuse contract behaviourally (single tensor, snapshot semantics); the
 allocation win itself is validated via the Playwright `npm run mem` harness.
 
-## 5. Verify practice-route `analysisRef` clears at take end
+## 5. Verify practice-route `analysisRef` clears at take end — CONFIRMED (no leak)
 
-`src/routes/practice.tsx:110` holds `analysisRef = useRef<AnalysisFrame[]>([])`
-and is currently reset only on `CLEAR_SESSION` (`practice.tsx:410-414`). Confirm
-it's cleared when a take ends so frames from one take can't leak into the next.
-If `computeVoicedRange` needs it at take end, clear immediately after.
+The original worry: `analysisRef` (`src/routes/practice.tsx:110`) might carry one
+take's `AnalysisFrame[]` (with their spectrum buffers) into the next take's
+analysis, or accumulate across takes.
 
-## 6. Release spare SABs earlier for non-realtime consumers
+**Neither happens — the reset-before-append at `practice.tsx:121` is airtight.**
 
-`AudioRope` keeps one spare segment ahead for producer lead time
-(`src/lib/audio/AudioRope.ts:149-155`). Each consumer that opens a share also
-holds its own spare until `seal()`. The formant and VAD workers are
-throughput-bound, not realtime, so they don't need lookahead — they could opt
-out of the spare policy.
+- **Frames only ever enter via `handleAppend`** (`:259`), which runs only during
+  recording. Recording is only entered via the lone `START_RECORDING` dispatch
+  (`:124`) inside `startPipelineAndRecord`, which runs `analysisRef.current = []`
+  immediately before it (`:121`). So every take starts from an empty array
+  *before* any frame is pushed — no cross-take contamination.
+- **No accumulation.** `:121` assigns a fresh `[]` (not `.length = 0`), dropping
+  the prior take's array wholesale, so each take replaces rather than appends to
+  the last.
+- **Every take-end path lands back there.** `handleNextTake` → `PENDING_RESTART`
+  (`:249`) → the layout effect (`:130-133`) → `startPipelineAndRecord`;
+  `handleStartSession` → `startPipelineAndRecord`; `CLEAR_SESSION` also clears
+  explicitly (`:436`). The take's stored `span` references `rope`, not the
+  frames, so nothing downstream retains them.
 
-**Fix:** add an `AudioRope.openShare({ lookahead: 0 })` mode and use it from
-`FormantWorker` / `VadWorker`. Frees ~256 KB per such consumer immediately
-rather than at recording end.
+**Bounded residual, accepted.** After `handleEndSession` the session goes idle
+without an immediate re-record, so the *last* take's frames linger until the next
+session start or `CLEAR_SESSION`. That's one take's worth, never growing — exactly
+the "`computeVoicedRange` needs it at take end" case the item anticipated. An
+early-release `analysisRef.current = []` after the `computeVoicedRange` calls in
+`handleNextTake`/`handleEndSession` would shave it, but it's optional polish, not
+a leak. Left as is.
+
+## 6. Release spare SABs earlier for non-realtime consumers — REJECTED (no saving)
+
+The original idea: `AudioRope` keeps one spare segment ahead for producer lead
+time (`src/lib/audio/AudioRope.ts:148-154`), and the formant/VAD workers are
+throughput-bound, so add an `AudioRope.openShare({ lookahead: 0 })` mode to free
+~256 KB per such consumer.
+
+**There is no ~256 KB-per-consumer saving — the premise was wrong.** Segment
+memory is shared by reference, not duplicated per consumer:
+
+- **The spare is a single SAB referenced everywhere.** Segments are only ever
+  allocated by the *producer* — the two `new SharedArrayBuffer` sites are the
+  constructor and `append`'s "always have one free buffer" loop (`:148-154`).
+  Consumers never allocate; they receive the producer's SAB *objects* via
+  `grow()` (`:247-250`) or the `shareRope()` snapshot (`:282-289`). `shareRope`
+  does `this.#buffers.slice()`, which copies the *array* but shares the same
+  `SharedArrayBuffer` instances (same backing memory).
+- **The producer holds the spare for the whole recording anyway.** Append is
+  strictly ahead of every consumer, so the producer's buffer set is a superset
+  of each consumer's, and the consumer's spare *is* the producer's spare. That
+  256 KB lives as long as the producer is recording, regardless of consumers.
+- **A consumer's per-spare cost is a view, not 256 KB.** It holds one array slot
+  plus one `Float32Array` over the SAB (`#buffersView`) — a wrapper of tens of
+  bytes, not a copy of the buffer. A `lookahead: 0` consumer would free
+  essentially nothing.
+- **The seal handshake corroborates this.** `seal()` trims the producer's spare
+  (`:196-199`) and each consumer runs its own `seal()` to drop its reference,
+  precisely because the spare is *one* shared region collected only once the
+  producer and every consumer let go. Per-consumer 256 KB wouldn't need that
+  coordinated drop.
+
+Not worth an `openShare` mode that saves a view object. Closed.
 
 ## 7. VowelChart `framesUpToCursor` allocation per redraw — DONE
 
