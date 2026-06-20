@@ -321,7 +321,7 @@ export function TranscriptionSettingsModal({
   const accurateDownloadLabel = smallReady
     ? '540 MB'
     : smallEngine === 'moonshine'
-      ? '610 MB'
+      ? '640 MB'
       : '< 640 MB'
 
   // Bundled fallback means small is never unavailable, only not-yet-downloaded.
@@ -520,7 +520,7 @@ export function TranscriptionSettingsModal({
                       <DownloadControls
                         model={smallDownloadModel}
                         sizeLabel={
-                          smallEngine === 'moonshine' ? '70 MB' : '<100 MB'
+                          smallEngine === 'moonshine' ? '100 MB' : '<100 MB'
                         }
                         onDownload={() => setDraft('small')}
                       />

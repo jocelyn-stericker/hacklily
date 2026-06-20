@@ -15,6 +15,7 @@ import type {
 
 import { resample } from '#/lib/analysis/ResampleProcessor'
 import { loudnessGain, measureLoudness } from '#/lib/loudness'
+import { ortMjsUrl, ortWasmUrl } from '#/lib/ortWasmUrls'
 
 // transformers.js won't use the cache without an "allowed" source. We can't use
 // `allowLocalModels` -- it fetches `/models/...` which our SPA serves as index.html,
@@ -56,8 +57,11 @@ type ModelConfig = {
 
 const MODEL_CONFIG: Record<TranscribeWorkerModel, ModelConfig> = {
   moonshine: {
-    id: 'onnx-community/moonshine-base-ONNX',
-    options: { dtype: 'q8' },
+    id: 'jstericker/braat-ort-models',
+    options: {
+      dtype: 'q8',
+      session_options: { graphOptimizationLevel: 'disabled' },
+    },
   },
   whisper: {
     id: 'onnx-community/whisper-large-v3-turbo',
@@ -143,15 +147,10 @@ env.backends.onnx.wasm!.numThreads = 1
 
 // Pinned ORT build for Moonshine: threaded asyncify breaks Safari iOS.
 // `numThreads = 1` also avoids needing cross-origin isolation for SharedArrayBuffer.
-// TODO: use optimized ort files with a custom build of onnxruntime, like for VAD.
-const LAST_GOOD_CPU_ORT_VERSION = '1.24.3'
 function configureMoonshineBackend(): void {
   const wasm = env.backends.onnx.wasm
   if (!wasm) return
-  wasm.wasmPaths = {
-    mjs: `https://cdn.jsdelivr.net/npm/onnxruntime-web@${LAST_GOOD_CPU_ORT_VERSION}/dist/ort-wasm-simd-threaded.mjs`,
-    wasm: `https://cdn.jsdelivr.net/npm/onnxruntime-web@${LAST_GOOD_CPU_ORT_VERSION}/dist/ort-wasm-simd-threaded.wasm`,
-  }
+  wasm.wasmPaths = { mjs: ortMjsUrl, wasm: ortWasmUrl }
 }
 
 function loadPipeline(

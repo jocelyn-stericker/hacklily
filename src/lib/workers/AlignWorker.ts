@@ -19,8 +19,8 @@ import type {
 } from '#/lib/alignment/types'
 import { resample } from '#/lib/analysis/ResampleProcessor'
 import { getESpeak } from '#/lib/ipa/espeak'
+import { ortMjsUrl, ortWasmUrl } from '#/lib/ortWasmUrls'
 
-const LAST_GOOD_CPU_ORT_VERSION = '1.24.3'
 const LOG = '[AlignWorker]'
 
 // ---------------------------------------------------------------------------
@@ -28,7 +28,7 @@ const LOG = '[AlignWorker]'
 // ---------------------------------------------------------------------------
 
 const MODEL_URL =
-  'https://huggingface.co/jstericker/CUPE-2i-ONNX/resolve/main/onnx/en_libri1000_ua01c_e4_val_GER%3D0.2186_q8.onnx'
+  'https://huggingface.co/jstericker/braat-ort-models/resolve/main/cupe/en_libri1000_ua01c_e4_val_GER=0.2186_q8.ort'
 
 // The Cache API store transformers.js uses for model weights (its default
 // `env.cacheKey`). We reuse it so the CUPE weights live alongside -- and are
@@ -162,10 +162,7 @@ function getSession(): Promise<PhonemeTimestampAligner> {
     // TODO: Obviously, this model parallelizes very well. It would be nice to configure more threads when
     // the system allows.
     ort.env.wasm.numThreads = 1
-    ort.env.wasm.wasmPaths = {
-      mjs: `https://cdn.jsdelivr.net/npm/onnxruntime-web@${LAST_GOOD_CPU_ORT_VERSION}/dist/ort-wasm-simd-threaded.mjs`,
-      wasm: `https://cdn.jsdelivr.net/npm/onnxruntime-web@${LAST_GOOD_CPU_ORT_VERSION}/dist/ort-wasm-simd-threaded.wasm`,
-    }
+    ort.env.wasm.wasmPaths = { mjs: ortMjsUrl, wasm: ortWasmUrl }
     _sessionPromise = fetchModelCached(MODEL_URL, (loaded, total) => {
       postMessage({ type: 'progress', stage: 'download', loaded, total })
     })

@@ -20,7 +20,7 @@
     "@base-ui/react": "^1.4.0",
     "@huggingface/transformers": "^4.2.0",
     "@jocelyn-stericker/espeak-phonemes": "0.0.5",
-    "@jocelyn-stericker/ort-silero-vad-wasm-minimal": "0.0.19",
+    "@jocelyn-stericker/ort-silero-vad-wasm-minimal": "0.0.22",
     "@tailwindcss/vite": "^4.3.1",
     "@tanstack/react-router": "^1.169.2",
     "@tanstack/router-plugin": "^1.132.0",

@@ -41,7 +41,7 @@ export async function createCupeSession(
 ): Promise<ort.InferenceSession> {
   const options: ort.InferenceSession.SessionOptions = {
     executionProviders: ['wasm'],
-    graphOptimizationLevel: 'all',
+    graphOptimizationLevel: 'disabled',
     ...sessionOptions,
   }
   // create() has distinct overloads for a URL string vs. raw bytes; branch so
