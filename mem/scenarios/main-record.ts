@@ -119,6 +119,65 @@ export const mainImport: Scenario = async (page, serverUrl, hooks) => {
   const afterImport = await readSnapshot(page)
   await hooks?.afterPhase?.('afterImport')
 
+  // --- Fully zoom out (whole 60s on screen at once) ---
+  // In this app a plain wheel deltaY is a zoom (not a scroll): positive zooms
+  // out, and handlePlotZoom caps the span at the full track (~90s for a 60s
+  // WAV). Fully zoomed out is the item 1c weak spot — eviction floors at the
+  // on-screen set (invariant 4), so every visible tile is held at full
+  // resolution. This snapshot makes that retained span measurable.
+  //
+  // Only the spectrogram plot wires onZoom to handlePlotZoom; the waveform plot
+  // above it passes onZoom={noOp}. The spectrogram is the taller plot (flex-1
+  // vs the waveform's fixed h-32), so target the largest canvas to land the
+  // wheel on the right VirtualScrollArea overlay.
+  const specBox = await page.evaluate(() => {
+    const canvases = Array.from(document.querySelectorAll('canvas'))
+    let best: { x: number; y: number; width: number; height: number } | null =
+      null
+    for (const c of canvases) {
+      const r = c.getBoundingClientRect()
+      if (r.width < 1 || r.height < 1) continue
+      if (!best || r.width * r.height > best.width * best.height) {
+        best = { x: r.x, y: r.y, width: r.width, height: r.height }
+      }
+    }
+    return best
+  })
+  if (specBox) {
+    await page.mouse.move(
+      specBox.x + specBox.width / 2,
+      specBox.y + specBox.height / 2,
+    )
+  }
+  // Each wheel event is capped at exp(80 * 0.002) ≈ 1.17x; ~30 steps drives the
+  // span from the import default to the ~90s cap with margin to spare.
+  for (let i = 0; i < 30; i++) {
+    await page.mouse.wheel(0, 80)
+    await page.waitForTimeout(50)
+  }
+  await page.waitForTimeout(1500)
+  await forceGc(page)
+  await page.waitForTimeout(500)
+
+  const afterZoomOut = await readSnapshot(page)
+  await hooks?.afterPhase?.('afterZoomOut')
+
+  // --- Zoom back in for the remaining steps ---
+  // Negative deltaY zooms in (factor < 1); the same ~30 steps return the span
+  // to roughly the import default so afterScroll/afterIdle aren't measured at
+  // the zoomed-out extreme.
+  if (specBox) {
+    await page.mouse.move(
+      specBox.x + specBox.width / 2,
+      specBox.y + specBox.height / 2,
+    )
+  }
+  for (let i = 0; i < 30; i++) {
+    await page.mouse.wheel(0, -80)
+    await page.waitForTimeout(50)
+  }
+  await page.waitForTimeout(1000)
+
   // --- Scroll the timeline left and right a few times ---
   // Exercise the draw path and any caching.
   const scrollArea = page
@@ -164,6 +223,7 @@ export const mainImport: Scenario = async (page, serverUrl, hooks) => {
     steps: [
       { name: 'baseline', snapshot: summarizeSnapshot(before) },
       { name: 'afterImport', snapshot: summarizeSnapshot(afterImport) },
+      { name: 'afterZoomOut', snapshot: summarizeSnapshot(afterZoomOut) },
       { name: 'afterScroll', snapshot: summarizeSnapshot(afterScroll) },
       { name: 'afterIdle', snapshot: summarizeSnapshot(afterIdle) },
       { name: 'afterClear', snapshot: summarizeSnapshot(afterClear) },

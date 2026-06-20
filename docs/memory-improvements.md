@@ -121,6 +121,25 @@ whole visible span at full resolution — and re-renders full-res tiles only to
 scale them down (wasteful in memory and quality). (The waveform's version of this
 is already solved by item 1a; this item is the spectrogram.) Two options:
 
+**Measured — `npm run mem -- --scenario main-import` (60 s WAV, webkit L1).**
+The scenario now zooms fully out after import (`afterZoomOut` step) then back in,
+so this weak spot is quantified rather than just argued. Fully zoomed out, the
+whole track is on-screen and eviction can't floor below it, so every tile
+materializes at full resolution:
+
+- spectrogram tiles: 22 (import default zoom) → **120 (fully zoomed out)**
+- tile canvas bytes: 12.6 MB → **68.6 MB** — note this exceeds the 48 MB
+  `MAX_TILE_CANVAS_BYTES` cap, exactly invariant 4 (the on-screen set survives
+  even past the cap).
+- Total retained: 52.9 MB → **108.9 MB** (the new peak for this scenario).
+- After zooming back in (`afterScroll`/`afterIdle`): the `TileLru` only evicts
+  down to its budget, so it parks at the **48 MB cap** (84 tiles) rather than
+  returning to the ~12.6 MB on-screen working set — the honest steady state once
+  you've zoomed out at least once. `afterClear` still drops to baseline (no
+  leak). This is the number this item needs to bring down.
+
+Two options:
+
 - **Render straight into the display buffer past a zoom threshold**, bypassing
   tile canvases entirely — the same move item 1a made for the waveform. The
   display buffer is already viewport-sized and bounded, and the incremental
