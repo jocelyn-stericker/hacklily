@@ -135,15 +135,16 @@ want to switch from dots to connected lines when zoomed out so track peaks
 don't vanish into the smear. With item 1b done, a zoomed-out tile is one combined
 low-res tile (colours + line-mode formants), not two.
 
-## 2. Bound VAD / formant worker accumulators — MOSTLY DONE (frameHfEnergy deferred)
+## 2. Bound VAD / formant worker accumulators — DONE
 
 Four arrays grew unbounded for the duration of a recording, cleared only when
 the worker was terminated. The shared insight: each is **append-only** and read
 by a **single forward-only pointer** that never revisits a lower index (the
 `patch` messages are _outputs_ via `postMessage`; rope-grow/seal only append new
 audio, never rewind). So only the small live window between the write head and
-that read pointer is ever needed — each becomes a fixed-size ring keyed by an
-absolute index, retaining the most-recent `capacity` values.
+that read pointer is ever needed. Three got a fixed-size ring keyed by an
+absolute index (`NumberRing`, below); the fourth (`frameHfEnergy`) is no longer
+stored at all — it's recomputed on demand from the rope (see its section).
 
 **Shipped — `NumberRing` (`src/lib/NumberRing.ts`).** A fixed-capacity
 `Float64Array` ring addressed by absolute index (the count ever pushed),
@@ -176,23 +177,46 @@ Gated by `NumberRing.test.ts`.
   only grows at inference rate). Existing `VadWorker.test.ts` (15 cases) stays
   green.
 
-**Still TODO: `frameHfEnergy`** (`src/lib/workers/VadWorker.ts`). Same in-order
-read pattern (`frameHfEnergy[nextFrame]`, monotonic), so it _is_ boundable — but
-unlike the others its **write** (`frameHfEnergy[frameIndex]`) happens
-synchronously in the read loop while its **read** (`nextFrame`) is gated by the
-**async** VAD inference (`vadChain`). During offline import the reader blasts
-through the whole rope, so `frameIndex` (and the array) races to the end while
-`nextFrame` waits on inference — the write head outruns the read pointer
-unboundedly. A fixed ring would have its write head overrun the unconsumed read
-pointer. Bounding it therefore requires **backpressure**: cap how far the read
-loop runs ahead of the gate (e.g. await/bound the `vadChain` depth, or block
-while `frameIndex - nextFrame` exceeds the window) before swapping in a ring.
-That's a deliberate behavioural change (throttles the throughput-bound VAD reader
-to the gate's pace), left for a follow-up. `NumberRing` is ready to reuse for it.
+- **`frameHfEnergy`** (`src/lib/workers/VadWorker.ts`) — **DONE, recomputed on
+  demand (not a ring).** This one resisted the ring approach: unlike the others,
+  its **write** (`frameHfEnergy[frameIndex]`) happened synchronously in the read
+  loop while its **read** (`nextFrame`) is gated by **async** VAD inference
+  (`vadChain`). During offline import the reader blasts through the whole rope, so
+  `frameIndex` (and the array) raced to the end while `nextFrame` waited on
+  inference — the write head outran the read pointer unboundedly, and a fixed ring
+  would have overwritten unconsumed entries. The original plan was to add
+  backpressure (throttle the reader to the gate's pace) and then a ring.
+
+  Instead we **stopped storing it**: VadWorker reads from the rope, which retains
+  all audio, so the per-frame high-pass onset energy is re-derived lazily on the
+  gate's clock by `HfEnergyCursor` — a forward cursor that lags the VAD reader,
+  advanced one frame per `energyForFrame(nextFrame)` call, reading committed
+  samples behind the reader via the new `AudioRopeReader.readAt`. The one-pole
+  300 Hz high-pass is O(1) recursive state and trivially cheap next to the VAD
+  resample+inference, and because it's a **continuous pass from sample 0** the
+  values are **bit-identical** to the old in-loop computation (verified by
+  `HfEnergyCursor.test.ts` against a reference port of the original loop). This is
+  the same "rope is the source of truth, derivations are disposable" move as item
+  1's source-vs-cache split, applied to a feature stream instead of canvas tiles.
+
+  Why this beats backpressure: **zero** retained buffer (not just a bounded one),
+  **no throttle** on the reader (it stays free to run ahead and pipeline VAD
+  inference — exactly what helps on slow Silero downloads / weak devices), and
+  _less_ code in the hot loop (the per-sample HF block left the VAD read loop
+  entirely; the loop now just bulk-counts frames).
+
+  Invariants to preserve: `HfEnergyCursor.energyForFrame` must be called with
+  **strictly increasing frame indices, each exactly once** (it throws otherwise —
+  the gate consumes `nextFrame` monotonically), and only for frames already
+  committed to the rope (`frame < frameIndex`; it throws on a read past committed
+  samples). The continuous-from-0 pass is what keeps it exact — don't reset or
+  seek the cursor.
 
 Not gated by `npm run mem` (the harness scenarios don't probe these worker
-internals); the change is mechanical bounded-reuse plus the existing worker test
-suites, landed on reasoning rather than aggressive measurement.
+internals); the rings are mechanical bounded-reuse, and the HF cursor is gated by
+the bit-identical unit test plus the existing `VadWorker.test.ts` (15 cases) /
+`FormantWorker.test.ts` (11 cases) suites — landed on reasoning rather than
+aggressive measurement.
 
 ## 3. Stop the per-quantum `readBuf.slice()` — DONE
 

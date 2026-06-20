@@ -21,16 +21,25 @@ const mockVadState = vi.hoisted(() => ({
 
 vi.mock('#/lib/audio/AudioRopeReader', () => {
   class AudioRopeReader {
+    // Grows as the iterator yields, so the HF cursor's look-back reads stay
+    // within committed samples (mock audio is silence -> HF energy is 0).
+    length = 0
+
     constructor(_share: any, _quantum: number) {}
 
     grow(_grow: any): void {}
     seal(): void {}
+
+    readAt(dest: Float32Array, _pos: number, count: number): void {
+      dest.fill(0, 0, count)
+    }
 
     async *[Symbol.asyncIterator]() {
       const totalChunks = Math.ceil(
         (mockVadState.durationSec * SAMPLE_RATE) / QUANTUM,
       )
       for (let i = 0; i < totalChunks; i++) {
+        this.length += QUANTUM
         yield new Float32Array(QUANTUM)
       }
     }

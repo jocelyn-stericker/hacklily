@@ -22,6 +22,22 @@ export class AudioRopeReader {
     this._rope.seal()
   }
 
+  /** Total committed sample count currently in the rope. */
+  get length(): number {
+    return this._rope.length
+  }
+
+  /**
+   * Random-access read of `count` samples starting at absolute sample position
+   * `pos`, into `dest[0..count)`. Independent of the forward iterator's position,
+   * so a lagging cursor can re-read committed audio the iterator has already
+   * passed (e.g. a derived feature computed on the consumer's clock rather than
+   * the reader's). `pos + count` must not exceed `length`.
+   */
+  readAt(dest: Float32Array, pos: number, count: number): void {
+    this._rope.read(dest, pos, 0, count)
+  }
+
   // The yielded Float32Array is a reused internal buffer: it is valid only until
   // the consumer requests the next quantum (the next loop turn), at which point
   // it is overwritten in place. Consumers must read/copy it synchronously within

@@ -25,6 +25,95 @@ const QUANTUM = 128
 const VAD_RATE = 16000
 const LOG = '[VadWorker]'
 const TIME_STEP_SEC = 0.002
+const ONSET_HP_HZ = 300
+
+/**
+ * Per-frame high-pass energy (the gate's onset feature), computed on demand
+ * from the rope rather than buffered.
+ *
+ * The old design accumulated `frameHfEnergy[frameIndex]` into an unbounded array
+ * in the read loop because the gate consumes it much later — it lags behind the
+ * reader, waiting on async VAD inference. That array grew for the whole
+ * recording. But the rope retains all audio, so instead of buffering the derived
+ * feature we re-derive it lazily on the gate's clock: a forward cursor that lags
+ * the VAD reader, advanced one frame per request.
+ *
+ * It is a *continuous* pass from sample 0 (the one-pole high-pass is recursive,
+ * O(1) state), so the values are bit-identical to the old in-loop computation —
+ * this is a restructuring of *when* the work happens, not *what* it computes. No
+ * retained buffer, and no backpressure needed on the reader (it may run ahead
+ * for VAD freely; the cursor reads committed samples behind it).
+ *
+ * Frames must be requested in strictly increasing order, each exactly once — the
+ * gate consumes `nextFrame` monotonically. Requested frames must already be
+ * committed to the rope (true whenever `frame < frameIndex`).
+ */
+export class HfEnergyCursor {
+  readonly #reader: AudioRopeReader
+  readonly #timeStepSamples: number
+  readonly #hpCoeff: number
+  readonly #buf = new Float32Array(1024)
+  #bufLen = 0 // valid samples in #buf
+  #bufPos = 0 // next sample to consume in #buf
+  #ropePos = 0 // absolute rope position of the next sample to read
+  #hpPrevIn = 0
+  #hpPrevOut = 0
+  #acc = 0
+  #count = 0
+  #pending = 0
+  #frame = 0 // next frame index to emit
+
+  constructor(
+    reader: AudioRopeReader,
+    sampleRate: number,
+    timeStepSamples: number,
+  ) {
+    this.#reader = reader
+    this.#timeStepSamples = timeStepSamples
+    this.#hpCoeff = 1 / (1 + (2 * Math.PI * ONSET_HP_HZ) / sampleRate)
+  }
+
+  energyForFrame(frame: number): number {
+    if (frame !== this.#frame) {
+      throw new RangeError(
+        `HfEnergyCursor.energyForFrame(${frame}) out of order; expected ${this.#frame}`,
+      )
+    }
+    for (;;) {
+      if (this.#bufPos >= this.#bufLen) this.#fill()
+      const x = this.#buf[this.#bufPos++]!
+      const hp = this.#hpCoeff * (this.#hpPrevOut + x - this.#hpPrevIn)
+      this.#hpPrevIn = x
+      this.#hpPrevOut = hp
+      this.#acc += hp * hp
+      this.#count++
+      this.#pending++
+      if (this.#pending > this.#timeStepSamples) {
+        this.#pending -= this.#timeStepSamples
+        const energy = this.#count > 0 ? this.#acc / this.#count : 0
+        this.#acc = 0
+        this.#count = 0
+        this.#frame++
+        return energy
+      }
+    }
+  }
+
+  #fill(): void {
+    const avail = this.#reader.length - this.#ropePos
+    const n = Math.min(this.#buf.length, avail)
+    if (n <= 0) {
+      // The requested frame's samples must be committed before it's asked for.
+      throw new RangeError(
+        `HfEnergyCursor read past committed rope at sample ${this.#ropePos}`,
+      )
+    }
+    this.#reader.readAt(this.#buf, this.#ropePos, n)
+    this.#ropePos += n
+    this.#bufLen = n
+    this.#bufPos = 0
+  }
+}
 
 export type VadWorkerInMessage =
   | VadInitMessage
@@ -117,13 +206,7 @@ export async function runAnalysis(
   let nextFrame = 0
   let vadSamplesFed = 0
 
-  const ONSET_HP_HZ = 300
-  const hpCoeff = 1 / (1 + (2 * Math.PI * ONSET_HP_HZ) / sampleRate)
-  const frameHfEnergy: number[] = []
-  let hpPrevIn = 0
-  let hpPrevOut = 0
-  let hfAcc = 0
-  let hfCount = 0
+  const hfCursor = new HfEnergyCursor(reader, sampleRate, timeStepSamples)
 
   function gateReadyFrames() {
     while (nextFrame < frameIndex) {
@@ -134,7 +217,7 @@ export async function runAnalysis(
       gate.push(
         nextFrame,
         vadProbs.get(coveringChunk),
-        frameHfEnergy[nextFrame] ?? NaN,
+        hfCursor.energyForFrame(nextFrame),
       )
       flushDecisions()
       nextFrame++
@@ -160,20 +243,14 @@ export async function runAnalysis(
     vadResampler.feed(inp)
     const n = vadResampler.drain(vadDrainBuf)
 
-    for (const x of inp) {
-      const hp = hpCoeff * (hpPrevOut + x - hpPrevIn)
-      hpPrevIn = x
-      hpPrevOut = hp
-      hfAcc += hp * hp
-      hfCount++
-      samplesPending += 1
-      if (samplesPending > timeStepSamples) {
-        samplesPending -= timeStepSamples
-        frameHfEnergy[frameIndex] = hfCount > 0 ? hfAcc / hfCount : 0
-        frameIndex++
-        hfAcc = 0
-        hfCount = 0
-      }
+    // Count frames as samples arrive; the HF onset feature is computed lazily
+    // by `hfCursor` when the gate actually consumes each frame (it lags here,
+    // waiting on async VAD inference). This bulk count is equivalent to the old
+    // per-sample `samplesPending` advance.
+    samplesPending += inp.length
+    while (samplesPending > timeStepSamples) {
+      samplesPending -= timeStepSamples
+      frameIndex++
     }
 
     if (n > 0) enqueueVadChunk(vadDrainBuf.slice(0, n))
@@ -193,7 +270,7 @@ export async function runAnalysis(
     gate.push(
       nextFrame,
       coveringChunk >= 0 ? vadProbs.get(coveringChunk) : 0,
-      frameHfEnergy[nextFrame] ?? NaN,
+      hfCursor.energyForFrame(nextFrame),
     )
     flushDecisions()
     nextFrame++
