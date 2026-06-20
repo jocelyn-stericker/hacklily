@@ -7,9 +7,9 @@ import { useEffect, useImperativeHandle, useMemo, useState } from 'react'
 import type { RefObject } from 'react'
 
 import { useSettings } from '#/components/useSettings'
+import { isVoiced } from '#/lib/analysis/AnalysisFrame'
 import type {
   AnalysisChunk,
-  AnalysisFrame,
   VoicedAnalysisFrame,
 } from '#/lib/analysis/AnalysisFrame'
 import { HILLENBRAND } from '#/lib/analysis/hillenbrand'
@@ -124,7 +124,7 @@ function drawVowelChart(
   width: number,
   height: number,
   dpr: number,
-  history: AnalysisFrame[],
+  trail: VoicedAnalysisFrame[],
   theme: VowelChartTheme,
   vowels: Vowel[],
 ): void {
@@ -207,13 +207,7 @@ function drawVowelChart(
     }
   }
 
-  // Trail of recent voiced frames
-  const voiced = history.filter(
-    (s): s is VoicedAnalysisFrame =>
-      s.pitchDetected && !!s.speechDetected && s.f1 !== null && s.f2 !== null,
-  )
-  const trail = voiced.slice(-TRAIL_LEN)
-
+  // Trail of recent voiced frames (already filtered + tail-bounded by caller)
   if (trail.length > 1) {
     ctx.lineWidth = 1.5 * dpr
     for (let i = 1; i < trail.length; i++) {
@@ -292,21 +286,59 @@ export interface VowelChartHandle {
   patch: (from: number, to: number) => void
 }
 
-function framesUpToCursor(
+// We only ever draw a trail of the last TRAIL_LEN voiced frames up to the
+// cursor, so walk backwards from the cursor and stop once the trail is full
+// instead of scanning (and allocating) the whole recording. The output array is
+// reused across redraws and bounded by TRAIL_LEN. The common live-recording
+// case (cursor at the end) only touches the last TRAIL_LEN voiced frames.
+const trailOut: VoicedAnalysisFrame[] = []
+
+function voicedTrailUpToCursor(
   analysis: AnalysisChunk[],
   cursorSec: number,
-): AnalysisFrame[] {
-  let elapsed = 0
-  const result: AnalysisFrame[] = []
-  outer: for (const chunk of analysis) {
-    const stepSec = chunk.timeStepSamples / chunk.sampleRate
-    for (const frame of chunk.frames) {
-      result.push(frame)
-      elapsed += stepSec
-      if (elapsed >= cursorSec) break outer
+): VoicedAnalysisFrame[] {
+  trailOut.length = 0
+
+  // Locate the chunk holding the cursor via each chunk's authoritative
+  // startTimeSec — one cheap pass over chunks, not frames. Defaults to the last
+  // chunk when the cursor is at/past the end.
+  let ci = analysis.length - 1
+  for (let c = 0; c < analysis.length; c++) {
+    const chunk = analysis[c]!
+    const chunkDur =
+      (chunk.frames.length * chunk.timeStepSamples) / chunk.sampleRate
+    if (cursorSec < chunk.startTimeSec + chunkDur) {
+      ci = c
+      break
     }
   }
-  return result
+  if (ci < 0) return trailOut
+
+  // Frame at the cursor (inclusive): the first frame whose elapsed time reaches
+  // it, matching the old forward scan.
+  const cursorChunk = analysis[ci]!
+  const stepSec = cursorChunk.timeStepSamples / cursorChunk.sampleRate
+  const fi = Math.max(
+    0,
+    Math.min(
+      Math.ceil((cursorSec - cursorChunk.startTimeSec) / stepSec) - 1,
+      cursorChunk.frames.length - 1,
+    ),
+  )
+
+  // Collect voiced frames backwards until full, then restore chronological order.
+  outer: for (let c = ci; c >= 0; c--) {
+    const frames = analysis[c]!.frames
+    for (let f = c === ci ? fi : frames.length - 1; f >= 0; f--) {
+      const frame = frames[f]!
+      if (isVoiced(frame)) {
+        trailOut.push(frame)
+        if (trailOut.length >= TRAIL_LEN) break outer
+      }
+    }
+  }
+  trailOut.reverse()
+  return trailOut
 }
 
 export function VowelChart({
@@ -339,7 +371,7 @@ export function VowelChart({
       width,
       height,
       dpr,
-      framesUpToCursor(analysisMut, cursorSec),
+      voicedTrailUpToCursor(analysisMut, cursorSec),
       theme,
       vowels,
     )
@@ -355,7 +387,7 @@ export function VowelChart({
           width,
           height,
           dpr,
-          framesUpToCursor(analysisMut, cursorSec),
+          voicedTrailUpToCursor(analysisMut, cursorSec),
           theme,
           vowels,
         )
@@ -367,7 +399,7 @@ export function VowelChart({
           width,
           height,
           dpr,
-          framesUpToCursor(analysisMut, cursorSec),
+          voicedTrailUpToCursor(analysisMut, cursorSec),
           theme,
           vowels,
         )

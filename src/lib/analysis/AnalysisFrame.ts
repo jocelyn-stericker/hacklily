@@ -52,12 +52,16 @@ export function framesVoiced(frames: AnalysisFrame[]): boolean {
   return frames.some((f) => f.speechDetected)
 }
 
-// Frames confirmed voiced by both pitch and VAD, with F1 and F2 present. Used as a type predicate in VowelChart.
+// Frames confirmed voiced by both pitch and VAD, with F1 and F2 present.
 export type VoicedAnalysisFrame = AnalysisFrame & {
   pitchDetected: true
   speechDetected: true
   f1: number
   f2: number
+}
+
+export function isVoiced(f: AnalysisFrame): f is VoicedAnalysisFrame {
+  return f.pitchDetected && !!f.speechDetected && f.f1 !== null && f.f2 !== null
 }
 
 export function splitChunkAt(

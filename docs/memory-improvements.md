@@ -234,15 +234,60 @@ out of the spare policy.
 `FormantWorker` / `VadWorker`. Frees ~256 KB per such consumer immediately
 rather than at recording end.
 
-## 7. VowelChart `framesUpToCursor` allocation per redraw
+## 7. VowelChart `framesUpToCursor` allocation per redraw — DONE
 
-`src/components/VowelChart.tsx:296-311` allocates a fresh `AnalysisFrame[]`
-per redraw. Small but called on every append/patch/cursor move during
-recording.
+**Shipped.** The old `framesUpToCursor` built a fresh `AnalysisFrame[]` of
+**every** frame up to the cursor on each redraw (append/patch/cursor-move during
+recording — tens/sec), then `drawVowelChart` filtered that to voiced frames and
+sliced the last `TRAIL_LEN` (80). But the trail is all we ever draw, so the full
+array was pure waste that grew with the take.
 
-**Fix:** reuse a scratch array across redraws (length-bounded; `.length = 0`
-then push). Or filter in place over the existing chunk array if the cursor
-boundary is the only thing changing.
+`voicedTrailUpToCursor` (`src/components/VowelChart.tsx`) now:
+
+- **Walks backwards from the cursor** and stops once it has `TRAIL_LEN` voiced
+  frames, instead of scanning the whole recording. The common live-recording
+  case (cursor at the end) touches only the last ~80 voiced frames; even when
+  scrubbed it starts at the cursor chunk, not the beginning.
+- **Locates the cursor chunk via `chunk.startTimeSec`** (the authoritative
+  per-chunk start time, accumulated the same way the old loop did its `elapsed`)
+  — a single pass over *chunks*, not frames — then computes the in-chunk frame
+  index arithmetically.
+- **Reuses one module-level `trailOut` array** (`.length = 0` then push),
+  bounded by `TRAIL_LEN`. Retained allocation is now fixed regardless of take
+  length; `drawVowelChart` takes the pre-filtered `VoicedAnalysisFrame[]`
+  directly (its internal `filter` + `slice` are gone).
+
+Also moved the voiced-frame type guard `isVoiced` next to its type
+(`VoicedAnalysisFrame`) in `src/lib/analysis/AnalysisFrame.ts` and exported it.
+A survey of the other sites that test its constituent fields found **no other
+clean caller** — each wants a deliberately different subset and `isVoiced` would
+change behavior, so it stays a one-caller co-location, not a dedup:
+`index.tsx:684` (hover readout keeps showing f0 with formants absent — no f1/f2
+gate), `alignJob.ts:230` (voicing comes from phoneme alignment, not VAD — no
+`speechDetected` gate), `Spectrogram.tsx:265` (per-track f1/f2/**f3**, not
+hardcoded f1∧f2).
+
+### Notes / invariants
+
+- **Not gated by `npm run mem`.** The harness scenarios don't exercise the vowel
+  chart, so this won't show in the probe numbers. The change is mechanical
+  (bounded reuse + early-out) and was landed on `npm run check` + reasoning
+  rather than aggressive measurement.
+- **`trailOut` is borrowed.** It's returned and reused, so the caller must
+  consume it synchronously before the next redraw (`drawVowelChart` does). Any
+  future consumer that stashes the trail across calls or hands it to async code
+  must copy first.
+- **Boundary off-by-one is acceptable.** The cursor frame index now comes from
+  per-chunk duration arithmetic rather than per-frame summation, so float
+  rounding at a chunk boundary can shift it by at most one frame — visually
+  negligible for an 80-frame trail.
+
+### Possible future direction
+
+If the vowel chart ever needs the full frame history again (not just the trail)
+on a hot path, don't revert to materializing it — index into the chunk arrays
+directly, or add a `window.__braatMem`-probed vowel-chart scenario so `npm run
+mem` actually covers this path before re-touching it.
 
 ## 8. Single resident heavy ML worker + deferred alignment — DONE
 
