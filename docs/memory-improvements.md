@@ -201,6 +201,130 @@ recording.
 then push). Or filter in place over the existing chunk array if the cursor
 boundary is the only thing changing.
 
+## 8. Single resident heavy ML worker + deferred alignment — DONE
+
+**Shipped.** Transcription (Moonshine, `q8` — ~120 MB of weights, ~284 MB
+resident during inference) and forced alignment (CUPE ONNX, ~120 MB) are both
+large models that, left alone, could sit **resident at the same time**: the old
+scheduler interleaved transcribe and align per chunk
+(`priorityPickNext(['align', 'transcribe'])`), keeping both hot, so peak heavy
+memory was ~`transcribe + align` on top of recording buffers. That sum is what
+pushed 4 GB iPhones into OOM kills. We can't tune for the device —
+`navigator.deviceMemory` doesn't exist on iOS Safari — so the safe behaviour had
+to become the **default**.
+
+What changed:
+
+- **`src/lib/jobs/heavyWorkerArbiter.ts` (new)** — a small, dependency-light
+  coordinator (imports only `#/lib/settings`, so the worker modules can import it
+  without a cycle). Each heavy worker registers a teardown
+  (`registerHeavyWorker(kind, teardown, onIdleTimeoutChange?)`); calling
+  `acquireHeavy(kind)` tears down every *other* registered kind first, then
+  records `kind` as resident. **Single-residency is a safety invariant, not a
+  tunable** — the only knob is how long an idle worker lingers.
+- **Deferred alignment.** Alignment feeds brightness/resonance colouring — a
+  secondary analytical overlay, not real-time feedback (spectrogram/formants run
+  in the worklet, off this budget) — so it's deferred to a **post-recording
+  batch**: `alignJob`'s `needsWork` returns `false` while `isRecording()`
+  (`src/lib/jobs/alignJob.ts`, fed an `isRecording` ref from
+  `useChunkWorkQueue.ts`). This removes the only scenario where transcribe and
+  align would interleave (and thrash) in real time.
+- **Batch ordering** is now `priorityPickNext(['transcribe', 'align'])`
+  (`useChunkWorkQueue.ts`): a pass finishes all transcription before any
+  alignment, so the lifecycle is transcribe-all → hand off → align-all. The
+  handoff is immediate via `acquireHeavy`, not idle-driven, so the short cold
+  timeout below never causes batch thrash.
+- **Idle-unload window, gated on `runHeavyWhileRecording`.** `heavyIdleTeardownMs()`
+  returns `COLD_IDLE_MS = 10_000` by default and `WARM_IDLE_MS = 60_000` when the
+  flag is on (a "less memory-sensitive" signal). Both worker modules share it.
+  The arbiter subscribes to settings once and re-arms an already-idle worker's
+  timer on change (the `onIdleTimeoutChange` callback), so turning the flag
+  **off** reclaims a warm worker in ~10 s instead of waiting out the 60 s timer it
+  was armed under. `runHeavyWhileRecording` now means exactly one honest thing:
+  *may transcription run live while recording* (one model); alignment is deferred
+  to after recording either way.
+
+**Measured — `npm run mem -- --layer2 --scenario stt-alignment` (imports
+`butterfly.wav`, measures each model as sole resident):**
+
+- Peak: **423.8 MB → 309.8 MB** (peak is now ~`max(transcribe, align)`, not the
+  sum).
+- baseline 20.9 MB (model-free) · transcribing 305.0 MB · aligning 142.4 MB ·
+  afterClear 24.2 MB (model-free).
+- Worker telemetry confirms single-residency: only one of `transcribeWorkers` /
+  `alignWorkerLive` is ever nonzero.
+
+### Invariants to preserve (don't regress these)
+
+1. **Acquire before build/use.** Both workers call `acquireHeavy(kind)` *before*
+   constructing or messaging their worker, so the other kind is freed first. The
+   two never sit resident together except for the unavoidable instant between
+   `terminate()` and construct.
+2. **Single-residency is not flag-gated.** `runHeavyWhileRecording` only widens
+   the idle window; it must never let two kinds coexist.
+3. **Alignment stays post-recording.** `needsWork` returning `false` while
+   recording is what keeps align off the live budget — don't reintroduce a
+   live-align path.
+4. **`WorkerTerminatedError` degrades to a retry.** Arbiter-driven termination of
+   a (rare) in-flight job is handled as "abort, leave for retry" in both
+   `transcribeJob.ts` and `alignJob.ts`. Keep that.
+
+### Tried and rejected: disabling the ORT wasm memory arena
+
+Setting `enableCpuMemArena: false` + `enableMemPattern: false` on both sessions
+(via `createCupeSession`'s options for align, `session_options` in the Moonshine
+`MODEL_CONFIG` for transformers.js) produced **no measurable change** (peak 309.8
+MB before and after; transcribing 304.9 vs 305.0 MB — noise). The arena footprint
+scales with activation tensor size, and Braat's chunks are split at voicing
+boundaries and capped at align's `durationMax: 10` s — so activations are small
+next to ~120 MB of weights, and there's effectively nothing to reclaim. Reverted:
+no benefit, and the flags carry a small inference-latency cost.
+
+## 9. Optimized (pre-fused) ORT model / minimal ORT build — TODO (assessment)
+
+Honest framing, since this is the next heavy-worker lever after the lower-hanging
+fruit above. **Important caveat: every agentMemory number we have is sampled at
+*settle* time** (after the job finishes, after `forceGc`). Graph optimization and
+session setup are **transient**, during model load — gone before we measure. So
+we currently have **no number** for setup cost, and the load-time peak is exactly
+the OOM-relevant moment on iOS. To turn this from speculation into a number, the
+prerequisite is sampling the wasm heap high-water mark
+(`WebAssembly.Memory.buffer.byteLength`, which only grows) around session
+creation. Not yet done.
+
+Prior on where setup memory goes, largest first:
+
+1. **Double-resident weights at session creation.** `InferenceSession.create(bytes)`
+   copies weights into the ORT wasm heap while the source `ArrayBuffer` is still
+   alive — a transient ~2× window (~+120 MB). For the align path the source
+   buffer is unreferenced after the `.then` and GCs; for **Moonshine via
+   transformers.js this is unverified**. Likely bigger than the optimizer passes.
+2. **Graph optimization scratch.** `graphOptimizationLevel: 'all'` holds original
+   + optimized graph transiently and may dequantize folded constants. Real, but
+   second-order.
+
+The two levers, and the honest read on each (**transformers.js is retained in
+both** — it's convenient and its own overhead is single-digit MB):
+
+- **Pre-optimized ORT model (the chosen next step).** Run ORT's offline
+  optimization once, ship the already-fused graph, and load it with
+  `graphOptimizationLevel: 'disabled'` so the runtime skips optimization at load.
+  transformers.js still does the loading — you just point it at the pre-optimized
+  `.onnx` in the model repo/cache. Removes the load-time optimization passes (and
+  CPU). Fully in our control for the **align model** (we own that ONNX); harder to
+  inject cleanly for Moonshine. Best effort/payoff *if* setup proves costly —
+  which is unmeasured.
+- **Minimal/custom ORT build.** Strips unused operators to shrink the `ort-web`
+  **wasm code** footprint (~10–15 MB), *not* the weights. We already override
+  `env.backends.onnx.wasm.wasmPaths`, so a custom build slots in under
+  transformers.js unchanged. Modest win, real build/maintenance cost — lower value
+  than the pre-optimized model, deferred.
+
+Bottom line: most of the setup cost is probably the double-weights window, not the
+optimizer — so freeing the source buffer / shipping a pre-optimized align model
+likely captures most of it, and a custom ORT build wouldn't move the dominant
+number. Measure the load peak before investing.
+
 ---
 
 ## Lower-priority / confirmed bounded
@@ -214,12 +338,10 @@ here so they don't get re-investigated:
   (item 1) is the right lever, not dropping frames.
 - `AudioRope` SAB segments — shared across threads; per-consumer spares are
   addressed in item 6. The segments themselves are the recording.
-- Transcription worker pool (`src/lib/transcription/transcribeBundled.ts:23`) —
-  already pooled per model with 60 s idle teardown
-  (`transcribeBundled.ts:37-56`) and terminated when recording starts with
-  `runHeavyWhileRecording` off (`src/components/useChunkWorkQueue.ts:169-173`).
-- Align worker — module-level singleton, one at a time
-  (`src/lib/jobs/alignJob.ts:27`).
+- Transcription worker pool + align worker — now governed by the single-resident
+  arbiter (item 8): pooled per model, cold/warm idle teardown via
+  `heavyIdleTeardownMs()`, and never resident alongside the other heavy kind. See
+  item 8 for the invariants.
 - `TranscriptStore` — `WeakMap`-backed; subscribers explicitly cleaned at size 0
   (`src/components/TranscriptStore.ts:58-71`).
 - `RopeGainCache` — `WeakMap` keyed by rope (`src/lib/loudness/ropeLoudness.ts:25`).
