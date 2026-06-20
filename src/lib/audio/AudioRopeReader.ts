@@ -22,6 +22,14 @@ export class AudioRopeReader {
     this._rope.seal()
   }
 
+  // The yielded Float32Array is a reused internal buffer: it is valid only until
+  // the consumer requests the next quantum (the next loop turn), at which point
+  // it is overwritten in place. Consumers must read/copy it synchronously within
+  // the loop body; anything that retains it across iterations, holds it across an
+  // `await`, or transfers it via postMessage must copy first. (All current
+  // consumers -- Spectrogram/Formant/Vad workers -- consume it synchronously, so
+  // we avoid a per-quantum allocation: at 48 kHz a fresh slice here is ~22.5k
+  // throwaway arrays/min/worker across three workers.)
   async *[Symbol.asyncIterator]() {
     const { _quantum: quantum, _rope: rope } = this
     const readBuf = new Float32Array(quantum)
@@ -41,7 +49,7 @@ export class AudioRopeReader {
 
       rope.read(readBuf, this._readPos, 0, quantum)
       this._readPos += quantum
-      yield readBuf.slice()
+      yield readBuf
     }
   }
 }

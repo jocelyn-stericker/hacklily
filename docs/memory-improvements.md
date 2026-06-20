@@ -148,17 +148,32 @@ downstream) and/or cap length once the main-thread analysis has acknowledged
 the range. If history is needed for late `patch` re-chunking, store it in a
 fixed-size ring that covers the maximum patch window only.
 
-## 3. Stop the per-quantum `readBuf.slice()`
+## 3. Stop the per-quantum `readBuf.slice()` — DONE
 
-`AudioRopeReader` allocates a fresh `Float32Array(128)` per quantum yielded:
-`src/lib/audio/AudioRopeReader.ts:45`. At 48 kHz that's ~22,500 allocations per
-minute per worker — small individually but constant churn, and three workers
-(spectrogram, formant, VAD) all run this loop.
+**Shipped.** `AudioRopeReader`'s async iterator now yields its single reused
+`readBuf` directly instead of `readBuf.slice()`
+(`src/lib/audio/AudioRopeReader.ts`), eliminating the ~22,500 throwaway
+`Float32Array(128)`/min/worker across the three workers (spectrogram, formant,
+VAD).
 
-**Fix:** double-buffered ring of `N` reusable `Float32Array(quantum)` slots, or
-return a transferable buffer that the consumer returns. The slice exists only
-because `postMessage` would race the next read; a buffer pool with explicit
-return avoids both the race and the allocation.
+No buffer pool was needed: the iterator is strictly ping-pong (it overwrites
+`readBuf` only on the next `.next()` call, never pipelining ahead), and all three
+consumers read the yielded buffer **synchronously** within the loop body — they
+copy into their own stream-processor buffers (`spec.feed`, `resampler.feed`,
+`pitchBuf.set`) and never retain, `await`-across, or transfer it. So a single
+reused buffer is sufficient and safe. The slice's old justification ("postMessage
+would race the next read") no longer holds — no consumer postMessages the raw
+quantum.
+
+### Invariant to preserve (don't regress this)
+
+- **Yielded buffer is borrowed, valid only until the next iteration.** Any future
+  consumer that retains a quantum across iterations, holds it across an `await`,
+  or transfers it via `postMessage` must copy first. The contract is documented
+  at the iterator and gated by `AudioRopeReader.memory.test.ts` ("yields a single
+  reused buffer" asserts one identity across a full pass; "a copied chunk
+  survives the next iteration" asserts the overwrite-in-place + retain-must-copy
+  semantics).
 
 ## 4. Pool VAD ONNX tensors
 
@@ -219,7 +234,7 @@ What changed:
   coordinator (imports only `#/lib/settings`, so the worker modules can import it
   without a cycle). Each heavy worker registers a teardown
   (`registerHeavyWorker(kind, teardown, onIdleTimeoutChange?)`); calling
-  `acquireHeavy(kind)` tears down every *other* registered kind first, then
+  `acquireHeavy(kind)` tears down every _other_ registered kind first, then
   records `kind` as resident. **Single-residency is a safety invariant, not a
   tunable** — the only knob is how long an idle worker lingers.
 - **Deferred alignment.** Alignment feeds brightness/resonance colouring — a
@@ -241,7 +256,7 @@ What changed:
   timer on change (the `onIdleTimeoutChange` callback), so turning the flag
   **off** reclaims a warm worker in ~10 s instead of waiting out the 60 s timer it
   was armed under. `runHeavyWhileRecording` now means exactly one honest thing:
-  *may transcription run live while recording* (one model); alignment is deferred
+  _may transcription run live while recording_ (one model); alignment is deferred
   to after recording either way.
 
 **Measured — `npm run mem -- --layer2 --scenario stt-alignment` (imports
@@ -256,7 +271,7 @@ What changed:
 
 ### Invariants to preserve (don't regress these)
 
-1. **Acquire before build/use.** Both workers call `acquireHeavy(kind)` *before*
+1. **Acquire before build/use.** Both workers call `acquireHeavy(kind)` _before_
    constructing or messaging their worker, so the other kind is freed first. The
    two never sit resident together except for the unavoidable instant between
    `terminate()` and construct.
@@ -284,7 +299,7 @@ no benefit, and the flags carry a small inference-latency cost.
 
 Honest framing, since this is the next heavy-worker lever after the lower-hanging
 fruit above. **Important caveat: every agentMemory number we have is sampled at
-*settle* time** (after the job finishes, after `forceGc`). Graph optimization and
+_settle_ time** (after the job finishes, after `forceGc`). Graph optimization and
 session setup are **transient**, during model load — gone before we measure. So
 we currently have **no number** for setup cost, and the load-time peak is exactly
 the OOM-relevant moment on iOS. To turn this from speculation into a number, the
@@ -300,8 +315,8 @@ Prior on where setup memory goes, largest first:
    buffer is unreferenced after the `.then` and GCs; for **Moonshine via
    transformers.js this is unverified**. Likely bigger than the optimizer passes.
 2. **Graph optimization scratch.** `graphOptimizationLevel: 'all'` holds original
-   + optimized graph transiently and may dequantize folded constants. Real, but
-   second-order.
+   - optimized graph transiently and may dequantize folded constants. Real, but
+     second-order.
 
 The two levers, and the honest read on each (**transformers.js is retained in
 both** — it's convenient and its own overhead is single-digit MB):
@@ -312,10 +327,10 @@ both** — it's convenient and its own overhead is single-digit MB):
   transformers.js still does the loading — you just point it at the pre-optimized
   `.onnx` in the model repo/cache. Removes the load-time optimization passes (and
   CPU). Fully in our control for the **align model** (we own that ONNX); harder to
-  inject cleanly for Moonshine. Best effort/payoff *if* setup proves costly —
+  inject cleanly for Moonshine. Best effort/payoff _if_ setup proves costly —
   which is unmeasured.
 - **Minimal/custom ORT build.** Strips unused operators to shrink the `ort-web`
-  **wasm code** footprint (~10–15 MB), *not* the weights. We already override
+  **wasm code** footprint (~10–15 MB), _not_ the weights. We already override
   `env.backends.onnx.wasm.wasmPaths`, so a custom build slots in under
   transformers.js unchanged. Modest win, real build/maintenance cost — lower value
   than the pre-optimized model, deferred.

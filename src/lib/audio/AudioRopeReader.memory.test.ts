@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
-// Memory tests for AudioRopeReader. These verify that the per-quantum
-// `readBuf.slice()` allocations (AudioRopeReader.ts:45) are collectable after
-// the consumer drops them, and that the reader itself is collectable after
+// Memory tests for AudioRopeReader. The iterator yields a single reused
+// internal buffer (no per-quantum allocation), so these verify that contract --
+// the same Float32Array is handed out every turn, and a consumer must copy to
+// retain a snapshot -- and that the reader itself is collectable after
 // seal+iteration completes.
 //
 // Run with --expose-gc for deterministic collection:
@@ -52,7 +53,7 @@ async function waitForCollection(
 const itGc = hasGc() ? it : it.skip
 
 describe('AudioRopeReader memory', () => {
-  itGc('per-quantum slices are collectable after iteration', async () => {
+  it('yields a single reused buffer (no per-quantum allocation)', async () => {
     const rope = new AudioRope(44100)
     const data = new Float32Array(SEG_SAMPLES)
     for (let i = 0; i < SEG_SAMPLES; i++) data[i] = i
@@ -62,25 +63,47 @@ describe('AudioRopeReader memory', () => {
     const share = rope.shareRope()
     const reader = new AudioRopeReader(share, 128)
 
-    // Iterate fully, keeping references to the first 5 slices only.
-    const kept: Float32Array[] = []
+    // The iterator hands out the same backing array every turn. Collecting the
+    // distinct identities seen across a full pass must yield exactly one.
+    const seen = new Set<Float32Array>()
     let count = 0
+    let firstChunkFirstSample = NaN
     for await (const chunk of reader) {
-      if (count < 5) kept.push(chunk)
+      if (count === 0) firstChunkFirstSample = chunk[0]!
+      seen.add(chunk)
       count++
     }
     expect(count).toBe(SEG_SAMPLES / 128) // 512 chunks
+    expect(seen.size).toBe(1) // one reused buffer, not 512 slices
+    expect(firstChunkFirstSample).toBe(0) // data[0]
+  })
 
-    // Drop the kept slices — they should become collectable now that
-    // iteration is complete and we hold no other references.
-    const refs = kept.map((d) => new WeakRef(d as object))
-    kept.length = 0
+  it('a copied chunk survives the next iteration; the raw buffer is overwritten', async () => {
+    const rope = new AudioRope(44100)
+    const data = new Float32Array(SEG_SAMPLES)
+    for (let i = 0; i < SEG_SAMPLES; i++) data[i] = i
+    rope.append(data)
+    rope.seal()
 
-    let collectedCount = 0
-    for (const ref of refs) {
-      if (await waitForCollection(ref, 3000)) collectedCount++
-    }
-    expect(collectedCount).toBe(5)
+    const share = rope.shareRope()
+    const reader = new AudioRopeReader(share, 128)
+    const iter = reader[Symbol.asyncIterator]()
+
+    // First quantum: samples 0..127. Take a borrowed view and an owned copy.
+    const first = await iter.next()
+    expect(first.done).toBe(false)
+    const borrowed = first.value!
+    const copy = borrowed.slice()
+    expect(borrowed[0]).toBe(0)
+    expect(copy[0]).toBe(0)
+
+    // Second quantum: samples 128..255. The borrowed view (same backing array)
+    // is now overwritten in place; the copy is unaffected — this is the
+    // retain-must-copy contract consumers rely on.
+    const second = await iter.next()
+    expect(second.value).toBe(borrowed) // identity: same reused buffer
+    expect(borrowed[0]).toBe(128) // overwritten
+    expect(copy[0]).toBe(0) // snapshot preserved
   })
 
   itGc('reader is collectable after seal+iteration completes', async () => {
