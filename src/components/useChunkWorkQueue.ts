@@ -85,6 +85,9 @@ export function useChunkWorkQueue({
 
   const forcedAlignmentRef = useRef(forcedAlignment)
   const isHeavyAllowedRef = useRef(!isRecording || runHeavyWhileRecording)
+  // Alignment is deferred entirely while recording (see alignJob), so it reads
+  // recording state directly rather than the heavy-allowed gate.
+  const isRecordingRef = useRef(isRecording)
 
   // Determine whether the "small" tier maps to a heavy engine (Moonshine vs.
   // browser's native SR). Null while the availability probe is pending -- in
@@ -125,10 +128,13 @@ export function useChunkWorkQueue({
           sink: transcribeSink,
           onModelUnavailable: () => onModelUnavailableRef.current(),
           enabled: () => forcedAlignmentRef.current,
-          isHeavyAllowed: () => isHeavyAllowedRef.current,
+          isRecording: () => isRecordingRef.current,
         }),
       ],
-      priorityPickNext(['align', 'transcribe']),
+      // Transcribe-before-align: finish all transcription, then run alignment as
+      // a batch -- so a single heavy model is resident at a time (see
+      // heavyWorkerArbiter), instead of interleaving and keeping both hot.
+      priorityPickNext(['transcribe', 'align']),
       {
         getChunks: () => analysisMutRef.current,
         getRopes: () => ropesRef.current,
@@ -159,16 +165,20 @@ export function useChunkWorkQueue({
     queue.current?.invalidate()
   }, [forcedAlignment, queue])
 
-  // When heavy work becomes disallowed (recording starts while setting is off, or
-  // setting is turned off mid-recording), terminate the heavy workers immediately
-  // to free their memory. Workers rebuild lazily from cache on next use.
+  // On recording start, free the heavy workers that won't run, to reclaim their
+  // memory while recording buffers grow. Alignment is always deferred while
+  // recording, so its worker always goes; transcription only goes when it's not
+  // allowed to run live. Workers rebuild lazily from cache on next use.
   useEffect(() => {
     isHeavyAllowedRef.current = !isRecording || runHeavyWhileRecording
+    isRecordingRef.current = isRecording
     queue.current?.invalidate()
-    if (isRecording && !runHeavyWhileRecording) {
-      terminateBundledWorker('moonshine')
-      terminateBundledWorker('whisper')
+    if (isRecording) {
       terminateAlignWorker()
+      if (!runHeavyWhileRecording) {
+        terminateBundledWorker('moonshine')
+        terminateBundledWorker('whisper')
+      }
     }
   }, [isRecording, runHeavyWhileRecording, queue])
 

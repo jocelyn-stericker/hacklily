@@ -633,12 +633,14 @@ export function TranscriptionSettingsModal({
                 />
                 <div className="flex flex-col gap-1">
                   <span className="text-sm font-medium">
-                    Run heavy computation while recording
+                    Transcribe while recording
                   </span>
                   <p className="text-xs text-muted-foreground">
-                    This setting restricts Moonshine, Whisper Turbo, and
-                    alignment workers to reduce memory and compute while
-                    recording.
+                    When off, on-device transcription (Moonshine, Whisper Turbo)
+                    pauses while recording and catches up when you stop, to keep
+                    memory low. Turn it on to transcribe live as you record;
+                    this uses more memory and may be unstable on low-memory
+                    devices. Alignment always runs after recording either way.
                   </p>
                 </div>
               </label>

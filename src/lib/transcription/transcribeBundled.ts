@@ -3,6 +3,12 @@
 
 import { readAudioSpan } from '#/lib/audio/AudioSpan'
 import type { AudioSpan } from '#/lib/audio/AudioSpan'
+import {
+  acquireHeavy,
+  heavyIdleTeardownMs,
+  registerHeavyWorker,
+  releaseHeavy,
+} from '#/lib/jobs/heavyWorkerArbiter'
 import { WorkerTerminatedError } from '#/lib/jobs/WorkerTerminatedError'
 import TranscribeWorkerCtor from '#/lib/workers/TranscribeWorker?worker'
 import type {
@@ -30,10 +36,10 @@ const pendingTranscriptions = new Map<
   }
 >()
 
-// After this idle period, terminate the worker to free its weights. Long enough
-// that consecutive chunks keep the warm worker; short enough to avoid competing
-// with recording buffers for the session. Re-init from cache only, no re-download.
-const IDLE_TEARDOWN_MS = 60_000
+// After an idle period (see heavyIdleTeardownMs) we terminate the worker to free
+// its weights. Long enough that consecutive chunks keep the warm worker; short
+// enough to avoid competing with recording buffers for the session. Re-init from
+// cache only, no re-download.
 let idleTimer: ReturnType<typeof setTimeout> | null = null
 
 function cancelIdleTeardown(): void {
@@ -51,8 +57,25 @@ function scheduleIdleTeardown(): void {
     if (pendingTranscriptions.size > 0) return
     for (const worker of workers.values()) worker.terminate()
     workers.clear()
-  }, IDLE_TEARDOWN_MS)
+    releaseHeavy('transcribe')
+  }, heavyIdleTeardownMs())
 }
+
+// Single-residency: evicting the transcribe workers also frees their slot so the
+// arbiter can hand off to alignment. Registered once at module load. The third
+// arg re-arms the idle timer on a settings change so a shorter (cold) window
+// applies to an already-idle worker instead of waiting out the old timer.
+registerHeavyWorker(
+  'transcribe',
+  () => {
+    teardownWorker('moonshine')
+    teardownWorker('whisper')
+    releaseHeavy('transcribe')
+  },
+  () => {
+    if (idleTimer !== null) scheduleIdleTeardown()
+  },
+)
 
 // iOS Safari OOM-kills the tab with no catchable signal when memory peaks during
 // inference. We leave a localStorage breadcrumb while a worker transcription runs
@@ -177,6 +200,9 @@ export async function transcribeWithWorker(
   audio: AudioSpan,
   model: TranscribeWorkerModel,
 ): Promise<string> {
+  // Evict the alignment worker (if any) before we build/use Moonshine, so the
+  // two large models never sit resident together.
+  acquireHeavy('transcribe')
   const worker = getWorker(model)
   audio.signal.throwIfAborted()
   const pcm = await readAudioSpan(audio)

@@ -1,8 +1,14 @@
 // Memory scenario: Moonshine STT + forced alignment.
 //
-// Measures how much memory transcription and alignment workers add, and how
-// much persists immediately after "New". Automatically downloads the Moonshine
-// model if it is not already in the browser cache.
+// Measures how much memory the transcription and alignment workers add, one at a
+// time. Single-residency (see lib/jobs/heavyWorkerArbiter) means the two heavy
+// models never coexist, so we capture each while it is the sole resident model:
+//
+//   - transcribing: Moonshine resident, alignment still disabled.
+//   - aligning: alignment enabled, which evicts Moonshine and loads the aligner.
+//
+// Automatically downloads the Moonshine model if it is not already in the
+// browser cache; the alignment model downloads lazily on first use.
 
 import { readFileSync } from 'node:fs'
 
@@ -31,6 +37,39 @@ function workerValues(page: Page): Promise<Record<string, number>> {
       number
     >
   })
+}
+
+// Patch settings at runtime and notify the app. Same-tab localStorage writes
+// don't fire 'storage', so we dispatch it manually; the settings store listens
+// for it, invalidates its cache, and the app re-reads (see lib/settings.ts).
+async function setSettings(
+  page: Page,
+  patch: Record<string, unknown>,
+): Promise<void> {
+  await page.evaluate((p) => {
+    const KEY = 'braat:settings'
+    const s = JSON.parse(localStorage.getItem(KEY) ?? '{}') as Record<
+      string,
+      unknown
+    >
+    Object.assign(s, p)
+    localStorage.setItem(KEY, JSON.stringify(s))
+    window.dispatchEvent(
+      new StorageEvent('storage', {
+        key: KEY,
+        newValue: localStorage.getItem(KEY),
+      }),
+    )
+  }, patch)
+}
+
+function logWorkers(wv: Record<string, number>, phase: string): void {
+  console.log(
+    `\n  workers at ${phase}: transcribeWorkers=${wv['transcribeWorkers']},` +
+      ` pendingTranscriptions=${wv['pendingTranscriptions']},` +
+      ` alignWorkerLive=${wv['alignWorkerLive']},` +
+      ` alignJobActive=${wv['alignJobActive']}`,
+  )
 }
 
 async function ensureModelDownloaded(
@@ -82,17 +121,24 @@ async function ensureModelDownloaded(
 }
 
 /**
- * Main route: enable Moonshine + forced alignment, import the butterfly sample
- * (~1.25s, one spoken word), wait for transcription and alignment to complete,
- * then clear. Shows worker weight overhead and what persists after "New"
- * (workers stay warm for 60s).
+ * Main route: import the butterfly sample (~1.25s, one spoken word) and measure
+ * the two heavy workers separately, since single-residency keeps only one model
+ * resident at a time.
+ *
+ * `runHeavyWhileRecording` is toggled, not fixed: it lengthens the idle-unload
+ * window to 60s, which the measurement phases need so the resident model
+ * survives the ~20s rate-limit wait on measureUserAgentSpecificMemory(). It's
+ * left OFF for the baseline and afterClear phases (and we wait for the workers to
+ * unload) so those are model-free reference points. The scenario imports a file
+ * (never records), so the flag has no other effect here.
  */
 export const sttAlignment: Scenario = async (
   page: Page,
   serverUrl: string,
   hooks,
 ): Promise<ScenarioResult> => {
-  // Inject settings before the app mounts so it starts in the right mode.
+  // Inject settings before the app mounts. Alignment and the warm-idle window
+  // both start disabled so the baseline is model-free; both are toggled on below.
   // We do not pre-set braat:model-downloaded:moonshine here; ensureModelDownloaded
   // handles it so the flag reflects the real cache state.
   await page.addInitScript(() => {
@@ -101,7 +147,8 @@ export const sttAlignment: Scenario = async (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const settings: Record<string, any> = existing ? JSON.parse(existing) : {}
     settings.transcriptionMode = 'small'
-    settings.forcedAlignment = true
+    settings.forcedAlignment = false
+    settings.runHeavyWhileRecording = false
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
   })
 
@@ -110,11 +157,28 @@ export const sttAlignment: Scenario = async (
 
   await ensureModelDownloaded(page)
 
-  // --- Baseline ---
+  // --- Baseline (model-free) ---
+  // Downloading warms a Moonshine worker; with the cold idle window it unloads
+  // after ~10s. Wait for that so the baseline holds no heavy model.
+  await page.waitForFunction(
+    () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const api = (window as any).__braatMem
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const v = api?.snapshot()?.sources?.workers?.values ?? {}
+      return (v.transcribeWorkers ?? 0) === 0 && (v.alignWorkerLive ?? 0) === 0
+    },
+    undefined,
+    { timeout: 30_000 },
+  )
   await forceGc(page)
   await page.waitForTimeout(500)
   const baseline = await readSnapshot(page)
   await hooks?.afterPhase?.('baseline')
+
+  // Widen the idle-unload window so the resident model survives the agentMemory
+  // rate-limit wait during the two measurement phases.
+  await setSettings(page, { runHeavyWhileRecording: true })
 
   // --- Import the butterfly sample (~1.25s, one spoken word) ---
   const filechooserPromise = page.waitForEvent('filechooser')
@@ -138,28 +202,45 @@ export const sttAlignment: Scenario = async (
     undefined,
     { timeout: 30_000 },
   )
-  // Brief settle for the analysis worklet to finish the tail frames.
-  await page.waitForTimeout(1000)
 
-  // One spoken word → one voiced chunk. Two drain rounds are enough to confirm
-  // the transcription queue is fully settled.
-  for (let i = 0; i < 2; i++) {
-    await page.waitForFunction(
-      () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const api = (window as any).__braatMem
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const v = api?.snapshot()?.sources?.workers?.values ?? {}
-        return (v.pendingTranscriptions ?? 0) === 0
-      },
-      undefined,
-      { timeout: 180_000 },
-    )
-    await page.waitForTimeout(10_000)
-  }
+  // --- Transcribing: Moonshine resident, alignment disabled ---
+  // Wait for the transcription queue to drain; the worker stays warm (60s idle).
+  await page.waitForFunction(
+    () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const api = (window as any).__braatMem
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const v = api?.snapshot()?.sources?.workers?.values ?? {}
+      return (
+        (v.pendingTranscriptions ?? 0) === 0 && (v.transcribeWorkers ?? 0) >= 1
+      )
+    },
+    undefined,
+    { timeout: 180_000 },
+  )
+  await forceGc(page)
+  await page.waitForTimeout(500)
+  const transcribing = await readSnapshot(page)
+  await hooks?.afterPhase?.('transcribing')
+  logWorkers(await workerValues(page), 'transcribing')
 
-  // Alignment for one short word completes in seconds; give it a small buffer.
-  await page.waitForTimeout(5_000)
+  // --- Enable alignment: evicts Moonshine, loads the aligner ---
+  await setSettings(page, { forcedAlignment: true })
+
+  // --- Aligning: aligner resident, Moonshine evicted ---
+  // The first alignment downloads the ~30 MB model, so wait for the job to start,
+  // then for it to finish.
+  await page.waitForFunction(
+    () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const api = (window as any).__braatMem
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const v = api?.snapshot()?.sources?.workers?.values ?? {}
+      return (v.alignJobActive ?? 0) === 1
+    },
+    undefined,
+    { timeout: 60_000 },
+  )
   await page.waitForFunction(
     () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -169,33 +250,39 @@ export const sttAlignment: Scenario = async (
       return (v.alignJobActive ?? 0) === 0
     },
     undefined,
-    { timeout: 30_000 },
+    { timeout: 180_000 },
   )
-  await page.waitForTimeout(2_000)
-
+  await page.waitForTimeout(1_000)
   await forceGc(page)
   await page.waitForTimeout(500)
-  const afterStt = await readSnapshot(page)
-  await hooks?.afterPhase?.('afterStt')
-
-  // Log worker state for visibility.
-  const wv = await workerValues(page)
-  console.log(
-    `\n  workers after STT: transcribeWorkers=${wv['transcribeWorkers']},` +
-      ` pendingTranscriptions=${wv['pendingTranscriptions']},` +
-      ` alignWorkerLive=${wv['alignWorkerLive']},` +
-      ` alignJobActive=${wv['alignJobActive']}`,
-  )
+  const aligning = await readSnapshot(page)
+  await hooks?.afterPhase?.('aligning')
+  logWorkers(await workerValues(page), 'aligning')
 
   // --- Clear ("New") ---
-  // Workers stay alive (60s idle teardown pending), so afterClear shows
-  // audio/analysis freed but worker weights still resident.
   await page.locator('[title="Application menu"]').click()
   await page.waitForTimeout(500)
   await page.getByText('New', { exact: true }).click()
   await page.waitForTimeout(500)
   await page.getByRole('button', { name: 'Discard' }).click()
   await page.waitForTimeout(2000)
+
+  // --- afterClear (model-free) ---
+  // Drop back to the cold idle window and wait for the aligner to unload, so the
+  // post-clear snapshot holds no heavy model. Turning the flag off re-arms the
+  // idle timer with the cold window, so this unloads in ~10s.
+  await setSettings(page, { runHeavyWhileRecording: false })
+  await page.waitForFunction(
+    () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const api = (window as any).__braatMem
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const v = api?.snapshot()?.sources?.workers?.values ?? {}
+      return (v.transcribeWorkers ?? 0) === 0 && (v.alignWorkerLive ?? 0) === 0
+    },
+    undefined,
+    { timeout: 30_000 },
+  )
   await forceGc(page)
   await page.waitForTimeout(1000)
 
@@ -206,7 +293,8 @@ export const sttAlignment: Scenario = async (
     name: 'stt-alignment',
     steps: [
       { name: 'baseline', snapshot: summarizeSnapshot(baseline) },
-      { name: 'afterStt', snapshot: summarizeSnapshot(afterStt) },
+      { name: 'transcribing', snapshot: summarizeSnapshot(transcribing) },
+      { name: 'aligning', snapshot: summarizeSnapshot(aligning) },
       { name: 'afterClear', snapshot: summarizeSnapshot(afterClear) },
     ],
   }

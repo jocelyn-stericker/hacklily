@@ -10,6 +10,7 @@ import type { ChunkTranscript } from '#/lib/transcription'
 
 import { createAlignJob, terminateAlignWorker } from './alignJob'
 import type { AlignJobDeps } from './alignJob'
+import { registerHeavyWorker } from './heavyWorkerArbiter'
 import type { TranscriptSink } from './transcribeJob'
 
 // A minimal stand-in for the real AlignWorker. It models the bit that matters
@@ -108,7 +109,7 @@ describe('align worker teardown', () => {
       sink,
       onModelUnavailable: () => {},
       enabled: () => true,
-      isHeavyAllowed: () => true,
+      isRecording: () => false,
     }
 
     const processChunk = await createAlignJob(deps).resolve()
@@ -133,5 +134,49 @@ describe('align worker teardown', () => {
     expect(worker.listeners.size).toBe(0)
     // The half-done tier was rolled back rather than left "aligning".
     expect(sink.get(c)?.cloud?.job).toBeUndefined()
+  })
+})
+
+describe('alignment deferral and single-residency', () => {
+  it('defers all work while recording, resumes once it stops', () => {
+    const sink = makeSink()
+    const c = chunk()
+    sink.set(c, { cloud: { text: 'hello world' } })
+    const recording = { value: true }
+    const job = createAlignJob({
+      sink,
+      onModelUnavailable: () => {},
+      enabled: () => true,
+      isRecording: () => recording.value,
+    })
+
+    expect(job.needsWork(c)).toBe(false)
+    recording.value = false
+    expect(job.needsWork(c)).toBe(true)
+  })
+
+  it('evicts the transcription worker before building the aligner', async () => {
+    const transcribeTeardown = vi.fn()
+    registerHeavyWorker('transcribe', transcribeTeardown)
+
+    const sink = makeSink()
+    const c = chunk()
+    sink.set(c, { cloud: { text: 'hello world' } })
+    const deps: AlignJobDeps = {
+      sink,
+      onModelUnavailable: () => {},
+      enabled: () => true,
+      isRecording: () => false,
+    }
+
+    const processChunk = await createAlignJob(deps).resolve()
+    const done = processChunk!(c, span(sealedRope(100)))
+    await settle(() => FakeWorker.instances.length > 0)
+
+    // acquireHeavy('align') ran, tearing down the registered transcribe worker.
+    expect(transcribeTeardown).toHaveBeenCalled()
+
+    terminateAlignWorker()
+    await done
   })
 })
