@@ -6,7 +6,23 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import type { SpeechGate as SpeechGateType } from './VadProcessor'
 
 const mockState = vi.hoisted(() => ({
-  sessionRunCalls: [] as Array<{ feeds: Record<string, unknown> }>,
+  sessionRunCalls: [] as Array<{
+    feeds: Record<string, any>
+    inputData: Float32Array
+    stateData: Float32Array
+  }>,
+  // The processor now reuses one input and one state tensor across inferences
+  // (their backing arrays are mutated in place each run), so we snapshot the
+  // contents at call time. Aliasing the live tensor would observe a later run's
+  // data. Tests must read `inputData`/`stateData`, not `feeds.input.data`, for
+  // per-call values; `feeds` is kept only for stable metadata like `dims`.
+  recordRun(feeds: Record<string, any>) {
+    this.sessionRunCalls.push({
+      feeds,
+      inputData: (feeds.input.data as Float32Array).slice(),
+      stateData: (feeds.state.data as Float32Array).slice(),
+    })
+  },
 }))
 
 class MockTensor {
@@ -27,7 +43,7 @@ class MockTensor {
 
 class MockSession {
   async run(feeds: Record<string, unknown>) {
-    mockState.sessionRunCalls.push({ feeds })
+    mockState.recordRun(feeds)
     return {
       output: { data: new Float32Array([0.5]) },
       stateN: { data: new Float32Array(256).fill(0.1) },
@@ -126,7 +142,7 @@ describe('VadStreamProcessor', () => {
         feeds: Record<string, unknown>,
       ) {
         callCount++
-        mockState.sessionRunCalls.push({ feeds })
+        mockState.recordRun(feeds)
         return {
           output: { data: new Float32Array([callCount * 0.1]) },
           stateN: { data: new Float32Array(256).fill(0.1) },
@@ -155,8 +171,7 @@ describe('VadStreamProcessor', () => {
 
       await processor.feed(samples)
       await processor.feed(samples)
-      const secondCall = mockState.sessionRunCalls[1]!
-      const secondState = (secondCall.feeds.state as any).data
+      const secondState = mockState.sessionRunCalls[1]!.stateData
 
       // State should be updated from session output, not the initial zero
       expect(secondState).toBeDefined()
@@ -170,7 +185,7 @@ describe('VadStreamProcessor', () => {
         feeds: Record<string, unknown>,
       ) {
         callCount++
-        mockState.sessionRunCalls.push({ feeds })
+        mockState.recordRun(feeds)
         const state = new Float32Array(256).fill(callCount * 0.1)
         return {
           output: { data: new Float32Array([0.5]) },
@@ -186,8 +201,8 @@ describe('VadStreamProcessor', () => {
       await processor.feed(samples)
       // After first feed, second call's state should have first output values
       await processor.feed(samples)
-      const secondInput = mockState.sessionRunCalls[1]!.feeds.state as any
-      expect(secondInput.data[0]).toBeCloseTo(0.1, 5)
+      const secondInputState = mockState.sessionRunCalls[1]!.stateData
+      expect(secondInputState[0]).toBeCloseTo(0.1, 5)
 
       MockSession.prototype.run = originalRun
     })
@@ -224,8 +239,7 @@ describe('VadStreamProcessor', () => {
       processor.reset()
 
       await processor.feed(new Float32Array(512).fill(0.1))
-      const secondInference = mockState.sessionRunCalls[1]!
-      const stateAfterReset = (secondInference.feeds.state as any).data
+      const stateAfterReset = mockState.sessionRunCalls[1]!.stateData
 
       // After reset, state should be zero-initialized
       expect(stateAfterReset[0]).toBe(0)
@@ -275,8 +289,7 @@ describe('VadStreamProcessor', () => {
       // Second inference input = VAD_CHUNK + VAD_V6_EXTRA_CONTEXT samples,
       // laid out as [64 context][512 chunk]. The context must hold chunk1's
       // trailing 64 samples (0.1), with chunk2's samples (0.2) following.
-      const secondInput = (mockState.sessionRunCalls[1]!.feeds.input as any)
-        .data as Float32Array
+      const secondInput = mockState.sessionRunCalls[1]!.inputData
       expect(secondInput).toBeDefined()
       expect(secondInput.length).toBe(512 + 64) // VAD_CHUNK + VAD_V6_EXTRA_CONTEXT
       for (let i = 0; i < 64; i++) expect(secondInput[i]).toBeCloseTo(0.1, 5)
@@ -289,7 +302,7 @@ describe('VadStreamProcessor', () => {
       await processor.feed(new Float32Array(512).fill(0.1))
 
       const firstInference = mockState.sessionRunCalls[0]!
-      const inputTensor = firstInference.feeds.input as any
+      const inputTensor = firstInference.feeds.input
       expect(inputTensor.dims).toEqual([1, 576]) // [1, VAD_CHUNK + VAD_V6_EXTRA_CONTEXT]
     })
 
@@ -299,7 +312,7 @@ describe('VadStreamProcessor', () => {
       await processor.feed(new Float32Array(512).fill(0.1))
 
       const firstInference = mockState.sessionRunCalls[0]!
-      const stateTensor = firstInference.feeds.state as any
+      const stateTensor = firstInference.feeds.state
       expect(stateTensor.dims).toEqual([2, 1, 128])
     })
 
@@ -309,7 +322,7 @@ describe('VadStreamProcessor', () => {
       await processor.feed(new Float32Array(512).fill(0.1))
 
       const firstInference = mockState.sessionRunCalls[0]!
-      const srTensor = firstInference.feeds.sr as any
+      const srTensor = firstInference.feeds.sr
       expect(srTensor.dims).toEqual([1])
       expect(srTensor.data).toEqual(new BigInt64Array([BigInt(16000)]))
     })
@@ -372,7 +385,7 @@ describe('VadStreamProcessor', () => {
         feeds: Record<string, unknown>,
       ) {
         inferenceCount++
-        mockState.sessionRunCalls.push({ feeds })
+        mockState.recordRun(feeds)
         return {
           output: { data: new Float32Array([inferenceCount * 0.1]) },
           stateN: { data: new Float32Array(256).fill(0.1) },

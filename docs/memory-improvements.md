@@ -175,17 +175,45 @@ quantum.
   survives the next iteration" asserts the overwrite-in-place + retain-must-copy
   semantics).
 
-## 4. Pool VAD ONNX tensors
+## 4. Pool VAD ONNX tensors — DONE
 
-Each 32 ms VAD inference builds fresh `ort.Tensor` objects wrapping
-`this.buf.slice()` and `this.state.slice()`:
-`src/lib/analysis/VadProcessor.ts:91-107`. Per-chunk allocation throughout the
-recording.
+**Shipped.** `VadStreamProcessor` now holds one persistent `_feeds` object
+(`src/lib/analysis/VadProcessor.ts`) reused across every inference, instead of
+rebuilding `input`/`state` tensors from `this.buf.slice()`/`this.state.slice()`
+plus a fresh `sr` `BigInt64Array` per 32 ms chunk. That eliminates two slices, a
+BigInt64Array, and three Tensor wrappers per inference (~30/sec for the whole
+recording).
 
-**Fix:** reuse the underlying `Float32Array`s across inferences (copy-on-write
-only if ONNX runtime mutates inputs) and re-wrap them in `ort.Tensor` only if
-wrapping is itself costly — otherwise just re-wrap. The state tensor in
-particular is read-modify-write every chunk and is a prime pool candidate.
+The `input`/`state` tensors wrap `this.buf`/`this.state` **by reference** (no
+copy): ort copies their current contents into the wasm heap at the start of each
+`session.run`, so each run sees fresh data. The state path is read-modify-write —
+`this.state.set(out.stateN.data)` overwrites the array the state tensor wraps,
+ready for the next run. `sr` is a compile-time constant. This is safe because
+runs are **serialized**: each `_run` is `await`ed before `buf` is shifted
+(`copyWithin`) or `state` is overwritten, and `VadWorker` further serializes
+feeds through `vadChain`, so no two inferences touch the buffers concurrently.
+
+The only per-inference allocations left are ort-internal output tensors
+(`out.stateN`, `out.output`), which would need the IO-binding API to pool — not
+worth it at this size.
+
+### Invariants to preserve (don't regress these)
+
+1. **Runs stay serialized.** Reuse is only safe because `buf`/`state` are never
+   mutated while an inference is in flight. Don't introduce a concurrent or
+   un-awaited `_run`.
+2. **Feed buffers are borrowed, valid only during a run.** The pooled tensors
+   alias `buf`/`state`; nothing may retain a feed's data across runs expecting a
+   snapshot. The unit test enforces this by snapshotting `input`/`state` at
+   call time (`mockState.recordRun`) — read `inputData`/`stateData`, never
+   `feeds.input.data`, for per-call values.
+
+### Not gated in Node
+
+`VadProcessor.memory.test.ts` only covers `SpeechGate` (the ONNX session can't
+load in Node), so this change has no Node allocation gate. `VadProcessor.test.ts`
+asserts the reuse contract behaviourally (single tensor, snapshot semantics); the
+allocation win itself is validated via the Playwright `npm run mem` harness.
 
 ## 5. Verify practice-route `analysisRef` clears at take end
 

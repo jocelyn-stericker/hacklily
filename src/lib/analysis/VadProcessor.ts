@@ -43,6 +43,26 @@ export class VadStreamProcessor {
   private bufLen = 0
   speechProbability = 0
 
+  // Persistent input feeds, reused across inferences to avoid per-chunk
+  // allocation (~30 inferences/sec for the whole recording: two slices + a
+  // BigInt64Array + three Tensor wrappers each). The input/state tensors wrap
+  // `buf`/`state` by reference; ort copies their current contents into the wasm
+  // heap at the start of each `session.run`, and runs are serialized (each
+  // `_run` is awaited before `buf`/`state` are next mutated), so reuse is safe.
+  // `sr` is a constant. Callers must not retain a feed buffer past a run.
+  private readonly _feeds = {
+    input: new ort.Tensor('float32', this.buf, [
+      1,
+      VAD_CHUNK + VAD_V6_EXTRA_CONTEXT,
+    ]),
+    state: new ort.Tensor('float32', this.state, [2, 1, 128]),
+    sr: new ort.Tensor(
+      'int64',
+      new BigInt64Array([BigInt(VAD_SAMPLE_RATE)]),
+      [1],
+    ),
+  }
+
   /**
    * Feed 16 kHz mono audio. `onChunk`, if given, fires once per chunk (in order)
    * with that chunk's speech probability, letting callers record the full series
@@ -88,19 +108,10 @@ export class VadStreamProcessor {
   }
 
   private async _run(session: ort.InferenceSession): Promise<void> {
-    const feeds = {
-      input: new ort.Tensor('float32', this.buf.slice(), [
-        1,
-        VAD_CHUNK + VAD_V6_EXTRA_CONTEXT,
-      ]),
-      state: new ort.Tensor('float32', this.state.slice(), [2, 1, 128]),
-      sr: new ort.Tensor(
-        'int64',
-        new BigInt64Array([BigInt(VAD_SAMPLE_RATE)]),
-        [1],
-      ),
-    }
-    const out = await session.run(feeds)
+    // _feeds.input/.state alias this.buf/this.state; their current contents are
+    // copied into the wasm heap here. State is read-modify-write: we overwrite
+    // this.state (which the feed tensor wraps) from stateN for the next run.
+    const out = await session.run(this._feeds)
     this.state.set(out['stateN']!.data as Float32Array)
     this.speechProbability = (out['output']!.data as Float32Array)[0]!
   }
