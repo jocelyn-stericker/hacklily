@@ -546,6 +546,161 @@ optimizer — so freeing the source buffer / shipping a pre-optimized align mode
 likely captures most of it, and a custom ORT build wouldn't move the dominant
 number. Measure the load peak before investing.
 
+## 10. Session memory budget (track/session limit) — TODO (placeholder)
+
+Brief stub so the numbering tracks the design discussion; full write-up deferred.
+Cap the linearly-growing PCM + analysis state by a **memory budget** (not a
+minutes constant): auto-finalize/seal the session when the projected retained
+bytes cross a threshold. The budget — not minutes — is the stored knob, so it
+self-adjusts as items 11/12 land rather than needing a magic constant rewritten.
+
+Sizing target is the 4 GB iPhone (no `navigator.deviceMemory` on iOS Safari, so
+we can't tune per device — the safe default must clear the worst target). Working
+back from a conservative ~1.0 GB tab ceiling, after reserving the heavy-model
+peak (~300 MB, item 8), tiles + canvas/GPU (~120–150 MB), app baseline (~80–100
+MB), and WebKit/fragmentation headroom (~150 MB), that leaves **~300 MB** for the
+growing state. At today's ~45 MB/min (below) that's **~6–7 min**; with item 11 it
+becomes ~20–60 min. This is reasoning, not measurement — these jetsam numbers are
+fuzzy and unreadable from JS on Safari; calibrate against the device (watch for
+the "reloaded because it used significant memory" event) once the `__braatMem`
+high-water probe exists.
+
+This is the **floor** that makes OOM impossible by construction. It stays
+complementary to items 11/12: compression/backing multiply the minutes the budget
+buys, and persistence (item 12) covers the backgrounding kills the budget can't.
+
+## 11. Compress retained audio + analysis — TODO
+
+After items 1–8 the retained state that's still O(recording length) is three
+terms (default config — `timeStepSec 0.002` → ~500 frames/s; `maxFrequencyHz
+5500` / `freqStepHz 20` → ~275 bins; mono f32). These are **estimates from the
+config, not measured** like the DONE items above:
+
+- **Analysis spectra** (`AnalysisFrame.spectrum`, ~275 f32/frame): **~33 MB/min** —
+  the dominant term. Derived (not source of truth).
+- **AnalysisFrame object overhead** (~10 fields × 500/s): ~4 MB/min. Derived.
+- **PCM** (`AudioRope` SABs): **~10.6 MB/min**. The only true source of truth.
+
+So ~45 MB/min of permanently-resident data. Two sub-levers; the realtime line
+matters less here than for item 12 because, with native int16 (below), PCM has
+one format everywhere — the live tail is int16 too, not a hot-f32 / cold-int16
+split.
+
+### PCM → store int16 as the rope's native format
+
+Make `AudioRope` natively int16 (producer converts on write, consumers convert on
+read), not a separate cold-only compression. Near-free at runtime and it removes a
+whole category of complexity.
+
+Why it barely costs anything:
+
+- **Quality.** int16 is a ~96 dB noise floor; phone mics deliver ~60–70 dB
+  effective SNR, so the quantization noise sits below the mic's own floor and below
+  the measurement floor for spectrogram/formant/pitch/VAD. Praat analyzes 16-bit
+  WAV routinely.
+- **Conversion is already paid.** The producer (worklet) does f32→int16 on a
+  128-sample quantum — trivial, on the only realtime-critical thread. Every
+  consumer already **copies** the rope into its own f32 DSP buffer at the read
+  boundary (item 3's `AudioRopeReader`), so int16→f32 folds into a copy that
+  already happens. The one real change: `AudioRope.read` becomes a per-element
+  convert loop instead of a bulk `view.set(subarray)` memcpy.
+
+Wins beyond the 2×:
+
+- **Banks the PCM 2× immediately, without building offload or any hot/cold format
+  split** — it's just the rope's format.
+- **One PCM format everywhere.** A future OPFS tier (item 12) becomes a raw byte
+  append (already int16, no transcode); 16-bit WAV export is free.
+
+Costs / caveats to design around:
+
+- **Fixed full-scale**: ±1.0 → ±32767, and **clamp on write** (getUserMedia f32
+  can nominally exceed [-1, 1]).
+- **Quiet input + later normalization**: quantizing at input and then boosting a
+  very quiet recording via the LUFS path ([[project_loudness_normalization]])
+  amplifies the quantization floor — below the mic floor in practice, but note it.
+- **Blast radius, not runtime.** This touches `AudioRope` / the SabRope
+  publish/grow/seal handshake ([[project_sabrope]]) — the most concurrency-
+  sensitive component. Gate hard with the existing `*.memory.test.ts` and SabRope
+  invariants; the risk is destabilizing that code, not the per-element convert.
+
+### Spectra → quantize OR recompute (pick one, not both)
+
+- **Quantize** f32 → int8/int16: dB has bounded dynamic range (~50–60 dB), and
+  int8 at ~0.25 dB steps is plenty for a colormapped display + hover readout. 4× /
+  2×, easy, store-and-keep. Lowest-risk way to crush the biggest term (33 → ~8
+  MB/min).
+- **Recompute from PCM on demand** (the item 1c / item 2 `frameHfEnergy` move —
+  "rope is the source, derivations are disposable"): drops the spectra term
+  to **zero** (and the frame-object overhead with it). Strictly better than
+  quantizing **if built**, so don't do both — quantize is the cheap version of the
+  same goal.
+
+### Lossy codec — playback copy only, never the analysis source
+
+Opus/AAC (~50×) only for a **separate playback/preview copy**. Re-running
+spectrogram/formant on lossy-decoded audio injects artifacts into the exact bands
+we measure. `MediaRecorder` produces Opus ~free from hardware, but it does **not**
+replace the int16 master (export quality, scrub precision). Keep int16 PCM as the
+master.
+
+### Projected end-state
+
+int16 PCM + recompute/quantize spectra → cold cost ~**5–13 MB/min** (from ~45) — a
+4–9× multiplier on the item 10 budget, enough that the limit stops being a real
+constraint for normal use. Unlike the worker-internal items, this changes
+**retained bytes**, so `npm run mem` will actually show the reduction — gate it
+there.
+
+## 12. Durable audio backing (OPFS) — recovery first, offload second — TODO
+
+Persistence and offload share the **same write path**, but recovery is the
+stronger motivation. Writing committed audio to OPFS just to lower resident memory
+(offload) is a big architectural lift that only pays past the item 10 budget.
+Writing it so a **backgrounding kill, jetsam, or reload doesn't vaporize the
+session** pays from the first take — and on iOS Safari (aggressive backgrounded-
+tab eviction) that's a common, real UX failure today, independent of memory
+pressure. So lead with recovery; offload is the bonus layered on top.
+
+### Structure: write-through, then evict
+
+A worker drains **sealed** rope segments to OPFS as they finalize, in two stages:
+
+1. **Write-through, keep in memory** = persistence / recovery. No memory saving
+   yet, low risk, and it's the half that delivers the durability value.
+2. **Drop persisted segments from memory** = offload (the memory win), layered on
+   once write-through is solid.
+
+The **live tail can't be backed** — it's in the SAB (worklet writes it); only
+sealed/committed data flushes. Flush happens off the audio thread. Same hot/cold
+line as items 1 and 11.
+
+### OPFS vs IndexedDB
+
+- **OPFS** (Origin Private File System): worker sync access handles, large quota,
+  fast streaming append — for the **bulk int16 PCM blocks**. Native int16 (item
+  11) makes this a raw byte append, no transcode.
+- **IndexedDB**: transactional/structured — for the **session index / metadata**
+  and an optional **quantized-analysis cache** (see below). Slower for large binary
+  streaming; iOS Safari has had IDB reliability quirks, so keep bulk audio in OPFS.
+
+### Honesty caveats (don't oversell "recovery")
+
+- **Best-effort storage.** Both OPFS and IDB are evictable under storage pressure;
+  `navigator.storage.persist()` is **often not granted on iOS Safari**, and Safari
+  evicts unused storage after ~7 days. Scope the claim to "recover from the common
+  kills — backgrounding, jetsam, reload," **not** "durable archive."
+- **Recovery speed vs. storage.** If analysis is recomputed-from-PCM (item 11),
+  a reload must re-derive it — slow for a long session. Persisting the **quantized
+  analysis cache** trades storage for fast resume; that's the explicit tradeoff to
+  decide when building this.
+
+### Interaction with item 10
+
+Recovery is the safety net for the kills the budget **can't** prevent (a user
+switching apps mid-session); the budget still bounds everything else. Complementary
+— don't rely on recovering a 1-hour-session reload as a normal flow.
+
 ---
 
 ## Lower-priority / confirmed bounded
