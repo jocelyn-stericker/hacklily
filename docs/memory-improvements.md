@@ -547,50 +547,14 @@ boundaries and capped at align's `durationMax: 10` s — so activations are smal
 next to ~120 MB of weights, and there's effectively nothing to reclaim. Reverted:
 no benefit, and the flags carry a small inference-latency cost.
 
-## 9. Optimized (pre-fused) ORT model / minimal ORT build — TODO (assessment)
+## 9. Optimized (pre-fused) ORT model / minimal ORT build — DONE
 
-Honest framing, since this is the next heavy-worker lever after the lower-hanging
-fruit above. **Important caveat: every agentMemory number we have is sampled at
-_settle_ time** (after the job finishes, after `forceGc`). Graph optimization and
-session setup are **transient**, during model load — gone before we measure. So
-we currently have **no number** for setup cost, and the load-time peak is exactly
-the OOM-relevant moment on iOS. To turn this from speculation into a number, the
-prerequisite is sampling the wasm heap high-water mark
-(`WebAssembly.Memory.buffer.byteLength`, which only grows) around session
-creation. Not yet done.
-
-Prior on where setup memory goes, largest first:
-
-1. **Double-resident weights at session creation.** `InferenceSession.create(bytes)`
-   copies weights into the ORT wasm heap while the source `ArrayBuffer` is still
-   alive — a transient ~2× window (~+120 MB). For the align path the source
-   buffer is unreferenced after the `.then` and GCs; for **Moonshine via
-   transformers.js this is unverified**. Likely bigger than the optimizer passes.
-2. **Graph optimization scratch.** `graphOptimizationLevel: 'all'` holds original
-   - optimized graph transiently and may dequantize folded constants. Real, but
-     second-order.
-
-The two levers, and the honest read on each (**transformers.js is retained in
-both** — it's convenient and its own overhead is single-digit MB):
-
-- **Pre-optimized ORT model (the chosen next step).** Run ORT's offline
-  optimization once, ship the already-fused graph, and load it with
-  `graphOptimizationLevel: 'disabled'` so the runtime skips optimization at load.
-  transformers.js still does the loading — you just point it at the pre-optimized
-  `.onnx` in the model repo/cache. Removes the load-time optimization passes (and
-  CPU). Fully in our control for the **align model** (we own that ONNX); harder to
-  inject cleanly for Moonshine. Best effort/payoff _if_ setup proves costly —
-  which is unmeasured.
-- **Minimal/custom ORT build.** Strips unused operators to shrink the `ort-web`
-  **wasm code** footprint (~10–15 MB), _not_ the weights. We already override
-  `env.backends.onnx.wasm.wasmPaths`, so a custom build slots in under
-  transformers.js unchanged. Modest win, real build/maintenance cost — lower value
-  than the pre-optimized model, deferred.
-
-Bottom line: most of the setup cost is probably the double-weights window, not the
-optimizer — so freeing the source buffer / shipping a pre-optimized align model
-likely captures most of it, and a custom ORT build wouldn't move the dominant
-number. Measure the load peak before investing.
+Using minimally-optimized models was the sweet spot. Reduced infererence memory by
+30MB, and removed the transient 2x window. Also allowed us to use a minimal onnx
+build (same as for Silero) for moonshine & CUPE, helping with bundle size. It
+also enables slightly fater loading. Extended optimization is actually slower
+on wasm. I didn't bother with ORT and whisper, since it only works on GPU, and
+is also 500MB -- not where I'm looking to optimize.
 
 ## 10. Session memory budget (track/session limit) — TODO (placeholder)
 
