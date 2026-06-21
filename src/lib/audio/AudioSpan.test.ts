@@ -32,12 +32,18 @@ function chunk(opts: {
   }
 }
 
-// A rope filled with a ramp (sample i === i), so a returned slice reveals the
-// offset it was read from.
+// A rope filled with a ramp (sample i === toF32(i)), so a returned slice
+// reveals the offset it was read from. Values are in [-1, 1) and round-trip
+// exactly through the rope's int16 storage (see AudioRope.test.ts).
+const PCM_SCALE = 32768
+function toF32(intValue: number): number {
+  return ((intValue % 65536) - 32768) / PCM_SCALE
+}
+
 function rampRope(length: number, sampleRate = 100): AudioRope {
   const rope = new AudioRope(sampleRate)
   const data = new Float32Array(length)
-  for (let i = 0; i < length; i++) data[i] = i
+  for (let i = 0; i < length; i++) data[i] = toF32(i)
   rope.append(data)
   return rope
 }
@@ -60,14 +66,14 @@ describe('chunkAudioFromRopes', () => {
     expect(span0).not.toBeNull()
     const pcm0 = await readAudioSpan(span0!)
     expect(pcm0.length).toBe(50)
-    expect(pcm0[0]).toBe(0)
-    expect(pcm0[49]).toBe(49)
+    expect(pcm0[0]).toBe(toF32(0))
+    expect(pcm0[49]).toBe(toF32(49))
 
     const span1 = chunkAudioFromRopes(c1, chunks, ropes)
     const pcm1 = await readAudioSpan(span1!)
     expect(pcm1.length).toBe(30)
-    expect(pcm1[0]).toBe(50)
-    expect(pcm1[29]).toBe(79)
+    expect(pcm1[0]).toBe(toF32(50))
+    expect(pcm1[29]).toBe(toF32(79))
   })
 
   it('maps each recording session to its own rope, resetting the offset', async () => {
@@ -80,15 +86,15 @@ describe('chunkAudioFromRopes', () => {
     const ropes = [rampRope(70), rampRope(20)]
 
     const a = await readAudioSpan(chunkAudioFromRopes(s0a, chunks, ropes)!)
-    expect(a[0]).toBe(0)
+    expect(a[0]).toBe(toF32(0))
     expect(a.length).toBe(40)
 
     const b = await readAudioSpan(chunkAudioFromRopes(s0b, chunks, ropes)!)
-    expect(b[0]).toBe(40)
+    expect(b[0]).toBe(toF32(40))
     expect(b.length).toBe(30)
 
     const c = await readAudioSpan(chunkAudioFromRopes(s1, chunks, ropes)!)
-    expect(c[0]).toBe(0) // reads from rope1, not past rope0
+    expect(c[0]).toBe(toF32(0)) // reads from rope1, not past rope0
     expect(c.length).toBe(20)
   })
 

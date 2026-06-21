@@ -187,7 +187,7 @@ function Practice() {
       }
       return {
         takeCount: state.takes.length,
-        takeBytes: state.takes.reduce((s, t) => s + t.span.rope.length * 4, 0),
+        takeBytes: state.takes.reduce((s, t) => s + t.span.rope.length * 2, 0),
         analysisFrameCount: analysisRef.current.length,
         analysisSpectrumBytes,
         speechDetectedCount,

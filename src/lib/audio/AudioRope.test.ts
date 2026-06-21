@@ -9,29 +9,38 @@ import { AudioRope } from './AudioRope'
 // the boundary-crossing tests below are meaningless if these drift apart.
 const SEG = 65536
 
-// Ramp of consecutive integers starting at `start`. Integers up to 2^24 are
-// exact in Float32, and our largest ramp stays well under that, so reads can
-// be compared with `===` and any misplacement/seam error shows up as a
-// discontinuity at a known index.
+// The rope stores int16 natively (f32 on the API, int16 internally). To test
+// exact round-trips we use a sawtooth: each integer maps to a unique f32 value
+// in [-1, 1) that survives the f32→int16→f32 conversion bit-for-bit. The
+// pattern repeats every 65536 samples (the full int16 range), which is enough
+// to detect misplacement within any segment-sized window.
+const PCM_SCALE = 32768
+function toF32(intValue: number): number {
+  return ((intValue % 65536) - 32768) / PCM_SCALE
+}
+
+// Ramp of consecutive integer values, encoded as round-trippable f32. Reading
+// back must reproduce `toF32(start + i)` for each `i`; any misplacement or seam
+// error shows up as a discontinuity at a known index.
 function ramp(start: number, len: number): Float32Array {
   const a = new Float32Array(len)
   for (let i = 0; i < len; i += 1) {
-    a[i] = start + i
+    a[i] = toF32(start + i)
   }
   return a
 }
 
 function firstMismatch(actual: Float32Array, start: number): number {
   for (let i = 0; i < actual.length; i += 1) {
-    if (actual[i] !== start + i) {
+    if (actual[i] !== toF32(start + i)) {
       return i
     }
   }
   return -1
 }
 
-// Asserts `actual` is the ramp `start, start+1, ...`. Reports the first bad
-// index rather than dumping the whole array.
+// Asserts `actual` is the ramp `toF32(start), toF32(start+1), ...`. Reports the
+// first bad index rather than dumping the whole array.
 function expectRamp(actual: Float32Array, start: number): void {
   expect(firstMismatch(actual, start)).toBe(-1)
 }
@@ -89,7 +98,18 @@ describe('AudioRope', () => {
       const dest = new Float32Array(10)
       dest.fill(-1)
       r.read(dest, 20, 3, 5) // copy [20..25) into dest[3..8)
-      expect(Array.from(dest)).toEqual([-1, -1, -1, 20, 21, 22, 23, 24, -1, -1])
+      expect(Array.from(dest)).toEqual([
+        -1,
+        -1,
+        -1,
+        toF32(20),
+        toF32(21),
+        toF32(22),
+        toF32(23),
+        toF32(24),
+        -1,
+        -1,
+      ])
     })
   })
 
@@ -115,7 +135,7 @@ describe('AudioRope', () => {
 
       const two = new Float32Array(2)
       r.read(two, SEG - 1, 0, 2) // last of seg 0, first of seg 1
-      expect(Array.from(two)).toEqual([SEG - 1, SEG])
+      expect(Array.from(two)).toEqual([toF32(SEG - 1), toF32(SEG)])
     })
 
     it('handles a single append spanning multiple segments', () => {

@@ -18,6 +18,13 @@ import { describe, it, expect } from 'vitest'
 import { AudioRope, SEG_SAMPLES } from './AudioRope'
 import { AudioRopeReader } from './AudioRopeReader'
 
+// The rope stores int16 natively; values of the form k/32768 (k in int16
+// range) round-trip exactly. See AudioRope.test.ts for the full rationale.
+const PCM_SCALE = 32768
+function toF32(intValue: number): number {
+  return ((intValue % 65536) - 32768) / PCM_SCALE
+}
+
 function hasGc(): boolean {
   return typeof (globalThis as { gc?: unknown }).gc === 'function'
 }
@@ -56,7 +63,7 @@ describe('AudioRopeReader memory', () => {
   it('yields a single reused buffer (no per-quantum allocation)', async () => {
     const rope = new AudioRope(44100)
     const data = new Float32Array(SEG_SAMPLES)
-    for (let i = 0; i < SEG_SAMPLES; i++) data[i] = i
+    for (let i = 0; i < SEG_SAMPLES; i++) data[i] = toF32(i)
     rope.append(data)
     rope.seal()
 
@@ -75,13 +82,13 @@ describe('AudioRopeReader memory', () => {
     }
     expect(count).toBe(SEG_SAMPLES / 128) // 512 chunks
     expect(seen.size).toBe(1) // one reused buffer, not 512 slices
-    expect(firstChunkFirstSample).toBe(0) // data[0]
+    expect(firstChunkFirstSample).toBe(toF32(0)) // data[0]
   })
 
   it('a copied chunk survives the next iteration; the raw buffer is overwritten', async () => {
     const rope = new AudioRope(44100)
     const data = new Float32Array(SEG_SAMPLES)
-    for (let i = 0; i < SEG_SAMPLES; i++) data[i] = i
+    for (let i = 0; i < SEG_SAMPLES; i++) data[i] = toF32(i)
     rope.append(data)
     rope.seal()
 
@@ -94,16 +101,16 @@ describe('AudioRopeReader memory', () => {
     expect(first.done).toBe(false)
     const borrowed = first.value!
     const copy = borrowed.slice()
-    expect(borrowed[0]).toBe(0)
-    expect(copy[0]).toBe(0)
+    expect(borrowed[0]).toBe(toF32(0))
+    expect(copy[0]).toBe(toF32(0))
 
     // Second quantum: samples 128..255. The borrowed view (same backing array)
     // is now overwritten in place; the copy is unaffected — this is the
     // retain-must-copy contract consumers rely on.
     const second = await iter.next()
     expect(second.value).toBe(borrowed) // identity: same reused buffer
-    expect(borrowed[0]).toBe(128) // overwritten
-    expect(copy[0]).toBe(0) // snapshot preserved
+    expect(borrowed[0]).toBe(toF32(128)) // overwritten
+    expect(copy[0]).toBe(toF32(0)) // snapshot preserved
   })
 
   itGc('reader is collectable after seal+iteration completes', async () => {
@@ -153,7 +160,7 @@ describe('AudioRopeReader memory', () => {
     // Append 2.5 segments worth.
     const total = SEG_SAMPLES * 2 + Math.floor(SEG_SAMPLES / 2)
     const data = new Float32Array(SEG_SAMPLES)
-    for (let i = 0; i < SEG_SAMPLES; i++) data[i] = i
+    for (let i = 0; i < SEG_SAMPLES; i++) data[i] = toF32(i)
 
     for (let i = 0; i < 2; i++) rope.append(data)
     rope.append(data.subarray(0, Math.floor(SEG_SAMPLES / 2)))
@@ -172,9 +179,9 @@ describe('AudioRopeReader memory', () => {
     const dest = new Float32Array(total)
     rope.read(dest, 0, 0, total)
     // Verify data integrity at segment boundaries.
-    expect(dest[0]).toBe(0)
-    expect(dest[SEG_SAMPLES - 1]).toBe(SEG_SAMPLES - 1)
-    expect(dest[SEG_SAMPLES]).toBe(0)
-    expect(dest[total - 1]).toBe(Math.floor(SEG_SAMPLES / 2) - 1)
+    expect(dest[0]).toBe(toF32(0))
+    expect(dest[SEG_SAMPLES - 1]).toBe(toF32(SEG_SAMPLES - 1))
+    expect(dest[SEG_SAMPLES]).toBe(toF32(0))
+    expect(dest[total - 1]).toBe(toF32(Math.floor(SEG_SAMPLES / 2) - 1))
   })
 })

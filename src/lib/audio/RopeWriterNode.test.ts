@@ -122,10 +122,11 @@ describe('RopeWriterProcessor', () => {
       expect(rope.rawLength).toBe(4)
       const out = new Float32Array(4)
       rope.read(out, 0, 0, 4)
-      expect(out[0]).toBeCloseTo(0.1, 5)
-      expect(out[1]).toBeCloseTo(0.2, 5)
-      expect(out[2]).toBeCloseTo(0.3, 5)
-      expect(out[3]).toBeCloseTo(0.4, 5)
+      // int16 quantization: ~1/32768 error per sample, so 4 decimal places.
+      expect(out[0]).toBeCloseTo(0.1, 4)
+      expect(out[1]).toBeCloseTo(0.2, 4)
+      expect(out[2]).toBeCloseTo(0.3, 4)
+      expect(out[3]).toBeCloseTo(0.4, 4)
     })
 
     it('skips leading all-zero quanta until the first non-zero sample', () => {

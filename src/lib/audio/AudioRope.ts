@@ -16,6 +16,20 @@ const CTRL_LENGTH = 0
 const CTRL_SEALED = 1
 const CTRL_SLOTS = 2
 
+// Audio is stored natively as int16 (see docs/memory-improvements.md item 11):
+// half the memory of f32, with a ~96 dB noise floor that sits below the
+// ~60-70 dB SNR of phone mics. The API stays f32 on both sides — the producer
+// converts on write, consumers convert on read — so int16→f32 folds into the
+// copy every consumer already makes at the read boundary.
+const PCM_SCALE = 32768
+
+function f32ToInt16(s: number): number {
+  const scaled = s * PCM_SCALE
+  if (scaled >= 32767) return 32767
+  if (scaled <= -32768) return -32768
+  return Math.round(scaled)
+}
+
 export type AudioRopeGrow = {
   type: 'audio-rope-grow'
   /** Number of buffers consumer must have before appending `buffers`. */
@@ -63,7 +77,7 @@ export class AudioRope {
   #sampleRate: number
 
   #buffers: Array<SharedArrayBuffer>
-  #buffersView: Array<Float32Array<SharedArrayBuffer>>
+  #buffersView: Array<Int16Array<SharedArrayBuffer>>
 
   #ctrlPtr: SharedArrayBuffer
   #ctrlView: Int32Array
@@ -78,10 +92,10 @@ export class AudioRope {
     if (typeof init === 'number') {
       this.#sampleRate = init
       const sab = new SharedArrayBuffer(
-        Float32Array.BYTES_PER_ELEMENT * SEG_SAMPLES,
+        Int16Array.BYTES_PER_ELEMENT * SEG_SAMPLES,
       )
       this.#buffers = [sab]
-      this.#buffersView = [new Float32Array(sab)]
+      this.#buffersView = [new Int16Array(sab)]
       this.#ctrlPtr = new SharedArrayBuffer(
         Int32Array.BYTES_PER_ELEMENT * CTRL_SLOTS,
       )
@@ -92,7 +106,7 @@ export class AudioRope {
 
       this.#sampleRate = init.sampleRate
       this.#buffers = init.buffers
-      this.#buffersView = init.buffers.map((sab) => new Float32Array(sab))
+      this.#buffersView = init.buffers.map((sab) => new Int16Array(sab))
       this.#ctrlPtr = init.ctrlPtr
       this.#ctrlView = new Int32Array(this.#ctrlPtr)
     }
@@ -147,10 +161,10 @@ export class AudioRope {
     // Always have one free buffer.
     while (this.#buffers.length <= segmentEnd + 1) {
       const sab = new SharedArrayBuffer(
-        Float32Array.BYTES_PER_ELEMENT * SEG_SAMPLES,
+        Int16Array.BYTES_PER_ELEMENT * SEG_SAMPLES,
       )
       this.#buffers.push(sab)
-      this.#buffersView.push(new Float32Array(sab))
+      this.#buffersView.push(new Int16Array(sab))
     }
 
     let i = 0
@@ -158,7 +172,9 @@ export class AudioRope {
       const view = this.#buffersView[segment]!
       const writeIdx = this.#indexFor(length)
       const toAdd = Math.min(data.length - i, SEG_SAMPLES - writeIdx)
-      view.set(data.subarray(i, i + toAdd), writeIdx)
+      for (let j = 0; j < toAdd; j += 1) {
+        view[writeIdx + j] = f32ToInt16(data[i + j]!)
+      }
       length += toAdd
       i += toAdd
     }
@@ -233,7 +249,9 @@ export class AudioRope {
       const toWrite = Math.min(SEG_SAMPLES - idx, count)
       const view = this.#buffersView[seg]!
 
-      dest.set(view.subarray(idx, idx + toWrite), writeTo)
+      for (let j = 0; j < toWrite; j += 1) {
+        dest[writeTo + j] = view[idx + j]! / PCM_SCALE
+      }
       readFrom += toWrite
       writeTo += toWrite
       count -= toWrite
@@ -246,7 +264,7 @@ export class AudioRope {
     }
     for (const buffer of grow.buffers) {
       this.#buffers.push(buffer)
-      this.#buffersView.push(new Float32Array(buffer))
+      this.#buffersView.push(new Int16Array(buffer))
     }
     for (const cb of this.#growListeners) cb(grow)
   }

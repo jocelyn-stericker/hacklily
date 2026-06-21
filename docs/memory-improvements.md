@@ -569,8 +569,10 @@ we can't tune per device — the safe default must clear the worst target). Work
 back from a conservative ~1.0 GB tab ceiling, after reserving the heavy-model
 peak (~300 MB, item 8), tiles + canvas/GPU (~120–150 MB), app baseline (~80–100
 MB), and WebKit/fragmentation headroom (~150 MB), that leaves **~300 MB** for the
-growing state. At today's ~45 MB/min (below) that's **~6–7 min**; with item 11 it
-becomes ~20–60 min. This is reasoning, not measurement — these jetsam numbers are
+growing state. At the pre-item-11 ~45 MB/min that was **~6–7 min**; with item 11's
+int16 PCM (done, ~5.3 MB/min) it's ~40 MB/min, so **~7–8 min**; with item 11's
+spectra quantize/recompute (todo, ~33 MB/min → ~8 MB/min or 0) it becomes
+~20–60 min. This is reasoning, not measurement — these jetsam numbers are
 fuzzy and unreadable from JS on Safari; calibrate against the device (watch for
 the "reloaded because it used significant memory" event) once the `__braatMem`
 high-water probe exists.
@@ -579,41 +581,66 @@ This is the **floor** that makes OOM impossible by construction. It stays
 complementary to items 11/12: compression/backing multiply the minutes the budget
 buys, and persistence (item 12) covers the backgrounding kills the budget can't.
 
-## 11. Compress retained audio + analysis — TODO
+## 11. Compress retained audio + analysis — PCM DONE, spectra TODO
 
 After items 1–8 the retained state that's still O(recording length) is three
 terms (default config — `timeStepSec 0.002` → ~500 frames/s; `maxFrequencyHz
-5500` / `freqStepHz 20` → ~275 bins; mono f32). These are **estimates from the
-config, not measured** like the DONE items above:
+5500` / `freqStepHz 20` → ~275 bins; mono f32):
 
 - **Analysis spectra** (`AnalysisFrame.spectrum`, ~275 f32/frame): **~33 MB/min** —
-  the dominant term. Derived (not source of truth).
+  the dominant term. Derived (not source of truth). **Still TODO.**
 - **AnalysisFrame object overhead** (~10 fields × 500/s): ~4 MB/min. Derived.
-- **PCM** (`AudioRope` SABs): **~10.6 MB/min**. The only true source of truth.
+- **PCM** (`AudioRope` SABs): was **~10.6 MB/min** at f32, now **~5.3 MB/min** at
+  int16 (below). The only true source of truth.
 
-So ~45 MB/min of permanently-resident data. Two sub-levers; the realtime line
-matters less here than for item 12 because, with native int16 (below), PCM has
-one format everywhere — the live tail is int16 too, not a hot-f32 / cold-int16
-split.
+### PCM → store int16 as the rope's native format — DONE
 
-### PCM → store int16 as the rope's native format
+**Shipped.** `AudioRope` is now natively int16: segment SABs hold
+`Int16Array(SEG_SAMPLES)` (128 KB) instead of `Float32Array` (256 KB), so PCM
+memory halves with no API change. The producer converts f32→int16 on write,
+consumers convert int16→f32 on read — the rope still takes and yields
+`Float32Array` everywhere, so every consumer (`AudioRopeReader`, the playback
+worklet, `readAudioSpan`, `exportWav`, `ropeLoudness`) is unchanged at the call
+site. The one real change is that `AudioRope.read` is a per-element convert
+loop (`int16 / 32768`) instead of a bulk `view.set(subarray)` memcpy, and
+`append` is a per-element `Math.round(s * 32768)` with clamp to [-32768, 32767]
+instead of a bulk `view.set`.
 
-Make `AudioRope` natively int16 (producer converts on write, consumers convert on
-read), not a separate cold-only compression. Near-free at runtime and it removes a
-whole category of complexity.
+The conversion uses `Math.round(s * 32768)` (symmetric scaling) and
+`int16 / 32768` (inverse), giving a max quantization error of ~0.5/32768 ≈
+1.5e-5 — below the measurement floor for spectrogram/formant/pitch/VAD, and
+well below the ~60–70 dB SNR of phone mics (int16's ~96 dB noise floor). The
+`AudioRopeShare` protocol is unchanged: SABs are opaque byte buffers, so
+consumers just create `Int16Array` views instead of `Float32Array` — no
+version field needed since ropes are never persisted across sessions.
 
-Why it barely costs anything:
+**Measured — `npm run mem:detail -- --scenario main-import` (60 s WAV,
+chromium L2), before → after this item:**
+
+- `ropeBytes`: **10.1 MB → 5.0 MB** (halved, exactly as expected).
+- `practice-takes` `takeBytes`: **1.4 MB → 707 KB** (3 takes, halved).
+- `repeated-import-clear` `ropeBytes`: **858 KB → 429 KB** per import cycle.
+- `main-import` total retained peak: **34.7 MB → 29.7 MB** (the 5 MB PCM
+  saving; `spectrumBytes` 14.5 MB is now the dominant term, untouched — that's
+  the spectra sub-lever below).
+- No regressions: `repeated-import-clear` drops cleanly to 0 on each clear;
+  `stt-alignment` single-residency unchanged; all 794 unit tests + 5 memory
+  tests pass.
+
+The `ropeBytes` probe (`index.tsx`, `practice.tsx`) was updated from
+`length * 4` to `length * 2` to reflect the new int16 storage.
+
+### Why it barely costs anything
 
 - **Quality.** int16 is a ~96 dB noise floor; phone mics deliver ~60–70 dB
-  effective SNR, so the quantization noise sits below the mic's own floor and below
-  the measurement floor for spectrogram/formant/pitch/VAD. Praat analyzes 16-bit
-  WAV routinely.
+  effective SNR, so the quantization noise sits below the mic's own floor and
+  below the measurement floor for spectrogram/formant/pitch/VAD. Praat
+  analyzes 16-bit WAV routinely.
 - **Conversion is already paid.** The producer (worklet) does f32→int16 on a
   128-sample quantum — trivial, on the only realtime-critical thread. Every
   consumer already **copies** the rope into its own f32 DSP buffer at the read
   boundary (item 3's `AudioRopeReader`), so int16→f32 folds into a copy that
-  already happens. The one real change: `AudioRope.read` becomes a per-element
-  convert loop instead of a bulk `view.set(subarray)` memcpy.
+  already happens.
 
 Wins beyond the 2×:
 
@@ -622,19 +649,22 @@ Wins beyond the 2×:
 - **One PCM format everywhere.** A future OPFS tier (item 12) becomes a raw byte
   append (already int16, no transcode); 16-bit WAV export is free.
 
-Costs / caveats to design around:
+### Caveats (noted, not blocking)
 
-- **Fixed full-scale**: ±1.0 → ±32767, and **clamp on write** (getUserMedia f32
-  can nominally exceed [-1, 1]).
+- **Fixed full-scale**: ±1.0 → ±32768, and **clamp on write** (getUserMedia f32
+  can nominally exceed [-1, 1]). `f32ToInt16` clamps to [-32768, 32767].
 - **Quiet input + later normalization**: quantizing at input and then boosting a
   very quiet recording via the LUFS path ([[project_loudness_normalization]])
-  amplifies the quantization floor — below the mic floor in practice, but note it.
-- **Blast radius, not runtime.** This touches `AudioRope` / the SabRope
-  publish/grow/seal handshake ([[project_sabrope]]) — the most concurrency-
-  sensitive component. Gate hard with the existing `*.memory.test.ts` and SabRope
-  invariants; the risk is destabilizing that code, not the per-element convert.
+  amplifies the quantization floor — below the mic floor in practice, but
+  note it.
+- **Blast radius was the risk, not runtime.** This touches `AudioRope` / the
+  SabRope publish/grow/seal handshake ([[project_sabrope]]) — the most
+  concurrency-sensitive component. Gated with the existing
+  `*.memory.test.ts` (5 tests, including `--expose-gc` collection) and the full
+  `AudioRope.test.ts` suite (37 tests); the per-element convert is mechanically
+  simple. No SabRope invariant was disturbed.
 
-### Spectra → quantize OR recompute (pick one, not both)
+### Spectra → quantize OR recompute (pick one, not both) — TODO
 
 > Partially banked by item 1c: the spectrogram's **display colour source** is
 > already quantized to `Uint8` dB-levels (`levelTiles`, ~0.25 dB steps), at ~6
@@ -662,11 +692,10 @@ master.
 
 ### Projected end-state
 
-int16 PCM + recompute/quantize spectra → cold cost ~**5–13 MB/min** (from ~45) — a
-4–9× multiplier on the item 10 budget, enough that the limit stops being a real
-constraint for normal use. Unlike the worker-internal items, this changes
-**retained bytes**, so `npm run mem` will actually show the reduction — gate it
-there.
+int16 PCM (done) + recompute/quantize spectra (todo) → cold cost ~**5–13 MB/min**
+(from ~45) — a 4–9× multiplier on the item 10 budget, enough that the limit
+stops being a real constraint for normal use. The PCM half is now shipped and
+measured; the spectra half remains the dominant retained term at ~33 MB/min.
 
 ## 12. Durable audio backing (OPFS) — recovery first, offload second — TODO
 

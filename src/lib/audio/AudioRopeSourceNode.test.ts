@@ -77,9 +77,16 @@ function collect(
   return result
 }
 
+// The rope stores int16 natively; values of the form k/32768 (k in int16
+// range) round-trip exactly. See AudioRope.test.ts for the full rationale.
+const PCM_SCALE = 32768
+function toF32(intValue: number): number {
+  return ((intValue % 65536) - 32768) / PCM_SCALE
+}
+
 function ramp(n: number, base = 0): Float32Array {
   const a = new Float32Array(n)
-  for (let i = 0; i < n; i++) a[i] = base + i
+  for (let i = 0; i < n; i++) a[i] = toF32(base + i)
   return a
 }
 
@@ -162,14 +169,14 @@ describe('AudioRopeSourceNode', () => {
       setBuffer(node, producer)
       send(node, { type: 'start', timeSec: 0 })
 
-      expect(collect(node, 10)[0]).toBe(0)
+      expect(collect(node, 10)[0]).toBe(toF32(0))
       send(node, null) // pause
       expect(Array.from(quantum(node)[0]!)).toEqual(
         Array.from(new Float32Array(128)),
       )
       // Re-start seeks afresh.
       send(node, { type: 'start', timeSec: 100 / 48000 })
-      expect(collect(node, 4)[0]).toBe(100)
+      expect(collect(node, 4)[0]).toBe(toF32(100))
     })
 
     it('does not play when started with no ropes', () => {
@@ -190,7 +197,7 @@ describe('AudioRopeSourceNode', () => {
 
       const [ch0, ch1] = quantum(node, 128, 2)
       expect(Array.from(ch1!)).toEqual(Array.from(ch0!))
-      expect(ch0![5]).toBe(5)
+      expect(ch0![5]).toBe(toF32(5))
     })
   })
 
@@ -203,7 +210,7 @@ describe('AudioRopeSourceNode', () => {
       send(node, { type: 'start', timeSec: 0 })
 
       const out = collect(node, 300)
-      for (let i = 0; i < 300; i++) expect(out[i]).toBe(i)
+      for (let i = 0; i < 300; i++) expect(out[i]).toBe(toF32(i))
     })
 
     it('seeks to an exact sample offset', () => {
@@ -214,8 +221,8 @@ describe('AudioRopeSourceNode', () => {
       send(node, { type: 'start', timeSec: 200 / 48000 })
 
       const out = collect(node, 20)
-      expect(out[0]).toBe(200)
-      expect(out[10]).toBe(210)
+      expect(out[0]).toBe(toF32(200))
+      expect(out[10]).toBe(toF32(210))
     })
 
     it('concatenates ropes seamlessly across a boundary', () => {
@@ -228,10 +235,10 @@ describe('AudioRopeSourceNode', () => {
       send(node, { type: 'start', timeSec: 0 })
 
       const out = collect(node, 400)
-      expect(out[0]).toBe(0)
-      expect(out[199]).toBe(199)
-      expect(out[200]).toBe(1000) // boundary: no gap, no overlap
-      expect(out[399]).toBe(1199)
+      expect(out[0]).toBe(toF32(0))
+      expect(out[199]).toBe(toF32(199))
+      expect(out[200]).toBe(toF32(1000)) // boundary: no gap, no overlap
+      expect(out[399]).toBe(toF32(1199))
     })
 
     it('outputs silence past the live tail, then resumes when data is appended', () => {
@@ -242,16 +249,16 @@ describe('AudioRopeSourceNode', () => {
       send(node, { type: 'start', timeSec: 0 })
 
       const q1 = quantum(node)[0]!
-      expect(q1[0]).toBe(0)
-      expect(q1[99]).toBe(99)
+      expect(q1[0]).toBe(toF32(0))
+      expect(q1[99]).toBe(toF32(99))
       expect(q1[100]).toBe(0) // starved
       expect(q1[127]).toBe(0)
 
       // Append more (same segment -> instantly visible via the shared length).
       producer.append(ramp(50, 100))
       const q2 = quantum(node)[0]!
-      expect(q2[0]).toBe(100)
-      expect(q2[49]).toBe(149)
+      expect(q2[0]).toBe(toF32(100))
+      expect(q2[49]).toBe(toF32(149))
       expect(q2[50]).toBe(0)
     })
 
@@ -264,7 +271,7 @@ describe('AudioRopeSourceNode', () => {
 
       expect(quantum(node)[0]![0]).toBe(0) // silence at head
       producer.append(ramp(30, 200))
-      expect(quantum(node)[0]![0]).toBe(200) // plays newly-arrived data
+      expect(quantum(node)[0]![0]).toBe(toF32(200)) // plays newly-arrived data
     })
 
     it('skips an empty leading rope', () => {
@@ -274,7 +281,7 @@ describe('AudioRopeSourceNode', () => {
       b.append(ramp(100, 7))
       setBuffer(node, empty, b)
       send(node, { type: 'start', timeSec: 0 })
-      expect(collect(node, 4)[0]).toBe(7)
+      expect(collect(node, 4)[0]).toBe(toF32(7))
     })
   })
 
@@ -287,7 +294,7 @@ describe('AudioRopeSourceNode', () => {
       send(node, { type: 'start', timeSec: 0 })
 
       const out = collect(node, 300)
-      for (let i = 0; i < 300; i++) expect(out[i]).toBe(i * 0.5)
+      for (let i = 0; i < 300; i++) expect(out[i]).toBe(toF32(i) * 0.5)
     })
 
     it('applies each rope its own gain across a boundary', () => {
@@ -300,10 +307,10 @@ describe('AudioRopeSourceNode', () => {
       send(node, { type: 'start', timeSec: 0 })
 
       const out = collect(node, 400)
-      expect(out[0]).toBe(100 * 0.5)
-      expect(out[199]).toBe(299 * 0.5)
-      expect(out[200]).toBe(1000 * 2)
-      expect(out[399]).toBe(1199 * 2)
+      expect(out[0]).toBe(toF32(100) * 0.5)
+      expect(out[199]).toBe(toF32(299) * 0.5)
+      expect(out[200]).toBe(toF32(1000) * 2)
+      expect(out[399]).toBe(toF32(1199) * 2)
     })
   })
 
@@ -332,9 +339,9 @@ describe('AudioRopeSourceNode', () => {
       send(node, { type: 'start', timeSec: 500 / 24000 })
 
       const out = collect(node, 32)
-      expect(out[0]).toBeCloseTo(500, 3)
-      expect(out[2]).toBeCloseTo(501, 3)
-      expect(out[6]).toBeCloseTo(503, 3)
+      expect(out[0]).toBeCloseTo(toF32(500), 3)
+      expect(out[2]).toBeCloseTo(toF32(501), 3)
+      expect(out[6]).toBeCloseTo(toF32(503), 3)
     })
 
     it('anti-aliases on downsampling (rejects content above the output Nyquist)', () => {
@@ -379,8 +386,8 @@ describe('AudioRopeSourceNode', () => {
       send(node, { type: 'start', timeSec: 0 })
 
       const out = collect(node, 800)
-      expect(out[100]).toBeCloseTo(0.3, 5) // passthrough, exact
-      expect(out[250]).toBeCloseTo(0.3, 5)
+      expect(out[100]).toBeCloseTo(0.3, 4) // passthrough, int16-quantized
+      expect(out[250]).toBeCloseTo(0.3, 4)
       expect(Math.abs(out[600]! - 0.6)).toBeLessThan(0.02) // resampled, post-warmup
     })
   })
@@ -405,16 +412,16 @@ describe('AudioRopeSourceNode', () => {
       // Before grow: consumer length clamps at the segment it holds, so the
       // 10 spilled samples are invisible.
       const before = quantum(node)[0]!
-      expect(before[0]).toBe(SEG - 6)
-      expect(before[5]).toBe(SEG - 1)
+      expect(before[0]).toBe(toF32(SEG - 6))
+      expect(before[5]).toBe(toF32(SEG - 1))
       expect(before[6]).toBe(0) // stalls at the boundary
 
       // Producer ships the new segment buffers; consumer holds 1 buffer.
       send(node, { type: 'growLastRope', grow: producer.shareGrowth(1)! })
 
       const after = quantum(node)[0]!
-      expect(after[0]).toBe(SEG) // boundary sample now visible
-      expect(after[9]).toBe(SEG + 9)
+      expect(after[0]).toBe(toF32(SEG)) // boundary sample now visible
+      expect(after[9]).toBe(toF32(SEG + 9))
       expect(after[10]).toBe(0)
     })
   })
@@ -430,7 +437,7 @@ describe('AudioRopeSourceNode', () => {
 
       // 100-frame quanta land a block boundary exactly on frame 200.
       const out = collect(node, 400, 100)
-      for (let i = 0; i < 200; i++) expect(out[i]).toBe(i)
+      for (let i = 0; i < 200; i++) expect(out[i]).toBe(toF32(i))
       for (let i = 200; i < 400; i++) expect(out[i]).toBe(0) // silent past end
     })
 
@@ -446,10 +453,10 @@ describe('AudioRopeSourceNode', () => {
       send(node, { type: 'end', timeSec: 250 / 48000 })
 
       const out = collect(node, 400, 50)
-      expect(out[0]).toBe(0)
-      expect(out[199]).toBe(199) // tail of rope a
-      expect(out[200]).toBe(1000) // head of rope b
-      expect(out[249]).toBe(1049) // last frame before the end (frame 50, exclusive)
+      expect(out[0]).toBe(toF32(0))
+      expect(out[199]).toBe(toF32(199)) // tail of rope a
+      expect(out[200]).toBe(toF32(1000)) // head of rope b
+      expect(out[249]).toBe(toF32(1049)) // last frame before the end (frame 50, exclusive)
       expect(out[250]).toBe(0) // stopped
       expect(out[399]).toBe(0)
     })
@@ -463,7 +470,7 @@ describe('AudioRopeSourceNode', () => {
       send(node, { type: 'end', timeSec: 10 }) // far past the 100-sample timeline
 
       const out = collect(node, 200, 100)
-      for (let i = 0; i < 100; i++) expect(out[i]).toBe(i)
+      for (let i = 0; i < 100; i++) expect(out[i]).toBe(toF32(i))
       for (let i = 100; i < 200; i++) expect(out[i]).toBe(0)
     })
 
@@ -477,8 +484,8 @@ describe('AudioRopeSourceNode', () => {
       send(node, { type: 'end', timeSec: 1000 / 24000 })
 
       const out = collect(node, 3000, 128)
-      // out[j] = ~source[j / 2] = j / 2 + 1 in steady state.
-      expect(Math.abs(out[1000]! - 501)).toBeLessThan(1)
+      // out[j] = ~source[j / 2] = toF32(j / 2 + 1) in steady state.
+      expect(Math.abs(out[1000]! - toF32(501))).toBeLessThan(1)
       // Stopped well before the rope's natural end (4000 output samples).
       expect(out[2900]).toBe(0)
       expect(out[2999]).toBe(0)
@@ -497,8 +504,8 @@ describe('AudioRopeSourceNode', () => {
 
       const [ch] = quantum(node, 128)
       // Exact-cut would zero everything from frame 100; instead the block runs on.
-      expect(ch![100]).toBe(100)
-      expect(ch![127]).toBe(127)
+      expect(ch![100]).toBe(toF32(100))
+      expect(ch![127]).toBe(toF32(127))
       // The next quantum is silent (it stopped at the block boundary).
       expect(Array.from(quantum(node, 128)[0]!)).toEqual(
         Array.from(new Float32Array(128)),
@@ -515,7 +522,7 @@ describe('AudioRopeSourceNode', () => {
 
       const out = collect(node, 3000, 128)
       // out[j] = ~source[j / 2]; frame 950 sits safely before the end.
-      expect(Math.abs(out[1900]! - 950)).toBeLessThan(5)
+      expect(Math.abs(out[1900]! - toF32(950))).toBeLessThan(5)
     })
 
     it('clears a stale end when a new buffer is set', () => {
@@ -532,7 +539,7 @@ describe('AudioRopeSourceNode', () => {
       send(node, { type: 'start', timeSec: 0 })
 
       const out = collect(node, 300, 100)
-      expect(out[200]).toBe(1200) // desired: plays past the stale end frame
+      expect(out[200]).toBe(toF32(1200)) // desired: plays past the stale end frame
     })
   })
 
@@ -548,7 +555,7 @@ describe('AudioRopeSourceNode', () => {
       send(node, { type: 'start', timeSec: 0 })
 
       const out = collect(node, 400, 100)
-      for (let i = 0; i < 200; i++) expect(out[i]).toBe(i)
+      for (let i = 0; i < 200; i++) expect(out[i]).toBe(toF32(i))
       for (let i = 200; i < 400; i++) expect(out[i]).toBe(0) // silent past the end
       expect(endEvents(node)).toHaveLength(1)
     })
@@ -561,7 +568,7 @@ describe('AudioRopeSourceNode', () => {
       send(node, { type: 'start', timeSec: 0 })
 
       const out = collect(node, 400, 100)
-      for (let i = 0; i < 200; i++) expect(out[i]).toBe(i)
+      for (let i = 0; i < 200; i++) expect(out[i]).toBe(toF32(i))
       for (let i = 200; i < 400; i++) expect(out[i]).toBe(0) // silent, but only waiting
       expect(endEvents(node)).toHaveLength(0)
     })
@@ -576,9 +583,9 @@ describe('AudioRopeSourceNode', () => {
       send(node, { type: 'start', timeSec: 0 })
 
       const out = collect(node, 500, 100)
-      expect(out[199]).toBe(199) // tail of rope a
-      expect(out[200]).toBe(1000) // head of rope b -- played through the join
-      expect(out[399]).toBe(1199) // tail of rope b
+      expect(out[199]).toBe(toF32(199)) // tail of rope a
+      expect(out[200]).toBe(toF32(1000)) // head of rope b -- played through the join
+      expect(out[399]).toBe(toF32(1199)) // tail of rope b
       expect(out[400]).toBe(0) // silent past the end
       expect(endEvents(node)).toHaveLength(1)
     })

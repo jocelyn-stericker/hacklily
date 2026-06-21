@@ -229,7 +229,7 @@ function App() {
         0,
       )
       const ropeCount = ropesRef.current.length
-      const ropeBytes = ropesRef.current.reduce((s, r) => s + r.length * 4, 0)
+      const ropeBytes = ropesRef.current.reduce((s, r) => s + r.length * 2, 0)
       const ropeSegments = ropesRef.current.reduce(
         (s, r) => s + Math.ceil(r.length / SEG_SAMPLES),
         0,
