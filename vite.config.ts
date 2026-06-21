@@ -1,3 +1,7 @@
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
 import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
@@ -66,6 +70,67 @@ function noStoreScriptDevPlugin(): Plugin {
   }
 }
 
+/**
+ * Dev-only plugin: serve `/references/*` from the local (gitignored) media
+ * copy at `./media/references`. The production app loads these clips from
+ * media.braat.app (see `mediaConfig.ts`); flipping `USE_LOCAL_MEDIA` there
+ * makes it request them same-origin instead, which this middleware answers.
+ *
+ * Harmless when `USE_LOCAL_MEDIA` is false: the app never requests these
+ * paths (it hits media.braat.app directly), so the middleware is a no-op.
+ * Supports range requests so `<audio>` seeking works.
+ */
+function localMediaDevPlugin(): Plugin {
+  const mediaRoot = fileURLToPath(
+    new URL('./media/references', import.meta.url),
+  )
+  const contentType = (p: string) =>
+    p.endsWith('.json')
+      ? 'application/json'
+      : p.endsWith('.mp3')
+        ? 'audio/mpeg'
+        : 'application/octet-stream'
+  return {
+    name: 'braat:local-media-dev',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const rawUrl = req.url?.split('?')[0]
+        if (!rawUrl?.startsWith('/references/')) return next()
+        const rel = decodeURIComponent(rawUrl.slice('/references/'.length))
+        const filePath = path.join(mediaRoot, rel)
+        // Refuse anything that escapes the media root.
+        if (
+          filePath !== mediaRoot &&
+          !filePath.startsWith(mediaRoot + path.sep)
+        )
+          return next()
+        fs.stat(filePath, (err, stat) => {
+          if (err || !stat.isFile()) return next()
+          res.setHeader('Content-Type', contentType(rawUrl))
+          res.setHeader('Accept-Ranges', 'bytes')
+          const range = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range ?? '')
+          if (range) {
+            const start = range[1] ? Number(range[1]) : 0
+            const end = range[2] ? Number(range[2]) : stat.size - 1
+            if (start > end || end >= stat.size) {
+              res.statusCode = 416
+              res.setHeader('Content-Range', `bytes */${stat.size}`)
+              return res.end()
+            }
+            res.statusCode = 206
+            res.setHeader('Content-Range', `bytes ${start}-${end}/${stat.size}`)
+            res.setHeader('Content-Length', end - start + 1)
+            return fs.createReadStream(filePath, { start, end }).pipe(res)
+          }
+          res.setHeader('Content-Length', stat.size)
+          fs.createReadStream(filePath).pipe(res)
+        })
+      })
+    },
+  }
+}
+
 const config = defineConfig({
   base: '/',
   resolve: {
@@ -100,6 +165,7 @@ const config = defineConfig({
   },
   plugins: [
     noStoreScriptDevPlugin(),
+    localMediaDevPlugin(),
     tailwindcss(),
     tanstackRouter({
       target: 'react',

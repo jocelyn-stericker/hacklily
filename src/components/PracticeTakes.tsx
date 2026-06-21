@@ -9,6 +9,7 @@ import {
   Play,
   StopCircle,
 } from 'lucide-react'
+import type { ReactNode } from 'react'
 
 import { Button } from '#/components/ui/button'
 import {
@@ -116,6 +117,7 @@ export function PracticeTakesList({
   onAnalyzeTake,
   onPinTake,
   onClearSession,
+  currentSentenceSlot,
 }: {
   takes: PracticeTake[]
   referenceTakeId: number | null
@@ -124,12 +126,15 @@ export function PracticeTakesList({
   onAnalyzeTake: (take: PracticeTake) => void
   onPinTake: (takeId: number) => void
   onClearSession: () => void
+  /** Rendered in the pinned-take slot when no take is pinned. Shows the
+   *  current sentence with play/prev/next controls. */
+  currentSentenceSlot?: ReactNode
 }) {
   const referenceTake = takes.find((t) => t.id === referenceTakeId)
 
   return (
     <>
-      {referenceTake && (
+      {referenceTake ? (
         <div className="rounded-lg border border-border bg-muted/30 p-3">
           <div className="flex items-center gap-2 text-sm">
             <Pin className="size-4 fill-sky-400 text-sky-400" />
@@ -149,6 +154,8 @@ export function PracticeTakesList({
             </div>
           </div>
         </div>
+      ) : (
+        currentSentenceSlot
       )}
       {takes.map((t, i) => (
         <PracticeTakeRow
@@ -277,6 +284,7 @@ export function PracticeTakesDrawer({
   onAnalyzeTake,
   onPinTake,
   onClearSession,
+  currentSentenceSlot,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -288,6 +296,7 @@ export function PracticeTakesDrawer({
   onAnalyzeTake: (take: PracticeTake) => void
   onPinTake: (takeId: number) => void
   onClearSession: () => void
+  currentSentenceSlot?: ReactNode
 }) {
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
@@ -316,6 +325,7 @@ export function PracticeTakesDrawer({
             onAnalyzeTake={onAnalyzeTake}
             onPinTake={onPinTake}
             onClearSession={onClearSession}
+            currentSentenceSlot={currentSentenceSlot}
           />
         </div>
       </DrawerContent>
@@ -332,6 +342,7 @@ export function PracticeTakesSidebar({
   onAnalyzeTake,
   onPinTake,
   onClearSession,
+  currentSentenceSlot,
 }: {
   takes: PracticeTake[]
   referenceTakeId: number | null
@@ -341,6 +352,7 @@ export function PracticeTakesSidebar({
   onAnalyzeTake: (take: PracticeTake) => void
   onPinTake: (takeId: number) => void
   onClearSession: () => void
+  currentSentenceSlot?: ReactNode
 }) {
   return (
     <>
@@ -357,6 +369,7 @@ export function PracticeTakesSidebar({
             onAnalyzeTake={onAnalyzeTake}
             onPinTake={onPinTake}
             onClearSession={onClearSession}
+            currentSentenceSlot={currentSentenceSlot}
           />
         </div>
       </div>

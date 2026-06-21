@@ -30,9 +30,14 @@ import { useHotkeys } from 'react-hotkeys-hook'
 import { toast } from 'sonner'
 
 import { AudioSettingsModal } from '#/components/AudioSettingsModal'
+import { PracticeCurrentSentence } from '#/components/PracticeCurrentSentence'
 import { PracticeDialogs } from '#/components/PracticeDialogs'
 import { PracticeDrillPager } from '#/components/PracticeDrillPager'
 import { PracticePassageFooter } from '#/components/PracticePassageFooter'
+import {
+  PracticeReferenceDrillButton,
+  PracticeReferenceText,
+} from '#/components/PracticeReferenceText'
 import {
   PracticeSettings,
   TEXT_SIZE_CLASS,
@@ -56,6 +61,7 @@ import {
   TooltipTrigger,
 } from '#/components/ui/tooltip'
 import { useAudioManager } from '#/components/useAudioManager'
+import { useReferencePlayer } from '#/components/useReferencePlayer'
 import { useSettings } from '#/components/useSettings'
 import type {
   AnalysisFrame,
@@ -70,13 +76,16 @@ import { AudioRope } from '#/lib/audio/AudioRope'
 import type { AudioSpan } from '#/lib/audio/AudioSpan'
 import { readAudioSpan } from '#/lib/audio/AudioSpan'
 import { RopeGainCache } from '#/lib/loudness/ropeLoudness'
+import { mediaUrl } from '#/lib/mediaConfig'
 import { registerMemSource } from '#/lib/memProbe'
 import { passages } from '#/lib/passages'
 import { stashTake } from '#/lib/practiceHandoff'
 import {
   computeVoicedRange,
+  drillIndexToSegmentIndex,
   initialPracticeState,
   practiceReducer,
+  segmentIndexToDrillIndex as segmentToDrill,
 } from '#/lib/practiceState'
 import type { PracticeTake } from '#/lib/practiceState'
 import type { PracticeTextSize } from '#/lib/settings'
@@ -115,6 +124,18 @@ function Practice() {
   const passageId = settings.practicePassageId
   const autoAdvance = settings.practiceAutoAdvance
   const randomize = settings.practiceRandomize
+
+  const passage = passages.find((p) => p.id === passageId) ?? passages[0]!
+
+  // The pinned take (if any) acts as the reference source for the loop.
+  const pinnedTake =
+    state.referenceTakeId !== null
+      ? (state.takes.find((t) => t.id === state.referenceTakeId) ?? null)
+      : null
+
+  const playRefBeforeTake =
+    pinnedTake !== null ||
+    (passage.kind !== 'blank' && settings.practicePlayReferenceBeforeTake)
 
   // Start mic pipeline + new recording
   const startPipelineAndRecord = useCallback(() => {
@@ -213,15 +234,18 @@ function Practice() {
     paramsRef.current = params
   }, [])
 
-  // Finish current take, tear down pipeline, then play back
-  const handleNextTake = useCallback(async () => {
-    if (state.sessionPhase !== 'recording') return
+  // Close the mic pipeline and, if any voiced audio was captured, dispatch
+  // END_TAKE with the recorded span. No-op when not recording or nothing was
+  // voiced. Used by handleEndSession, handleNextTake, and handleToggleReference
+  // so a recording is never silently dropped when playback switches.
+  const saveVoicedTakeIfRecording = useCallback(async () => {
+    if (state.sessionPhase !== 'recording') return false
+    if (state.voicedStartMs === null) return false
 
     const startFrame = state.recordingStartFrame
     const params = paramsRef.current
     const rope = sessionRopeRef.current
-
-    if (!rope || !params) return
+    if (!rope || !params) return false
 
     await closePipeline()
 
@@ -235,23 +259,43 @@ function Practice() {
       timePerFrame,
       baseTimeSec,
     )
-
     const span: AudioSpan = {
       rope,
       startTime: baseTimeSec,
       endTime: Promise.resolve(endTimeSec),
       signal: new AbortController().signal,
     }
+    dispatch({ type: 'END_TAKE', span, voicedRange, endTimeSec })
+    return true
+  }, [
+    closePipeline,
+    state.sessionPhase,
+    state.voicedStartMs,
+    state.recordingStartFrame,
+  ])
+
+  // Finish current take, tear down pipeline, then play back
+  const handleNextTake = useCallback(async () => {
+    if (state.sessionPhase !== 'recording') return
 
     const takeId = state.nextTakeId
-    dispatch({ type: 'END_TAKE', span, voicedRange, endTimeSec })
-    dispatch({ type: 'START_PLAYBACK', takeId, skipSilence: true })
-    dispatch({ type: 'PENDING_RESTART' })
+    const saved = await saveVoicedTakeIfRecording()
+    if (!saved) return
+
+    if (playRefBeforeTake) {
+      // Loop active: the take's playback is the 'take' phase. When it ends,
+      // PLAYBACK_ENDED will advance/repeat and start the reference phase.
+      dispatch({ type: 'SET_LOOP_PHASE', phase: 'take' })
+      dispatch({ type: 'START_PLAYBACK', takeId, skipSilence: true })
+    } else {
+      dispatch({ type: 'START_PLAYBACK', takeId, skipSilence: true })
+      dispatch({ type: 'PENDING_RESTART' })
+    }
   }, [
     state.sessionPhase,
     state.nextTakeId,
-    state.recordingStartFrame,
-    closePipeline,
+    saveVoicedTakeIfRecording,
+    playRefBeforeTake,
   ])
 
   const handleAppend = useCallback(
@@ -357,55 +401,146 @@ function Practice() {
     onPlaybackPositionChanged: () => {},
   })
 
-  // Start session — immediately begin recording the first take
+  // --- Derived data ---
+
+  const sentences: readonly string[] = useMemo(() => {
+    if (passage.kind === 'passage') return [...passage.segments]
+    if (passage.kind === 'sentenceLists') {
+      const raw = passage.lists.flat()
+      return randomize ? shuffleArray(raw) : raw
+    }
+    return []
+  }, [passage, randomize])
+
+  // Reference clips are indexed by position in the passage's flattened
+  // sentence list as the synth script wrote it — for passages that's just
+  // `passage.segments` (unshuffled), for drills it's `lists.flat()` (which
+  // shuffling reorders). Map the currently displayed sentence back to that
+  // original index so the right clip plays.
+  const referenceSegmentIndex = useMemo(
+    () => drillIndexToSegmentIndex(passage, sentences, state.drillIndex),
+    [passage, sentences, state.drillIndex],
+  )
+
+  // Inverse of referenceSegmentIndex: map an original (synth-script) segment
+  // index (e.g. from tapping a passage sentence) back to the drillIndex into
+  // the displayed (possibly shuffled) `sentences` array.
+  const segmentIndexToDrillIndex = useCallback(
+    (segIdx: number) =>
+      segmentToDrill(passage, sentences, segIdx, state.drillIndex),
+    [passage, sentences, state.drillIndex],
+  )
+
+  // Reference clip player. The reducer is the single source of truth for
+  // which clip is loaded (`state.referencePlayback`); the hook drives the
+  // HTMLAudioElement to match it and reports status back via dispatch.
+  const referenceVoiceId = settings.practiceReferenceVoice
+  const refPlayback = state.referencePlayback
+  const { toggle: refToggle, manifest: referenceManifest } = useReferencePlayer(
+    dispatch,
+    refPlayback,
+  )
+  // True when a reference is audibly playing: either a synth clip for the
+  // current passage, or — when a take is pinned as the reference source — that
+  // take playing during the loop's reference phase.
+  const referencePlaying =
+    (refPlayback !== null &&
+      refPlayback.status === 'playing' &&
+      refPlayback.passageId === passageId) ||
+    (state.playingTakeId !== null && state.loopPhase === 'reference')
+
+  // The session toolbar only leaves its neutral state for playback that leads
+  // into recording: an active recording/playback session, or the loop's
+  // reference phase. A standalone preview (tap a sentence, or play a take) keeps
+  // the toolbar neutral — its stop control lives on the inline play/stop button.
+  const sessionToolbarActive =
+    state.sessionPhase !== 'idle' || state.loopPhase !== null
+
+  // Start the reference phase of the loop: play the synth clip for the current
+  // sentence, or — if a take is pinned — play that take's rope audio.
+  const startReferencePhase = useCallback(() => {
+    dispatch({ type: 'SET_SESSION_PHASE', phase: 'idle' })
+    dispatch({ type: 'SET_LOOP_PHASE', phase: 'reference' })
+    if (pinnedTake) {
+      dispatch({
+        type: 'START_PLAYBACK',
+        takeId: pinnedTake.id,
+        skipSilence: false,
+      })
+    } else {
+      dispatch({
+        type: 'START_REFERENCE',
+        passageId,
+        segmentIndex: referenceSegmentIndex,
+        voiceId: referenceVoiceId,
+      })
+    }
+  }, [pinnedTake, passageId, referenceSegmentIndex, referenceVoiceId])
+
+  const handleToggleReference = useCallback(
+    async (pId: string, segIdx: number, voiceId: string) => {
+      void audioManager?.unlockForGesture()
+      // If recording with voiced audio, save the take before switching to
+      // reference playback — never silently drop a recording.
+      await saveVoicedTakeIfRecording()
+      // Manual tap-to-play selects that sentence as the current sentence so
+      // the loop (if active) resumes from it next cycle. segIdx is an index
+      // into the original (synth-script) sentence list, so translate it to a
+      // drillIndex for the displayed (possibly shuffled) `sentences` array.
+      dispatch({
+        type: 'SET_DRILL_INDEX',
+        index: segmentIndexToDrillIndex(segIdx),
+      })
+      refToggle(pId, segIdx, voiceId)
+    },
+    [
+      audioManager,
+      refToggle,
+      saveVoicedTakeIfRecording,
+      segmentIndexToDrillIndex,
+    ],
+  )
+
+  // Drive the reference-restart that PLAYBACK_ENDED signals via
+  // pendingReferenceRestart when the loop is active.
+  useLayoutEffect(() => {
+    if (!state.pendingReferenceRestart) return
+    startReferencePhase()
+  }, [state.pendingReferenceRestart, startReferencePhase])
+
+  // Leaving the passage stops the reference so the active-sentence highlight
+  // never points at a sentence that isn't on screen.
+  useEffect(() => {
+    dispatch({ type: 'STOP_REFERENCE' })
+  }, [passageId])
+
+  // Start session — when the loop setting is on, begin with the reference
+  // phase; otherwise go straight to recording as before.
   const handleStartSession = useCallback(() => {
     dispatch({ type: 'SET_ERROR', error: null })
     void audioManager?.unlockForGesture()
-    startPipelineAndRecord()
-  }, [startPipelineAndRecord, audioManager])
+    if (playRefBeforeTake) {
+      startReferencePhase()
+    } else {
+      startPipelineAndRecord()
+    }
+  }, [
+    startPipelineAndRecord,
+    audioManager,
+    playRefBeforeTake,
+    startReferencePhase,
+  ])
 
   // End session — stop mic and playback, but keep takes
   const handleEndSession = useCallback(async () => {
     if (state.shuttingDown) return
     dispatch({ type: 'SET_SHUTTING_DOWN', value: true })
 
-    if (state.sessionPhase === 'recording' && state.voicedStartMs !== null) {
-      await closePipeline()
-
-      const startFrame = state.recordingStartFrame
-      const params = paramsRef.current
-      const rope = sessionRopeRef.current
-
-      if (rope && params) {
-        const timePerFrame = params.timeStepSamples / params.sampleRate
-        const baseTimeSec = startFrame * timePerFrame
-        const endTimeSec = analysisRef.current.length * timePerFrame
-        const voicedRange = computeVoicedRange(
-          analysisRef.current,
-          startFrame,
-          analysisRef.current.length,
-          timePerFrame,
-          baseTimeSec,
-        )
-        const span: AudioSpan = {
-          rope,
-          startTime: baseTimeSec,
-          endTime: Promise.resolve(endTimeSec),
-          signal: new AbortController().signal,
-        }
-        dispatch({ type: 'END_TAKE', span, voicedRange, endTimeSec })
-      }
-    }
+    await saveVoicedTakeIfRecording()
 
     dispatch({ type: 'STOP_SESSION' })
     setElapsedMs(0)
-  }, [
-    closePipeline,
-    state.voicedStartMs,
-    state.sessionPhase,
-    state.shuttingDown,
-    state.recordingStartFrame,
-  ])
+  }, [state.shuttingDown, saveVoicedTakeIfRecording])
 
   // Play a take
   const handlePlayTake = useCallback(
@@ -430,6 +565,37 @@ function Practice() {
     newWindow.postMessage('braat:handoff', window.location.origin)
   }, [])
 
+  // Analyze the reference clip for the current sentence: fetch the MP3, decode
+  // to PCM, and hand off to the analysis view — same path as handleAnalyzeTake.
+  const handleAnalyzeReference = useCallback(
+    async (segmentIndex: number, voiceId: string) => {
+      const clip =
+        referenceManifest?.passages[passageId]?.segments[segmentIndex]?.clips[
+          voiceId
+        ]
+      if (!clip) return
+      dispatch({ type: 'STOP_SESSION' })
+      const newWindow = window.open('/', '_blank')
+      if (!newWindow) return
+      const resp = await fetch(mediaUrl(clip.url))
+      const arrayBuf = await resp.arrayBuffer()
+      const ctx = new AudioContext()
+      try {
+        const decoded = await ctx.decodeAudioData(arrayBuf)
+        const pcm = decoded.getChannelData(0)
+        stashTake({
+          pcm: new Float32Array(pcm),
+          sampleRate: decoded.sampleRate,
+          passageId,
+        })
+        newWindow.postMessage('braat:handoff', window.location.origin)
+      } finally {
+        void ctx.close()
+      }
+    },
+    [referenceManifest, passageId],
+  )
+
   // Clear session
   const doClearSession = useCallback(() => {
     dispatch({ type: 'CLEAR_SESSION' })
@@ -445,9 +611,6 @@ function Practice() {
   const handleCancelClearSession = useCallback(() => {
     setConfirmingClearSession(false)
   }, [])
-
-  // --- Derived data ---
-  const passage = passages.find((p) => p.id === passageId) ?? passages[0]!
 
   const handleTextSizeChange = useCallback(
     (size: PracticeTextSize) => {
@@ -493,6 +656,20 @@ function Practice() {
     [updateSettings],
   )
 
+  const handleReferenceVoiceChange = useCallback(
+    (id: string) => {
+      void updateSettings({ practiceReferenceVoice: id })
+    },
+    [updateSettings],
+  )
+
+  const handlePlayReferenceBeforeTakeChange = useCallback(
+    (v: boolean) => {
+      void updateSettings({ practicePlayReferenceBeforeTake: v })
+    },
+    [updateSettings],
+  )
+
   const handlePinTake = useCallback(
     (takeId: number) => dispatch({ type: 'PIN_TAKE', takeId }),
     [],
@@ -524,41 +701,75 @@ function Practice() {
     [handleEndSession],
   )
 
+  const textSizeClass = TEXT_SIZE_CLASS[settings.practiceTextSize]
+
   useHotkeys(
     'arrowleft',
     (e) => {
-      if (passage.kind === 'sentenceLists') {
+      if (sentences.length > 0) {
         e.preventDefault()
         dispatch({ type: 'DRILL_PREV' })
       }
     },
-    [passage.kind],
-    { enabled: passage.kind === 'sentenceLists' },
+    [sentences.length],
+    { enabled: sentences.length > 0 },
   )
 
   useHotkeys(
     'arrowright',
     (e) => {
-      if (passage.kind === 'sentenceLists') {
+      if (sentences.length > 0) {
         e.preventDefault()
         dispatch({ type: 'DRILL_NEXT' })
       }
     },
-    [passage.kind],
-    { enabled: passage.kind === 'sentenceLists' },
+    [sentences.length],
+    { enabled: sentences.length > 0 },
   )
-
-  const textSizeClass = TEXT_SIZE_CLASS[settings.practiceTextSize]
-
-  const sentences: readonly string[] = useMemo(() => {
-    const raw = passage.kind === 'sentenceLists' ? passage.lists.flat() : []
-    return randomize ? shuffleArray(raw) : raw
-  }, [passage, randomize])
 
   // Keep sentence count in the reducer for the playback-end handler
   useLayoutEffect(() => {
     dispatch({ type: 'SET_SENTENCE_COUNT', count: sentences.length })
   }, [sentences.length])
+
+  // Current-sentence slot for the takes sidebar/drawer: shown when no take is
+  // pinned, surfaces the sentence the loop is on with play/prev/next controls.
+  const currentSentenceSlot = useMemo(() => {
+    if (sentences.length === 0) return undefined
+    return (
+      <PracticeCurrentSentence
+        sentence={sentences[state.drillIndex] ?? null}
+        sentenceIndex={state.drillIndex}
+        sentenceCount={sentences.length}
+        playing={referencePlaying}
+        loading={refPlayback?.status === 'loading'}
+        compact={passage.kind === 'sentenceLists'}
+        onPlay={() =>
+          handleToggleReference(
+            passageId,
+            referenceSegmentIndex,
+            referenceVoiceId,
+          )
+        }
+        onAnalyze={() =>
+          void handleAnalyzeReference(referenceSegmentIndex, referenceVoiceId)
+        }
+        onPrevious={() => dispatch({ type: 'DRILL_PREV' })}
+        onNext={() => dispatch({ type: 'DRILL_NEXT' })}
+      />
+    )
+  }, [
+    sentences,
+    state.drillIndex,
+    referencePlaying,
+    refPlayback,
+    passage,
+    handleToggleReference,
+    handleAnalyzeReference,
+    passageId,
+    referenceSegmentIndex,
+    referenceVoiceId,
+  ])
 
   const selectedTitle = passage.title
 
@@ -602,6 +813,12 @@ function Practice() {
             onAutoAdvanceChange={handleAutoAdvanceChange}
             randomize={randomize}
             onRandomizeChange={handleRandomizeChange}
+            referenceVoice={settings.practiceReferenceVoice}
+            onReferenceVoiceChange={handleReferenceVoiceChange}
+            playReferenceBeforeTake={playRefBeforeTake}
+            onPlayReferenceBeforeTakeChange={
+              handlePlayReferenceBeforeTakeChange
+            }
           />
         </div>
       </header>
@@ -616,7 +833,15 @@ function Practice() {
                   textSizeClass,
                 )}
               >
-                {passage.passage}
+                <PracticeReferenceText
+                  segments={passage.segments}
+                  passageId={passageId}
+                  voiceId={referenceVoiceId}
+                  activePassageId={refPlayback?.passageId ?? null}
+                  activeSegmentIndex={refPlayback?.segmentIndex ?? null}
+                  currentSentenceIndex={state.drillIndex}
+                  onToggle={handleToggleReference}
+                />
               </div>
               <PracticePassageFooter
                 source={passage.source}
@@ -626,14 +851,26 @@ function Practice() {
             </div>
           ) : passage.kind === 'sentenceLists' ? (
             <div className="mx-auto max-w-3xl px-4 py-6">
-              <div className="flex flex-col justify-center min-h-64">
-                <div
-                  className={cn(
-                    'text-center font-serif leading-relaxed py-8',
-                    textSizeClass,
-                  )}
-                >
-                  {sentences[state.drillIndex]}
+              <div className="flex flex-col items-center justify-center min-h-64">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={cn(
+                      'text-center font-serif leading-relaxed py-8',
+                      textSizeClass,
+                    )}
+                  >
+                    {sentences[state.drillIndex]}
+                  </div>
+                  <PracticeReferenceDrillButton
+                    passageId={passageId}
+                    segmentIndex={referenceSegmentIndex}
+                    voiceId={referenceVoiceId}
+                    activePassageId={refPlayback?.passageId ?? null}
+                    activeSegmentIndex={refPlayback?.segmentIndex ?? null}
+                    playing={referencePlaying}
+                    loading={refPlayback?.status === 'loading'}
+                    onToggle={handleToggleReference}
+                  />
                 </div>
               </div>
               <PracticeDrillPager
@@ -664,6 +901,7 @@ function Practice() {
             onAnalyzeTake={handleAnalyzeTake}
             onPinTake={handlePinTake}
             onClearSession={handleClearSession}
+            currentSentenceSlot={currentSentenceSlot}
           />
         </div>
       </div>
@@ -680,6 +918,7 @@ function Practice() {
           onAnalyzeTake={handleAnalyzeTake}
           onPinTake={handlePinTake}
           onClearSession={handleClearSession}
+          currentSentenceSlot={currentSentenceSlot}
         />
       </div>
 
@@ -704,7 +943,7 @@ function Practice() {
       <div
         className={cn(
           'shrink-0 border-t border-border',
-          state.sessionPhase !== 'idle' &&
+          sessionToolbarActive &&
             'lg:fixed lg:bottom-4 lg:left-4 lg:z-20 lg:w-80 lg:rounded-xl lg:border lg:bg-background lg:shadow-lg',
         )}
       >
@@ -718,6 +957,20 @@ function Practice() {
           onNextTake={handleNextTake}
           onEndSession={handleEndSession}
           numTakes={state.takes.length}
+          referencePlaying={sessionToolbarActive && referencePlaying}
+          referenceLoading={
+            sessionToolbarActive && refPlayback?.status === 'loading'
+          }
+          onStopReference={() => {
+            if (
+              state.loopPhase === 'reference' &&
+              state.playingTakeId !== null
+            ) {
+              dispatch({ type: 'STOP_PLAYBACK' })
+            }
+            dispatch({ type: 'SET_LOOP_PHASE', phase: null })
+            dispatch({ type: 'STOP_REFERENCE' })
+          }}
         />
       </div>
 

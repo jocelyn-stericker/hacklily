@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
+import { DEFAULT_REFERENCE_VOICE_ID } from '#/lib/referenceVoices'
+
 const LOG = '[Settings]'
 
 export type SampleRatePref = 'auto' | 'prefer48000' | 'prefer44100'
@@ -82,6 +84,16 @@ function normalizePracticeMode(value: unknown): PracticeMode {
   }
 }
 
+function normalizePracticeReferenceVoice(value: unknown): string {
+  return typeof value === 'string' && value.length > 0
+    ? value
+    : DEFAULT_SETTINGS.practiceReferenceVoice
+}
+
+function normalizePracticePlayReferenceBeforeTake(value: unknown): boolean {
+  return value === true
+}
+
 export type SettingsRow = {
   inputDeviceId: string | null
   sampleRate: SampleRatePref
@@ -96,6 +108,8 @@ export type SettingsRow = {
   practiceMode: PracticeMode
   practiceRandomize: boolean
   practiceAutoAdvance: boolean
+  practiceReferenceVoice: string
+  practicePlayReferenceBeforeTake: boolean
 }
 
 /** The subset of settings the audio capture path reads. */
@@ -118,6 +132,8 @@ export const DEFAULT_SETTINGS: SettingsRow = {
   practiceMode: 'echo',
   practiceRandomize: false,
   practiceAutoAdvance: true,
+  practiceReferenceVoice: DEFAULT_REFERENCE_VOICE_ID,
+  practicePlayReferenceBeforeTake: true,
 }
 
 const STORAGE_KEY = 'braat:settings'
@@ -135,6 +151,13 @@ function readFromStorage(): SettingsRow {
         transcriptionMode: normalizeTranscriptionMode(stored.transcriptionMode),
         practiceTextSize: normalizePracticeTextSize(stored.practiceTextSize),
         practiceMode: normalizePracticeMode(stored.practiceMode),
+        practiceReferenceVoice: normalizePracticeReferenceVoice(
+          stored.practiceReferenceVoice,
+        ),
+        practicePlayReferenceBeforeTake:
+          normalizePracticePlayReferenceBeforeTake(
+            stored.practicePlayReferenceBeforeTake,
+          ),
       }
     }
   } catch (err) {

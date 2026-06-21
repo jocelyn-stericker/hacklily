@@ -3,6 +3,8 @@
 
 import { ExternalLink, Mic, Settings, Shuffle } from 'lucide-react'
 
+import { REFERENCE_VOICES, getReferenceVoice } from '#/lib/referenceVoices'
+import type { ReferenceVoice } from '#/lib/referenceVoices'
 import type { PracticeTextSize } from '#/lib/settings'
 
 import { Button } from './ui/button'
@@ -12,7 +14,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
@@ -43,6 +44,10 @@ export function PracticeSettings({
   onAutoAdvanceChange,
   randomize,
   onRandomizeChange,
+  referenceVoice,
+  onReferenceVoiceChange,
+  playReferenceBeforeTake,
+  onPlayReferenceBeforeTakeChange,
 }: {
   textSize: PracticeTextSize
   onTextSizeChange: (size: PracticeTextSize) => void
@@ -53,9 +58,20 @@ export function PracticeSettings({
   onAutoAdvanceChange?: (v: boolean) => void
   randomize?: boolean
   onRandomizeChange?: (v: boolean) => void
+  referenceVoice: string
+  onReferenceVoiceChange: (id: string) => void
+  playReferenceBeforeTake: boolean
+  onPlayReferenceBeforeTakeChange: (v: boolean) => void
 }) {
   const sizes: PracticeTextSize[] = ['md', 'lg', 'xl', '2xl']
   const idx = sizes.indexOf(textSize)
+
+  const voiceIdx = Math.max(
+    0,
+    REFERENCE_VOICES.findIndex((v) => v.id === referenceVoice),
+  )
+  const voice: ReferenceVoice =
+    REFERENCE_VOICES[voiceIdx] ?? getReferenceVoice(referenceVoice)
 
   return (
     <DropdownMenu>
@@ -98,21 +114,54 @@ export function PracticeSettings({
           />
         </div>
         <DropdownMenuSeparator />
+        <div className="px-2 py-1.5">
+          <div className="flex items-center justify-between pb-1">
+            <span className="text-xs font-medium">Reference voice</span>
+            <span className="text-xs text-muted-foreground">{voice.name}</span>
+          </div>
+          <Slider
+            value={voiceIdx}
+            onValueChange={(value) => {
+              const next = REFERENCE_VOICES[value as number]
+              if (next) onReferenceVoiceChange(next.id)
+            }}
+            min={0}
+            max={REFERENCE_VOICES.length - 1}
+            step={1}
+            aria-label="Reference voice"
+            className="mt-1"
+          />
+          <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
+            {voice.description}
+          </p>
+          <div className="mt-1 flex items-center gap-2 text-[10px] text-muted-foreground tabular-nums">
+            <span>F0 {voice.f0} Hz</span>
+            <span aria-hidden>·</span>
+            <span>F1 {voice.f1} Hz</span>
+            <span className="ml-auto capitalize">{voice.presentation}</span>
+          </div>
+        </div>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={onOpenAudioSettings}>
           <Mic />
           Audio settings
         </DropdownMenuItem>
-        <DropdownMenuCheckboxItem
-          checked={mode === 'echo'}
-          onCheckedChange={(checked) =>
-            onModeChange(checked ? 'echo' : 'on-demand')
-          }
-        >
-          Stop take when I stop speaking
-        </DropdownMenuCheckboxItem>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuLabel>Drills</DropdownMenuLabel>
+          <DropdownMenuCheckboxItem
+            checked={mode === 'echo'}
+            onCheckedChange={(checked) =>
+              onModeChange(checked ? 'echo' : 'on-demand')
+            }
+          >
+            Stop take when I stop speaking
+          </DropdownMenuCheckboxItem>
+          <DropdownMenuCheckboxItem
+            checked={playReferenceBeforeTake}
+            onCheckedChange={onPlayReferenceBeforeTakeChange}
+          >
+            Play reference before each take
+          </DropdownMenuCheckboxItem>
           <DropdownMenuCheckboxItem
             checked={autoAdvance}
             onCheckedChange={onAutoAdvanceChange}
@@ -124,7 +173,7 @@ export function PracticeSettings({
             onCheckedChange={onRandomizeChange}
           >
             <Shuffle />
-            Randomize
+            Randomize drills
           </DropdownMenuCheckboxItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />

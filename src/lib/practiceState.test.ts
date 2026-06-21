@@ -5,10 +5,14 @@ import { describe, it, expect } from 'vitest'
 
 import type { AnalysisFrame } from '#/lib/analysis/AnalysisFrame'
 import type { AudioSpan } from '#/lib/audio/AudioSpan'
+import type { Passage } from '#/lib/passages'
+import type { PracticeState } from '#/lib/practiceState'
 import {
   computeVoicedRange,
+  drillIndexToSegmentIndex,
   initialPracticeState,
   practiceReducer,
+  segmentIndexToDrillIndex,
 } from '#/lib/practiceState'
 
 function frame(speechDetected: boolean | null): AnalysisFrame {
@@ -125,6 +129,144 @@ describe('computeVoicedRange', () => {
   })
 })
 
+// ---------------------------------------------------------------------------
+// Test helpers for drill-index mapping
+// ---------------------------------------------------------------------------
+
+function passageSegments(
+  segments: readonly string[],
+  rest?: Partial<Passage>,
+): Passage {
+  return {
+    kind: 'passage',
+    id: 'test',
+    title: 'Test',
+    segments,
+    ...rest,
+  } as Passage
+}
+
+function sentenceLists(
+  lists: readonly (readonly string[])[],
+  rest?: Partial<Passage>,
+): Passage {
+  return {
+    kind: 'sentenceLists',
+    id: 'test',
+    title: 'Test',
+    lists,
+    ...rest,
+  } as Passage
+}
+
+function blankPassage(rest?: Partial<Passage>): Passage {
+  return { kind: 'blank', id: 'test', title: 'Test', ...rest } as Passage
+}
+
+// ---------------------------------------------------------------------------
+// drillIndexToSegmentIndex / segmentIndexToDrillIndex
+// ---------------------------------------------------------------------------
+
+describe('drillIndexToSegmentIndex', () => {
+  it('returns drillIndex for passage kind', () => {
+    const p = passageSegments(['a', 'b', 'c'])
+    const sentences = (p as { segments: readonly string[] }).segments
+    expect(drillIndexToSegmentIndex(p, sentences, 0)).toBe(0)
+    expect(drillIndexToSegmentIndex(p, sentences, 1)).toBe(1)
+    expect(drillIndexToSegmentIndex(p, sentences, 2)).toBe(2)
+  })
+
+  it('maps back to flat index for unshuffled sentenceLists', () => {
+    const p = sentenceLists([['a', 'b'], ['c']])
+    const sentences = ['a', 'b', 'c']
+    expect(drillIndexToSegmentIndex(p, sentences, 0)).toBe(0)
+    expect(drillIndexToSegmentIndex(p, sentences, 1)).toBe(1)
+    expect(drillIndexToSegmentIndex(p, sentences, 2)).toBe(2)
+  })
+
+  it('maps shuffled drillIndex to correct flat index', () => {
+    // flat = ['a', 'b', 'c'], sentences is shuffled as ['c', 'a', 'b']
+    const p = sentenceLists([['a', 'b', 'c']])
+    const sentences = ['c', 'a', 'b']
+    expect(drillIndexToSegmentIndex(p, sentences, 0)).toBe(2) // 'c' is at flat[2]
+    expect(drillIndexToSegmentIndex(p, sentences, 1)).toBe(0) // 'a' is at flat[0]
+    expect(drillIndexToSegmentIndex(p, sentences, 2)).toBe(1) // 'b' is at flat[1]
+  })
+
+  it('handles multiple list arrays', () => {
+    const p = sentenceLists([
+      ['a', 'b'],
+      ['c', 'd'],
+    ])
+    const sentences = ['d', 'b', 'a', 'c']
+    expect(drillIndexToSegmentIndex(p, sentences, 0)).toBe(3) // 'd' flat[3]
+    expect(drillIndexToSegmentIndex(p, sentences, 1)).toBe(1) // 'b' flat[1]
+    expect(drillIndexToSegmentIndex(p, sentences, 2)).toBe(0) // 'a' flat[0]
+    expect(drillIndexToSegmentIndex(p, sentences, 3)).toBe(2) // 'c' flat[2]
+  })
+
+  it('returns 0 for blank passage', () => {
+    const p = blankPassage()
+    expect(drillIndexToSegmentIndex(p, [], 5)).toBe(0)
+  })
+})
+
+describe('segmentIndexToDrillIndex', () => {
+  it('returns segmentIndex for passage kind', () => {
+    const p = passageSegments(['a', 'b', 'c'])
+    const sentences = (p as { segments: readonly string[] }).segments
+    expect(segmentIndexToDrillIndex(p, sentences, 0, 0)).toBe(0)
+    expect(segmentIndexToDrillIndex(p, sentences, 1, 0)).toBe(1)
+    expect(segmentIndexToDrillIndex(p, sentences, 2, 0)).toBe(2)
+  })
+
+  it('returns segmentIndex for unshuffled sentenceLists', () => {
+    const p = sentenceLists([['a', 'b'], ['c']])
+    const sentences = ['a', 'b', 'c']
+    expect(segmentIndexToDrillIndex(p, sentences, 0, 0)).toBe(0)
+    expect(segmentIndexToDrillIndex(p, sentences, 1, 0)).toBe(1)
+    expect(segmentIndexToDrillIndex(p, sentences, 2, 0)).toBe(2)
+  })
+
+  it('maps flat index to correct shuffled position', () => {
+    // flat = ['a', 'b', 'c'], sentences is shuffled as ['c', 'a', 'b']
+    const p = sentenceLists([['a', 'b', 'c']])
+    const sentences = ['c', 'a', 'b']
+    expect(segmentIndexToDrillIndex(p, sentences, 0, 0)).toBe(1) // 'a' at shuffled[1]
+    expect(segmentIndexToDrillIndex(p, sentences, 1, 0)).toBe(2) // 'b' at shuffled[2]
+    expect(segmentIndexToDrillIndex(p, sentences, 2, 0)).toBe(0) // 'c' at shuffled[0]
+  })
+
+  it('round-trips: drillIndex → segmentIndex → drillIndex', () => {
+    const p = sentenceLists([['a', 'b', 'c', 'd']])
+    const sentences = ['d', 'b', 'a', 'c']
+    for (let d = 0; d < 4; d++) {
+      const seg = drillIndexToSegmentIndex(p, sentences, d)
+      const back = segmentIndexToDrillIndex(p, sentences, seg, d)
+      expect(back).toBe(d)
+    }
+  })
+
+  it('returns fallback for out-of-bounds segmentIndex', () => {
+    const p = sentenceLists([['a', 'b', 'c']])
+    const sentences = ['c', 'a', 'b']
+    expect(segmentIndexToDrillIndex(p, sentences, 5, 99)).toBe(99)
+    expect(segmentIndexToDrillIndex(p, sentences, -1, 42)).toBe(42)
+  })
+
+  it('returns fallback when sentence not in displayed array', () => {
+    const p = sentenceLists([['a', 'b', 'c']])
+    const sentences = ['x', 'y', 'z']
+    // 'a' is at flat[0] but not in sentences → fallback
+    expect(segmentIndexToDrillIndex(p, sentences, 0, 7)).toBe(7)
+  })
+
+  it('uses fallback for blank passage', () => {
+    const p = blankPassage()
+    expect(segmentIndexToDrillIndex(p, [], 3, 42)).toBe(42)
+  })
+})
+
 describe('practiceReducer', () => {
   it('has correct initial state', () => {
     const state = initialPracticeState()
@@ -134,6 +276,7 @@ describe('practiceReducer', () => {
     expect(state.recordingStartTime).toBeNull()
     expect(state.playingTakeId).toBeNull()
     expect(state.playingSkipSilence).toBe(false)
+    expect(state.referencePlayback).toBeNull()
     expect(state.sessionPhase).toBe('idle')
     expect(state.voicedStartMs).toBeNull()
     expect(state.pendingRestart).toBe(false)
@@ -146,6 +289,21 @@ describe('practiceReducer', () => {
   })
 
   describe('START_RECORDING', () => {
+    it('clears reference playback (mutual exclusion)', () => {
+      let state = initialPracticeState()
+      state = practiceReducer(state, {
+        type: 'START_REFERENCE',
+        passageId: 'rainbow',
+        segmentIndex: 0,
+        voiceId: 'af_heart',
+      })
+      state = practiceReducer(state, {
+        type: 'START_RECORDING',
+        startTime: 1000,
+      })
+      expect(state.referencePlayback).toBeNull()
+    })
+
     it('sets recording to true and resets session state', () => {
       const state = practiceReducer(initialPracticeState(), {
         type: 'START_RECORDING',
@@ -261,6 +419,23 @@ describe('practiceReducer', () => {
       expect(state.playingTakeId).toBe(1)
       expect(state.playingSkipSilence).toBe(true)
     })
+
+    it('clears reference playback (mutual exclusion)', () => {
+      let state = initialPracticeState()
+      state = practiceReducer(state, {
+        type: 'START_REFERENCE',
+        passageId: 'rainbow',
+        segmentIndex: 2,
+        voiceId: 'af_heart',
+      })
+      expect(state.referencePlayback).not.toBeNull()
+      state = practiceReducer(state, {
+        type: 'START_PLAYBACK',
+        takeId: 1,
+        skipSilence: false,
+      })
+      expect(state.referencePlayback).toBeNull()
+    })
   })
 
   describe('STOP_PLAYBACK', () => {
@@ -277,6 +452,143 @@ describe('practiceReducer', () => {
       expect(state.voicedStartMs).toBeNull()
       expect(state.pendingRestart).toBe(false)
       expect(state.shuttingDown).toBe(false)
+    })
+  })
+
+  describe('START_REFERENCE', () => {
+    it('sets referencePlayback with loading status', () => {
+      const state = practiceReducer(initialPracticeState(), {
+        type: 'START_REFERENCE',
+        passageId: 'rainbow',
+        segmentIndex: 2,
+        voiceId: 'af_heart',
+      })
+      expect(state.referencePlayback).toEqual({
+        passageId: 'rainbow',
+        segmentIndex: 2,
+        voiceId: 'af_heart',
+        status: 'loading',
+      })
+    })
+
+    it('clears take playback (mutual exclusion)', () => {
+      let state = practiceReducer(initialPracticeState(), {
+        type: 'START_PLAYBACK',
+        takeId: 1,
+        skipSilence: false,
+      })
+      state = practiceReducer(state, {
+        type: 'START_REFERENCE',
+        passageId: 'rainbow',
+        segmentIndex: 0,
+        voiceId: 'af_heart',
+      })
+      expect(state.playingTakeId).toBeNull()
+      expect(state.playingSkipSilence).toBe(false)
+      expect(state.referencePlayback).not.toBeNull()
+    })
+
+    it('ends active recording (mutual exclusion)', () => {
+      let state = practiceReducer(initialPracticeState(), {
+        type: 'START_RECORDING',
+        startTime: 1000,
+      })
+      expect(state.sessionPhase).toBe('recording')
+      state = practiceReducer(state, {
+        type: 'START_REFERENCE',
+        passageId: 'rainbow',
+        segmentIndex: 0,
+        voiceId: 'af_heart',
+      })
+      expect(state.sessionPhase).toBe('idle')
+      expect(state.recordingStartTime).toBeNull()
+      expect(state.referencePlayback).not.toBeNull()
+    })
+  })
+
+  describe('REFERENCE_STATUS', () => {
+    it('updates the status of the current reference', () => {
+      let state = practiceReducer(initialPracticeState(), {
+        type: 'START_REFERENCE',
+        passageId: 'rainbow',
+        segmentIndex: 1,
+        voiceId: 'af_heart',
+      })
+      state = practiceReducer(state, {
+        type: 'REFERENCE_STATUS',
+        status: 'playing',
+      })
+      expect(state.referencePlayback?.status).toBe('playing')
+    })
+
+    it('is a no-op when no reference is loaded', () => {
+      const state = practiceReducer(initialPracticeState(), {
+        type: 'REFERENCE_STATUS',
+        status: 'playing',
+      })
+      expect(state.referencePlayback).toBeNull()
+    })
+  })
+
+  describe('STOP_REFERENCE', () => {
+    it('clears referencePlayback', () => {
+      let state = practiceReducer(initialPracticeState(), {
+        type: 'START_REFERENCE',
+        passageId: 'rainbow',
+        segmentIndex: 1,
+        voiceId: 'af_heart',
+      })
+      state = practiceReducer(state, { type: 'STOP_REFERENCE' })
+      expect(state.referencePlayback).toBeNull()
+    })
+  })
+
+  describe('REFERENCE_ENDED', () => {
+    it('clears referencePlayback when no loop is active', () => {
+      let state = initialPracticeState()
+      state = practiceReducer(state, {
+        type: 'START_REFERENCE',
+        passageId: 'rainbow',
+        segmentIndex: 1,
+        voiceId: 'af_heart',
+      })
+      state = practiceReducer(state, { type: 'REFERENCE_ENDED' })
+      expect(state.referencePlayback).toBeNull()
+      expect(state.pendingRecordRestart).toBe(false)
+      expect(state.loopPhase).toBeNull()
+    })
+
+    it('sets pendingRecordRestart when loop is in reference phase', () => {
+      let state: PracticeState = {
+        ...initialPracticeState(),
+        loopPhase: 'reference',
+      }
+      state = practiceReducer(state, {
+        type: 'START_REFERENCE',
+        passageId: 'rainbow',
+        segmentIndex: 1,
+        voiceId: 'af_heart',
+      })
+      state = practiceReducer(state, { type: 'REFERENCE_ENDED' })
+      expect(state.referencePlayback).toBeNull()
+      expect(state.pendingRecordRestart).toBe(true)
+      expect(state.loopPhase).toBeNull()
+    })
+
+    it('does not set pendingRecordRestart when loop is in take phase', () => {
+      let state: PracticeState = {
+        ...initialPracticeState(),
+        loopPhase: 'take',
+      }
+      state = practiceReducer(state, {
+        type: 'START_REFERENCE',
+        passageId: 'rainbow',
+        segmentIndex: 1,
+        voiceId: 'af_heart',
+      })
+      state = practiceReducer(state, { type: 'REFERENCE_ENDED' })
+      expect(state.referencePlayback).toBeNull()
+      expect(state.pendingRecordRestart).toBe(false)
     })
   })
 
@@ -424,7 +736,7 @@ describe('practiceReducer', () => {
       expect(state.shuttingDown).toBe(false)
     })
 
-    it('does not affect takes or playback state', () => {
+    it('clears playback state (defensive mutual exclusion)', () => {
       let state = initialPracticeState()
       state = practiceReducer(state, {
         type: 'END_TAKE',
@@ -438,8 +750,12 @@ describe('practiceReducer', () => {
         skipSilence: false,
       })
       state = practiceReducer(state, { type: 'STOP_SESSION' })
+      // STOP_SESSION ends the session and defensively clears playback so the
+      // invariant (at most one of recording / take / reference active) holds
+      // even if a caller forgets to pair it with STOP_PLAYBACK.
       expect(state.takes).toHaveLength(1)
-      expect(state.playingTakeId).toBe(1)
+      expect(state.playingTakeId).toBeNull()
+      expect(state.referencePlayback).toBeNull()
       expect(state.sessionPhase).toBe('idle')
     })
   })
@@ -779,6 +1095,89 @@ describe('practiceReducer', () => {
         autoAdvance: true,
       })
       expect(state.pendingRecordRestart).toBe(true)
+      expect(state.drillIndex).toBe(0)
+    })
+
+    it('sets pendingRecordRestart when loopPhase is reference', () => {
+      let state: PracticeState = {
+        ...initialPracticeState(),
+        playingTakeId: 1,
+        loopPhase: 'reference',
+      }
+      state = practiceReducer(state, {
+        type: 'PLAYBACK_ENDED',
+        autoAdvance: false,
+      })
+      expect(state.playingTakeId).toBeNull()
+      expect(state.loopPhase).toBeNull()
+      expect(state.pendingRecordRestart).toBe(true)
+      expect(state.drillIndex).toBe(0)
+    })
+
+    it('advances drill when loopPhase is take and autoAdvance on', () => {
+      let state: PracticeState = {
+        ...initialPracticeState(),
+        playingTakeId: 1,
+        loopPhase: 'take',
+        drillIndex: 2,
+        sentenceCount: 5,
+      }
+      state = practiceReducer(state, {
+        type: 'PLAYBACK_ENDED',
+        autoAdvance: true,
+      })
+      expect(state.playingTakeId).toBeNull()
+      expect(state.loopPhase).toBeNull()
+      expect(state.drillIndex).toBe(3)
+      expect(state.pendingReferenceRestart).toBe(true)
+    })
+
+    it('does not advance drill when loopPhase is take and no autoAdvance', () => {
+      let state: PracticeState = {
+        ...initialPracticeState(),
+        playingTakeId: 1,
+        loopPhase: 'take',
+        drillIndex: 2,
+        sentenceCount: 5,
+      }
+      state = practiceReducer(state, {
+        type: 'PLAYBACK_ENDED',
+        autoAdvance: false,
+      })
+      expect(state.drillIndex).toBe(2)
+      expect(state.pendingReferenceRestart).toBe(true)
+    })
+
+    it('does not advance drill when loopPhase is take and a take is pinned', () => {
+      let state: PracticeState = {
+        ...initialPracticeState(),
+        playingTakeId: 1,
+        referenceTakeId: 5,
+        loopPhase: 'take',
+        drillIndex: 2,
+        sentenceCount: 5,
+      }
+      state = practiceReducer(state, {
+        type: 'PLAYBACK_ENDED',
+        autoAdvance: true,
+      })
+      // Pinned reference suppresses auto-advance even when autoAdvance is on.
+      expect(state.drillIndex).toBe(2)
+      expect(state.pendingReferenceRestart).toBe(true)
+    })
+
+    it('wraps drill when loopPhase is take and autoAdvance at last sentence', () => {
+      let state: PracticeState = {
+        ...initialPracticeState(),
+        playingTakeId: 1,
+        loopPhase: 'take',
+        drillIndex: 4,
+        sentenceCount: 5,
+      }
+      state = practiceReducer(state, {
+        type: 'PLAYBACK_ENDED',
+        autoAdvance: true,
+      })
       expect(state.drillIndex).toBe(0)
     })
   })

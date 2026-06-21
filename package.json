@@ -11,6 +11,8 @@
     "preview": "vite preview",
     "test": "vitest run --tags-filter=!e2e",
     "e2e": "vitest run --tags-filter=e2e",
+    "synth:references": "npm --prefix tools/synth-references install && npm --prefix tools/synth-references run synth --",
+    "media:fetch": "tsx tools/fetch-media.ts",
     "mem": "tsx mem/run.ts",
     "mem:detail": "tsx mem/run.ts --layer2",
     "lint": "oxlint && oxfmt --check .",

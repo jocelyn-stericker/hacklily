@@ -10,13 +10,17 @@ npm run dev            # Run dev server on port 3000
 npm run build          # Build for production
 
 # Code Quality
-# Prefer `npm run check` over running the underlying tools (tsgo, oxlint,
-# oxfmt) directly: it bundles format + lint-fix + typecheck into one step.
+# Prefer `npm run check` over running the underlying tools (oxlint, oxfmt)
+# directly: it bundles format + lint-fix into one step.
+# Note: `npm run check` or oxlint is how you typecheck, tsgo isn't installed directly.
 npm run check
 
 # Testing
 npm run test           # Run tests with Vitest
 npm run e2e            # Run slow end-to-end tests
+
+# Reference media
+npm run media:fetch    # Mirror reference clips into media/references/ (see below)
 ```
 
 ## Tech Stack
@@ -49,6 +53,33 @@ npx shadcn@latest add <component-name>
 ```
 
 Components are vendored into `src/components/ui/` and can be imported directly. We carry minor local changes on top of the generated code, so review diffs before re-adding or updating a component.
+
+## Reference Media (media.braat.app)
+
+The practice route plays ~140 MB of synthesized reference clips (per-sentence
+MP3s). These are **not** in the repo — they're hosted on a separate origin,
+`media.braat.app`, and loaded at runtime. (`manifest.json` lives there too, at
+`/references/manifest.json`.)
+
+- **Generating clips**: `npm run synth:references` runs
+  `tools/synth-references/synth.ts`, which synthesizes the clips with Kokoro
+  (locally, on CPU) and writes them — plus `manifest.json` — into the gitignored
+  `media/references/`. Upload that directory's contents to `media.braat.app` to
+  publish (the tracked `media/_headers` goes alongside).
+- **URL resolution**: `src/lib/mediaConfig.ts` is the single source of truth.
+  The manifest stores root-relative paths (`/references/...`); `mediaUrl()`
+  prefixes them with `MEDIA_ORIGIN`. Always go through `mediaUrl()` rather than
+  using `clip.url` directly.
+- **Local development**: flip the `USE_LOCAL_MEDIA` const in `mediaConfig.ts` to
+  load clips same-origin instead. Run `npm run media:fetch` first
+  (`tools/fetch-media.ts`) to mirror them into the gitignored `media/references/`;
+  the dev server then serves them via `localMediaDevPlugin` in `vite.config.ts`.
+  When the const is false, that plugin is a no-op.
+- **Host headers**: `media/_headers` (tracked) only sets COOP/COEP/CORP. The
+  app is cross-origin isolated (COEP `require-corp`), so cross-origin media needs
+  `Cross-Origin-Resource-Policy: cross-origin` for the `<audio>` element and CORS
+  (`Access-Control-Allow-Origin`) for the fetch + `decodeAudioData` analyze path.
+  The media host adds Content-Type, caching, and ACAO automatically.
 
 ## CI/CD
 

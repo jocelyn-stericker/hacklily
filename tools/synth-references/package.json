@@ -1,0 +1,15 @@
+{
+  "name": "braat-synth-references",
+  "private": true,
+  "type": "module",
+  "description": "Offline generator for reference TTS recordings of the practice passages. Isolated from the root package so the root's onnxruntime-node override (which empties it for the browser build) does not break Node-side ONNX inference here.",
+  "scripts": {
+    "synth": "tsx synth.ts"
+  },
+  "dependencies": {
+    "kokoro-js": "^1.2.1"
+  },
+  "devDependencies": {
+    "tsx": "^4.22.4"
+  }
+}

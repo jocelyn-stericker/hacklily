@@ -17,6 +17,9 @@ export function PracticeStatusRow({
   onNextTake,
   onEndSession,
   numTakes,
+  referencePlaying,
+  referenceLoading,
+  onStopReference,
 }: {
   phase: 'idle' | 'recording' | 'playback'
   playing: boolean
@@ -27,22 +30,32 @@ export function PracticeStatusRow({
   onNextTake: () => void
   onEndSession: () => void
   numTakes: number
+  /** True when a reference clip is currently playing. */
+  referencePlaying: boolean
+  /** True while the reference clip is buffering. */
+  referenceLoading: boolean
+  onStopReference: () => void
 }) {
   if (phase === 'idle') {
-    return (
-      <div className="flex flex-col items-center gap-2 px-4 py-4">
-        <Button size="lg" onClick={onStartSession}>
-          <Mic />
-          {numTakes > 0 ? 'Resume recording' : 'Start recording'}
-        </Button>
-        {numTakes > 0 ? null : (
-          <p className="max-w-md text-center text-xs text-muted-foreground">
-            Recording and analysis happen in your browser; nothing is uploaded.
-            Takes are kept in memory and discarded when you leave the page.
-          </p>
-        )}
-      </div>
-    )
+    if (referencePlaying || referenceLoading) {
+      // fall through to toolbar treatment below
+    } else {
+      return (
+        <div className="flex flex-col items-center gap-2 px-4 py-4">
+          <Button size="lg" onClick={onStartSession}>
+            <Mic />
+            {numTakes > 0 ? 'Resume recording' : 'Start recording'}
+          </Button>
+          {numTakes > 0 ? null : (
+            <p className="max-w-md text-center text-xs text-muted-foreground">
+              Recording and analysis happen in your browser; nothing is
+              uploaded. Takes are kept in memory and discarded when you leave
+              the page.
+            </p>
+          )}
+        </div>
+      )
+    }
   }
 
   const indicator = (
@@ -55,7 +68,12 @@ export function PracticeStatusRow({
   return (
     <div className="relative flex items-center px-4 py-3 gap-2">
       <div className="flex items-center gap-2 shrink-0 z-1">
-        {playing ? (
+        {referencePlaying || referenceLoading ? (
+          <Button variant="outline" disabled={true} className="px-3">
+            {referenceLoading ? <Loader2 className="animate-spin" /> : <Play />}
+            Playing reference…
+          </Button>
+        ) : playing ? (
           <Button variant="outline" disabled={true} className="px-3">
             <Play /> Heard you, playing back…
           </Button>
@@ -80,14 +98,26 @@ export function PracticeStatusRow({
         )}
       </div>
       <div className="flex-1" />
-      <Button
-        aria-label="End session"
-        onClick={onEndSession}
-        size="icon"
-        className="bg-red-500 text-white hover:bg-red-600"
-      >
-        <Square className="size-4 fill-current" />
-      </Button>
+      {(referencePlaying || referenceLoading) && (
+        <Button
+          aria-label="Stop reference"
+          onClick={onStopReference}
+          size="icon"
+          className="bg-red-500 text-white hover:bg-red-600"
+        >
+          <Square className="size-4 fill-current" />
+        </Button>
+      )}
+      {phase !== 'idle' && (
+        <Button
+          aria-label="End session"
+          onClick={onEndSession}
+          size="icon"
+          className="bg-red-500 text-white hover:bg-red-600"
+        >
+          <Square className="size-4 fill-current" />
+        </Button>
+      )}
     </div>
   )
 }
