@@ -165,13 +165,15 @@ async function transcribeOne(
       throw err
     }
     const cur = deps.sink.get(chunk)
+    const message = err instanceof Error ? err.message : 'Transcription failed'
+    console.error('[transcribeJob]', message, err)
     deps.sink.set(chunk, {
       ...cur,
       [tier]: {
         job: {
           tier,
           status: 'error',
-          error: err instanceof Error ? err.message : 'Transcription failed',
+          error: message,
         },
       },
     })

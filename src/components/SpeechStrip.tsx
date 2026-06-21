@@ -353,6 +353,14 @@ function ChunkOverlay({
                   ) : null}
                 </div>
               ) : null}
+              {indicator.kind === 'error' ? (
+                <div className="mb-2 flex items-start gap-1.5 overflow-hidden rounded-lg border border-red-500/40 bg-red-500/10 px-2.5 py-1.5 text-xs text-red-700 dark:text-red-400">
+                  <AlertTriangle className="mt-0.5 size-3 shrink-0" />
+                  <span className="min-w-0 break-words leading-snug">
+                    {indicator.error}
+                  </span>
+                </div>
+              ) : null}
               <textarea
                 value={editableText}
                 onChange={(e) => setEditableText(e.target.value)}
@@ -384,7 +392,7 @@ function ChunkOverlay({
                     className="justify-start"
                     onClick={handleSetUpTranscription}
                   >
-                    Settings
+                    Set up transcription
                   </Button>
                 ) : null}
                 <Button

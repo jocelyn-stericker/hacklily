@@ -10,7 +10,9 @@ npm run dev            # Run dev server on port 3000
 npm run build          # Build for production
 
 # Code Quality
-npm run check          # Format with oxfmt, fix with oxlint, and typecheck (tsgo via oxlint) — like `npm run lint` with autofixes
+# Prefer `npm run check` over running the underlying tools (tsgo, oxlint,
+# oxfmt) directly: it bundles format + lint-fix + typecheck into one step.
+npm run check
 
 # Testing
 npm run test           # Run tests with Vitest

@@ -244,6 +244,8 @@ async function alignOne(
       return
     }
     if (err instanceof ModelUnavailableError) {
+      const message = err instanceof Error ? err.message : 'Alignment failed'
+      console.error('[alignJob]', message, err)
       deps.sink.set(chunk, {
         ...cur,
         [tier]: {
@@ -251,12 +253,14 @@ async function alignOne(
           job: {
             tier,
             status: 'error',
-            error: err instanceof Error ? err.message : 'Alignment failed',
+            error: message,
           },
         } satisfies TranscriptResult,
       })
       throw err
     }
+    const message = err instanceof Error ? err.message : 'Alignment failed'
+    console.error('[alignJob]', message, err)
     deps.sink.set(chunk, {
       ...cur,
       [tier]: {
@@ -264,7 +268,7 @@ async function alignOne(
         job: {
           tier,
           status: 'error',
-          error: err instanceof Error ? err.message : 'Alignment failed',
+          error: message,
         },
       } satisfies TranscriptResult,
     })
