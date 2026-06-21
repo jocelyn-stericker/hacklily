@@ -242,15 +242,26 @@ export function renderTable(result: ScenarioResult): string {
 
 /**
  * Render a compact one-line summary of the peak vs baseline for a scenario.
- * Excludes chromium.* metrics — those overlap with app-tracked ArrayBuffer
- * bytes and are reported separately in the table as a Chromium heap subtotal.
+ * Excludes chromium.* and agentMemory.* metrics — both overlap with
+ * app-tracked ArrayBuffer bytes and are reported separately in the table
+ * (as "Chromium heap" and "Agent memory" subtotals). Without this exclusion,
+ * agentMemory.totalBytes (which already contains the app-tracked bytes plus
+ * browser/worker/WASM overhead) gets summed on top of them, double-counting
+ * and making the improvement look marginal — the bug that made layer 2 appear
+ * less substantial than layer 1.
+ *
+ * When agentMemory is present (layer 2 / chromium), it's appended as a
+ * separate annotation so the OOM-relevant full-process number is still
+ * visible in the headline without polluting the app-bytes total.
  */
 export function renderSummaryLine(result: ScenarioResult): string {
   const steps = result.steps
   if (steps.length < 2) return ''
 
   const isAppBytes = (k: string) =>
-    k.endsWith('Bytes') && !k.startsWith('chromium.')
+    k.endsWith('Bytes') &&
+    !k.startsWith('chromium.') &&
+    !k.startsWith('agentMemory.')
 
   const sumAppBytes = (snap: Record<string, number>) =>
     Object.entries(snap).reduce((s, [k, v]) => (isAppBytes(k) ? s + v : s), 0)
@@ -260,6 +271,14 @@ export function renderSummaryLine(result: ScenarioResult): string {
   let baselineBytes = 0
   let finalBytes = 0
 
+  // Agent memory (performance.measureUserAgentSpecificMemory) — the
+  // cross-thread total including workers, worklets, and WASM. Tracked
+  // separately so it doesn't double-count app bytes.
+  let agentPeak = 0
+  let agentBaseline = 0
+  let agentFinal = 0
+  const agentKey = 'agentMemory.totalBytes'
+
   for (let i = 0; i < steps.length; i++) {
     const totalBytes = sumAppBytes(steps[i]!.snapshot)
     if (i === 0) baselineBytes = totalBytes
@@ -268,7 +287,16 @@ export function renderSummaryLine(result: ScenarioResult): string {
       peakBytes = totalBytes
       peakStep = steps[i]!.name
     }
+
+    const agent = steps[i]!.snapshot[agentKey] ?? 0
+    if (i === 0) agentBaseline = agent
+    agentFinal = agent
+    if (agent > agentPeak) agentPeak = agent
   }
 
-  return `Peak ${formatBytes(peakBytes)} at ${peakStep} | After clear: ${formatBytes(finalBytes)} (baseline: ${formatBytes(baselineBytes)})`
+  let line = `Peak ${formatBytes(peakBytes)} at ${peakStep} | After clear: ${formatBytes(finalBytes)} (baseline: ${formatBytes(baselineBytes)})`
+  if (agentPeak > 0) {
+    line += ` | Agent peak ${formatBytes(agentPeak)}, clear ${formatBytes(agentFinal)} (baseline ${formatBytes(agentBaseline)})`
+  }
+  return line
 }

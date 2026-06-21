@@ -113,46 +113,92 @@ live recordings, the escape hatch is to additively draw just the new arcs on a
 pure append (the new dots' left-bleeding shadow over older columns is benign),
 but whole-tile repaint kept the code far simpler and measured fine.
 
-## 1c. Lower-resolution spectrogram tiles when zoomed out — TODO
+## 1c. Lower-resolution spectrogram tiles when zoomed out — DONE
 
-The one weak spot left in item 1: eviction floors at the on-screen set
-(invariant 4), so a fully-zoomed-out view of a long recording still holds the
-whole visible span at full resolution — and re-renders full-res tiles only to
-scale them down (wasteful in memory and quality). (The waveform's version of this
-is already solved by item 1a; this item is the spectrogram.) Two options:
+**Shipped (LOD/mipmap tiles).** The weak spot in item 1 was that eviction floors
+at the on-screen set (invariant 4), so a fully-zoomed-out view held the whole
+visible span at **full** 256-frame resolution — re-rendering full-res tiles only
+to downscale them (wasteful in memory and quality). Canvas tiles in
+`Spectrogram.tsx` are now **level-of-detail tiles**: a tile still covers
+`TILE_WIDTH` source frames but rasterizes into a `cols = TILE_WIDTH >> lod`-wide
+canvas, each column the **max over 2^lod frames per bin**. `lod` is picked per
+draw from the zoom (`selectLod`, targeting ~1 canvas column per display pixel,
+with hysteresis so a slow pinch across a boundary doesn't rebuild every frame).
 
-**Measured — `npm run mem -- --scenario main-import` (60 s WAV, webkit L1).**
-The scenario now zooms fully out after import (`afterZoomOut` step) then back in,
-so this weak spot is quantified rather than just argued. Fully zoomed out, the
-whole track is on-screen and eviction can't floor below it, so every tile
-materializes at full resolution:
+Why mipmap over the originally-preferred "render straight into the display
+buffer": a pinch changes `dxPerSec` every frame, which forces a full repaint
+every frame (the incremental `pixelShift` path requires unchanged `dx`). Cached
+tiles make each such repaint a cheap re-blit; direct-render would re-reduce every
+column from scratch each pinch frame. Mipmaps keep pinch/scroll smooth _and_
+bound zoomed-out memory to small (display-resolution) tiles. The display buffer +
+incremental-scroll machinery is unchanged.
 
-- spectrogram tiles: 22 (import default zoom) → **120 (fully zoomed out)**
-- tile canvas bytes: 12.6 MB → **68.6 MB** — note this exceeds the 48 MB
-  `MAX_TILE_CANVAS_BYTES` cap, exactly invariant 4 (the on-screen set survives
-  even past the cap).
-- Total retained: 52.9 MB → **108.9 MB** (the new peak for this scenario).
-- After zooming back in (`afterScroll`/`afterIdle`): the `TileLru` only evicts
-  down to its budget, so it parks at the **48 MB cap** (84 tiles) rather than
-  returning to the ~12.6 MB on-screen working set — the honest steady state once
-  you've zoomed out at least once. `afterClear` still drops to baseline (no
-  leak). This is the number this item needs to bring down.
+**Colour source → Uint8 levels (item 11 overlap, done here).** The retained
+source `colorTiles` (`Uint32` RGBA) became **`levelTiles` (`Uint8` dB-levels,
+0–255)** — the colourmap lookup moved to paint time. This is 4× smaller, makes
+tile materialization log-free (fast → smooth pinch), reduces correctly by max in
+the level/dB domain (monotonic; never averaging RGBA), and _is_ item 11's
+"quantize spectra → int8" for the display source. Formants switch from dots to
+connected lines at `lod >= FORMANT_LINE_LOD` so track peaks survive the smear.
 
-Two options:
+**Follow-up: canvas pool + asymmetric proxy-while-zooming (pinch GC).** The
+mipmap tiles fixed the memory ceiling but pinch-zoom still janked: each lod
+transition during a pinch re-materializes a full screen of tiles (new
+`OffscreenCanvas`es), spiking minor/incremental GC. Two changes addressed it:
 
-- **Render straight into the display buffer past a zoom threshold**, bypassing
-  tile canvases entirely — the same move item 1a made for the waveform. The
-  display buffer is already viewport-sized and bounded, and the incremental
-  scroll path (`pixelShift`) already recomputes only the newly revealed strip.
-  Avoids LOD cache-key machinery — preferred.
-- **True LOD/mipmap tiles**, cache-keyed `(chunkIdx, tileIdx, lod)`.
+- **`TileLru` canvas pool** (`acquire`/`recycle`). Evicted and forgotten
+  canvases go to a per-`cols`-bucket free list instead of being GC'd; `acquire`
+  pops a matching-size canvas from the pool before allocating. Correct
+  infrastructure, but currently **dormant** — item 1c got tile canvas bytes
+  well under the 48 MB cap, so eviction never fires, and lod transitions use
+  different canvas sizes so can't reuse across lods anyway. Kept for the day a
+  scenario pushes past the cap; the proxy (below) is the actual fix.
+- **Asymmetric proxy-while-zooming.** While a pinch is actively crossing toward
+  a _finer_ lod (zoom-in), the new tiles are large and expensive —
+  materializing them every frame is the GC spike. Instead, `draw` blits the
+  last settled coarser lod rescaled (a soft but gapless proxy) and defers the
+  crisp target-lod materialization to a debounced refine (~90 ms after pinch
+  stops). Zoom-**out** is materialized directly: coarse tiles are cheap and
+  gapless, and proxying a finer lod would leave black edges at the
+  newly-revealed track boundaries. The asymmetry (`proxy = targetLod <
+renderLodRef.current`) is what makes zoom-in soft-then-crisp with no black
+  gaps while zoom-out stays gapless throughout.
 
-Either way: downsample the spectrogram from the **underlying `spectrum`/dB
-values** (max or mean per pixel column — Praat does per-column reduction), not
-by averaging already-colour-mapped RGBA, which looks wrong. Formants probably
-want to switch from dots to connected lines when zoomed out so track peaks
-don't vanish into the smear. With item 1b done, a zoomed-out tile is one combined
-low-res tile (colours + line-mode formants), not two.
+**Measured — `npm run mem -- --scenario main-import` (60 s WAV, webkit L1),
+before → after this item:**
+
+- `afterZoomOut` tile canvas bytes: **68.6 MB → 3.8 MB** (was past the 48 MB cap;
+  now small display-resolution tiles).
+- `afterScroll`/`afterIdle` parked steady state: **48 MB cap → 5.5 MB** (stale
+  off-lod tiles linger under the cap after a zoom-out-and-back cycle; bounded,
+  evicted under pressure).
+- Colour source: **~14.7 MB `Uint32` → 3.7 MB `Uint8`** (`levelBytes`).
+- Total retained peak: **108.9 MB → 34.7 MB** (now dominated by `spectrumBytes`
+  14.5 MB + `ropeBytes` 10.1 MB + tile canvas 5.5 MB + levels 3.7 MB).
+
+`spectrumBytes` (the f32 `AnalysisFrame.spectrum`) is untouched — that's item
+11's separate dominant term. The mip reduction reads `spectrum` via the levels,
+so when item 11 quantizes/recomputes it the reduction stays a thin consumer.
+
+### Invariants to preserve (in addition to item 1's)
+
+- **lod from zoom, with hysteresis.** `selectLod` keeps the current lod while
+  `dxPerCol` stays in `[LOD_DXCOL_LO, LOD_DXCOL_HI]`; don't drop the hysteresis or
+  pinch rebuilds every frame. `blitChunks` clamps lod ≥ 0 (the `-1` sentinel must
+  never reach `1 << lod`).
+- **Reduce in the level/dB domain, by max** — never average colour-mapped RGBA.
+- **LRU bytes are per-tile** (`tileBytes(cols, height)`), since tiles vary by lod.
+- **Truncate every lod** (`truncateAllLods`) on resync / numFrames shrink / clear,
+  not just one array, or byte accounting drifts.
+- **Proxy is zoom-in only.** `proxy = targetLod < renderLodRef.current` — never
+  proxy zoom-out (coarse tiles are cheap and proxying a finer lod leaves black
+  edges at the newly-revealed track boundaries). The debounced refine
+  (`scheduleRefine`, `ZOOM_REFINE_MS`) must fire once on settle to replace the
+  soft proxy with the crisp target lod; don't skip it or the display stays soft
+  forever.
+- `colorTiles` is now `levelTiles` (Uint8); item 1's "recompute from `spectrum`"
+  invariant is satisfied — a tile is `colourmap(max(levels))`, levels are
+  `colourmap`-free quantized spectra, both rebuildable from `spectrum`.
 
 ## 2. Bound VAD / formant worker accumulators — DONE
 
@@ -626,6 +672,12 @@ Costs / caveats to design around:
 
 ### Spectra → quantize OR recompute (pick one, not both)
 
+> Partially banked by item 1c: the spectrogram's **display colour source** is
+> already quantized to `Uint8` dB-levels (`levelTiles`, ~0.25 dB steps), at ~6
+> MB/min. What remains here is the dominant **`AnalysisFrame.spectrum`** f32 term
+> (the analysis source of truth, ~33 MB/min) feeding hover readouts and re-colour
+> on dbMax change — `levelTiles` is derived from it, not a replacement.
+
 - **Quantize** f32 → int8/int16: dB has bounded dynamic range (~50–60 dB), and
   int8 at ~0.25 dB steps is plenty for a colormapped display + hover readout. 4× /
   2×, easy, store-and-keep. Lowest-risk way to crush the biggest term (33 → ~8
@@ -739,7 +791,10 @@ Three layers, each independently runnable:
 - **Layer 2 — `npm run mem:detail`**: same scenarios on the `chromium` channel
   with CDP `HeapProfiler` + `performance.measureMemory()`, dumped to a report
   file. Use when you need to see _where_ bytes are, not just whether they
-  leaked.
+  leaked. The summary line's app-bytes total excludes both `chromium.*` and
+  `agentMemory.*` (which overlap with app-tracked bytes); agent memory is
+  appended as a separate `| Agent peak …, clear … (baseline …)` annotation so
+  the OOM-relevant full-process number stays visible without double-counting.
 - **Layer 3 — `npm run test`**: Node `*.memory.test.ts` under
   `--expose-gc` via Vitest, targeting pure allocators that don't need a browser
   (`AudioRopeReader`, `VadProcessor` tensor churn, VAD/Formant accumulators).
@@ -753,3 +808,34 @@ structures that matter: spectrogram tile count + bytes, waveform tile count +
 bytes, live `AudioRope`s + SAB segment count, live `Worker`s, `analysisMut`
 frame count, VAD/Formant accumulator lengths. Built in dev builds only, stripped
 from production.
+
+### How the table's byte rows relate (nested, not additive)
+
+The table shows four byte rows. They are **nested subsets**, not independent
+terms — never sum them. From smallest to largest:
+
+- **Total retained** — the app-explicit subset: the sum of the byte-valued
+  metrics the probe tracks (`ropeBytes + spectrumBytes + levelBytes +
+tileCanvasBytes + displayBufBytes + waveform canvasBytes`). A **lower bound**
+  on agent memory, not an estimate of the whole — it misses JS objects, worker
+  code, WASM, browser internals.
+- **Estimated heap** — Total retained **minus canvas pixel buffers**
+  (`tileCanvasBytes`, `displayBufBytes`, `waveform.canvasBytes`, which live on
+  the GPU, not in V8's heap). Approximates `backingStorageSize` from
+  app-tracked numbers alone, so Layer 1 (webkit, no CDP) gets a heap
+  approximation without a CDP session. The gap to the Chromium heap row is JS
+  object overhead (closures, React trees) the app doesn't track.
+- **Chromium heap** — `jsHeapUsed + backingStorageSize` from CDP
+  `Runtime.getHeapUsage` on the **page session only**. Main-thread JS objects +
+  main-thread ArrayBuffer backing stores. Does **not** include worker/worklet
+  heaps or worker WASM (those appear only in agent memory). Offscreen canvas
+  pixels are GPU, so naturally excluded. Layer 2 only.
+- **Agent memory** — `performance.measureUserAgentSpecificMemory()`: the entire
+  memory across all same-origin agents (main + workers + worklets + WASM linear
+  memory). The OOM-relevant whole. Layer 2 only.
+
+So: `Total retained ⊆ Estimated heap ≈ backingStorageSize ⊂ Chromium heap (main
+only) ⊂ Agent memory (everything)`. The summary line excludes `chromium.*` and
+`agentMemory.*` from its app-bytes peak to avoid the double-counting that comes
+from treating the last two as additive instead of nested; agent memory is shown
+as a separate annotation.
