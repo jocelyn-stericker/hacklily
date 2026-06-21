@@ -575,7 +575,7 @@ export class CapturePipeline extends TypedEventTarget<CapturePipelineEventMap> {
     const isNew = frameIndex >= frames.length
     while (frames.length <= frameIndex) {
       const frame: AnalysisFrame = {
-        spectrum: new Float32Array(this.#numFreqs),
+        spectrum: new Int8Array(this.#numFreqs).fill(-128),
         rms: 0,
         speechProbability: 0,
         pitchDetected: false,

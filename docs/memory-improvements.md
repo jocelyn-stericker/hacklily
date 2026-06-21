@@ -569,27 +569,28 @@ we can't tune per device — the safe default must clear the worst target). Work
 back from a conservative ~1.0 GB tab ceiling, after reserving the heavy-model
 peak (~300 MB, item 8), tiles + canvas/GPU (~120–150 MB), app baseline (~80–100
 MB), and WebKit/fragmentation headroom (~150 MB), that leaves **~300 MB** for the
-growing state. At the pre-item-11 ~45 MB/min that was **~6–7 min**; with item 11's
-int16 PCM (done, ~5.3 MB/min) it's ~40 MB/min, so **~7–8 min**; with item 11's
-spectra quantize/recompute (todo, ~33 MB/min → ~8 MB/min or 0) it becomes
-~20–60 min. This is reasoning, not measurement — these jetsam numbers are
-fuzzy and unreadable from JS on Safari; calibrate against the device (watch for
-the "reloaded because it used significant memory" event) once the `__braatMem`
+growing state. At the pre-item-11 ~45 MB/min that was **~6–7 min**; after item
+11's int16 PCM + int8 spectra (done, ~13 MB/min measured) it's **~23 min**; a
+future "recompute from PCM" or OPFS offload tier (item 12) would push it further.
+This is reasoning, not measurement — these jetsam numbers are fuzzy and
+unreadable from JS on Safari; calibrate against the device (watch for the
+"reloaded because it used significant memory" event) once the `__braatMem`
 high-water probe exists.
 
 This is the **floor** that makes OOM impossible by construction. It stays
 complementary to items 11/12: compression/backing multiply the minutes the budget
 buys, and persistence (item 12) covers the backgrounding kills the budget can't.
 
-## 11. Compress retained audio + analysis — PCM DONE, spectra TODO
+## 11. Compress retained audio + analysis — PCM + spectra DONE
 
 After items 1–8 the retained state that's still O(recording length) is three
 terms (default config — `timeStepSec 0.002` → ~500 frames/s; `maxFrequencyHz
 5500` / `freqStepHz 20` → ~275 bins; mono f32):
 
-- **Analysis spectra** (`AnalysisFrame.spectrum`, ~275 f32/frame): **~33 MB/min** —
-  the dominant term. Derived (not source of truth). **Still TODO.**
-- **AnalysisFrame object overhead** (~10 fields × 500/s): ~4 MB/min. Derived.
+- **Analysis spectra** (`AnalysisFrame.spectrum`, ~275 bins/frame): was **~14.5 MB/min** measured
+  at f32 linear power, now **~3.6 MB/min** at int8 quantized dB (below). Derived (not source of
+  truth). **Done.**
+- **AnalysisFrame object overhead** (~10 fields × 500/s): ~4 MB/min. Derived. Untouched.
 - **PCM** (`AudioRope` SABs): was **~10.6 MB/min** at f32, now **~5.3 MB/min** at
   int16 (below). The only true source of truth.
 
@@ -664,23 +665,68 @@ Wins beyond the 2×:
   `AudioRope.test.ts` suite (37 tests); the per-element convert is mechanically
   simple. No SabRope invariant was disturbed.
 
-### Spectra → quantize OR recompute (pick one, not both) — TODO
+### Spectra → quantize f32 power to int8 dB — DONE
 
-> Partially banked by item 1c: the spectrogram's **display colour source** is
-> already quantized to `Uint8` dB-levels (`levelTiles`, ~0.25 dB steps), at ~6
-> MB/min. What remains here is the dominant **`AnalysisFrame.spectrum`** f32 term
-> (the analysis source of truth, ~33 MB/min) feeding hover readouts and re-colour
-> on dbMax change — `levelTiles` is derived from it, not a replacement.
+**Shipped.** `AnalysisFrame.spectrum` is now `Int8Array` of quantized dB: 0.5 dB
+steps with a -32 dB offset, covering [-96, +31.5] dB over [-128, 127]. Silence
+(linear power ≤ 0) maps to `-128` (= -96 dB, below any realistic display floor,
+so it renders as level 0 without a special case). Producers (`analyzeBuffer`
+batch, `SpectrogramWorker` realtime) convert f32 linear power → int8 dB at the
+producer boundary via `powerToInt8(raw) = dbToInt8(10·log₁₀(raw))`;
+`SpectrogramProcessor` itself is unchanged (still f32-internal, its tests stay
+green). Consumers (`frameDbMax`, `computeDbMax`, `computeLevelsRange`) use
+`int8ToDb(stored) = DB_OFFSET + stored * DB_STEP` to read the absolute dB — the
+`Math.log` is gone, so the hot `computeLevelsRange` loop (the recolour path) is a
+multiply-and-add instead of a log per bin per frame. The `levelTiles`
+quantization (item 1c, Uint8 0–255 over the dbMax-relative window) is unchanged
+— it's a second quantization on top of the now-int8 dB source, at the same
+~0.27 dB effective resolution, so no double-quantization loss.
 
-- **Quantize** f32 → int8/int16: dB has bounded dynamic range (~50–60 dB), and
-  int8 at ~0.25 dB steps is plenty for a colormapped display + hover readout. 4× /
-  2×, easy, store-and-keep. Lowest-risk way to crush the biggest term (33 → ~8
-  MB/min).
-- **Recompute from PCM on demand** (the item 1c / item 2 `frameHfEnergy` move —
-  "rope is the source, derivations are disposable"): drops the spectra term
-  to **zero** (and the frame-object overhead with it). Strictly better than
-  quantizing **if built**, so don't do both — quantize is the cheap version of the
-  same goal.
+**Why int8 / 0.5 dB / -32 offset:** the ~1 dB JND for spectral colour differences
+is well above 0.5 dB, so quantization noise is invisible on the display. The
+[-96, +31.5] dB window covers the realistic dynamic range without knowing it
+ahead of time: `dbMax` defaults to -16 and only rises, `dbRange` defaults to
+70, so the default display floor is -86 dB — the -96 dB silence floor sits 10 dB
+below it (renders as level 0, full colourmap available for real signal). The
++31.5 dB ceiling is enough headroom for pre-emphasized peaks (~+20-30 dB).
+Storing absolute dB (not dbMax-relative) keeps the recolour-on-dbMax-change
+path working without rewriting history: a new louder frame just raises
+`dbMax` and the existing spectra re-normalize against the new window.
+
+**Measured — `npm run mem:detail -- --scenario main-import` (60 s WAV,
+chromium L2), before → after this sub-lever:**
+
+- `spectrumBytes`: **14.5 MB → 3.6 MB** (4×, exactly as expected — 1 byte vs 4
+  per bin × 275 bins × 30K frames).
+- `main-import` total retained peak: **29.7 MB → 18.8 MB** (the 11 MB spectra
+  saving). `spectrumBytes` is no longer the dominant retained term — `ropeBytes`
+  (5.0 MB) and `levelBytes` (3.7 MB) are now comparable.
+- `repeated-import-clear` `spectrumBytes` per cycle: **429 KB → ~120 KB**; leak
+  check still clean (drops to 0 on clear, no growth across cycles).
+- No regressions: all 794 unit tests + 5 memory tests pass; `npm run check` and
+  `npm run build` clean.
+
+The `AnalysisFrame.spectrum` type change is the single source of truth — the
+`AnalysisPatch` worker-message type inherits it via `Pick`, so the worker
+protocol follows automatically (still structured-clone, no transfer list). The
+`CapturePipeline.#ensureFrame` placeholder for not-yet-patched frames is now
+`new Int8Array(numFreqs).fill(-128)` (silence floor).
+
+**Blast radius (noted, not blocking):** the quantization happens at the producer
+boundary, so `SpectrogramProcessor.ts` (the FFT/power/bin pipeline) is
+untouched — it still emits f32 linear power to its internal `frameRow`, and the
+worker/batch path quantizes on the way out. The dB-conversion consumers
+(`frameDbMax`, `computeDbMax`, `computeLevelsRange`) are simplified, not just
+retargeted: the `Math.log` is gone, so the hot `computeLevelsRange` loop (the
+recolour path) is faster too — a multiply and a subtract instead of a log per
+bin per frame. The hover readout path does **not** read `spectrum` (it reads
+formant fields `f0/f1/f2/f3`), so it's unaffected despite the doc's earlier
+claim. The test rewrite was the bulk of the work: ~15 `AnalysisFrame.test.ts`
+fixtures changed from `new Float32Array([linearPower])` asserting dB outputs to
+`dbSpectrum(dB)` asserting the same dB directly (clearer, and tests the int8
+encoding). `SpectrogramWorker.test.ts` asserts `powerToInt8(0.5)` on the
+quantized output. `SpectrogramProcessor.test.ts` is unchanged (internal-spectrum
+is still f32).
 
 ### Lossy codec — playback copy only, never the analysis source
 
@@ -692,10 +738,14 @@ master.
 
 ### Projected end-state
 
-int16 PCM (done) + recompute/quantize spectra (todo) → cold cost ~**5–13 MB/min**
-(from ~45) — a 4–9× multiplier on the item 10 budget, enough that the limit
-stops being a real constraint for normal use. The PCM half is now shipped and
-measured; the spectra half remains the dominant retained term at ~33 MB/min.
+int16 PCM (done) + int8 quantized spectra (done) → cold cost ~**13 MB/min**
+measured (5.0 MB PCM + 3.6 MB spectra + 3.7 MB levelTiles + ~4 MB frame objects),
+from ~45 MB/min originally — a ~3.4× reduction on the item 10 budget. The
+`AnalysisFrame` object overhead (~4 MB/min) is now the dominant retained term
+after PCM and spectra; it would only fall to the "recompute from PCM" sub-lever
+(dropping `AnalysisFrame` entirely), which is a bigger architectural lift and not
+on the near roadmap. The lossy-codec / OPFS tiers (item 12) are the next levers
+for the playback copy and backgrounding recovery.
 
 ## 12. Durable audio backing (OPFS) — recovery first, offload second — TODO
 
@@ -734,10 +784,12 @@ line as items 1 and 11.
   `navigator.storage.persist()` is **often not granted on iOS Safari**, and Safari
   evicts unused storage after ~7 days. Scope the claim to "recover from the common
   kills — backgrounding, jetsam, reload," **not** "durable archive."
-- **Recovery speed vs. storage.** If analysis is recomputed-from-PCM (item 11),
-  a reload must re-derive it — slow for a long session. Persisting the **quantized
-  analysis cache** trades storage for fast resume; that's the explicit tradeoff to
-  decide when building this.
+- **Recovery speed vs. storage.** Analysis is now int8-quantized (item 11), so
+  persisting the quantized analysis cache is cheap (~3.6 MB/min). If a future
+  "recompute from PCM" tier drops `AnalysisFrame` entirely, a reload would have
+  to re-derive it — slow for a long session; persisting the quantized cache
+  trades storage for fast resume. That's the explicit tradeoff to decide when
+  building this.
 
 ### Interaction with item 10
 

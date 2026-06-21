@@ -3,6 +3,7 @@
 
 /// <reference lib="webworker" />
 
+import { powerToInt8 } from '#/lib/analysis/AnalysisFrame'
 import { SpectrogramStreamProcessor } from '#/lib/analysis/SpectrogramProcessor'
 import { AudioRopeReader } from '#/lib/audio/AudioRopeReader'
 
@@ -95,10 +96,13 @@ export async function runAnalysis(reader: AudioRopeReader, sampleRate: number) {
     rms = Math.sqrt(rms / inp.length)
 
     while (spec.readFrame(specBuf)) {
+      const quantized = new Int8Array(sp.numFreqs)
+      for (let i = 0; i < sp.numFreqs; i++)
+        quantized[i] = powerToInt8(specBuf[i]!)
       postMessage({
         type: 'patch',
         frameIndex: frameIndex++,
-        spectrum: specBuf.slice(),
+        spectrum: quantized,
         rms,
         lunaBrightness: null,
       } satisfies PatchFrameMessage)

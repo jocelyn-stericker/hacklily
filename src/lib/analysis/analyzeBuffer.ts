@@ -6,13 +6,20 @@
 import { preEmphasis } from '#/lib/dsp/preEmphasis'
 
 import type { AnalysisFrame, AnalysisChunk } from './AnalysisFrame'
-import { framesToChunks } from './AnalysisFrame'
+import { framesToChunks, powerToInt8 } from './AnalysisFrame'
 import { FormantProcessor } from './FormantProcessor'
 import { PitchProcessor } from './PitchProcessor'
 import { resample } from './ResampleProcessor'
 import { SpectrogramProcessor } from './SpectrogramProcessor'
 import type { VadParams } from './VadProcessor'
 import { SpeechGate, VadStreamProcessor } from './VadProcessor'
+
+// Quantize a linear-power f32 spectrum row to int8 dB (0.5 dB steps).
+function quantizeSpectrum(row: Float32Array): Int8Array {
+  const out = new Int8Array(row.length)
+  for (let i = 0; i < row.length; i++) out[i] = powerToInt8(row[i]!)
+  return out
+}
 
 interface Opts {
   maxFreqHz: number
@@ -219,7 +226,7 @@ export async function analyzeBuffer(
       f2: pitchDetected ? latestValidF2 : null,
       f3: pitchDetected ? latestValidF3 : null,
       lunaBrightness: null,
-      spectrum: specResult.data[x]!,
+      spectrum: quantizeSpectrum(specResult.data[x]!),
       rms,
       speechProbability: frameSpeechProb[x]!,
     } satisfies AnalysisFrame)

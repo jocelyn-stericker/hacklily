@@ -3,6 +3,36 @@
 
 const LN10_10 = 10 / Math.log(10)
 
+// Spectrum storage: quantized dB in Int8Array, 0.5 dB steps with a -32 dB
+// offset, covering [-96, +31.5] dB over [-128, 127]. Below the ~1 dB JND for
+// spectral colours, above the mic's ~60-70 dB SNR floor. The -32 offset puts
+// silence (-128 -> -96 dB) below any realistic display floor (default -86 dB),
+// so silence renders as level 0 without a special case, and the full default
+// colourmap window [-86, -16] dB is representable. Storing absolute dB (not
+// dbMax-relative) keeps the recolour-on-dbMax-change path working without
+// rewriting history.
+export const DB_STEP = 0.5
+export const DB_OFFSET = -32
+export const SILENCE_DB = DB_OFFSET + -128 * DB_STEP // -96 dB
+export const SILENCE_INT8 = -128
+
+// f32 linear power -> int8 quantized dB. Silence (raw <= 0) -> -128.
+export function dbToInt8(db: number): number {
+  if (!isFinite(db)) return SILENCE_INT8
+  const v = Math.round((db - DB_OFFSET) / DB_STEP)
+  return v < -128 ? -128 : v > 127 ? 127 : v
+}
+
+export function powerToInt8(raw: number): number {
+  if (raw <= 0) return SILENCE_INT8
+  return dbToInt8(LN10_10 * Math.log(raw))
+}
+
+// int8 quantized dB -> dB (for consumers that want the absolute dB value).
+export function int8ToDb(stored: number): number {
+  return DB_OFFSET + stored * DB_STEP
+}
+
 // Parameters shared by all frames within a chunk. Constant across one recording
 // or import session; a new AnalysisChunk is created if these ever change.
 export type AnalysisParams = {
@@ -14,7 +44,9 @@ export type AnalysisParams = {
 }
 
 export type AnalysisFrame = {
-  spectrum: Float32Array
+  // Quantized dB in 0.5 dB steps, range [-128, 127] → [-64, 63.5] dB.
+  // -128 (SILENCE_INT8) marks silence (linear power <= 0).
+  spectrum: Int8Array
   rms: number
   // Silero VAD speech probability (0 = silence, 1 = speech)
   speechProbability: number
@@ -320,14 +352,11 @@ export function frameTimeSec(
 }
 
 export function frameDbMax(frame: AnalysisFrame): number | null {
-  let max = -Infinity
-  for (const raw of frame.spectrum) {
-    if (raw > 0) {
-      const db = LN10_10 * Math.log(raw)
-      if (db > max) max = db
-    }
+  let max = SILENCE_INT8
+  for (const stored of frame.spectrum) {
+    if (stored > max) max = stored
   }
-  return isFinite(max) ? max : null
+  return max === SILENCE_INT8 ? null : int8ToDb(max)
 }
 
 export function computeDbMax(
@@ -335,21 +364,18 @@ export function computeDbMax(
   from = 0,
   to = Infinity,
 ): number | null {
-  let maxDb = -Infinity
+  let maxStored = SILENCE_INT8
   let idx = 0
   outer: for (const chunk of chunks) {
     for (const frame of chunk.frames) {
       if (idx >= to) break outer
       if (idx >= from) {
-        for (const raw of frame.spectrum) {
-          if (raw > 0) {
-            const db = LN10_10 * Math.log(raw)
-            if (db > maxDb) maxDb = db
-          }
+        for (const stored of frame.spectrum) {
+          if (stored > maxStored) maxStored = stored
         }
       }
       idx++
     }
   }
-  return isFinite(maxDb) ? maxDb : null
+  return maxStored === SILENCE_INT8 ? null : int8ToDb(maxStored)
 }

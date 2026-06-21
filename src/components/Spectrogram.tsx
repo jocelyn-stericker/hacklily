@@ -7,7 +7,7 @@ import { useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 
 import type { AnalysisChunk, AnalysisFrame } from '#/lib/analysis/AnalysisFrame'
-import { frameDbMax, totalFrames } from '#/lib/analysis/AnalysisFrame'
+import { frameDbMax, int8ToDb, totalFrames } from '#/lib/analysis/AnalysisFrame'
 import { registerMemSource } from '#/lib/memProbe'
 import {
   SPECTROGRAM_DARK_THEME,
@@ -60,7 +60,6 @@ const LOD_DXCOL_HI = 1.5
 // zoom has been still this long, a refine draw materializes the target lod crisply.
 const ZOOM_REFINE_MS = 90
 
-const LN10_10 = 10 / Math.log(10)
 const DB_MAX_DEFAULT = -16
 
 // Pick the level of detail for the current zoom: target one canvas column per
@@ -326,6 +325,13 @@ function buildBinForY(
 
 // Quantize spectra to Uint8 dB-levels (0–255). The colourmap lookup is deferred
 // to paint time so coarse tiles can reduce levels by max first (item 1c).
+//
+// Spectrum bins are Int8Array of quantized dB: 0.5 dB steps with a -32 dB offset,
+// covering [-96, +31.5] dB over [-128, 127] (see AnalysisFrame.ts). Silence
+// (power <= 0) is -128 = -96 dB, which sits below the default display floor
+// (-86 dB = dbMax -16 - dbRange 70), so it renders as level 0 (the colourmap
+// floor) without a special case. The +31.5 dB ceiling is enough for
+// pre-emphasized peaks; values above clip to level 255.
 function computeLevelsRange(
   state: ChunkLevelsState,
   from: number,
@@ -333,15 +339,15 @@ function computeLevelsRange(
   dbRange: number,
 ): void {
   const { levelTiles, numBins, dbMax, chunk } = state
+  const dbFloor = dbMax - dbRange
   for (let f = from; f < to; f++) {
     const spectrum = chunk.frames[f]!.spectrum
     const tileIdx = Math.floor(f / TILE_WIDTH)
     const localF = f - tileIdx * TILE_WIDTH
     const tileData = levelTiles[tileIdx]!.data
     for (let b = 0; b < numBins; b++) {
-      const raw = spectrum[b]!
-      const db = LN10_10 * Math.log(raw)
-      const norm = Math.max(0, Math.min(1, (db - (dbMax - dbRange)) / dbRange))
+      const db = int8ToDb(spectrum[b]!)
+      const norm = Math.max(0, Math.min(1, (db - dbFloor) / dbRange))
       tileData[b * TILE_WIDTH + localF] = Math.round(norm * 255)
     }
   }

@@ -15,6 +15,8 @@ import {
   totalFrames,
   getFrame,
   frameDbMax,
+  dbToInt8,
+  SILENCE_INT8,
 } from './AnalysisFrame'
 
 const DEFAULT_PARAMS = {
@@ -33,8 +35,18 @@ function makeChunk(frames: AnalysisFrame[], startTimeSec = 0): AnalysisChunk {
   }
 }
 
+// Construct a spectrum from dB values (convenience for dB-conversion tests).
+function dbSpectrum(...dbs: number[]): Int8Array {
+  return new Int8Array(dbs.map(dbToInt8))
+}
+
+// Silence spectrum: all bins at the floor.
+function silenceSpectrum(n = 1): Int8Array {
+  return new Int8Array(n).fill(SILENCE_INT8)
+}
+
 function makeFrame(
-  spectrum: Float32Array,
+  spectrum: Int8Array,
   overrides: Partial<AnalysisFrame> = {},
 ): AnalysisFrame {
   return {
@@ -55,16 +67,12 @@ function makeFrame(
 describe('computeDbMax', () => {
   describe('basic dB conversion', () => {
     it('converts spectrum values to dB correctly', () => {
-      const result = computeDbMax([
-        makeChunk([makeFrame(new Float32Array([1.0]))]),
-      ])
+      const result = computeDbMax([makeChunk([makeFrame(dbSpectrum(0))])])
       expect(result).toBeCloseTo(0, 2)
     })
 
     it('converts power values using correct formula', () => {
-      const result = computeDbMax([
-        makeChunk([makeFrame(new Float32Array([100.0]))]),
-      ])
+      const result = computeDbMax([makeChunk([makeFrame(dbSpectrum(20))])])
       expect(result).toBeCloseTo(20, 1)
     })
   })
@@ -76,23 +84,23 @@ describe('computeDbMax', () => {
     })
 
     it('returns null when all spectrum values are zero or negative', () => {
-      const result = computeDbMax([
-        makeChunk([makeFrame(new Float32Array([0, -1, -100]))]),
-      ])
+      const result = computeDbMax([makeChunk([makeFrame(silenceSpectrum(3))])])
       expect(result).toBeNull()
     })
 
     it('ignores zero and negative values in spectrum', () => {
       const result = computeDbMax([
-        makeChunk([makeFrame(new Float32Array([1.0, 0, -5, 10.0, -0.5]))]),
+        makeChunk([
+          makeFrame(
+            new Int8Array([dbToInt8(0), -128, -128, dbToInt8(10), -128]),
+          ),
+        ]),
       ])
       expect(result).toBeCloseTo(10, 1)
     })
 
     it('handles single frame with no valid spectrum values', () => {
-      const result = computeDbMax([
-        makeChunk([makeFrame(new Float32Array([0, 0, 0]))]),
-      ])
+      const result = computeDbMax([makeChunk([makeFrame(silenceSpectrum(3))])])
       expect(result).toBeNull()
     })
   })
@@ -100,9 +108,9 @@ describe('computeDbMax', () => {
   describe('range specification', () => {
     it('respects from and to range parameters', () => {
       const chunk = makeChunk([
-        makeFrame(new Float32Array([1.0])),
-        makeFrame(new Float32Array([100.0])),
-        makeFrame(new Float32Array([1000.0])),
+        makeFrame(dbSpectrum(0)),
+        makeFrame(dbSpectrum(20)),
+        makeFrame(dbSpectrum(30)),
       ])
       const result = computeDbMax([chunk], 1, 2)
       expect(result).toBeCloseTo(20, 1)
@@ -110,7 +118,7 @@ describe('computeDbMax', () => {
 
     it('handles from=to (empty range)', () => {
       const result = computeDbMax(
-        [makeChunk([makeFrame(new Float32Array([100.0]))])],
+        [makeChunk([makeFrame(dbSpectrum(20))])],
         0,
         0,
       )
@@ -119,7 +127,7 @@ describe('computeDbMax', () => {
 
     it('processes multiple frames with varying spectrum values', () => {
       const frames = Array.from({ length: 10 }, (_, i) =>
-        makeFrame(new Float32Array([10 ** (i / 10)])),
+        makeFrame(dbSpectrum(i)),
       )
       const result = computeDbMax([makeChunk(frames)])
       expect(result).not.toBeNull()
@@ -129,7 +137,7 @@ describe('computeDbMax', () => {
 
   describe('voiced and unvoiced frames', () => {
     it('processes both voiced and unvoiced frames equally', () => {
-      const spectrum = new Float32Array([50.0])
+      const spectrum = dbSpectrum(17)
       const voicedFrame = makeFrame(spectrum, {
         pitchDetected: true,
         speechDetected: true,
@@ -150,16 +158,26 @@ describe('computeDbMax', () => {
 
   describe('numerical edge cases', () => {
     it('handles very large spectrum values', () => {
-      const result = computeDbMax([
-        makeChunk([makeFrame(new Float32Array([1e10]))]),
-      ])
+      // +100 dB clamps to the int8 ceiling (int8ToDb(127) = +31.5 dB).
+      const result = computeDbMax([makeChunk([makeFrame(dbSpectrum(100))])])
       expect(result).not.toBeNull()
       expect(isFinite(result!)).toBe(true)
+      expect(result).toBeCloseTo(31.5, 1)
     })
 
     it('handles mixed positive and negative values (ignoring negatives)', () => {
       const result = computeDbMax([
-        makeChunk([makeFrame(new Float32Array([0.1, -10, 10, -100, 100]))]),
+        makeChunk([
+          makeFrame(
+            new Int8Array([
+              dbToInt8(-10),
+              -128,
+              dbToInt8(20),
+              -128,
+              dbToInt8(15),
+            ]),
+          ),
+        ]),
       ])
       expect(result).toBeCloseTo(20, 1)
     })
@@ -170,7 +188,7 @@ describe('computeDbMax', () => {
 const STEP = DEFAULT_PARAMS.timeStepSamples / DEFAULT_PARAMS.sampleRate
 
 describe('frameTimeSec', () => {
-  const empty = makeFrame(new Float32Array(1))
+  const empty = makeFrame(new Int8Array(1))
 
   it('returns 0 for empty chunks array', () => {
     expect(frameTimeSec([], 0)).toBe(0)
@@ -206,7 +224,7 @@ describe('frameTimeSec', () => {
 })
 
 describe('totalFrames', () => {
-  const emptyFrame = makeFrame(new Float32Array(1))
+  const emptyFrame = makeFrame(new Int8Array(1))
 
   it('returns 0 for empty chunks array', () => {
     expect(totalFrames([])).toBe(0)
@@ -226,11 +244,11 @@ describe('totalFrames', () => {
 })
 
 describe('getFrame', () => {
-  const f1 = makeFrame(new Float32Array([1]))
-  const f2 = makeFrame(new Float32Array([2]))
-  const f3 = makeFrame(new Float32Array([3]))
-  const f4 = makeFrame(new Float32Array([4]))
-  const f5 = makeFrame(new Float32Array([5]))
+  const f1 = makeFrame(new Int8Array([1]))
+  const f2 = makeFrame(new Int8Array([2]))
+  const f3 = makeFrame(new Int8Array([3]))
+  const f4 = makeFrame(new Int8Array([4]))
+  const f5 = makeFrame(new Int8Array([5]))
 
   it('returns undefined for empty chunks', () => {
     expect(getFrame([], 0)).toBeUndefined()
@@ -271,43 +289,53 @@ describe('getFrame', () => {
 
 describe('frameDbMax', () => {
   it('returns null for frame with no positive spectrum values', () => {
-    const frame = makeFrame(new Float32Array([0, -1, -100]))
+    const frame = makeFrame(silenceSpectrum(3))
     expect(frameDbMax(frame)).toBeNull()
   })
 
   it('converts single value to dB correctly', () => {
-    const frame = makeFrame(new Float32Array([1.0]))
+    const frame = makeFrame(dbSpectrum(0))
     expect(frameDbMax(frame)).toBeCloseTo(0, 2)
   })
 
   it('finds maximum dB value among positive spectrum values', () => {
-    const frame = makeFrame(new Float32Array([1.0, 10.0, 100.0, 5.0]))
-    expect(frameDbMax(frame)).toBeCloseTo(10 * Math.log10(100.0), 1)
+    const frame = makeFrame(dbSpectrum(0, 10, 20, 7))
+    expect(frameDbMax(frame)).toBeCloseTo(20, 1)
   })
 
   it('ignores zero and negative values', () => {
-    const frame = makeFrame(new Float32Array([0.1, 0, -5, 10.0, -100, 1.0]))
-    expect(frameDbMax(frame)).toBeCloseTo(10 * Math.log10(10.0), 1)
+    const frame = makeFrame(
+      new Int8Array([
+        dbToInt8(-10),
+        -128,
+        -128,
+        dbToInt8(10),
+        -128,
+        dbToInt8(0),
+      ]),
+    )
+    expect(frameDbMax(frame)).toBeCloseTo(10, 1)
   })
 
   it('handles very small positive values', () => {
-    const frame = makeFrame(new Float32Array([0.00001]))
+    const frame = makeFrame(dbSpectrum(-50))
     expect(frameDbMax(frame)).toBeLessThan(0)
   })
 
   it('handles very large values', () => {
-    const frame = makeFrame(new Float32Array([1e10]))
+    // +100 dB clamps to the int8 ceiling (int8ToDb(127) = +31.5 dB).
+    const frame = makeFrame(dbSpectrum(100))
     const result = frameDbMax(frame)
     expect(result).not.toBeNull()
     expect(isFinite(result!)).toBe(true)
-    expect(result).toBeGreaterThan(50)
+    expect(result).toBeCloseTo(31.5, 1)
   })
 })
 
 // Build an invariant-correct chunk list from a voicing pattern.
 function voicePattern(values: boolean[]): AnalysisChunk[] {
   const frames = values.map((v) =>
-    makeFrame(new Float32Array([1]), { speechDetected: v }),
+    makeFrame(new Int8Array([0]), { speechDetected: v }),
   )
   return framesToChunks(frames, DEFAULT_PARAMS, 0)
 }
@@ -412,7 +440,7 @@ describe('reconcileVoicingAt', () => {
 // Variant helpers for the nullable (pending) world.
 function voicePatternNullable(values: (boolean | null)[]): AnalysisChunk[] {
   const frames = values.map((v) =>
-    makeFrame(new Float32Array([1]), { speechDetected: v }),
+    makeFrame(new Int8Array([0]), { speechDetected: v }),
   )
   return framesToChunks(frames, DEFAULT_PARAMS, 0)
 }
@@ -504,10 +532,7 @@ describe('appendFrame', () => {
     // whole preceding unvoiced run to voiced. The legacy `||=` absorbed it:
     // `false || true === true` voiced every prior frame with no split.
     const chunks = voicePattern([false, false])
-    appendFrame(
-      chunks,
-      makeFrame(new Float32Array([1]), { speechDetected: true }),
-    )
+    appendFrame(chunks, makeFrame(new Int8Array([0]), { speechDetected: true }))
     expect(chunks.map((c) => c.voiced)).toEqual([false, true])
     expect(chunks.map((c) => c.frames.length)).toEqual([2, 1])
     expectInvariants(chunks)
@@ -520,7 +545,7 @@ describe('appendFrame', () => {
     const chunks = voicePattern([true, true])
     appendFrame(
       chunks,
-      makeFrame(new Float32Array([1]), { speechDetected: false }),
+      makeFrame(new Int8Array([0]), { speechDetected: false }),
     )
     expect(chunks.map((c) => c.voiced)).toEqual([true, false])
     expect(chunks.map((c) => c.frames.length)).toEqual([2, 1])
@@ -537,14 +562,14 @@ describe('appendFrame', () => {
     const onVoiced = voicePattern([true, true])
     appendFrame(
       onVoiced,
-      makeFrame(new Float32Array([1]), { speechDetected: null }),
+      makeFrame(new Int8Array([0]), { speechDetected: null }),
     )
     expect(onVoiced.at(-1)!.voiced).toBe(true)
 
     const onUnvoiced = voicePattern([false, false])
     appendFrame(
       onUnvoiced,
-      makeFrame(new Float32Array([1]), { speechDetected: null }),
+      makeFrame(new Int8Array([0]), { speechDetected: null }),
     )
     expect(onUnvoiced.at(-1)!.voiced).toBe(false)
   })
@@ -552,8 +577,8 @@ describe('appendFrame', () => {
 
 describe('mergeChunkAt', () => {
   it('merges the chunk starting at globalIndex into the previous one', () => {
-    const a = makeChunk([makeFrame(new Float32Array([1]))], 0)
-    const b = makeChunk([makeFrame(new Float32Array([2]))], STEP)
+    const a = makeChunk([makeFrame(new Int8Array([1]))], 0)
+    const b = makeChunk([makeFrame(new Int8Array([2]))], STEP)
     const chunks = [a, b]
     expect(mergeChunkAt(chunks, 1)).toBe(true)
     expect(chunks).toHaveLength(1)
@@ -562,17 +587,17 @@ describe('mergeChunkAt', () => {
   })
 
   it('is a no-op when no chunk starts at globalIndex', () => {
-    const chunks = [makeChunk([makeFrame(new Float32Array([1]))])]
+    const chunks = [makeChunk([makeFrame(new Int8Array([1]))])]
     expect(mergeChunkAt(chunks, 1)).toBe(false)
     expect(chunks).toHaveLength(1)
   })
 
   it('refuses to merge across a differing time base', () => {
-    const a = makeChunk([makeFrame(new Float32Array([1]))], 0)
+    const a = makeChunk([makeFrame(new Int8Array([1]))], 0)
     const b: AnalysisChunk = {
       ...DEFAULT_PARAMS,
       timeStepSamples: DEFAULT_PARAMS.timeStepSamples * 2,
-      frames: [makeFrame(new Float32Array([2]))],
+      frames: [makeFrame(new Int8Array([2]))],
       startTimeSec: STEP,
       voiced: false,
     }
@@ -582,8 +607,8 @@ describe('mergeChunkAt', () => {
   })
 
   it('refuses to merge a chunk that starts a recording', () => {
-    const a = makeChunk([makeFrame(new Float32Array([1]))], 0)
-    const b = makeChunk([makeFrame(new Float32Array([2]))], STEP)
+    const a = makeChunk([makeFrame(new Int8Array([1]))], 0)
+    const b = makeChunk([makeFrame(new Int8Array([2]))], STEP)
     b.recordingStart = true
     const chunks = [a, b]
     expect(mergeChunkAt(chunks, 1)).toBe(false)
@@ -593,7 +618,7 @@ describe('mergeChunkAt', () => {
 
 describe('reconcileVoicingAt across recording boundaries', () => {
   const voiced = (v: boolean) =>
-    makeFrame(new Float32Array([1]), { speechDetected: v })
+    makeFrame(new Int8Array([0]), { speechDetected: v })
 
   it('never merges a flipped boundary frame into the previous recording', () => {
     // Recording A: two silent frames. Recording B: two voiced frames, marked as

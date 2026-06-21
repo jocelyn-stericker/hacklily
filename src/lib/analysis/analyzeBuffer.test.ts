@@ -114,14 +114,14 @@ describe('analyzeBuffer', () => {
       expect(allFrames(long).length).toBeGreaterThan(allFrames(short).length)
     })
 
-    it('each frame has a non-empty spectrum Float32Array', async () => {
+    it('each frame has a non-empty spectrum Int8Array', async () => {
       const result = await analyzeBuffer(
         generateSilence(0.1, SAMPLE_RATE),
         SAMPLE_RATE,
       )
 
       for (const frame of allFrames(result)) {
-        expect(frame.spectrum).toBeInstanceOf(Float32Array)
+        expect(frame.spectrum).toBeInstanceOf(Int8Array)
         expect(frame.spectrum.length).toBeGreaterThan(0)
       }
     })

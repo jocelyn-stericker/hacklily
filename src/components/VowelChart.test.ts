@@ -29,7 +29,7 @@ function makeFrame(overrides: Partial<AnalysisFrame> = {}): AnalysisFrame {
     lunaBrightness: null,
     rms: 0,
     speechProbability: 0,
-    spectrum: new Float32Array(0),
+    spectrum: new Int8Array(0),
     ...overrides,
   }
 }

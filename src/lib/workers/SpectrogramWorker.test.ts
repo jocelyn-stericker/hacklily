@@ -5,6 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
+import { powerToInt8 } from '#/lib/analysis/AnalysisFrame'
 import type { ResolvedSpectrogramParams } from '#/lib/analysis/SpectrogramProcessor'
 
 const SAMPLE_RATE = 44100
@@ -156,7 +157,7 @@ describe('SpectrogramWorker', () => {
         expect(msg).toHaveProperty('spectrum')
         expect(msg).toHaveProperty('rms')
         expect(typeof msg.frameIndex).toBe('number')
-        expect(msg.spectrum).toBeInstanceOf(Float32Array)
+        expect(msg.spectrum).toBeInstanceOf(Int8Array)
         expect(typeof msg.rms).toBe('number')
       }
     })
@@ -294,8 +295,8 @@ describe('SpectrogramWorker', () => {
 
       expect(frame1).not.toBe(frame2)
       if (frame1 && frame2) {
-        expect(frame1[0]).toBeCloseTo(0.5)
-        expect(frame2[0]).toBeCloseTo(0.6)
+        expect(frame1[0]).toBe(powerToInt8(0.5))
+        expect(frame2[0]).toBe(powerToInt8(0.6))
       }
     })
   })
