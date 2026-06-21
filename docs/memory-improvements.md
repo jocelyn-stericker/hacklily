@@ -678,8 +678,7 @@ line as items 1 and 11.
 ### OPFS vs IndexedDB
 
 - **OPFS** (Origin Private File System): worker sync access handles, large quota,
-  fast streaming append — for the **bulk int16 PCM blocks**. Native int16 (item
-  11) makes this a raw byte append, no transcode.
+  fast streaming append — for the **bulk int16 PCM blocks**. Native int16 (item 11) makes this a raw byte append, no transcode.
 - **IndexedDB**: transactional/structured — for the **session index / metadata**
   and an optional **quantized-analysis cache** (see below). Slower for large binary
   streaming; iOS Safari has had IDB reliability quirks, so keep bulk audio in OPFS.

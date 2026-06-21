@@ -11,6 +11,16 @@ import { assertUnreachable } from '#/lib/utils'
 
 const LOG_PLAYBACK = '[PlaybackPipeline]'
 
+/** Drain time used when `AudioContext.outputLatency` is unavailable (e.g. older Safari). */
+const TAIL_FALLBACK_SEC = 0.4
+/** Extra drain past the measured output latency, biased to drain rather than clip the tail. */
+const TAIL_MARGIN_SEC = 0.05
+
+/** Read a possibly-unsupported latency field; Safari may leave these `undefined` at runtime. */
+function readLatencySec(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined
+}
+
 type PlaybackPipelineEventMap = {
   stop: Event
   positionChanged: CustomEvent<{ timeSec: number }>
@@ -24,6 +34,7 @@ export class PlaybackPipeline extends TypedEventTarget<PlaybackPipelineEventMap>
   #startTimeSec = 0
   #anchorContextTime: number | null = null
   #duration = 0
+  /** Render-clock time of the last sample. Teardown waits a drain tail past this. */
   #stopAtContextTime: number | null = null
   #stopCtrl = new AbortController()
 
@@ -82,6 +93,17 @@ export class PlaybackPipeline extends TypedEventTarget<PlaybackPipelineEventMap>
     this.#context = context
 
     await context.resume()
+
+    const outputLatency = readLatencySec(context.outputLatency)
+    const baseLatency = readLatencySec(context.baseLatency)
+    console.log(
+      LOG_PLAYBACK,
+      'output latency (s):',
+      outputLatency ?? 'unsupported',
+      '| base latency (s):',
+      baseLatency ?? 'unsupported',
+    )
+
     await moduleReady
 
     if (this.#stopCtrl.signal.aborted) {
@@ -130,13 +152,22 @@ export class PlaybackPipeline extends TypedEventTarget<PlaybackPipelineEventMap>
         : Math.max(0, context.currentTime - this.#anchorContextTime)
     const timeSec = Math.min(this.#startTimeSec + elapsed, this.#duration)
     this.emit('positionChanged', { timeSec })
-    if (
-      this.#stopAtContextTime !== null &&
-      context.currentTime >= this.#stopAtContextTime
-    ) {
-      this.emit('stop')
-      this.#stop()
-      return
+    if (this.#stopAtContextTime !== null) {
+      // The last sample is rendered at `#stopAtContextTime` but only heard
+      // `outputLatency` later. Keep the node connected (rendering silence) until
+      // that tail has drained from the output buffer -- otherwise teardown clips
+      // it, which is very audible over high-latency outputs like Bluetooth.
+      const outputLatency = readLatencySec(context.outputLatency)
+      const tailSec =
+        outputLatency !== undefined && outputLatency > 0
+          ? outputLatency + TAIL_MARGIN_SEC
+          : TAIL_FALLBACK_SEC
+      if (context.currentTime >= this.#stopAtContextTime + tailSec) {
+        console.log(LOG_PLAYBACK, 'tail drained; tail (s):', tailSec)
+        this.emit('stop')
+        this.#stop()
+        return
+      }
     }
     this.#animFrameId = requestAnimationFrame(this.#animate)
   }
