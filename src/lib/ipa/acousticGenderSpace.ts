@@ -14,7 +14,27 @@
 //
 // https://gitlab.com/lmcnulty/gender-voice-visualization/-/blob/master/stats.json
 //
-// When there were multiple stressings, only the first is kept here.
+// Stress-variant selection
+// ------------------------
+// stats.json reports formants separately for stressed (suffix `1`) and
+// unstressed (suffix `0`) realizations of each vowel. The CUPE aligner used
+// here emits IPA labels without stress markers, so the stress of an incoming
+// phoneme is unknown at lookup time. We resolve this as follows:
+//
+//   - Full vowels (IY, IH, UW, OW, EY, OY, AE, AO, EH, AY, AA) use the
+//     stressed `*1` variant. Stressed productions are hyperarticulated and
+//     more consistent across speakers, giving a tighter, more canonical
+//     reference target. The unstressed `*0` variants drift toward schwa and
+//     are not what a voice trainer aims for.
+//
+//   - Schwa /ə/ and r-colored schwa /ɚ/ are inherently unstressed phonemes,
+//     so they map to the `*0` variant (AH0, ER0).
+//
+//   - Their stressed counterparts /ʌ/ (strut) and /ɝ/ (nurse) are distinct
+//     full vowels, so they map to the `*1` variant (AH1, ER1).
+//
+// The keys below are the literal ARPABET-with-stress strings from
+// stats.json (e.g. `IY1`, `AH0`), not the bare CMU ARPABET symbols.
 
 type FormantReference = {
   mean: number
@@ -24,37 +44,38 @@ type FormantReference = {
   min: number
 }
 
-// Lossy mapping from IPA provided from espeak to the symbols in stats.json.
+// Lossy mapping from IPA (as emitted by espeak / the CUPE aligner) to the
+// stress-tagged ARPABET symbols in stats.json. Consonants carry no stress
+// suffix in stats.json and are mapped as-is.
 const IPA_TO_ARPABET = {
-  æ: 'AE',
-  aɪ: 'AY',
-  a: 'AH',
-  'a:': 'AH',
-  aʊ: 'AW',
-  ɐ: 'AH',
-  ɑ: 'AA',
-  ɒ: 'AA',
+  æ: 'AE1',
+  aɪ: 'AY1',
+  a: 'AH1',
+  'a:': 'AH1',
+  ɐ: 'AH1',
+  ɑ: 'AA1',
+  ɒ: 'AA1',
   b: 'B',
   d: 'D',
   ð: 'DH',
   dʒ: 'CH',
-  e: 'EY',
-  eɪ: 'EY',
-  'e:': 'EY',
-  ə: 'AH',
-  ɛ: 'EH',
-  ɚ: 'ER',
-  ɝ: 'ER',
+  e: 'EY1',
+  eɪ: 'EY1',
+  'e:': 'EY1',
+  ə: 'AH0',
+  ɛ: 'EH1',
+  ɚ: 'ER0',
+  ɝ: 'ER1',
   f: 'F',
   g: 'G',
   ɡ: 'G',
   h: 'HH',
-  iː: 'IY',
-  'i:': 'IY',
-  i: 'IY',
-  ɪ: 'IH',
-  ɨ: 'IH',
-  j: 'IY',
+  iː: 'IY1',
+  'i:': 'IY1',
+  i: 'IY1',
+  ɪ: 'IH1',
+  ɨ: 'IH1',
+  j: 'IY1',
   k: 'K',
   l: 'L',
   l̩: 'L',
@@ -65,36 +86,34 @@ const IPA_TO_ARPABET = {
   nʲ: 'N',
   n: 'N',
   n̩: 'N',
-  noise: 'SIL',
+  noise: 'sp',
   ŋ: 'NG',
-  'o:': 'OW',
-  ø: 'OW',
-  o: 'OW',
-  oʊ: 'OW',
-  ɔ: 'AO',
-  ɔɪ: 'OY',
+  'o:': 'OW1',
+  ø: 'OW1',
+  o: 'OW1',
+  oʊ: 'OW1',
+  ɔ: 'AO1',
+  ɔɪ: 'OY1',
   p: 'P',
   r: 'R',
   ɹ: 'R',
   ɾ̃: 'N',
   ɾ: 'T',
-  SIL: 'SIL',
+  SIL: 'sp',
   s: 'S',
   ʃ: 'SH',
   tʃ: 'CH',
   t: 'T',
-  uː: 'UW',
-  'u:': 'UW',
-  u: 'UW',
-  ʉ: 'UW',
-  ʊ: 'UW',
+  uː: 'UW1',
+  'u:': 'UW1',
+  u: 'UW1',
+  ʉ: 'UW1',
+  ʊ: 'UW1',
   v: 'V',
-  ʌ: 'AH',
+  ʌ: 'AH1',
   w: 'W',
   ʍ: 'W',
   z: 'Z',
-  ʒ: 'ZH',
-  ʔ: 'T',
   θ: 'TH',
   ç: 'HH',
   ɕ: 'SH',
@@ -105,7 +124,7 @@ const IPA_TO_ARPABET = {
   ʁ: 'R',
   tʲ: 'T',
   ts: 'CH',
-  ɯ: 'UW',
+  ɯ: 'UW1',
   x: 'HH',
   y: 'IY',
 } as const
@@ -176,7 +195,7 @@ export const LUNA_ARPABET_TO_REFERENCE_FORMANTS: Partial<
       min: 880.8696368838905,
     },
   ],
-  IY: [
+  IY1: [
     {
       mean: 171.9495667181003,
       stdev: 59.32130527158527,
@@ -206,7 +225,7 @@ export const LUNA_ARPABET_TO_REFERENCE_FORMANTS: Partial<
       min: 1356.5583958524305,
     },
   ],
-  AO: [
+  AO1: [
     {
       mean: 169.01152707876577,
       stdev: 62.13962632645544,
@@ -236,7 +255,7 @@ export const LUNA_ARPABET_TO_REFERENCE_FORMANTS: Partial<
       min: 914.6897634290493,
     },
   ],
-  EH: [
+  EH1: [
     {
       mean: 161.20025789952976,
       stdev: 55.160316529309455,
@@ -266,7 +285,7 @@ export const LUNA_ARPABET_TO_REFERENCE_FORMANTS: Partial<
       min: 1499.0718164722628,
     },
   ],
-  AE: [
+  AE1: [
     {
       mean: 155.4884068836401,
       stdev: 63.09764949152979,
@@ -296,7 +315,7 @@ export const LUNA_ARPABET_TO_REFERENCE_FORMANTS: Partial<
       min: 1294.7930780076367,
     },
   ],
-  ER: [
+  ER0: [
     {
       mean: 156.4634190999818,
       stdev: 58.46063503505793,
@@ -324,6 +343,36 @@ export const LUNA_ARPABET_TO_REFERENCE_FORMANTS: Partial<
       median: 1952.114111604746,
       max: 3436.08096047282,
       min: 1069.166951028797,
+    },
+  ],
+  ER1: [
+    {
+      mean: 182.23274784112687,
+      stdev: 76.4246933125786,
+      median: 173.4021049073426,
+      max: 525.4493544063712,
+      min: 75.50706751934233,
+    },
+    {
+      mean: 527.4940525367001,
+      stdev: 117.16993965375737,
+      median: 511.8318493692945,
+      max: 1202.2674387439938,
+      min: 201.54477936180928,
+    },
+    {
+      mean: 1519.0627454161945,
+      stdev: 279.5073381270492,
+      median: 1534.2592730145875,
+      max: 2247.1137597364113,
+      min: 595.6976546915107,
+    },
+    {
+      mean: 2235.3109320520034,
+      stdev: 394.33293278061484,
+      median: 2274.262737117691,
+      max: 3141.769533959648,
+      min: 1297.6491008934318,
     },
   ],
   T: [
@@ -356,7 +405,7 @@ export const LUNA_ARPABET_TO_REFERENCE_FORMANTS: Partial<
       min: 1508.0623148270108,
     },
   ],
-  AH: [
+  AH0: [
     {
       mean: 163.46862048503448,
       stdev: 67.03704285453985,
@@ -384,6 +433,36 @@ export const LUNA_ARPABET_TO_REFERENCE_FORMANTS: Partial<
       median: 2603.6531764457463,
       max: 4133.499759141434,
       min: 953.6367491330001,
+    },
+  ],
+  AH1: [
+    {
+      mean: 155.33003844247932,
+      stdev: 77.29370522283705,
+      median: 136.5722324449265,
+      max: 526.4379151683926,
+      min: 77.39097635484465,
+    },
+    {
+      mean: 566.6251380523773,
+      stdev: 127.66703818536637,
+      median: 562.7239974327935,
+      max: 1123.5594851003032,
+      min: 247.94632209832338,
+    },
+    {
+      mean: 1306.1485330568162,
+      stdev: 214.08172712439486,
+      median: 1313.7972900857496,
+      max: 2146.525367055735,
+      min: 604.5930406071242,
+    },
+    {
+      mean: 2388.042251829897,
+      stdev: 426.702274814477,
+      median: 2424.645412397216,
+      max: 3980.013058579812,
+      min: 1226.4619330133908,
     },
   ],
   B: [
@@ -446,7 +525,7 @@ export const LUNA_ARPABET_TO_REFERENCE_FORMANTS: Partial<
       min: 1020.2837268211063,
     },
   ],
-  IH: [
+  IH1: [
     {
       mean: 176.78091597439996,
       stdev: 66.68795075102835,
@@ -536,36 +615,6 @@ export const LUNA_ARPABET_TO_REFERENCE_FORMANTS: Partial<
       min: 1307.6643257281519,
     },
   ],
-  AW: [
-    {
-      mean: 154.8908829346161,
-      stdev: 52.63307305167374,
-      median: 147.90228328508408,
-      max: 455.08051068460276,
-      min: 77.20050008225857,
-    },
-    {
-      mean: 403.2119921054123,
-      stdev: 144.40354766706878,
-      median: 373.8307850046299,
-      max: 1715.8228575475537,
-      min: 184.29347969446405,
-    },
-    {
-      mean: 1239.9379229690276,
-      stdev: 384.0786717191068,
-      median: 1169.544674313409,
-      max: 2864.7655136685453,
-      min: 416.42799821928685,
-    },
-    {
-      mean: 2435.003216118009,
-      stdev: 449.0758609795649,
-      median: 2443.3311984902894,
-      max: 4026.3339907614054,
-      min: 921.2710700793517,
-    },
-  ],
   HH: [
     {
       mean: 181.90016985778172,
@@ -626,7 +675,7 @@ export const LUNA_ARPABET_TO_REFERENCE_FORMANTS: Partial<
       min: 1095.6169721914455,
     },
   ],
-  UW: [
+  UW1: [
     {
       mean: 183.4217670385705,
       stdev: 62.77521418776223,
@@ -686,36 +735,6 @@ export const LUNA_ARPABET_TO_REFERENCE_FORMANTS: Partial<
       min: 950.8643894382587,
     },
   ],
-  ZH: [
-    {
-      mean: 217.77132364954917,
-      stdev: 133.73888194015194,
-      median: 182.72629247038083,
-      max: 589.1407678633504,
-      min: 78.43585114843115,
-    },
-    {
-      mean: 627.5249015745673,
-      stdev: 549.6158547025113,
-      median: 360.52718405910537,
-      max: 2728.998847860374,
-      min: 100.2795969354616,
-    },
-    {
-      mean: 2041.9408170814656,
-      stdev: 587.1737142896502,
-      median: 1961.3157018658153,
-      max: 3864.254457882242,
-      min: 349.91518162300645,
-    },
-    {
-      mean: 3128.5056743906734,
-      stdev: 539.7658197552265,
-      median: 3050.262704165349,
-      max: 4769.998329315105,
-      min: 1511.1648391705492,
-    },
-  ],
   F: [
     {
       mean: 301.2742948250871,
@@ -746,7 +765,7 @@ export const LUNA_ARPABET_TO_REFERENCE_FORMANTS: Partial<
       min: 1666.251871604602,
     },
   ],
-  OW: [
+  OW1: [
     {
       mean: 159.372074055767,
       stdev: 52.208916635193276,
@@ -776,7 +795,7 @@ export const LUNA_ARPABET_TO_REFERENCE_FORMANTS: Partial<
       min: 1080.4240569291821,
     },
   ],
-  AY: [
+  AY1: [
     {
       mean: 163.60359561718997,
       stdev: 47.55087041909297,
@@ -866,7 +885,7 @@ export const LUNA_ARPABET_TO_REFERENCE_FORMANTS: Partial<
       min: 1234.437393013186,
     },
   ],
-  EY: [
+  EY1: [
     {
       mean: 155.25337175782107,
       stdev: 64.68628749627014,
@@ -956,7 +975,7 @@ export const LUNA_ARPABET_TO_REFERENCE_FORMANTS: Partial<
       min: 1286.1732946440509,
     },
   ],
-  OY: [
+  OY1: [
     {
       mean: 165.7640224583646,
       stdev: 55.49342749987688,
@@ -986,7 +1005,7 @@ export const LUNA_ARPABET_TO_REFERENCE_FORMANTS: Partial<
       min: 1086.916095194768,
     },
   ],
-  AA: [
+  AA1: [
     {
       mean: 145.27946694411924,
       stdev: 71.4927428418598,
@@ -1046,7 +1065,7 @@ export const LUNA_ARPABET_TO_REFERENCE_FORMANTS: Partial<
       min: 1913.170137866041,
     },
   ],
-  SIL: [
+  sp: [
     {
       mean: 291.11669621478876,
       stdev: 155.58668712368686,
