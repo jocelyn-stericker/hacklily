@@ -15,10 +15,14 @@
     "**/dist/**",
     "**/coverage/**",
     "**/build/**",
-    "**/vite.config.*.timestamp-*.*"
+    "**/vite.config.*.timestamp-*.*",
+    "**/tools/synth-references/**"
   ],
   "jsPlugins": [
-    { "name": "react-hooks-js", "specifier": "eslint-plugin-react-hooks" }
+    {
+      "name": "react-hooks-js",
+      "specifier": "eslint-plugin-react-hooks"
+    }
   ],
   "rules": {
     "react/rules-of-hooks": "error",
@@ -113,7 +117,9 @@
         "typescript/no-unnecessary-type-assertion": "error",
         "typescript/no-unnecessary-condition": [
           "error",
-          { "allowConstantLoopConditions": "only-allowed-literals" }
+          {
+            "allowConstantLoopConditions": "only-allowed-literals"
+          }
         ],
         "react-hooks-js/static-components": "error",
         "react-hooks-js/use-memo": "error",
