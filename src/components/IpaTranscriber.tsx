@@ -63,15 +63,18 @@ export function IpaTranscriber() {
 
   const ipa = useMemo(() => {
     if (!engine) return ''
+    let ret: string
+    const tieRes = tie ? TIE_CHAR : undefined
     try {
-      return engine.textToIPA(text, {
+      ret = engine.textToIPA(text, {
         voice,
         keepStress,
-        tie: tie ? TIE_CHAR : undefined,
+        tie: tieRes,
       })
     } catch (err) {
-      return err instanceof Error ? `Error: ${err.message}` : 'Error'
+      ret = err instanceof Error ? `Error: ${err.message}` : 'Error'
     }
+    return ret
   }, [engine, text, voice, keepStress, tie])
 
   return (

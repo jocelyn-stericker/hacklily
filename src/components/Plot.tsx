@@ -777,24 +777,11 @@ export function Plot({
     [onHover, secPerPx],
   )
 
-  return (
-    <div
-      className={cn(
-        'w-full relative bg-white dark:bg-black border border-(--bg-base)',
-        className,
-      )}
-      ref={setRoot}
-    >
-      <PlotCtx.Provider value={ctxValue}>{renderContent()}</PlotCtx.Provider>
-    </div>
-  )
-
-  function renderContent() {
-    if (!height) {
-      return null
-    }
-
-    return (
+  let content: React.ReactNode
+  if (!height) {
+    content = null
+  } else {
+    content = (
       <>
         {children}
         {yAxisVisible ? <YAxisStrip gridHzOrAmp={gridHzOrAmp} /> : null}
@@ -828,4 +815,16 @@ export function Plot({
       </>
     )
   }
+
+  return (
+    <div
+      className={cn(
+        'w-full relative bg-white dark:bg-black border border-(--bg-base)',
+        className,
+      )}
+      ref={setRoot}
+    >
+      <PlotCtx.Provider value={ctxValue}>{content}</PlotCtx.Provider>
+    </div>
+  )
 }

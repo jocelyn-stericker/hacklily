@@ -5,6 +5,7 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react'
@@ -87,6 +88,32 @@ export function VirtualScrollArea({
   const prevScrollX = useRef<number>(null)
   const pendingAction = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  const clearModeTimeout = useCallback(() => {
+    if (pendingAction.current) {
+      clearTimeout(pendingAction.current)
+      pendingAction.current = null
+    }
+  }, [])
+
+  const debugColor = useMemo(() => {
+    if (!debug) {
+      return undefined
+    }
+
+    switch (mode) {
+      case 'zooming':
+        return 'red'
+      case 'programmatic':
+        return 'green'
+      case 'panning':
+        return 'purple'
+      case 'scrolling':
+        return 'yellow'
+      default:
+        assertUnreachable(mode)
+    }
+  }, [debug, mode])
+
   useLayoutEffect(() => {
     if (root) {
       if (mode === 'scrolling') {
@@ -99,7 +126,7 @@ export function VirtualScrollArea({
         root.scrollTo({ left: scrollX, top: 0, behavior: 'instant' })
       }
     }
-  }, [mode, root, scrollX])
+  }, [mode, root, scrollX, clearModeTimeout])
 
   useEffect(() => {
     if (root) {
@@ -128,7 +155,7 @@ export function VirtualScrollArea({
         root.removeEventListener('wheel', handleWheel)
       }
     }
-  }, [onZoom, root])
+  }, [onZoom, root, clearModeTimeout])
 
   // Current Euclidean separation between the two active pointers, or null unless
   // exactly two are down. Used as a ratio between frames so pinch zoom is
@@ -179,7 +206,7 @@ export function VirtualScrollArea({
         return newPointers
       })
     },
-    [pointerDistance, root],
+    [pointerDistance, root, clearModeTimeout],
   )
   const handlePointerMove = useCallback(
     (ev: React.PointerEvent<HTMLElement>) => {
@@ -234,7 +261,7 @@ export function VirtualScrollArea({
         return newPointers
       })
     },
-    [root],
+    [root, clearModeTimeout],
   )
 
   const handleMouseMove = useCallback(
@@ -283,7 +310,7 @@ export function VirtualScrollArea({
       clearModeTimeout()
       setMode('programmatic')
     },
-    [mouseDown?.initialMouseX, root],
+    [mouseDown?.initialMouseX, root, clearModeTimeout],
   )
 
   const handleMouseDown = useCallback(
@@ -298,7 +325,7 @@ export function VirtualScrollArea({
       clearModeTimeout()
       setMode('panning')
     },
-    [root, scrollX],
+    [root, scrollX, clearModeTimeout],
   )
 
   const handleScroll = useCallback(
@@ -364,35 +391,9 @@ export function VirtualScrollArea({
         style={{
           width: virtualWidth,
           height: 10,
-          backgroundColor: getDebugColor(),
+          backgroundColor: debugColor,
         }}
       />
     </div>
   )
-
-  function clearModeTimeout() {
-    if (pendingAction.current) {
-      clearTimeout(pendingAction.current)
-      pendingAction.current = null
-    }
-  }
-
-  function getDebugColor() {
-    if (!debug) {
-      return undefined
-    }
-
-    switch (mode) {
-      case 'zooming':
-        return 'red'
-      case 'programmatic':
-        return 'green'
-      case 'panning':
-        return 'purple'
-      case 'scrolling':
-        return 'yellow'
-      default:
-        assertUnreachable(mode)
-    }
-  }
 }

@@ -75,7 +75,7 @@ function App() {
     document.title = 'Braat'
   }, [])
 
-  const [ropes, setRopes] = useState<Array<AudioRope>>([])
+  const [ropesMut, replaceRopes] = useState<Array<AudioRope>>([])
   const {
     status,
     timelineState,
@@ -106,7 +106,7 @@ function App() {
       replaceAnalysis([])
     },
     onImported: ({ analysis: newAnalysis, ropes: newRopes }) => {
-      setRopes(newRopes)
+      replaceRopes(newRopes)
       replaceAnalysis(newAnalysis)
     },
   })
@@ -120,7 +120,7 @@ function App() {
           data.pcm,
           data.sampleRate,
         )
-        setRopes(newRopes)
+        replaceRopes(newRopes)
         replaceAnalysis(analysis)
         const trackDurationSec = newRopes.reduce(
           (sum, rope) => sum + rope.length / rope.sampleRate,
@@ -149,15 +149,17 @@ function App() {
   const doNew = useCallback(() => {
     resetTimeline()
     replaceAnalysis([])
-    setRopes([])
+    replaceRopes([])
     recordingStartIndexRef.current = 0
     recordingDurationSecRef.current = 0
   }, [resetTimeline])
 
   const hasData =
-    ropes.some((rope) => rope.length > 0) ||
+    ropesMut.some((rope) => rope.length > 0) ||
     analysisMut.length > 0 ||
     status.value === 'recording'
+  const [isExporting, setIsExporting] = useState(false)
+  const exportAudioDisabled = !hasData || isExporting
 
   const handleNew = useCallback(() => {
     if (hasData) {
@@ -214,10 +216,10 @@ function App() {
     })
   }, [])
 
-  const ropesRef = useRef<AudioRope[]>(ropes)
+  const ropesRef = useRef<AudioRope[]>(ropesMut)
   useEffect(() => {
-    ropesRef.current = ropes
-  }, [ropes])
+    ropesRef.current = ropesMut
+  }, [ropesMut])
 
   // Dev-only: report the main route's retained structures to the memory probe.
   useEffect(() => {
@@ -330,8 +332,6 @@ function App() {
   const hasUpgradableVisible =
     settings.transcriptionMode === 'large' && !!upgradeVisibleTranscriptions
 
-  const [isExporting, setIsExporting] = useState(false)
-
   const handleExportAudio = useCallback(async () => {
     const currentRopes = ropesRef.current
     if (!currentRopes.some((rope) => rope.length > 0)) return
@@ -340,9 +340,9 @@ function App() {
       await exportMp3(currentRopes, gainCache.gainsFor(currentRopes))
     } catch (err) {
       handleError(err)
-    } finally {
-      setIsExporting(false)
     }
+
+    setIsExporting(false)
   }, [handleError, gainCache])
 
   const handleRecordingComplete = useCallback(() => {
@@ -400,27 +400,27 @@ function App() {
   )
   const handleAudioRopeGrow = useCallback(
     (ev: AudioRopeGrow) => {
-      ropes[ropes.length - 1]!.grow(ev)
+      ropesMut[ropesMut.length - 1]!.grow(ev)
     },
-    [ropes],
+    [ropesMut],
   )
   const handleAudioRopeShare = useCallback(
     (ev: AudioRopeShare) => {
-      ropes.push(new AudioRope(ev))
+      ropesMut.push(new AudioRope(ev))
     },
-    [ropes],
+    [ropesMut],
   )
   const handleAudioRopeSeal = useCallback(() => {
     // Seal our copy too, releasing its spare buffer. The shared flag is already
     // set by the producer; this just drops the local reference.
-    ropes[ropes.length - 1]!.seal()
+    ropesMut[ropesMut.length - 1]!.seal()
     // Publish the final chunk dimensions: during recording, frames were appended
     // in place without publishing (to avoid re-rendering every frame). The DOM
     // overlay needs the updated extent before transcripts arrive.
     transcriptStore.publishChunkList(analysisMutRef.current)
     // Recording audio is complete: let the queue finish its live spans.
     handleTranscriptionSeal()
-  }, [ropes, handleTranscriptionSeal, transcriptStore])
+  }, [ropesMut, handleTranscriptionSeal, transcriptStore])
 
   const handlePatch = useCallback(
     (from: number, to: number) => {
@@ -480,7 +480,7 @@ function App() {
       vad: true,
     },
     playing: status.value === 'playing',
-    playbackRopes: ropes,
+    playbackRopes: ropesMut,
     playbackGainCache: gainCache,
     playbackCursorSec: timelineState.cursorSec,
     onPlaybackStop: handlePlaybackStop,
@@ -503,9 +503,6 @@ function App() {
     startRecording()
   }, [audioManager, startRecording])
 
-  const playDisabled = !ropes.some((rope) => rope.length > 0)
-  const exportAudioDisabled = playDisabled || isExporting
-
   const blocker = useBlocker({
     shouldBlockFn: () => hasData,
     enableBeforeUnload: true,
@@ -521,11 +518,11 @@ function App() {
       e.preventDefault()
       if (status.value === 'playing' || status.value === 'recording') {
         handlePause()
-      } else if (!playDisabled) {
+      } else if (hasData) {
         handlePlay()
       }
     },
-    [status, playDisabled, handlePause, handlePlay],
+    [status, hasData, handlePause, handlePlay],
   )
   useHotkeys('shift+arrowleft', handleBackToStart, [handleBackToStart], {
     enabled: status.value !== 'recording' && status.value !== 'analyzing',
@@ -639,7 +636,7 @@ function App() {
           onStart={handleStart}
           onPause={handlePause}
           onPlay={handlePlay}
-          playDisabled={playDisabled}
+          playDisabled={!hasData}
           onExportAudio={handleExportAudio}
           exportAudioDisabled={exportAudioDisabled}
           onOpenAudioSettings={handleOpenAudioSettings}

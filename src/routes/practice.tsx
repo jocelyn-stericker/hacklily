@@ -589,9 +589,11 @@ function Practice() {
           passageId,
         })
         newWindow.postMessage('braat:handoff', window.location.origin)
-      } finally {
+      } catch (err) {
         void ctx.close()
+        throw err
       }
+      void ctx.close()
     },
     [referenceManifest, passageId],
   )

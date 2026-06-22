@@ -11,13 +11,7 @@ import {
   Sparkle,
   Sparkles,
 } from 'lucide-react'
-import {
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
@@ -311,19 +305,84 @@ function ChunkOverlay({
     topText = <span className="italic">Voiced</span>
   }
 
-  // HACK: f0 is set in-place on frames, and then doesn't change; memoize on countt
-  // to avoid re-sorting on every render
   const voicedFrames = chunk.frames.filter((a) => a.f0 > 0)
-  const sortedPitches = useMemo(
-    () => voicedFrames.map((a) => a.f0).sort((a, b) => a - b),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [voicedFrames.length],
-  )
-  const medianF0 = Math.round(
-    sortedPitches[Math.floor(sortedPitches.length / 2)] ?? 0,
-  )
+  const [medianF0, setMedianF0] = useState(0)
+  useEffect(() => {
+    const sorted = voicedFrames.map((a) => a.f0).sort((a, b) => a - b)
+    // oxlint-disable-next-line react-hooks-js/set-state-in-effect
+    setMedianF0(Math.round(sorted[Math.floor(sorted.length / 2)] ?? 0))
+  }, [voicedFrames, voicedFrames.length])
 
   const alignmentEnabled = settings.forcedAlignment
+
+  let icon: React.ReactNode
+  switch (indicator.kind) {
+    case 'transcribing':
+      icon = (
+        <StdPadding>
+          <Loader2 className="size-3 shrink-0 animate-spin" />
+        </StdPadding>
+      )
+      break
+    case 'error':
+      icon = (
+        <Tooltip>
+          <TooltipTrigger render={<StdPadding />}>
+            <AlertTriangle className="size-3 shrink-0 text-red-700" />
+          </TooltipTrigger>
+          <TooltipContent>{indicator.error}</TooltipContent>
+        </Tooltip>
+      )
+      break
+    case 'done':
+      if (indicator.tier === 'manual') {
+        icon = (
+          <StdPadding>
+            <Pencil className="size-3" />
+          </StdPadding>
+        )
+        break
+      }
+      if (indicator.tier === 'large') {
+        icon = (
+          <StdPadding>
+            <Sparkles className="size-3" />
+          </StdPadding>
+        )
+        break
+      }
+      if (indicator.tier === 'cloud') {
+        icon = (
+          <StdPadding>
+            <Cloud className="size-3" />
+          </StdPadding>
+        )
+        break
+      }
+      // small: the "Improve transcription" affordance lives in the popover,
+      // so the icon is purely a status mark here.
+      icon = (
+        <StdPadding>
+          <Sparkle className="size-3" />
+        </StdPadding>
+      )
+      break
+    case 'none':
+      if (settings.transcriptionMode === 'disabled') {
+        icon = (
+          <StdPadding>
+            <SpeechIcon className="size-3" />
+          </StdPadding>
+        )
+        break
+      }
+      icon = (
+        <StdPadding>
+          <span />
+        </StdPadding>
+      )
+      break
+  }
 
   return (
     <div
@@ -334,7 +393,7 @@ function ChunkOverlay({
         className="flex items-center gap-1 px-1"
         style={{ height: alignmentEnabled ? '50%' : '100%' }}
       >
-        {renderIcon()}
+        {icon}
         {topText || medianF0 > 0 || brightness > 0 ? (
           <Popover open={popoverOpen} onOpenChange={handlePopoverOpenChange}>
             <PopoverTrigger
@@ -444,68 +503,6 @@ function ChunkOverlay({
       ) : null}
     </div>
   )
-
-  function renderIcon() {
-    switch (indicator.kind) {
-      case 'transcribing':
-        return (
-          <StdPadding>
-            <Loader2 className="size-3 shrink-0 animate-spin" />
-          </StdPadding>
-        )
-      case 'error':
-        return (
-          <Tooltip>
-            <TooltipTrigger render={<StdPadding />}>
-              <AlertTriangle className="size-3 shrink-0 text-red-700" />
-            </TooltipTrigger>
-            <TooltipContent>{indicator.error}</TooltipContent>
-          </Tooltip>
-        )
-      case 'done':
-        if (indicator.tier === 'manual') {
-          return (
-            <StdPadding>
-              <Pencil className="size-3" />
-            </StdPadding>
-          )
-        }
-        if (indicator.tier === 'large') {
-          return (
-            <StdPadding>
-              <Sparkles className="size-3" />
-            </StdPadding>
-          )
-        }
-        if (indicator.tier === 'cloud') {
-          return (
-            <StdPadding>
-              <Cloud className="size-3" />
-            </StdPadding>
-          )
-        }
-        // small: the "Improve transcription" affordance lives in the popover,
-        // so the icon is purely a status mark here.
-        return (
-          <StdPadding>
-            <Sparkle className="size-3" />
-          </StdPadding>
-        )
-      case 'none':
-        if (settings.transcriptionMode === 'disabled') {
-          return (
-            <StdPadding>
-              <SpeechIcon className="size-3" />
-            </StdPadding>
-          )
-        }
-        return (
-          <StdPadding>
-            <span />
-          </StdPadding>
-        )
-    }
-  }
 }
 
 function StdPadding({ children }: { children?: React.ReactNode }) {

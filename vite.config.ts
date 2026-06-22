@@ -6,6 +6,7 @@ import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import viteReact, { reactCompilerPreset } from '@vitejs/plugin-react'
+import type { Logger } from 'babel-plugin-react-compiler'
 import type { Plugin } from 'vite'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -131,6 +132,37 @@ function localMediaDevPlugin(): Plugin {
   }
 }
 
+/**
+ * React Compiler bails out of optimizing a whole component/hook when it hits
+ * something it can't handle (e.g. `try/finally`, which it lists as a "Todo").
+ * These bailouts are silent -- the code still runs, just unmemoized -- and the
+ * `react-hooks` lint rules don't flag this class. That silence hides real bugs:
+ * a component that relied on the compiler recomputing derived state can break
+ * (or, conversely, code that mutates state in place can break *because* it gets
+ * compiled). Surface every skip/error as a build warning so they're visible.
+ */
+const seenCompilerBailouts = new Set<string>()
+const reactCompilerLogger: Logger = {
+  logEvent(filename, event) {
+    let reason: string
+    if (event.kind === 'CompileSkip') {
+      reason = event.reason
+    } else if (event.kind === 'CompileError') {
+      reason = String(event.detail.reason)
+    } else {
+      return
+    }
+    const line = event.fnLoc?.start.line
+    const where = `${filename ?? '<unknown>'}${line ? `:${line}` : ''}`
+    const key = `${where} ${reason}`
+    if (seenCompilerBailouts.has(key)) return
+    seenCompilerBailouts.add(key)
+    console.warn(
+      `\n⚠️  [react-compiler] not optimized: ${where}\n    ${reason}\n`,
+    )
+  },
+}
+
 const config = defineConfig({
   base: '/',
   resolve: {
@@ -174,7 +206,7 @@ const config = defineConfig({
     }),
     viteReact(),
     babel({
-      presets: [reactCompilerPreset()],
+      presets: [reactCompilerPreset({ logger: reactCompilerLogger })],
     }),
     VitePWA({
       registerType: 'prompt',
