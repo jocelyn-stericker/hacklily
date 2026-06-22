@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
-import { Loader2, Play, StopCircle } from 'lucide-react'
+import { Loader2, Pause, Play, StopCircle } from 'lucide-react'
 
 import { cn } from '#/lib/utils'
 
@@ -14,6 +14,8 @@ export function PracticeReferenceText({
   activePassageId,
   activeSegmentIndex,
   currentSentenceIndex,
+  playing,
+  loading,
   onToggle,
 }: {
   segments: readonly string[]
@@ -23,6 +25,10 @@ export function PracticeReferenceText({
   activeSegmentIndex: number | null
   /** Index of the current sentence the loop is on (for passages). -1 = none. */
   currentSentenceIndex: number
+  /** True when the active reference segment is playing. */
+  playing: boolean
+  /** True when the active reference segment is buffering. */
+  loading: boolean
   onToggle: (passageId: string, segmentIndex: number, voiceId: string) => void
 }) {
   return (
@@ -31,6 +37,8 @@ export function PracticeReferenceText({
         const isActive =
           activePassageId === passageId && activeSegmentIndex === i
         const isCurrent = currentSentenceIndex === i
+        const isPlaying = isActive && playing
+        const isLoading = isActive && loading
         return (
           <span key={i} className="contents">
             <span
@@ -53,6 +61,29 @@ export function PracticeReferenceText({
               )}
             >
               {sentence}
+            </span>
+            <span
+              aria-hidden
+              className="inline-flex align-baseline select-none text-muted-foreground/60 pl-0.5"
+            >
+              <TooltipButton
+                label={
+                  isPlaying ? 'Pause reference' : 'Play reference for sentence'
+                }
+                variant="ghost"
+                size="icon-sm"
+                tabIndex={-1}
+                className="size-5 -my-1 align-baseline"
+                onClick={() => onToggle(passageId, i, voiceId)}
+              >
+                {isLoading ? (
+                  <Loader2 className="size-3 animate-spin" />
+                ) : isPlaying ? (
+                  <Pause className="size-3" />
+                ) : (
+                  <Play className="size-3" />
+                )}
+              </TooltipButton>
             </span>{' '}
           </span>
         )

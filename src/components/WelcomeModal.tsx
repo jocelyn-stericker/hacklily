@@ -67,7 +67,9 @@ export function WelcomeModal({
                 className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted"
               >
                 <Metronome className="size-4 shrink-0 text-muted-foreground" />
-                <span className="flex-1">Practice</span>
+                <span className="flex-1">
+                  Practice: hear, record, play back
+                </span>
                 <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
               </Link>
               <Link
@@ -75,7 +77,9 @@ export function WelcomeModal({
                 className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted"
               >
                 <Languages className="size-4 shrink-0 text-muted-foreground" />
-                <span className="flex-1">English to IPA</span>
+                <span className="flex-1">
+                  English to IPA: phonetic transcription
+                </span>
                 <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
               </Link>
             </div>

@@ -82,14 +82,14 @@ export function PracticeSettings({
               render={
                 <Button
                   variant="ghost"
-                  size="icon-sm"
+                  size="icon"
                   aria-label="Practice settings"
                 />
               }
             />
           }
         >
-          <Settings className="size-4" />
+          <Settings className="size-5" />
         </TooltipTrigger>
         <TooltipContent sideOffset={8}>Settings</TooltipContent>
       </Tooltip>

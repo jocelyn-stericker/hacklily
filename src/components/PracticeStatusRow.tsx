@@ -17,6 +17,7 @@ export function PracticeStatusRow({
   onNextTake,
   onEndSession,
   numTakes,
+  playReferenceBeforeTake,
   referencePlaying,
   referenceLoading,
   onStopReference,
@@ -30,6 +31,8 @@ export function PracticeStatusRow({
   onNextTake: () => void
   onEndSession: () => void
   numTakes: number
+  /** True when each take is preceded by playing the reference clip. */
+  playReferenceBeforeTake: boolean
   /** True when a reference clip is currently playing. */
   referencePlaying: boolean
   /** True while the reference clip is buffering. */
@@ -44,13 +47,13 @@ export function PracticeStatusRow({
         <div className="flex flex-col items-center gap-2 px-4 py-4">
           <Button size="lg" onClick={onStartSession}>
             <Mic />
-            {numTakes > 0 ? 'Resume recording' : 'Start recording'}
+            {numTakes > 0 ? 'Resume take' : 'Start take'}
           </Button>
           {numTakes > 0 ? null : (
             <p className="max-w-md text-center text-xs text-muted-foreground">
-              Recording and analysis happen in your browser; nothing is
-              uploaded. Takes are kept in memory and discarded when you leave
-              the page.
+              {playReferenceBeforeTake ? 'Hear, record, play back. ' : null}
+              Recordings stay in your browser; nothing is uploaded. Takes are
+              kept in memory and discarded when you leave the page.
             </p>
           )}
         </div>

@@ -281,6 +281,7 @@ describe('practiceReducer', () => {
     expect(state.voicedStartMs).toBeNull()
     expect(state.pendingRestart).toBe(false)
     expect(state.pendingRecordRestart).toBe(false)
+    expect(state.pendingReferenceStart).toBe(false)
     expect(state.error).toBeNull()
     expect(state.recordingStartFrame).toBe(0)
     expect(state.shuttingDown).toBe(false)
@@ -1179,6 +1180,89 @@ describe('practiceReducer', () => {
         autoAdvance: true,
       })
       expect(state.drillIndex).toBe(0)
+    })
+  })
+
+  describe('PREPARE_REFERENCE_PHASE', () => {
+    it('arms pendingReferenceStart and sets loopPhase', () => {
+      const state = practiceReducer(initialPracticeState(), {
+        type: 'PREPARE_REFERENCE_PHASE',
+      })
+      expect(state.loopPhase).toBe('reference')
+      expect(state.pendingReferenceStart).toBe(true)
+      expect(state.sessionPhase).toBe('idle')
+      expect(state.referencePlayback).toBeNull()
+      expect(state.playingTakeId).toBeNull()
+    })
+
+    it('clears an active recording and take playback', () => {
+      let state = initialPracticeState()
+      state = practiceReducer(state, {
+        type: 'START_RECORDING',
+        startTime: 1000,
+      })
+      state = practiceReducer(state, { type: 'UTTERANCE_START' })
+      state = practiceReducer(state, {
+        type: 'END_TAKE',
+        span: mockSpan(),
+        voicedRange: { startSec: 0, endSec: 0 },
+        endTimeSec: 0,
+      })
+      state = practiceReducer(state, {
+        type: 'START_PLAYBACK',
+        takeId: 1,
+        skipSilence: true,
+      })
+      state = practiceReducer(state, {
+        type: 'PREPARE_REFERENCE_PHASE',
+      })
+      expect(state.recordingStartTime).toBeNull()
+      expect(state.playingTakeId).toBeNull()
+      expect(state.voicedStartMs).toBeNull()
+    })
+
+    it('is cleared by START_REFERENCE', () => {
+      let state = practiceReducer(initialPracticeState(), {
+        type: 'PREPARE_REFERENCE_PHASE',
+      })
+      state = practiceReducer(state, {
+        type: 'START_REFERENCE',
+        passageId: 'rainbow',
+        segmentIndex: 0,
+        voiceId: 'af_heart',
+      })
+      expect(state.pendingReferenceStart).toBe(false)
+      expect(state.referencePlayback).not.toBeNull()
+    })
+
+    it('is cleared by START_PLAYBACK (pinned-take reference)', () => {
+      let state = practiceReducer(initialPracticeState(), {
+        type: 'PREPARE_REFERENCE_PHASE',
+      })
+      state = practiceReducer(state, {
+        type: 'START_PLAYBACK',
+        takeId: 1,
+        skipSilence: false,
+      })
+      expect(state.pendingReferenceStart).toBe(false)
+      expect(state.playingTakeId).toBe(1)
+    })
+
+    it('is cleared by STOP_REFERENCE', () => {
+      let state = practiceReducer(initialPracticeState(), {
+        type: 'PREPARE_REFERENCE_PHASE',
+      })
+      state = practiceReducer(state, { type: 'STOP_REFERENCE' })
+      expect(state.pendingReferenceStart).toBe(false)
+    })
+
+    it('is cleared by STOP_SESSION', () => {
+      let state = practiceReducer(initialPracticeState(), {
+        type: 'PREPARE_REFERENCE_PHASE',
+      })
+      state = practiceReducer(state, { type: 'STOP_SESSION' })
+      expect(state.pendingReferenceStart).toBe(false)
+      expect(state.loopPhase).toBeNull()
     })
   })
 })

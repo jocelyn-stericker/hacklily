@@ -66,6 +66,13 @@ export type PracticeState = {
   pendingRestart: boolean
   pendingRecordRestart: boolean
   pendingReferenceRestart: boolean
+  /**
+   * True between PREPARE_REFERENCE_PHASE and the moment the reference clip
+   * (or pinned-take playback) is actually dispatched. The route watches the
+   * capture pipeline's state and fires the reference start only once the mic
+   * is open, so the permission prompt is seen before audio plays.
+   */
+  pendingReferenceStart: boolean
   error: string | null
   recordingStartFrame: number
   shuttingDown: boolean
@@ -107,6 +114,7 @@ export type PracticeAction =
   | { type: 'SET_SENTENCE_COUNT'; count: number }
   | { type: 'DRILL_PREV' }
   | { type: 'DRILL_NEXT' }
+  | { type: 'PREPARE_REFERENCE_PHASE' }
 
 export function computeVoicedRange(
   analysis: AnalysisFrame[],
@@ -152,6 +160,7 @@ export function initialPracticeState(): PracticeState {
     pendingRestart: false,
     pendingRecordRestart: false,
     pendingReferenceRestart: false,
+    pendingReferenceStart: false,
     error: null,
     recordingStartFrame: 0,
     shuttingDown: false,
@@ -176,6 +185,7 @@ export function practiceReducer(
         pendingRestart: false,
         pendingRecordRestart: false,
         pendingReferenceRestart: false,
+        pendingReferenceStart: false,
         recordingStartFrame: 0,
         shuttingDown: false,
         playingTakeId: null,
@@ -207,6 +217,7 @@ export function practiceReducer(
         playingSkipSilence: action.skipSilence,
         referencePlayback: null,
         pendingReferenceRestart: false,
+        pendingReferenceStart: false,
       }
 
     case 'STOP_PLAYBACK':
@@ -219,6 +230,7 @@ export function practiceReducer(
         audioStartMs: null,
         pendingRestart: false,
         pendingRecordRestart: false,
+        pendingReferenceStart: false,
         shuttingDown: false,
       }
 
@@ -234,6 +246,7 @@ export function practiceReducer(
         pendingRestart: false,
         pendingRecordRestart: false,
         pendingReferenceRestart: false,
+        pendingReferenceStart: false,
         shuttingDown: false,
         playingTakeId: null,
         playingSkipSilence: false,
@@ -257,7 +270,11 @@ export function practiceReducer(
         : state
 
     case 'STOP_REFERENCE':
-      return { ...state, referencePlayback: null }
+      return {
+        ...state,
+        referencePlayback: null,
+        pendingReferenceStart: false,
+      }
 
     case 'REFERENCE_ENDED': {
       // Natural end of a reference clip. When the loop is active and we were
@@ -351,6 +368,26 @@ export function practiceReducer(
     case 'SET_LOOP_PHASE':
       return { ...state, loopPhase: action.phase }
 
+    case 'PREPARE_REFERENCE_PHASE':
+      // Mark the loop as entering the reference phase and arm
+      // `pendingReferenceStart` so the route fires the actual reference
+      // dispatch (START_REFERENCE / pinned-take START_PLAYBACK) once the mic
+      // pipeline reports it's warm. This keeps the capture pipeline from being
+      // torn down between the three phases of a take and surfaces the mic
+      // permission prompt before any reference audio plays.
+      return {
+        ...state,
+        loopPhase: 'reference',
+        pendingReferenceStart: true,
+        referencePlayback: null,
+        playingTakeId: null,
+        playingSkipSilence: false,
+        recordingStartTime: null,
+        sessionPhase: 'idle',
+        voicedStartMs: null,
+        audioStartMs: null,
+      }
+
     case 'STOP_SESSION':
       return {
         ...state,
@@ -360,6 +397,7 @@ export function practiceReducer(
         pendingRestart: false,
         pendingRecordRestart: false,
         pendingReferenceRestart: false,
+        pendingReferenceStart: false,
         shuttingDown: false,
         loopPhase: null,
         // Defensive: STOP_SESSION ends the recording session, so any dangling

@@ -372,8 +372,14 @@ function Practice() {
     toast(message)
   }, [])
 
+  // The mic stays open for the whole loop (reference → record → playback) so
+  // the capture pipeline isn't torn down and rebuilt between phases. The loop
+  // is considered active whenever we're recording, playing back a take, or in
+  // any loopPhase — including 'reference' (which may be pending a start).
+  const loopActive = state.loopPhase !== null
   const audioManager = useAudioManager({
-    active: settings.persistentMic || state.sessionPhase !== 'idle',
+    active:
+      settings.persistentMic || state.sessionPhase !== 'idle' || loopActive,
     recording: state.sessionPhase === 'recording',
     captureFeatures: {
       spectrogram: false,
@@ -456,11 +462,24 @@ function Practice() {
   const sessionToolbarActive =
     state.sessionPhase !== 'idle' || state.loopPhase !== null
 
-  // Start the reference phase of the loop: play the synth clip for the current
-  // sentence, or — if a take is pinned — play that take's rope audio.
-  const startReferencePhase = useCallback(() => {
-    dispatch({ type: 'SET_SESSION_PHASE', phase: 'idle' })
-    dispatch({ type: 'SET_LOOP_PHASE', phase: 'reference' })
+  // Begin the reference phase of the loop. We dispatch PREPARE_REFERENCE_PHASE
+  // rather than starting the clip right away: this arms `pendingReferenceStart`
+  // so the route can fire the actual reference dispatch (START_REFERENCE or a
+  // pinned-take START_PLAYBACK) only once the mic pipeline reports it's warm.
+  // Two effects follow from that ordering:
+  //   - the mic permission prompt surfaces before any reference audio plays;
+  //   - the capture pipeline is held open across all three phases of the take
+  //     (reference → record → playback) instead of being torn down and rebuilt.
+  const prepareReferencePhase = useCallback(() => {
+    dispatch({ type: 'PREPARE_REFERENCE_PHASE' })
+  }, [])
+
+  // Actually start the reference source for the current sentence: a synth clip
+  // via START_REFERENCE, or — if a take is pinned — that take's rope audio via
+  // START_PLAYBACK. Called by the pendingReferenceStart watcher once the mic
+  // pipeline is warm (or immediately if the loop feature is off and the user
+  // tapped a sentence, which bypasses the prepare/begin split).
+  const beginReferencePlayback = useCallback(() => {
     if (pinnedTake) {
       dispatch({
         type: 'START_PLAYBACK',
@@ -502,11 +521,43 @@ function Practice() {
   )
 
   // Drive the reference-restart that PLAYBACK_ENDED signals via
-  // pendingReferenceRestart when the loop is active.
+  // pendingReferenceRestart when the loop is active. This goes through
+  // prepareReferencePhase so the mic stays open and the permission prompt
+  // (if any) is surfaced before the next reference clip plays.
   useLayoutEffect(() => {
     if (!state.pendingReferenceRestart) return
-    startReferencePhase()
-  }, [state.pendingReferenceRestart, startReferencePhase])
+    prepareReferencePhase()
+  }, [state.pendingReferenceRestart, prepareReferencePhase])
+
+  // Fire the actual reference source once the capture pipeline is warm and a
+  // start is pending. useAudioManager keeps the mic open for the whole loop
+  // (see `active` below), so this usually resolves on the first stateChanged
+  // after PREPARE_REFERENCE_PHASE. On a cold start — the very first take of a
+  // session — the AudioContext is created and the mic is opened here, which is
+  // what surfaces the permission prompt before the reference plays.
+  useEffect(() => {
+    if (!state.pendingReferenceStart) return
+    if (!audioManager) return
+
+    const isWarm =
+      audioManager.getState().capture === 'warm' ||
+      audioManager.getState().capture === 'recording'
+    if (isWarm) {
+      beginReferencePlayback()
+      return
+    }
+    const onChange = () => {
+      const { capture } = audioManager.getState()
+      if (capture === 'warm' || capture === 'recording') {
+        audioManager.removeEventListener('stateChanged', onChange)
+        beginReferencePlayback()
+      }
+    }
+    audioManager.addEventListener('stateChanged', onChange)
+    return () => {
+      audioManager.removeEventListener('stateChanged', onChange)
+    }
+  }, [state.pendingReferenceStart, audioManager, beginReferencePlayback])
 
   // Leaving the passage stops the reference so the active-sentence highlight
   // never points at a sentence that isn't on screen.
@@ -520,7 +571,7 @@ function Practice() {
     dispatch({ type: 'SET_ERROR', error: null })
     void audioManager?.unlockForGesture()
     if (playRefBeforeTake) {
-      startReferencePhase()
+      prepareReferencePhase()
     } else {
       startPipelineAndRecord()
     }
@@ -528,7 +579,7 @@ function Practice() {
     startPipelineAndRecord,
     audioManager,
     playRefBeforeTake,
-    startReferencePhase,
+    prepareReferencePhase,
   ])
 
   // End session — stop mic and playback, but keep takes
@@ -778,23 +829,23 @@ function Practice() {
   // --- Main render ---
   return (
     <main className="h-dvh flex flex-col overflow-hidden bg-background text-foreground">
-      <header className="flex items-center gap-3 border-b border-border px-4 py-2 shrink-0">
+      <header className="flex items-center gap-3 border-b border-border p-2 shrink-0">
         <Tooltip>
           <TooltipTrigger>
             <Link
               to="/"
-              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
+              className="flex items-center gap-1.5 text-base text-muted-foreground hover:text-foreground transition-colors shrink-0"
             >
-              <ArrowLeft className="size-4" />
+              <ArrowLeft className="size-6" />
               <span className="hidden sm:inline">Braat</span>
             </Link>
           </TooltipTrigger>
           <TooltipContent sideOffset={8}>Back to analysis</TooltipContent>
         </Tooltip>
-        <h1 className="text-sm font-medium shrink-0">Practice</h1>
+        <h1 className="text-lg font-bold shrink-0">Practice</h1>
         <div className="ml-auto flex items-center gap-2 min-w-0">
           <Select value={passageId} onValueChange={handlePassageChange}>
-            <SelectTrigger size="sm" className="w-62 min-w-0 shrink">
+            <SelectTrigger className="w-62 min-w-0 shrink">
               <SelectValue>{selectedTitle}</SelectValue>
             </SelectTrigger>
             <SelectContent>
@@ -842,6 +893,8 @@ function Practice() {
                   activePassageId={refPlayback?.passageId ?? null}
                   activeSegmentIndex={refPlayback?.segmentIndex ?? null}
                   currentSentenceIndex={state.drillIndex}
+                  playing={referencePlaying}
+                  loading={refPlayback?.status === 'loading'}
                   onToggle={handleToggleReference}
                 />
               </div>
@@ -959,6 +1012,7 @@ function Practice() {
           onNextTake={handleNextTake}
           onEndSession={handleEndSession}
           numTakes={state.takes.length}
+          playReferenceBeforeTake={playRefBeforeTake}
           referencePlaying={sessionToolbarActive && referencePlaying}
           referenceLoading={
             sessionToolbarActive && refPlayback?.status === 'loading'
