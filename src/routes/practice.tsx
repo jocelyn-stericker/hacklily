@@ -442,11 +442,11 @@ function Practice() {
   // HTMLAudioElement to match it and reports status back via dispatch.
   const referenceVoiceId = settings.practiceReferenceVoice
   const refPlayback = state.referencePlayback
-  const {
-    toggle: refToggle,
-    unlock: refUnlock,
-    manifest: referenceManifest,
-  } = useReferencePlayer(dispatch, refPlayback)
+  const { toggle: refToggle, manifest: referenceManifest } = useReferencePlayer(
+    dispatch,
+    refPlayback,
+    audioManager,
+  )
   // True when a reference is audibly playing: either a synth clip for the
   // current passage, or — when a take is pinned as the reference source — that
   // take playing during the loop's reference phase.
@@ -499,10 +499,10 @@ function Practice() {
 
   const handleToggleReference = useCallback(
     async (pId: string, segIdx: number, voiceId: string) => {
+      // Unlock the AudioContext synchronously in the gesture; it stays running
+      // across the await below, so the reference (played via the context) sounds
+      // even though refToggle's playback starts after it.
       void audioManager?.unlockForGesture()
-      // Bless the <audio> element synchronously: refToggle's play() fires after
-      // the await below, where Safari no longer sees the user gesture.
-      refUnlock()
       // If recording with voiced audio, save the take before switching to
       // reference playback — never silently drop a recording.
       await saveVoicedTakeIfRecording()
@@ -518,7 +518,6 @@ function Practice() {
     },
     [
       audioManager,
-      refUnlock,
       refToggle,
       saveVoicedTakeIfRecording,
       segmentIndexToDrillIndex,
@@ -574,11 +573,11 @@ function Practice() {
   // phase; otherwise go straight to recording as before.
   const handleStartSession = useCallback(() => {
     dispatch({ type: 'SET_ERROR', error: null })
+    // Unlock the AudioContext synchronously in the gesture. It stays running
+    // across the getUserMedia await, so the reference clip (played through the
+    // context once the mic is warm) sounds even though it starts after the
+    // permission prompt — no per-element autoplay gating to fight.
     void audioManager?.unlockForGesture()
-    // Bless the <audio> element in the same gesture: the reference's real
-    // play() fires later from an effect, after getUserMedia resolves, and
-    // Safari won't carry user-activation across that await.
-    refUnlock()
     if (playRefBeforeTake) {
       prepareReferencePhase()
     } else {
@@ -587,7 +586,6 @@ function Practice() {
   }, [
     startPipelineAndRecord,
     audioManager,
-    refUnlock,
     playRefBeforeTake,
     prepareReferencePhase,
   ])

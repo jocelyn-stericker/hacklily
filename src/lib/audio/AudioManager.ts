@@ -269,6 +269,58 @@ export class AudioManager extends TypedEventTarget<OutboundEventMap> {
   }
 
   /**
+   * Decodes and plays a one-shot audio clip (e.g. a synthesised reference MP3)
+   * through this instance's AudioContext. Unlike a bare `<audio>` element, the
+   * context is unlocked synchronously by `unlockForGesture()` and stays running
+   * across the `getUserMedia` await — so this plays reliably even when started
+   * after the mic-permission prompt, with no per-element autoplay gating to
+   * fight. Routing through the context also inherits the iOS `audioSession`
+   * config so the clip is audible with the ringer silent.
+   *
+   * Returns a handle: `stop()` halts playback immediately (idempotent), and
+   * `ended` resolves with `true` on natural end or `false` if `stop()` ran
+   * first — letting the caller distinguish "clip finished" (advance the loop)
+   * from "we cut it short" (don't).
+   *
+   * `data` is decoded in place; pass a buffer the caller no longer needs.
+   */
+  async playClip(
+    data: ArrayBuffer,
+  ): Promise<{ stop: () => void; ended: Promise<boolean> }> {
+    const { context } = this.#getOrCreateContext()
+    await context.resume()
+    const buffer = await context.decodeAudioData(data)
+
+    const source = context.createBufferSource()
+    source.buffer = buffer
+    source.connect(context.destination)
+
+    let stopped = false
+    let settle: (naturalEnd: boolean) => void
+    const ended = new Promise<boolean>((resolve) => {
+      settle = resolve
+    })
+    source.onended = () => {
+      source.disconnect()
+      settle(!stopped)
+    }
+    source.start()
+
+    return {
+      stop: () => {
+        if (stopped) return
+        stopped = true
+        try {
+          source.stop()
+        } catch {
+          // Already stopped/ended — `onended` handles teardown.
+        }
+      },
+      ended,
+    }
+  }
+
+  /**
    * Stops the run loop. Both sub-states reset to idle at the tail of #run,
    * any active pipelines are torn down, leases are released, and the
    * AudioContext is closed. Does not go through the transition table --
