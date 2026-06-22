@@ -39,7 +39,7 @@ import {
 } from '#/lib/analysis/AnalysisFrame'
 import { AudioRope, SEG_SAMPLES } from '#/lib/audio/AudioRope'
 import type { AudioRopeGrow, AudioRopeShare } from '#/lib/audio/AudioRope'
-import { exportWav } from '#/lib/audio/exportWav'
+import { exportMp3 } from '#/lib/audio/exportMp3'
 import { alignJobActive, alignWorkerLive } from '#/lib/jobs/alignJob'
 import type { Viewport } from '#/lib/jobs/schedule'
 import { RopeGainCache } from '#/lib/loudness/ropeLoudness'
@@ -332,13 +332,12 @@ function App() {
 
   const [isExporting, setIsExporting] = useState(false)
 
-  const handleExportAudio = useCallback(() => {
-    // TODO: support compressed formats
+  const handleExportAudio = useCallback(async () => {
     const currentRopes = ropesRef.current
     if (!currentRopes.some((rope) => rope.length > 0)) return
     setIsExporting(true)
     try {
-      exportWav(currentRopes, gainCache.gainsFor(currentRopes))
+      await exportMp3(currentRopes, gainCache.gainsFor(currentRopes))
     } catch (err) {
       handleError(err)
     } finally {
@@ -579,7 +578,7 @@ function App() {
     'mod+e',
     (e) => {
       e.preventDefault()
-      if (!exportAudioDisabled) handleExportAudio()
+      if (!exportAudioDisabled) void handleExportAudio()
     },
     [exportAudioDisabled, handleExportAudio],
   )

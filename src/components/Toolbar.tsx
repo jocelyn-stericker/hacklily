@@ -148,7 +148,7 @@ export function Toolbar({
             disabled={exportAudioDisabled}
           >
             <Download className="size-4" />
-            Export mono audio
+            Export mono MP3
             <DropdownMenuShortcut>{MOD}E</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={onOpenAudioSettings}>
