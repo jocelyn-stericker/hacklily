@@ -26,6 +26,38 @@ function keyFor(p: ReferencePlayback): LoadedKey {
   return `${p.passageId}#${p.segmentIndex}#${p.voiceId}`
 }
 
+// A 1-sample silent WAV used only to "bless" the <audio> element. Playing this
+// synchronously inside a user gesture marks the element as user-activated in
+// Safari, which — unlike Chrome — does not carry activation across the `await`
+// on getUserMedia or the React round-trips before the real clip loads. Without
+// it the real play() (fired from an effect once the mic is warm) is rejected
+// and the reference never sounds. See `unlock` below.
+function buildSilentWav(): string {
+  const bytes = new Uint8Array(45)
+  const view = new DataView(bytes.buffer)
+  const writeStr = (o: number, s: string) => {
+    for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i))
+  }
+  writeStr(0, 'RIFF')
+  view.setUint32(4, 37, true) // 36 + dataSize
+  writeStr(8, 'WAVE')
+  writeStr(12, 'fmt ')
+  view.setUint32(16, 16, true) // fmt chunk size
+  view.setUint16(20, 1, true) // PCM
+  view.setUint16(22, 1, true) // mono
+  view.setUint32(24, 8000, true) // sample rate
+  view.setUint32(28, 8000, true) // byte rate
+  view.setUint16(32, 1, true) // block align
+  view.setUint16(34, 8, true) // bits per sample
+  writeStr(36, 'data')
+  view.setUint32(40, 1, true) // data size
+  view.setUint8(44, 128) // one sample of 8-bit silence (centre)
+  let binary = ''
+  for (const b of bytes) binary += String.fromCharCode(b)
+  return `data:audio/wav;base64,${btoa(binary)}`
+}
+const SILENT_WAV = buildSilentWav()
+
 /**
  * Reducer-driven reference-clip player. The reducer (in `practiceState.ts`) is
  * the single source of truth for which clip is loaded (`state.referencePlayback`).
@@ -48,6 +80,7 @@ export function useReferencePlayer(
   referencePlayback: ReferencePlayback | null,
 ): {
   toggle: (passageId: string, segmentIndex: number, voiceId: string) => void
+  unlock: () => void
   manifest: ReferenceManifest | null
 } {
   const [manifest, setManifest] = useState<ReferenceManifest | null>(null)
@@ -58,6 +91,7 @@ export function useReferencePlayer(
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const loadedKeyRef = useRef<LoadedKey | null>(null)
+  const unlockedRef = useRef(false)
 
   // Create the audio element once and wire its events to dispatches.
   useEffect(() => {
@@ -156,6 +190,37 @@ export function useReferencePlayer(
     })
   }, [referencePlayback, dispatch])
 
+  // Bless the <audio> element for Safari. MUST be called synchronously from a
+  // user gesture (the same place the route calls `audioManager.unlockForGesture()`).
+  // Plays a 1-sample silent clip on the element so the real play() — which fires
+  // later from an effect, after getUserMedia resolves — is permitted. This is
+  // deliberately orthogonal to the reducer-driven load path: it never touches
+  // `loadedKeyRef` or `el.src` once the real clip is loading, so it can't
+  // suppress the actual playback.
+  const unlock = useCallback(() => {
+    const el = audioRef.current
+    if (!el || unlockedRef.current) return
+    if (loadedKeyRef.current !== null) return // a real clip is already loaded
+    unlockedRef.current = true
+    el.src = SILENT_WAV
+    void el.play().then(
+      () => {
+        // Only tear the priming clip back down if no real clip has since taken
+        // over the element (the load effect sets loadedKeyRef before play()).
+        if (loadedKeyRef.current === null) {
+          el.pause()
+          el.removeAttribute('src')
+          el.load()
+        }
+      },
+      () => {
+        // Rejected (e.g. not actually in a gesture) — allow a later retry.
+        unlockedRef.current = false
+        if (loadedKeyRef.current === null) el.removeAttribute('src')
+      },
+    )
+  }, [])
+
   const toggle = useCallback(
     (passageId: string, segmentIndex: number, voiceId: string) => {
       const el = audioRef.current
@@ -177,5 +242,5 @@ export function useReferencePlayer(
     [dispatch, referencePlayback],
   )
 
-  return { toggle, manifest }
+  return { toggle, unlock, manifest }
 }

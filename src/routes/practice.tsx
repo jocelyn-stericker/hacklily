@@ -442,10 +442,11 @@ function Practice() {
   // HTMLAudioElement to match it and reports status back via dispatch.
   const referenceVoiceId = settings.practiceReferenceVoice
   const refPlayback = state.referencePlayback
-  const { toggle: refToggle, manifest: referenceManifest } = useReferencePlayer(
-    dispatch,
-    refPlayback,
-  )
+  const {
+    toggle: refToggle,
+    unlock: refUnlock,
+    manifest: referenceManifest,
+  } = useReferencePlayer(dispatch, refPlayback)
   // True when a reference is audibly playing: either a synth clip for the
   // current passage, or — when a take is pinned as the reference source — that
   // take playing during the loop's reference phase.
@@ -499,6 +500,9 @@ function Practice() {
   const handleToggleReference = useCallback(
     async (pId: string, segIdx: number, voiceId: string) => {
       void audioManager?.unlockForGesture()
+      // Bless the <audio> element synchronously: refToggle's play() fires after
+      // the await below, where Safari no longer sees the user gesture.
+      refUnlock()
       // If recording with voiced audio, save the take before switching to
       // reference playback — never silently drop a recording.
       await saveVoicedTakeIfRecording()
@@ -514,6 +518,7 @@ function Practice() {
     },
     [
       audioManager,
+      refUnlock,
       refToggle,
       saveVoicedTakeIfRecording,
       segmentIndexToDrillIndex,
@@ -570,6 +575,10 @@ function Practice() {
   const handleStartSession = useCallback(() => {
     dispatch({ type: 'SET_ERROR', error: null })
     void audioManager?.unlockForGesture()
+    // Bless the <audio> element in the same gesture: the reference's real
+    // play() fires later from an effect, after getUserMedia resolves, and
+    // Safari won't carry user-activation across that await.
+    refUnlock()
     if (playRefBeforeTake) {
       prepareReferencePhase()
     } else {
@@ -578,6 +587,7 @@ function Practice() {
   }, [
     startPipelineAndRecord,
     audioManager,
+    refUnlock,
     playRefBeforeTake,
     prepareReferencePhase,
   ])
