@@ -51,9 +51,11 @@ export function PracticeStatusRow({
           </Button>
           {numTakes > 0 ? null : (
             <p className="max-w-md text-center text-xs text-muted-foreground">
-              {playReferenceBeforeTake ? 'Hear, record, play back. ' : null}
-              Recordings stay in your browser; nothing is uploaded. Takes are
-              kept in memory and discarded when you leave the page.
+              {playReferenceBeforeTake
+                ? 'Listen, then record your own take. '
+                : null}
+              Recordings never leave your browser, and they're gone when you
+              close the page.
             </p>
           )}
         </div>
