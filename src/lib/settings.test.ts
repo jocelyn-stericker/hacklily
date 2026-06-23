@@ -72,8 +72,7 @@ describe('settings', () => {
         practicePlayReferenceBeforeTake: false,
       }
       const constraints = buildAudioConstraints(settings)
-      // We always disable echo cancellation
-      expect(constraints.echoCancellation).toBe(false)
+      expect(constraints.echoCancellation).toBeUndefined()
       expect(constraints.noiseSuppression).toBeUndefined()
       expect(constraints.autoGainControl).toBeUndefined()
       expect(constraints.deviceId).toBeUndefined()

@@ -376,7 +376,18 @@ function Practice() {
   // the capture pipeline isn't torn down and rebuilt between phases. The loop
   // is considered active whenever we're recording, playing back a take, or in
   // any loopPhase — including 'reference' (which may be pending a start).
-  const loopActive = state.loopPhase !== null
+  //
+  // The pending-* flags also keep the loop "active" during the one-render
+  // windows where the reducer has nulled `loopPhase` between phases but armed
+  // a flag whose layout effect will fire the next phase on the following
+  // commit. Without them `active` would briefly drop to `false` (when
+  // `persistentMic` is off), causing useAudioManager to send STOP_CAPTURE and
+  // tear the capture pipeline down mid-handoff. See CLAUDE.md.
+  const loopActive =
+    state.loopPhase !== null ||
+    state.pendingRecordRestart ||
+    state.pendingReferenceRestart ||
+    state.pendingReferenceStart
   const audioManager = useAudioManager({
     active:
       settings.persistentMic || state.sessionPhase !== 'idle' || loopActive,
