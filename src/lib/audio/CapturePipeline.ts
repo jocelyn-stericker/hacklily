@@ -171,9 +171,6 @@ export class CapturePipeline extends TypedEventTarget<CapturePipelineEventMap> {
       this.#sourceNode = this.#context.createMediaStreamSource(this.#stream)
       this.#sourceNode.connect(this.#workletNode)
 
-      // Attempt at convincing Safari to really process audio.
-      this.#workletNode.connect(this.#context.destination)
-
       // The worklet builds the rope directly from each process() quantum; no
       // SAB ring buffer is involved. `init` is sent on #beginRecording so the
       // rope starts at the first recorded quantum.

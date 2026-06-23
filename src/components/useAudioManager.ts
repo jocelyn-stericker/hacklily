@@ -163,11 +163,8 @@ export function useAudioManager({
     const handleStop = () => onStopRef.current()
     const handleError = (e: CustomEvent<{ error: string }>) =>
       onErrorRef.current?.(e.detail.error)
-    const handleVisibility = async () => {
-      if (!document.hidden) {
-        manager.sendEvent({ type: 'VISIBILITY_CHANGE', hidden: false })
-        await manager.resumeContext()
-      }
+    const handleVisibility = () => {
+      manager.sendEvent({ type: 'VISIBILITY_CHANGE', hidden: document.hidden })
     }
 
     const ac = new AbortController()

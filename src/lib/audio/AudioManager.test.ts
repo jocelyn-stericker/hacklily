@@ -75,6 +75,9 @@ vi.mock('./CapturePipeline', async () => {
   return {
     CapturePipeline: function CapturePipelineMock(args: any) {
       const stub = new StubCapture()
+      // Record the stream this pipeline was built with so tests can assert
+      // whether a rebuild reused the persistent stream or opened a new one.
+      ;(stub as any).stream = args.stream
       args.signal.addEventListener('abort', () => stub.destroy(), {
         once: true,
       })
@@ -139,30 +142,46 @@ class StubAudioWorklet {
 }
 
 function makeStubMediaStream(): MediaStream {
+  // Stable track instance so `track.stop` spies survive multiple getTracks()
+  // calls (the manager calls it on both teardown and settings logging).
+  const track = {
+    stop: vi.fn(),
+    getSettings: vi.fn(() => ({})),
+    addEventListener: vi.fn(),
+  }
   return {
-    getTracks: vi.fn(() => [
-      {
-        stop: vi.fn(),
-        getSettings: vi.fn(() => ({})),
-        addEventListener: vi.fn(),
-      },
-    ]),
+    getTracks: vi.fn(() => [track]),
     active: true,
   } as unknown as MediaStream
 }
 
+// Every constructed StubAudioContext is recorded here so tests can simulate a
+// UA-initiated suspension (set `.state = 'suspended'`) and assert that a fresh
+// context was built on interruption recovery. Reset in beforeEach.
+const contextStubs: StubAudioContext[] = []
+
 class StubAudioContext {
-  state: 'suspended' | 'running' | 'closed' = 'running'
+  state: 'suspended' | 'running' | 'closed' | 'interrupted' = 'running'
   sampleRate = 44100
   currentTime = 0
   destination = {} as AudioDestinationNode
   audioWorklet = new StubAudioWorklet()
+  #stateListeners = new Set<() => void>()
+  constructor() {
+    contextStubs.push(this)
+  }
   resume = vi.fn(async () => {})
   suspend = vi.fn(async () => {
-    this.state = 'suspended'
+    this.setState('suspended')
   })
   close = vi.fn(async () => {
-    this.state = 'closed'
+    this.setState('closed')
+  })
+  addEventListener = vi.fn((type: string, cb: () => void) => {
+    if (type === 'statechange') this.#stateListeners.add(cb)
+  })
+  removeEventListener = vi.fn((type: string, cb: () => void) => {
+    if (type === 'statechange') this.#stateListeners.delete(cb)
   })
   createMediaStreamSource = vi.fn(
     () =>
@@ -171,16 +190,25 @@ class StubAudioContext {
         disconnect: vi.fn(),
       }) as unknown as MediaStreamAudioSourceNode,
   )
+  // Test helper: set state and fire `statechange`, mirroring the real context.
+  setState(s: StubAudioContext['state']): void {
+    this.state = s
+    this.#stateListeners.forEach((cb) => cb())
+  }
 }
 
+// Captured at install so tests can inspect call counts without an unbound
+// `navigator.mediaDevices.getUserMedia` method reference.
+let getUserMediaMock: ReturnType<typeof vi.fn>
 let stubAudioContextInstalled = false
 function installStubAudioContext() {
   if (stubAudioContextInstalled) return
   vi.stubGlobal('AudioContext', StubAudioContext as any)
+  getUserMediaMock = vi.fn(async () => makeStubMediaStream())
   Object.defineProperty(navigator, 'mediaDevices', {
     configurable: true,
     value: {
-      getUserMedia: vi.fn(async () => makeStubMediaStream()),
+      getUserMedia: getUserMediaMock,
     },
   })
   stubAudioContextInstalled = true
@@ -280,6 +308,7 @@ describe('AudioManager', () => {
     installStubAudioContext()
     captureStubs.length = 0
     playbackStubs.length = 0
+    contextStubs.length = 0
     manager = new AudioManager()
   })
 
@@ -1045,8 +1074,279 @@ describe('AudioManager', () => {
         manager.sendEvent({ type: 'VISIBILITY_CHANGE', hidden: true })
         manager.sendEvent({ type: 'VISIBILITY_CHANGE', hidden: false })
       }).not.toThrow()
+      await vi.waitFor(() => expect(contextStubs).toHaveLength(2))
+      await waitForState(manager, atCapture('warm'), 'warm after rebuild')
+      expect(manager.getState().capture).toBe('warm')
+    })
+
+    it('rebuilds on return even when the context stayed running (silent poison)', async () => {
+      await toWarm(manager)
+      expect(contextStubs).toHaveLength(1)
+      // The browser kept the context running in the background, so there's no
+      // state transition to detect the poison. Backgrounding flags it; we rebuild
+      // on return regardless.
+      manager.sendEvent({ type: 'VISIBILITY_CHANGE', hidden: true })
+      manager.sendEvent({ type: 'VISIBILITY_CHANGE', hidden: false })
+      await vi.waitFor(() => expect(contextStubs).toHaveLength(2))
+      await waitForState(manager, atCapture('warm'), 'warm after rebuild')
+      expect(contextStubs[0]!.close).toHaveBeenCalled()
+      expect(manager.getState().capture).toBe('warm')
+    })
+
+    it('resumes (no rebuild) on a spurious visible event with no prior background', async () => {
+      await toWarm(manager)
+      expect(contextStubs).toHaveLength(1)
+      // A `visible` event with no preceding `hidden` (so not flagged) and a
+      // running context just resumes -- no rebuild.
+      manager.sendEvent({ type: 'VISIBILITY_CHANGE', hidden: false })
       await flush()
       expect(manager.getState().capture).toBe('warm')
+      expect(contextStubs).toHaveLength(1)
+      expect(contextStubs[0]!.close).not.toHaveBeenCalled()
+    })
+
+    it('rebuilds the context and re-warms capture when suspended on return', async () => {
+      await toWarm(manager)
+      expect(contextStubs).toHaveLength(1)
+      const captureCountBefore = captureStubs.length
+
+      const { snapshots, stop } = trackState(manager)
+
+      // Simulate a UA-initiated suspension while we still believe we hold the
+      // capture lease (Safari backgrounding poisons the output path).
+      contextStubs[0]!.state = 'suspended'
+
+      manager.sendEvent({ type: 'VISIBILITY_CHANGE', hidden: false })
+      // Capture is already warm, so we can't wait on the final state -- wait for
+      // the fresh context to be built instead.
+      await vi.waitFor(() => expect(contextStubs).toHaveLength(2))
+      await waitForState(manager, atCapture('warm'), 'warm after rebuild')
+      stop()
+
+      // Old context closed, fresh one built, capture pipeline rebuilt.
+      expect(contextStubs[0]!.close).toHaveBeenCalled()
+      expect(captureStubs.length).toBe(captureCountBefore + 1)
+      // Went through warming on the way back to warm.
+      expect(snapshots.map((s) => s.capture)).toContain('warming')
+      expect(manager.getState().capture).toBe('warm')
+    })
+
+    it('rebuilds (idle capture stays idle) when suspended on return while idle', async () => {
+      // Force a context to exist, then go idle so we suspend it ourselves.
+      await toWarm(manager)
+      manager.sendEvent({ type: 'STOP_CAPTURE' })
+      await waitForState(manager, atCapture('idle'), 'idle')
+      expect(contextStubs[0]!.state).toBe('suspended')
+
+      manager.sendEvent({ type: 'VISIBILITY_CHANGE', hidden: false })
+      await vi.waitFor(() => expect(contextStubs[0]!.close).toHaveBeenCalled())
+
+      // Poisoned context discarded; nothing to re-warm, so capture stays idle.
+      expect(manager.getState().capture).toBe('idle')
+    })
+
+    it('leaves an active recording alone (resume, no teardown) on return', async () => {
+      await toRecording(manager)
+      const captureStub = latestCapture()
+      contextStubs[0]!.state = 'suspended'
+
+      manager.sendEvent({ type: 'VISIBILITY_CHANGE', hidden: false })
+      await flush()
+
+      // Recording is preserved: same pipeline, no rebuild.
+      expect(manager.getState().capture).toBe('recording')
+      expect(contextStubs).toHaveLength(1)
+      expect(contextStubs[0]!.close).not.toHaveBeenCalled()
+      expect(latestCapture()).toBe(captureStub)
+    })
+  })
+
+  // -------------------------------------------------------------------------
+  // CONTEXT_INTERRUPTED (foreground UA interruption via statechange)
+  // -------------------------------------------------------------------------
+
+  describe('CONTEXT_INTERRUPTED (UA interruption)', () => {
+    it('rebuilds and re-warms capture on a foreground interruption while warm', async () => {
+      await toWarm(manager)
+      expect(contextStubs).toHaveLength(1)
+      const captureCountBefore = captureStubs.length
+
+      // Safari interrupts us while we hold the capture lease (a call/Siri, an
+      // output-route change). The statechange listener flags + recovers.
+      contextStubs[0]!.setState('interrupted')
+
+      await vi.waitFor(() => expect(contextStubs).toHaveLength(2))
+      await waitForState(manager, atCapture('warm'), 'warm after rebuild')
+
+      expect(contextStubs[0]!.close).toHaveBeenCalled()
+      expect(captureStubs.length).toBe(captureCountBefore + 1)
+      expect(manager.getState().capture).toBe('warm')
+    })
+
+    it('rebuilds exactly once for a single interruption (no loop)', async () => {
+      await toWarm(manager)
+      contextStubs[0]!.setState('interrupted')
+      await vi.waitFor(() => expect(contextStubs).toHaveLength(2))
+      await waitForState(manager, atCapture('warm'), 'warm after rebuild')
+      // Let any stray re-triggers drain.
+      await flush()
+      await flush()
+      expect(contextStubs).toHaveLength(2)
+    })
+
+    it('ignores a suspend with no lease held (our own idle suspend)', async () => {
+      // Drive to warm then idle so a context exists but we hold no lease.
+      await toWarm(manager)
+      manager.sendEvent({ type: 'STOP_CAPTURE' })
+      await waitForState(manager, atCapture('idle'), 'idle')
+      const countBefore = contextStubs.length
+
+      // A further UA blip with no lease must not be treated as an interruption.
+      contextStubs[0]!.setState('interrupted')
+      await flush()
+
+      expect(contextStubs).toHaveLength(countBefore)
+      expect(contextStubs[0]!.close).not.toHaveBeenCalled()
+      expect(manager.getState().capture).toBe('idle')
+    })
+
+    it('leaves an active recording alone on a UA interruption', async () => {
+      await toRecording(manager)
+      const captureStub = latestCapture()
+
+      contextStubs[0]!.setState('interrupted')
+      await flush()
+
+      expect(manager.getState().capture).toBe('recording')
+      expect(contextStubs).toHaveLength(1)
+      expect(contextStubs[0]!.close).not.toHaveBeenCalled()
+      expect(latestCapture()).toBe(captureStub)
+    })
+
+    it('does not interrupt-recover while hidden (visibility handles return)', async () => {
+      await toWarm(manager)
+      // Simulate the page being backgrounded.
+      Object.defineProperty(document, 'hidden', {
+        configurable: true,
+        get: () => true,
+      })
+      try {
+        contextStubs[0]!.setState('suspended')
+        await flush()
+        // Flagged but not eagerly rebuilt -- no getUserMedia in the background.
+        expect(contextStubs).toHaveLength(1)
+        expect(contextStubs[0]!.close).not.toHaveBeenCalled()
+      } finally {
+        Object.defineProperty(document, 'hidden', {
+          configurable: true,
+          get: () => false,
+        })
+      }
+
+      // On return, the dirty flag drives the rebuild.
+      manager.sendEvent({ type: 'VISIBILITY_CHANGE', hidden: false })
+      await vi.waitFor(() => expect(contextStubs).toHaveLength(2))
+      await waitForState(manager, atCapture('warm'), 'warm after return')
+      expect(contextStubs[0]!.close).toHaveBeenCalled()
+    })
+  })
+
+  // -------------------------------------------------------------------------
+  // Deferred recovery: never tear down active audio
+  // -------------------------------------------------------------------------
+
+  describe('deferred recovery (active audio)', () => {
+    it('does not cut active playback on return, then discards the context when it ends', async () => {
+      manager.sendEvent({
+        type: 'ENABLE_PLAYBACK',
+        ropes: [{ length: 44100, sampleRate: 44100 } as any],
+        gains: [1],
+      })
+      await waitForState(manager, atPlayback('playing'), 'playing')
+      expect(contextStubs).toHaveLength(1)
+
+      // Backgrounded and returned while still playing.
+      manager.sendEvent({ type: 'VISIBILITY_CHANGE', hidden: true })
+      manager.sendEvent({ type: 'VISIBILITY_CHANGE', hidden: false })
+      await flush()
+
+      // Playback was not cut and the (poisoned) context was not rebuilt.
+      expect(manager.getState().playback).toBe('playing')
+      expect(contextStubs[0]!.close).not.toHaveBeenCalled()
+
+      // On natural end, the deferred recovery discards the poisoned context.
+      latestPlayback().emitStop()
+      await vi.waitFor(() => expect(contextStubs[0]!.close).toHaveBeenCalled())
+      expect(manager.getState().playback).toBe('idle')
+    })
+
+    it('does not cut an active take on return, then rebuilds when the take ends', async () => {
+      await toRecording(manager)
+      expect(contextStubs).toHaveLength(1)
+
+      manager.sendEvent({ type: 'VISIBILITY_CHANGE', hidden: true })
+      manager.sendEvent({ type: 'VISIBILITY_CHANGE', hidden: false })
+      await flush()
+
+      // Recording was not torn down and the context was not rebuilt.
+      expect(manager.getState().capture).toBe('recording')
+      expect(contextStubs[0]!.close).not.toHaveBeenCalled()
+
+      // Stopping the take runs the deferred recovery: discard + re-warm.
+      manager.sendEvent({ type: 'STOP_RECORDING' })
+      await vi.waitFor(() => expect(contextStubs).toHaveLength(2))
+      await waitForState(
+        manager,
+        atCapture('warm'),
+        'warm after deferred rebuild',
+      )
+      expect(contextStubs[0]!.close).toHaveBeenCalled()
+    })
+  })
+
+  // -------------------------------------------------------------------------
+  // Persistent mic interaction with context recovery
+  // -------------------------------------------------------------------------
+
+  describe('persistent mic + recovery', () => {
+    it('reuses the live stream across a rebuild (no second getUserMedia)', async () => {
+      manager.sendEvent({
+        type: 'SETTINGS_CHANGE',
+        settings: { persistentMic: true },
+      })
+      await flush()
+      await toWarm(manager)
+      expect(captureStubs).toHaveLength(1)
+      const stream0 = captureStubs[0]!.stream
+      const gumCallsBefore = getUserMediaMock.mock.calls.length
+
+      // Background + return -> recovery rebuilds the warm capture pipeline.
+      manager.sendEvent({ type: 'VISIBILITY_CHANGE', hidden: true })
+      manager.sendEvent({ type: 'VISIBILITY_CHANGE', hidden: false })
+      await vi.waitFor(() => expect(captureStubs).toHaveLength(2))
+      await waitForState(manager, atCapture('warm'), 'warm after rebuild')
+
+      // Same live mic stream reattached to the fresh context; mic not reopened
+      // and its tracks never stopped.
+      expect(captureStubs[1]!.stream).toBe(stream0)
+      expect(getUserMediaMock.mock.calls.length).toBe(gumCallsBefore)
+      expect(stream0.getTracks()[0].stop).not.toHaveBeenCalled()
+    })
+
+    it('reopens the mic on a rebuild when persistent mic is off', async () => {
+      await toWarm(manager) // persistentMic defaults to false
+      const stream0 = captureStubs[0]!.stream
+      const gumCallsBefore = getUserMediaMock.mock.calls.length
+
+      manager.sendEvent({ type: 'VISIBILITY_CHANGE', hidden: true })
+      manager.sendEvent({ type: 'VISIBILITY_CHANGE', hidden: false })
+      await vi.waitFor(() => expect(captureStubs).toHaveLength(2))
+      await waitForState(manager, atCapture('warm'), 'warm after rebuild')
+
+      // A fresh stream was acquired; the old transient stream was stopped.
+      expect(captureStubs[1]!.stream).not.toBe(stream0)
+      expect(getUserMediaMock.mock.calls.length).toBe(gumCallsBefore + 1)
+      expect(stream0.getTracks()[0].stop).toHaveBeenCalled()
     })
   })
 

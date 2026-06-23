@@ -69,6 +69,7 @@ export type InboundEvent =
   | { type: 'SETTINGS_CHANGE'; settings: Partial<AudioCaptureSettings> }
   | { type: 'ERROR'; error: string }
   | { type: 'VISIBILITY_CHANGE'; hidden: boolean }
+  | { type: 'CONTEXT_INTERRUPTED' }
   | { type: 'MIC_CAPTURE_FEATURES'; features: MicCaptureFeatures }
 
 type OutboundEventMap = {
@@ -173,6 +174,14 @@ export class AudioManager extends TypedEventTarget<OutboundEventMap> {
   #contextSampleRate: number | undefined = undefined
   #playbackModuleReady: Promise<void> | null = null
   #captureModuleReady: Promise<void> | null = null
+  // Set when the current context is poisoned by a UA interruption (Safari's
+  // `interrupted`/`suspended` while we still hold a lease -- webkit.org/b/221334)
+  // and must be rebuilt rather than resumed. Consumed by the recovery paths.
+  #contextDirty = false
+  // True while `#recoverFromInterruption` is tearing down / rebuilding, so the
+  // `statechange` listener doesn't re-trigger recovery off the transient
+  // suspend/close it causes (or off a fresh context that comes up interrupted).
+  #recovering = false
 
   // -- per-instance persistent-mic stream cache ----------------------------
   #persistentStream: MediaStream | null = null
@@ -430,6 +439,8 @@ export class AudioManager extends TypedEventTarget<OutboundEventMap> {
           }
         }
         this.#transition(this.#capture, 'warm', 'reset complete')
+        // Take finished -- if a deferred recovery was waiting on it, run now.
+        this.#scheduleRecoveryIfDirty()
         break
       }
 
@@ -477,6 +488,8 @@ export class AudioManager extends TypedEventTarget<OutboundEventMap> {
         if (!this.#transition(this.#playback, 'idle', 'disable playback'))
           return
         if (hadAudio) this.emit('stop')
+        // Playback stopped -- if a deferred recovery was waiting on it, run now.
+        this.#scheduleRecoveryIfDirty()
         break
       }
 
@@ -569,11 +582,38 @@ export class AudioManager extends TypedEventTarget<OutboundEventMap> {
       }
 
       case 'VISIBILITY_CHANGE': {
-        if (!event.hidden) {
-          // Resume the context to recover from a UA-initiated suspension (tab
-          // switch, app backgrounding).
+        if (event.hidden) {
+          // Backgrounded. Browsers keep an active AudioContext *running* in a
+          // background tab (that's how background audio works), so its output
+          // path can be silently poisoned (~1-2s of write-ahead latency that
+          // never recovers -- webkit.org/b/221334) with no `statechange` and no
+          // transition out of 'running' to detect. We can't tell a
+          // poisoned-but-running context from a healthy one, so flag any existing
+          // context on the way out and rebuild it on return rather than resuming.
+          if (this.#context) this.#contextDirty = true
+          break
+        }
+        // Returning to the foreground. Rebuild if the context is flagged (set
+        // above, or by a background interruption) or came back non-running;
+        // otherwise just resume.
+        if (
+          this.#context &&
+          (this.#contextDirty || this.#context.state !== 'running')
+        ) {
+          await this.#recoverFromInterruption()
+        } else {
           await this.resumeContext()
         }
+        break
+      }
+
+      case 'CONTEXT_INTERRUPTED': {
+        // The context was flagged dirty -- either eagerly by a foreground UA
+        // interruption (the `statechange` listener) or as a deferred retry once
+        // playback/recording ended (`#scheduleRecoveryIfDirty`). Rebuild so a
+        // clean context is ready before the next play gesture. No-op if the flag
+        // was already cleared, or if audio is active again (recovery re-bails).
+        if (this.#contextDirty) await this.#recoverFromInterruption()
         break
       }
 
@@ -667,6 +707,34 @@ export class AudioManager extends TypedEventTarget<OutboundEventMap> {
       this.#contextSampleRate = this.#preferredSampleRate
       const ctx = this.#context
 
+      // Detect UA-initiated interruptions. We only ever call `suspend()`
+      // ourselves when both leases are released, so a transition out of
+      // `running` while a lease is still held means the UA interrupted us (a
+      // call/Siri, an output-route change, app backgrounding). Mark the context
+      // poisoned, and -- when we're in the foreground -- kick off recovery now so
+      // a fresh context exists before the user's next play gesture (which must
+      // resume() synchronously to satisfy iOS, leaving no room to rebuild then).
+      // While hidden we only flag it; `VISIBILITY_CHANGE` recovers on return,
+      // avoiding a getUserMedia re-warm in the background.
+      ctx.addEventListener('statechange', () => {
+        if (this.#context !== ctx || this.#recovering) return
+        const state = ctx.state as string
+        const leaseHeld =
+          this.#captureLease !== null || this.#playbackLease !== null
+        if (
+          leaseHeld &&
+          state !== 'running' &&
+          state !== 'closed' &&
+          !this.#contextDirty
+        ) {
+          console.log(`${LOG} context interrupted by UA (state: ${state})`)
+          this.#contextDirty = true
+          if (typeof document !== 'undefined' && !document.hidden) {
+            this.sendEvent({ type: 'CONTEXT_INTERRUPTED' })
+          }
+        }
+      })
+
       const resetOnFail = () => {
         if (this.#context === ctx) {
           void this.#context.close()
@@ -697,6 +765,100 @@ export class AudioManager extends TypedEventTarget<OutboundEventMap> {
       context: this.#context,
       captureModuleReady: this.#captureModuleReady!,
       playbackModuleReady: this.#playbackModuleReady!,
+    }
+  }
+
+  /**
+   * Re-attempts a deferred recovery: if the context is still flagged dirty (e.g.
+   * recovery bailed earlier because audio was playing/recording), enqueue a
+   * rebuild now that the active take/playback has ended. The handler re-checks
+   * the flag and `#recoverFromInterruption` re-checks for active audio, so this
+   * is a safe no-op when nothing needs doing.
+   */
+  #scheduleRecoveryIfDirty(): void {
+    if (this.#contextDirty) this.sendEvent({ type: 'CONTEXT_INTERRUPTED' })
+  }
+
+  /**
+   * Recovers from a Safari output-path interruption (webkit.org/b/221334) by
+   * discarding the poisoned context and building a fresh one. Triggered on
+   * return-to-foreground (`VISIBILITY_CHANGE`) or by a foreground UA interruption
+   * (`CONTEXT_INTERRUPTED`). Bails (resuming in place, leaving the flag set) if
+   * audio is actively playing/recording. Otherwise closes the old context so a
+   * later `#getOrCreateContext()` builds a clean one, and re-warms capture if it was
+   * warm so the route's `active` state stays consistent.
+   *
+   * `#recovering` suppresses the `statechange` listener for the duration so the
+   * suspend/close we cause here -- and a fresh context that comes up
+   * interrupted -- don't re-trigger recovery.
+   */
+  async #recoverFromInterruption(): Promise<void> {
+    if (!this.#context || this.#context.state === 'closed') {
+      this.#contextDirty = false
+      return
+    }
+
+    // Don't tear down audio the user is actively hearing or capturing: killing
+    // an in-flight take loses buffered frames, and cutting off live playback is
+    // jarring. Resume the existing (poisoned) context and leave it flagged --
+    // `#scheduleRecoveryIfDirty` re-runs recovery once the take/playback ends.
+    if (
+      this.#capture.state === 'recording' ||
+      this.#playback.state === 'playing'
+    ) {
+      await this.resumeContext()
+      return
+    }
+
+    const wasWarm = this.#capture.state === 'warm'
+    this.#recovering = true
+    try {
+      // Playback is idle here (we bail above while it's playing), but tear down
+      // defensively in case a pipeline reference lingers. The capture pipeline's
+      // nodes live on the dying context, so drop it too. These release their
+      // leases, which may suspend the old context -- harmless, we're about to
+      // close it.
+      await this.#tearDownPlaybackPipeline()
+      await this.#tearDownCapturePipeline()
+
+      try {
+        await this.#context.close()
+      } catch (err) {
+        console.warn(`${LOG} failed to close interrupted context:`, err)
+      }
+      this.#context = null
+      this.#contextSampleRate = undefined
+      this.#playbackModuleReady = null
+      this.#captureModuleReady = null
+
+      // Re-warm capture on a fresh context (built lazily by
+      // #buildCapturePipeline) if it was warm before the interruption.
+      if (!wasWarm) return
+      if (
+        !this.#transition(
+          this.#capture,
+          'warming',
+          'rebuild after interruption',
+        )
+      )
+        return
+      this.#preferredSampleRate = preferredSampleRate(this.#captureSettings)
+      try {
+        const pipeline = await this.#buildOrWaitForSettings(
+          'overconstrained during interruption rebuild',
+        )
+        if (!pipeline) return
+        this.#transition(
+          this.#capture,
+          'warm',
+          'rebuild after interruption complete',
+        )
+      } catch (err) {
+        await this.#failCapture(err, 'rebuild after interruption failed')
+      }
+    } finally {
+      this.#contextDirty = false
+      this.#recovering = false
     }
   }
 
@@ -923,6 +1085,8 @@ export class AudioManager extends TypedEventTarget<OutboundEventMap> {
           this.#transition(this.#playback, 'idle', 'playback natural end')
         }
         this.emit('stop')
+        // Playback finished -- if a deferred recovery was waiting on it, run now.
+        this.#scheduleRecoveryIfDirty()
       },
       opts,
     )
