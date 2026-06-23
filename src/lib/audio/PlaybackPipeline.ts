@@ -21,6 +21,19 @@ function readLatencySec(value: unknown): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) ? value : undefined
 }
 
+/**
+ * Delay between a sample being rendered (advancing `currentTime`) and it
+ * actually reaching the listener's ears: the context's own buffering
+ * (`baseLatency`) plus the host's output path (`outputLatency`). Used to bias
+ * the reported playback position so the cursor tracks what's *heard*, not what's
+ * been rendered. Fields may be unsupported (older Safari); missing ones read 0.
+ */
+function readOutputDelaySec(context: AudioContext): number {
+  const baseLatency = readLatencySec(context.baseLatency) ?? 0
+  const outputLatency = readLatencySec(context.outputLatency) ?? 0
+  return baseLatency + outputLatency
+}
+
 type PlaybackPipelineEventMap = {
   stop: Event
   positionChanged: CustomEvent<{ timeSec: number }>
@@ -149,7 +162,12 @@ export class PlaybackPipeline extends TypedEventTarget<PlaybackPipelineEventMap>
     const elapsed =
       this.#anchorContextTime === null
         ? 0
-        : Math.max(0, context.currentTime - this.#anchorContextTime)
+        : Math.max(
+            0,
+            context.currentTime -
+              this.#anchorContextTime -
+              readOutputDelaySec(context),
+          )
     const timeSec = Math.min(this.#startTimeSec + elapsed, this.#duration)
     this.emit('positionChanged', { timeSec })
     if (this.#stopAtContextTime !== null) {
