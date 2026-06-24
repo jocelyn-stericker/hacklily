@@ -37,6 +37,7 @@ import {
   reconcileVoicingAt,
   totalFrames,
 } from '#/lib/analysis/AnalysisFrame'
+import { track } from '#/lib/analytics'
 import { AudioRope, SEG_SAMPLES } from '#/lib/audio/AudioRope'
 import type { AudioRopeGrow, AudioRopeShare } from '#/lib/audio/AudioRope'
 import { exportMp3 } from '#/lib/audio/exportMp3'
@@ -108,6 +109,7 @@ function App() {
     onImported: ({ analysis: newAnalysis, ropes: newRopes }) => {
       replaceRopes(newRopes)
       replaceAnalysis(newAnalysis)
+      track('import-audio')
     },
   })
 
@@ -338,6 +340,7 @@ function App() {
     setIsExporting(true)
     try {
       await exportMp3(currentRopes, gainCache.gainsFor(currentRopes))
+      track('export-audio')
     } catch (err) {
       handleError(err)
     }
@@ -490,11 +493,18 @@ function App() {
 
   const handlePlay = useCallback(() => {
     void audioManager?.unlockForGesture()
+    track('play')
     triggerPlay()
   }, [audioManager, triggerPlay])
 
+  const handlePauseTracked = useCallback(() => {
+    track('pause')
+    handlePause()
+  }, [handlePause])
+
   const handleStart = useCallback(() => {
     void audioManager?.unlockForGesture()
+    track('record-start')
     recordingStartIndexRef.current = totalFrames(analysisMutRef.current)
     recordingDurationSecRef.current = analysisMutRef.current.reduce(
       (t, c) => t + (c.frames.length * c.timeStepSamples) / c.sampleRate,
@@ -517,12 +527,12 @@ function App() {
     (e) => {
       e.preventDefault()
       if (status.value === 'playing' || status.value === 'recording') {
-        handlePause()
+        handlePauseTracked()
       } else if (hasData) {
         handlePlay()
       }
     },
-    [status, hasData, handlePause, handlePlay],
+    [status, hasData, handlePauseTracked, handlePlay],
   )
   useHotkeys('shift+arrowleft', handleBackToStart, [handleBackToStart], {
     enabled: status.value !== 'recording' && status.value !== 'analyzing',
@@ -634,7 +644,7 @@ function App() {
           status={status}
           onBackToStart={handleBackToStart}
           onStart={handleStart}
-          onPause={handlePause}
+          onPause={handlePauseTracked}
           onPlay={handlePlay}
           playDisabled={!hasData}
           onExportAudio={handleExportAudio}

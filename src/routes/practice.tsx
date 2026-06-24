@@ -67,6 +67,7 @@ import type {
   AnalysisFrame,
   AnalysisParams,
 } from '#/lib/analysis/AnalysisFrame'
+import { track } from '#/lib/analytics'
 import type {
   AudioRopeGrow,
   AudioRopeSeal,
@@ -281,6 +282,7 @@ function Practice() {
     const takeId = state.nextTakeId
     const saved = await saveVoicedTakeIfRecording()
     if (!saved) return
+    track('practice-take')
 
     if (playRefBeforeTake) {
       // Loop active: the take's playback is the 'take' phase. When it ends,
@@ -493,12 +495,14 @@ function Practice() {
   // tapped a sentence, which bypasses the prepare/begin split).
   const beginReferencePlayback = useCallback(() => {
     if (pinnedTake) {
+      track('practice-reference-play/custom')
       dispatch({
         type: 'START_PLAYBACK',
         takeId: pinnedTake.id,
         skipSilence: false,
       })
     } else {
+      track(`practice-reference-play/${referenceVoiceId}`)
       dispatch({
         type: 'START_REFERENCE',
         passageId,
@@ -514,6 +518,7 @@ function Practice() {
       // across the await below, so the reference (played via the context) sounds
       // even though refToggle's playback starts after it.
       void audioManager?.unlockForGesture()
+      track(`practice-reference-play/${voiceId}`)
       // If recording with voiced audio, save the take before switching to
       // reference playback — never silently drop a recording.
       await saveVoicedTakeIfRecording()
@@ -583,6 +588,7 @@ function Practice() {
   // Start session — when the loop setting is on, begin with the reference
   // phase; otherwise go straight to recording as before.
   const handleStartSession = useCallback(() => {
+    track('practice-session-start')
     dispatch({ type: 'SET_ERROR', error: null })
     // Unlock the AudioContext synchronously in the gesture. It stays running
     // across the getUserMedia await, so the reference clip (played through the
@@ -620,6 +626,7 @@ function Practice() {
         return
       }
       void audioManager?.unlockForGesture()
+      track('practice-playback')
       dispatch({ type: 'STOP_SESSION' })
       dispatch({ type: 'START_PLAYBACK', takeId: take.id, skipSilence })
     },
@@ -627,6 +634,7 @@ function Practice() {
   )
 
   const handleAnalyzeTake = useCallback(async (take: PracticeTake) => {
+    track('practice-analyze-take')
     dispatch({ type: 'STOP_SESSION' })
     const newWindow = window.open('/', '_blank')
     if (!newWindow) return
@@ -644,6 +652,7 @@ function Practice() {
           voiceId
         ]
       if (!clip) return
+      track('practice-analyze-reference')
       dispatch({ type: 'STOP_SESSION' })
       const newWindow = window.open('/', '_blank')
       if (!newWindow) return
@@ -686,6 +695,7 @@ function Practice() {
 
   const handleTextSizeChange = useCallback(
     (size: PracticeTextSize) => {
+      track('practice-setting-change/text-size')
       void updateSettings({ practiceTextSize: size })
     },
     [updateSettings],
@@ -694,6 +704,7 @@ function Practice() {
   const handlePassageChange = useCallback(
     (id: string | null) => {
       if (id) {
+        track('practice-setting-change/passage')
         dispatch({ type: 'SET_DRILL_INDEX', index: 0 })
         void updateSettings({ practicePassageId: id })
       }
@@ -703,6 +714,7 @@ function Practice() {
 
   const handleModeChange = useCallback(
     async (m: 'echo' | 'on-demand') => {
+      track('practice-setting-change/mode')
       await handleEndSession()
       void updateSettings({ practiceMode: m })
     },
@@ -716,6 +728,7 @@ function Practice() {
 
   const handleRandomizeChange = useCallback(
     (v: boolean) => {
+      track('practice-setting-change/randomize')
       void updateSettings({ practiceRandomize: v })
     },
     [updateSettings],
@@ -723,6 +736,7 @@ function Practice() {
 
   const handleAutoAdvanceChange = useCallback(
     (v: boolean) => {
+      track('practice-setting-change/auto-advance')
       void updateSettings({ practiceAutoAdvance: v })
     },
     [updateSettings],
@@ -730,6 +744,7 @@ function Practice() {
 
   const handleReferenceVoiceChange = useCallback(
     (id: string) => {
+      track('practice-setting-change/voice')
       void updateSettings({ practiceReferenceVoice: id })
     },
     [updateSettings],
@@ -737,6 +752,7 @@ function Practice() {
 
   const handlePlayReferenceBeforeTakeChange = useCallback(
     (v: boolean) => {
+      track('practice-setting-change/play-reference')
       void updateSettings({ practicePlayReferenceBeforeTake: v })
     },
     [updateSettings],

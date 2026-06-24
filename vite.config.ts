@@ -178,6 +178,7 @@ const config = defineConfig({
         main: 'index.html',
         ipa: 'ipa.html',
         practice: 'practice.html',
+        privacy: 'privacy.html',
       },
     },
   },

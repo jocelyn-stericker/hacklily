@@ -81,6 +81,15 @@ MP3s). These are **not** in the repo — they're hosted on a separate origin,
   (`Access-Control-Allow-Origin`) for the fetch + `decodeAudioData` analyze path.
   The media host adds Content-Type, caching, and ACAO automatically.
 
+## Analytics
+
+Anonymous, cookieless usage stats via GoatCounter, all funnelled through
+`src/lib/analytics.ts` (`trackPageview` / `track`). Events have no properties,
+so dimensions are encoded into the event name (`family/value`) from a small,
+fixed set — keep cardinality low. See `docs/analytics.md` for the full picture
+(event taxonomy, the no-banner/no-DNT decisions, COEP notes) and
+`src/routes/privacy.tsx` for the user-facing disclosure.
+
 ## CI/CD
 
 CI runs on Forgejo (Codeberg) via `.forgejo/workflows/ci.yaml`. The workflow lints, tests, builds, and deploys to Grebedoc on every push to `main`.

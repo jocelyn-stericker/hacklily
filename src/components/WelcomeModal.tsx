@@ -120,6 +120,17 @@ export function WelcomeModal({
             <span className="block">
               Made by Jocelyn Stericker {'<'}jocelyn@nettek.ca{'>'}{' '}
             </span>
+            <span className="block">
+              Audio stays in your browser. Anonymous, cookieless usage stats are{' '}
+              <a
+                href="https://stats.braat.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                public
+              </a>{' '}
+              &mdash; see <Link to="/privacy">Privacy</Link>.
+            </span>
           </div>
         </div>
       </div>

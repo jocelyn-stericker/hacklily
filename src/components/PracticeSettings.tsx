@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
-import { ExternalLink, Mic, Settings, Shuffle } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
+import { ChartColumn, ExternalLink, Mic, Settings, Shuffle } from 'lucide-react'
 
 import { REFERENCE_VOICES, getReferenceVoice } from '#/lib/referenceVoices'
 import type { ReferenceVoice } from '#/lib/referenceVoices'
@@ -190,6 +191,19 @@ export function PracticeSettings({
           <ExternalLink />
           Source code & issues
         </DropdownMenuItem>
+        <DropdownMenuItem
+          render={
+            <a
+              href="https://stats.braat.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-foreground!"
+            />
+          }
+        >
+          <ChartColumn />
+          Global usage stats
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <div className="px-2 py-1.5 space-y-2 text-xs text-muted-foreground leading-relaxed">
           <p>
@@ -202,6 +216,15 @@ export function PracticeSettings({
             >
               GNU AGPL v3 or (at your option) any later version
             </a>
+          </p>
+          <p>
+            Anonymous, cookieless usage stats &mdash;{' '}
+            <Link
+              to="/privacy"
+              className="underline underline-offset-4 hover:text-foreground"
+            >
+              Privacy
+            </Link>
           </p>
           <p>
             Made by Jocelyn Stericker 🇨🇦
