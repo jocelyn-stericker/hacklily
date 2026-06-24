@@ -11,9 +11,10 @@ features get used — nothing that identifies a visitor. The numbers are public:
 Everything goes through `src/lib/analytics.ts` — that's the single source of
 truth. It loads GoatCounter's `count.js` and exposes two helpers:
 
-- `trackPageview(path?, title?)` — records a pageview.
+- `trackPageview(path?, title?)` — records a pageview (session-based; see below).
 - `track(name, title?)` — records an interaction event. `name` is the event
-  identifier (GoatCounter requires it not start with `/`).
+  identifier (GoatCounter requires it not start with `/`). Events are sent with
+  `no_session` so they count total occurrences (see below).
 
 `initAnalytics()` is called once from `src/client.tsx`. It:
 
@@ -28,6 +29,28 @@ truth. It loads GoatCounter's `count.js` and exposes two helpers:
 Pageviews are wired in `client.tsx` via `router.subscribe('onResolved', …)`,
 deduped by pathname so re-resolves don't double-count and the initial load
 counts exactly once.
+
+### count.js is vendored
+
+`count.js` lives at `src/vendor/goatcounter-count.js` (ISC-licensed, copied
+verbatim from `gc.zgo.at`) and is imported as a hashed build asset
+(`?url`), so it loads **same-origin**. This matters because the app is a PWA:
+the Workbox precache only covers same-origin build output (it matches the JS
+glob), so a `gc.zgo.at` CDN script would be skipped by the service worker and
+fail offline. `src/vendor/**` is excluded from oxfmt/oxlint so the file stays
+verbatim and auditable. To update it, re-download from `gc.zgo.at/count.js`.
+
+### Sessions vs. totals
+
+GoatCounter counts **visits**, not raw hits: within an 8-hour session (a salted
+hash of site + User-Agent + IP), the same path counts at most once. Events reuse
+the path field, so by default a repeated event collapses to one hit per session
+— i.e. a unique-visitor count, not a total.
+
+We want **totals** for events ("how many times"), so `track` sets
+`no_session: true`, which makes every call its own hit. Pageviews keep the
+default session behaviour, so they read as per-visit (a reload or revisit
+within the window isn't recounted).
 
 ## Event model and naming
 

@@ -10,6 +10,7 @@
     "package-lock.json",
     "pnpm-lock.yaml",
     "yarn.lock",
-    "src/routeTree.gen.ts"
+    "src/routeTree.gen.ts",
+    "src/vendor/**"
   ]
 }

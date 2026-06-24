@@ -16,7 +16,8 @@
     "**/coverage/**",
     "**/build/**",
     "**/vite.config.*.timestamp-*.*",
-    "**/tools/synth-references/**"
+    "**/tools/synth-references/**",
+    "**/src/vendor/**"
   ],
   "jsPlugins": [
     {

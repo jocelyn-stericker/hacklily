@@ -55,6 +55,7 @@ describe('analytics', () => {
       path: 'record-start',
       title: 'record-start',
       event: true,
+      no_session: true,
     })
   })
 
@@ -71,7 +72,10 @@ describe('analytics', () => {
       path: 'play',
       title: 'play',
       event: true,
+      no_session: true,
     })
+    // Pageviews stay session-based (no no_session), so per-session visits are
+    // counted rather than every navigation.
     expect(count).toHaveBeenNthCalledWith(2, {
       path: '/practice',
       title: 'Practice',
@@ -90,6 +94,7 @@ describe('analytics', () => {
       path: 'reference-play/af_heart',
       title: '/reference-play/af_heart',
       event: true,
+      no_session: true,
     })
   })
 

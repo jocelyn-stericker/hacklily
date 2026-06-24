@@ -19,9 +19,15 @@
 // first-party, cookieless, anonymous count simply isn't. A visitor who wants to
 // opt out can block GoatCounter with any content blocker. See the GoatCounter
 // author's reasoning: https://www.arp242.net/dnt.html
+//
+// count.js is vendored (src/vendor/goatcounter-count.js) and loaded same-origin
+// rather than from gc.zgo.at, so the PWA service worker precaches it (it matches
+// the build's JS glob) and it works offline -- a CDN script would be skipped by
+// the precache and fail when offline or under COEP edge cases.
+
+import countScriptUrl from '#/vendor/goatcounter-count.js?url'
 
 const ENDPOINT = 'https://stats.braat.app/count'
-const SCRIPT_SRC = 'https://gc.zgo.at/count.js'
 
 interface GoatCounterVars {
   /** Route, or -- with `event: true` -- the event name. Must not start with `/`. */
@@ -29,6 +35,13 @@ interface GoatCounterVars {
   title?: string
   referrer?: string
   event?: boolean
+  /**
+   * Skip session deduplication so every call is its own hit. Without it,
+   * GoatCounter counts at most one hit per path per 8-hour session, so repeated
+   * events collapse to a unique-visitor count. We set this on all events (we
+   * want totals) but not pageviews (where per-session visits are what we want).
+   */
+  no_session?: boolean
 }
 
 interface GoatCounter {
@@ -80,7 +93,7 @@ export function initAnalytics(): void {
 
   const script = document.createElement('script')
   script.async = true
-  script.src = SCRIPT_SRC
+  script.src = countScriptUrl
   script.setAttribute('data-goatcounter', ENDPOINT)
   script.addEventListener('load', flush)
   document.head.appendChild(script)
@@ -99,7 +112,15 @@ export function trackPageview(path?: string, title?: string): void {
  * dashboard (GoatCounter requires it not begin with `/`). Keep names from a
  * small, fixed set -- avoid high-cardinality values like ids -- since every
  * distinct name is its own row.
+ *
+ * Events use `no_session` so the dashboard shows total occurrences, not just
+ * how many sessions performed the action at least once.
  */
 export function track(name: string, title?: string): void {
-  send({ path: name.replace(/^\/+/, ''), title: title ?? name, event: true })
+  send({
+    path: name.replace(/^\/+/, ''),
+    title: title ?? name,
+    event: true,
+    no_session: true,
+  })
 }
