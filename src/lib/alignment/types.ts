@@ -88,6 +88,15 @@ export interface AlignerConfig {
   /** Sample rate; must be 16000 for the shipped CUPE models. */
   sampleRate?: number
   /**
+   * Force the Viterbi backtrack to terminate at the final CTC state so the
+   * decoded path visits every target phoneme in order, instead of ending at the
+   * best-scoring final state (which can skip low-probability target phonemes
+   * near the end). This is what "forced" alignment means in the Viterbi sense.
+   * Port of the upstream `truly_forced` / `enforce_all_targets` flag. Default
+   * true (mirrors the upstream default). [upstream: forced_alignment.py:656]
+   */
+  trulyForced?: boolean
+  /**
    * Post-process the decoded alignment to guarantee every target phoneme is
    * represented, synthesizing estimated stamps for any the decoder dropped.
    * Port of the C++ advanced-pipeline `ensure_target_coverage`. Default true.

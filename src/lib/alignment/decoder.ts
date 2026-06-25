@@ -205,6 +205,14 @@ export function logSoftmaxFrames(
  * Standard CTC Viterbi decoding. Port of ViterbiDecoder::viterbi_decode.
  * [upstream: main.cpp:485 / bfaonnx.py:375 _viterbi_decode]
  * logProbs: flat [T * C]. Returns per-frame phoneme id + target index arrays.
+ *
+ * `trulyForced` selects how the backtrack terminal is chosen. When false
+ * (upstream `truly_forced=False`), the path ends at whichever final state has
+ * the best DP score, so low-probability target phonemes near the end can be
+ * skipped. When true, the path is forced to terminate at the last CTC state so
+ * every target phoneme is guaranteed to have been visited in order -- this is
+ * what "forced" alignment means in the Viterbi sense.
+ * [upstream: forced_alignment.py:656 truly_forced branch]
  */
 export function viterbiDecode(
   logProbs: Float32Array,
@@ -214,6 +222,7 @@ export function viterbiDecode(
   ctcLen: number,
   ctcPathTrueIdx: number[],
   bandWidth = 0,
+  trulyForced = false,
 ): { framePhonemes: Int32Array; framePhonemesIdx: Int32Array } {
   const dp = new Float32Array(T * ctcLen).fill(NEG_INF)
   const backpointers = new Int32Array(T * ctcLen)
@@ -267,26 +276,48 @@ export function viterbiDecode(
     }
   }
 
-  // best valid final state (fallback: global argmax)
   const lastRow = (T - 1) * ctcLen
   let finalState = 0
-  let bestFinal = NEG_INF
-  let foundValid = false
-  for (let s = 0; s < ctcLen; s++) {
-    const v = dp[lastRow + s]!
-    if (v > NEG_INF) {
-      if (!foundValid || v > bestFinal) {
-        bestFinal = v
-        finalState = s
-        foundValid = true
+  if (trulyForced) {
+    // Truly forced: terminate at the last CTC state so every target phoneme is
+    // guaranteed to have been visited in order. ctcPath always ends with a
+    // blank, so ctcLen-1 is a valid terminal. [upstream: forced_alignment.py:668]
+    finalState = ctcLen - 1
+    if (dp[lastRow + finalState]! <= NEG_INF && ctcLen >= 2) {
+      // Trailing blank unreachable -- accept the last-phoneme state as fallback.
+      finalState = ctcLen - 2
+    }
+    if (dp[lastRow + finalState]! <= NEG_INF) {
+      // Shouldn't happen with a valid CTC path -- use the rightmost reachable
+      // state (closest to the end), else fall back to ctcLen-1.
+      finalState = ctcLen - 1
+      for (let s = ctcLen - 1; s >= 0; s--) {
+        if (dp[lastRow + s]! > NEG_INF) {
+          finalState = s
+          break
+        }
       }
     }
-  }
-  if (!foundValid) {
+  } else {
+    // best valid final state (fallback: global argmax)
+    let bestFinal = NEG_INF
+    let foundValid = false
     for (let s = 0; s < ctcLen; s++) {
-      if (dp[lastRow + s]! > bestFinal) {
-        bestFinal = dp[lastRow + s]!
-        finalState = s
+      const v = dp[lastRow + s]!
+      if (v > NEG_INF) {
+        if (!foundValid || v > bestFinal) {
+          bestFinal = v
+          finalState = s
+          foundValid = true
+        }
+      }
+    }
+    if (!foundValid) {
+      for (let s = 0; s < ctcLen; s++) {
+        if (dp[lastRow + s]! > bestFinal) {
+          bestFinal = dp[lastRow + s]!
+          finalState = s
+        }
       }
     }
   }
@@ -374,7 +405,8 @@ export function assortFrames(
  * Simple forced alignment for one sample: CTC path + Viterbi + assort.
  * Port of AlignmentUtils::decode_alignments_simple (single batch item).
  * [upstream: main.cpp:1200 / bfaonnx.py:1080]
- * logProbs: flat [T_used * C].
+ * logProbs: flat [T_used * C]. `trulyForced` forwards to `viterbiDecode` to
+ * guarantee every target phoneme is visited (see that function's docs).
  */
 export function decodeAlignmentsSimple(
   logProbs: Float32Array,
@@ -383,6 +415,7 @@ export function decodeAlignmentsSimple(
   trueSeq: number[],
   blankId: number,
   ignoreNoise: boolean,
+  trulyForced = false,
 ): FrameStamp[] {
   const S = trueSeq.length
 
@@ -410,6 +443,7 @@ export function decodeAlignmentsSimple(
     ctcLen,
     ctcPathIdx,
     bandWidth,
+    trulyForced,
   )
   return assortFrames(framePhonemes, framePhonemesIdx, blankId, ignoreNoise)
 }

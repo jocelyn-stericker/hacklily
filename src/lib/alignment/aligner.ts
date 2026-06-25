@@ -107,6 +107,9 @@ export class PhonemeTimestampAligner {
   private readonly segDurationMinSamples: number
   // Simplified pipeline: ignore_noise=true so long blank runs are dropped.
   private readonly ignoreNoise = true
+  // Force the Viterbi path to visit every target phoneme (upstream
+  // truly_forced / enforce_all_targets). Enabled by default.
+  private readonly trulyForced: boolean
   // Post-processing toggles, ported from the C++ advanced-pipeline draft.
   private readonly ensureCoverage: boolean
   private readonly softBoundaries: boolean
@@ -125,6 +128,7 @@ export class PhonemeTimestampAligner {
     const durationMax = config.durationMax ?? 10
     this.wavLenMax = Math.floor(durationMax * this.sampleRate)
     this.segDurationMinSamples = Math.floor(SEG_DURATION_MIN * this.sampleRate)
+    this.trulyForced = config.trulyForced ?? true
     this.ensureCoverage = config.ensureTargetCoverage ?? true
     this.softBoundaries = config.extendSoftBoundaries ?? true
     this.boundarySoftness = config.boundarySoftness ?? 7
@@ -273,6 +277,7 @@ export class PhonemeTimestampAligner {
       ph66,
       BLANK_CLASS,
       this.ignoreNoise,
+      this.trulyForced,
     )
 
     // Post-processing mirrors the C++ advanced-pipeline draft
