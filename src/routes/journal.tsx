@@ -6,7 +6,7 @@
 // Lists, plays, opens entries in the analysis tool, and deletes them; recording
 // a new entry in the route lives in JournalRecorder (rendered in the footer).
 
-import { createFileRoute, Link, redirect } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import {
   ArrowLeft,
   ChartColumn,
@@ -51,7 +51,6 @@ import {
 } from '#/components/ui/tooltip'
 import { track } from '#/lib/analytics'
 import { supportsFileSystemAccess } from '#/lib/browserFeatures'
-import { journalEnabled } from '#/lib/journal/journalEnabled'
 import { deleteEntry, ensureAccess, listEntries } from '#/lib/journal/journalFs'
 import type { JournalAccess, JournalEntry } from '#/lib/journal/journalFs'
 import {
@@ -526,6 +525,12 @@ function Journal() {
 export const Route = createFileRoute('/journal')({
   component: Journal,
   beforeLoad: () => {
-    if (!journalEnabled()) throw redirect({ to: '/' })
+    // Landing on /journal opts the user into the journal feature: set the
+    // localStorage flag rather than bouncing them away.
+    try {
+      localStorage.setItem('ENABLE_JOURNAL', '1')
+    } catch {
+      // localStorage can throw in some privacy modes / sandboxed contexts.
+    }
   },
 })

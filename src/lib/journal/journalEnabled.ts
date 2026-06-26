@@ -3,8 +3,8 @@
 
 // The voice journal is gated behind a hardcoded localStorage flag while it's in
 // development. Set `localStorage.ENABLE_JOURNAL = 1` in the console to turn it
-// on. The flag gates the menu items, the WelcomeModal link, and the /journal
-// route (which redirects to / without it).
+// on. Landing on /journal also sets the flag (rather than redirecting away).
+// The flag gates the menu items and the WelcomeModal link.
 
 export function journalEnabled(): boolean {
   try {
