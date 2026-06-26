@@ -132,6 +132,13 @@ function Privacy() {
               You can clear all of it at any time through your browser&rsquo;s
               site-data controls.
             </p>
+            <p className="text-muted-foreground">
+              If you set up a voice journal, you can save recordings as audio
+              files to a folder you choose. Braat writes there only when you
+              ask, and never uploads them. The files are yours &mdash; keep,
+              move, sync, or delete them however you like. Anyone who can open
+              the folder can play them back.
+            </p>
           </section>
 
           <section className="space-y-2">

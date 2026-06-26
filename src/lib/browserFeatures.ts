@@ -10,6 +10,14 @@ export function checkFeatures() {
   return null
 }
 
+// Whether the File System Access API is available. The voice journal needs
+// `showDirectoryPicker` to choose a folder and the handle permission methods to
+// read/write it; this is currently Chromium-only (Chrome, Edge, Opera) and
+// absent in Firefox and Safari.
+export function supportsFileSystemAccess(): boolean {
+  return typeof window !== 'undefined' && 'showDirectoryPicker' in window
+}
+
 // Minimal shape of the on-device Web Speech API. The static `available` and
 // `install` members are only present on the unprefixed `SpeechRecognition`
 // constructor in browsers that support local (on-device) transcription. They

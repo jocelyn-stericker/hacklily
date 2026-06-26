@@ -54,8 +54,8 @@ export function PracticeStatusRow({
               {playReferenceBeforeTake
                 ? 'Listen, then record your own take. '
                 : null}
-              Recordings never leave your browser, and they're gone when you
-              close the page.
+              Practice takes stay in your browser and are gone when you leave
+              &mdash; nothing is saved.
             </p>
           )}
         </div>

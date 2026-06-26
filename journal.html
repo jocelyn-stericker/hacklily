@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="viewport-fit=cover, user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1"
+    />
+    <title>Voice Journal · Braat</title>
+    <meta
+      name="description"
+      content="Keep a voice journal: save recordings to a folder on your own computer to track your voice over time. You choose what to save; the files stay on your device unless you move them."
+    />
+    <!-- Experimental, opt-in feature: keep it out of search results. -->
+    <meta name="robots" content="noindex" />
+    <link rel="shortcut icon" href="%BASE_URL%favicon.ico" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#e7f3ec" />
+  </head>
+  <body
+    class="font-sans antialiased wrap-anywhere selection:bg-[rgba(79,184,178,0.24)]"
+  >
+    <!-- #root is intentionally empty so the SPA mounts without a flash of
+         pre-JS body content being swapped out. -->
+    <div id="root"></div>
+    <noscript>This tool needs JavaScript to run in your browser.</noscript>
+    <script type="module" src="/src/client.tsx"></script>
+  </body>
+</html>

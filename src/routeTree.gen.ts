@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PracticeRouteImport } from './routes/practice'
+import { Route as JournalRouteImport } from './routes/journal'
 import { Route as IpaRouteImport } from './routes/ipa'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -22,6 +23,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const PracticeRoute = PracticeRouteImport.update({
   id: '/practice',
   path: '/practice',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JournalRoute = JournalRouteImport.update({
+  id: '/journal',
+  path: '/journal',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IpaRoute = IpaRouteImport.update({
@@ -38,12 +44,14 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ipa': typeof IpaRoute
+  '/journal': typeof JournalRoute
   '/practice': typeof PracticeRoute
   '/privacy': typeof PrivacyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ipa': typeof IpaRoute
+  '/journal': typeof JournalRoute
   '/practice': typeof PracticeRoute
   '/privacy': typeof PrivacyRoute
 }
@@ -51,20 +59,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/ipa': typeof IpaRoute
+  '/journal': typeof JournalRoute
   '/practice': typeof PracticeRoute
   '/privacy': typeof PrivacyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/ipa' | '/practice' | '/privacy'
+  fullPaths: '/' | '/ipa' | '/journal' | '/practice' | '/privacy'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/ipa' | '/practice' | '/privacy'
-  id: '__root__' | '/' | '/ipa' | '/practice' | '/privacy'
+  to: '/' | '/ipa' | '/journal' | '/practice' | '/privacy'
+  id: '__root__' | '/' | '/ipa' | '/journal' | '/practice' | '/privacy'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   IpaRoute: typeof IpaRoute
+  JournalRoute: typeof JournalRoute
   PracticeRoute: typeof PracticeRoute
   PrivacyRoute: typeof PrivacyRoute
 }
@@ -83,6 +93,13 @@ declare module '@tanstack/react-router' {
       path: '/practice'
       fullPath: '/practice'
       preLoaderRoute: typeof PracticeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/journal': {
+      id: '/journal'
+      path: '/journal'
+      fullPath: '/journal'
+      preLoaderRoute: typeof JournalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ipa': {
@@ -105,6 +122,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   IpaRoute: IpaRoute,
+  JournalRoute: JournalRoute,
   PracticeRoute: PracticeRoute,
   PrivacyRoute: PrivacyRoute,
 }

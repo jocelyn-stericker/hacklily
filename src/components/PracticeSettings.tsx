@@ -2,8 +2,16 @@
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import { Link } from '@tanstack/react-router'
-import { ChartColumn, ExternalLink, Mic, Settings, Shuffle } from 'lucide-react'
+import {
+  BookOpen,
+  ChartColumn,
+  ExternalLink,
+  Mic,
+  Settings,
+  Shuffle,
+} from 'lucide-react'
 
+import { journalEnabled } from '#/lib/journal/journalEnabled'
 import { REFERENCE_VOICES, getReferenceVoice } from '#/lib/referenceVoices'
 import type { ReferenceVoice } from '#/lib/referenceVoices'
 import type { PracticeTextSize } from '#/lib/settings'
@@ -178,6 +186,14 @@ export function PracticeSettings({
           </DropdownMenuCheckboxItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
+        {journalEnabled() && (
+          <DropdownMenuItem
+            render={<Link to="/journal" className="text-foreground!" />}
+          >
+            <BookOpen />
+            Voice journal
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem
           render={
             <a

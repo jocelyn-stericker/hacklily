@@ -3,6 +3,7 @@
 
 import { Link } from '@tanstack/react-router'
 import {
+  BookOpen,
   ChevronRight,
   FolderOpen,
   Languages,
@@ -12,6 +13,7 @@ import {
 
 import braatPng from '#/braat.png'
 import { Button } from '#/components/ui/button'
+import { journalEnabled } from '#/lib/journal/journalEnabled'
 
 interface WelcomeModalProps {
   open: boolean
@@ -82,6 +84,18 @@ export function WelcomeModal({
                 </span>
                 <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
               </Link>
+              {journalEnabled() && (
+                <Link
+                  to="/journal"
+                  className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted"
+                >
+                  <BookOpen className="size-4 shrink-0 text-muted-foreground" />
+                  <span className="flex-1">
+                    Voice journal: track progress over time
+                  </span>
+                  <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+                </Link>
+              )}
             </div>
           </div>
           <div className="text-xs space-y-2 text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground">

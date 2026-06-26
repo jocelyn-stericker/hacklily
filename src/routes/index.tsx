@@ -7,6 +7,7 @@ import { useHotkeys } from 'react-hotkeys-hook'
 import { toast } from 'sonner'
 
 import { Dialogs } from '#/components/Dialogs'
+import { JournalSetupModal } from '#/components/JournalSetupModal'
 import { Plot } from '#/components/Plot'
 import { Spectrogram } from '#/components/Spectrogram'
 import type { SpectrogramHandle } from '#/components/Spectrogram'
@@ -14,6 +15,15 @@ import { SpeechStrip } from '#/components/SpeechStrip'
 import type { SpeechStripHandle } from '#/components/SpeechStrip'
 import { Toolbar } from '#/components/Toolbar'
 import { TranscriptStore } from '#/components/TranscriptStore'
+import { Button } from '#/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '#/components/ui/dialog'
 import { importMonoPcm, useAudioImport } from '#/components/useAudioImport'
 import { useAudioManager } from '#/components/useAudioManager'
 import { autoTier, useChunkWorkQueue } from '#/components/useChunkWorkQueue'
@@ -40,9 +50,16 @@ import {
 import { track } from '#/lib/analytics'
 import { AudioRope, SEG_SAMPLES } from '#/lib/audio/AudioRope'
 import type { AudioRopeGrow, AudioRopeShare } from '#/lib/audio/AudioRope'
-import { exportMp3 } from '#/lib/audio/exportMp3'
+import { exportMp3, ropesToMp3 } from '#/lib/audio/exportMp3'
+import { supportsFileSystemAccess } from '#/lib/browserFeatures'
 import { alignJobActive, alignWorkerLive } from '#/lib/jobs/alignJob'
 import type { Viewport } from '#/lib/jobs/schedule'
+import { journalEnabled } from '#/lib/journal/journalEnabled'
+import { deleteEntry, ensureAccess, writeEntry } from '#/lib/journal/journalFs'
+import {
+  loadJournalHandle,
+  saveJournalHandle,
+} from '#/lib/journal/journalStore'
 import { RopeGainCache } from '#/lib/loudness/ropeLoudness'
 import { registerMemSource } from '#/lib/memProbe'
 import { takePracticeData } from '#/lib/practiceHandoff'
@@ -347,6 +364,100 @@ function App() {
 
     setIsExporting(false)
   }, [handleError, gainCache])
+
+  // --- Voice journal (flag-gated) ---
+  const [journalFlagOn] = useState(journalEnabled)
+  const [fsaSupported] = useState(supportsFileSystemAccess)
+  const [journalHandle, setJournalHandle] =
+    useState<FileSystemDirectoryHandle | null>(null)
+  const [journalSetupOpen, setJournalSetupOpen] = useState(false)
+
+  // Load any previously chosen folder so the menu can show Save vs. Set up.
+  // Permission isn't requested here (no gesture); that happens on save.
+  useEffect(() => {
+    if (!journalFlagOn) return
+    void loadJournalHandle().then(setJournalHandle)
+  }, [journalFlagOn])
+
+  const handleViewJournal = useCallback(() => {
+    // Open synchronously so the popup isn't blocked — we must NOT await a
+    // permission prompt first (that burns the click's activation). We don't
+    // need to: setup and Save already grant access, and Chromium remembers the
+    // grant for the session, so the journal tab almost always opens straight to
+    // its entries. If it isn't granted, the tab falls back to its one-click
+    // "Reconnect folder" gate.
+    window.open('/journal', '_blank')
+  }, [])
+
+  const handleSaveToJournal = useCallback(async () => {
+    const handle = journalHandle
+    if (!handle) return
+    const currentRopes = ropesRef.current
+    if (!currentRopes.some((rope) => rope.length > 0)) return
+    try {
+      const access = await ensureAccess(handle)
+      if (access !== 'granted') {
+        toast('Could not access the journal folder', {
+          description: 'Grant access to the folder to save this recording.',
+        })
+        return
+      }
+      const bytes = await ropesToMp3(
+        currentRopes,
+        gainCache.gainsFor(currentRopes),
+      )
+      const name = await writeEntry(handle, bytes)
+      track('journal/save')
+      toast('Saved to voice journal', {
+        description: (
+          <span>
+            {name} &middot;{' '}
+            <button
+              type="button"
+              className="cursor-pointer underline underline-offset-2 hover:text-white dark:hover:text-black"
+              onClick={handleViewJournal}
+            >
+              View journal
+            </button>
+          </span>
+        ),
+        action: {
+          label: 'Undo',
+          onClick: () => {
+            void deleteEntry(handle, name).catch((err) => handleError(err))
+          },
+        },
+      })
+    } catch (err) {
+      handleError(err)
+    }
+  }, [journalHandle, gainCache, handleError, handleViewJournal])
+
+  // After setting up the journal while a recording is loaded, offer to save it
+  // straight away rather than making the user re-open the menu.
+  const [confirmSaveAfterSetup, setConfirmSaveAfterSetup] = useState(false)
+
+  const handleChooseJournalFolder = useCallback(async () => {
+    if (!window.showDirectoryPicker) return
+    let handle: FileSystemDirectoryHandle
+    try {
+      handle = await window.showDirectoryPicker({ mode: 'readwrite' })
+    } catch {
+      // User dismissed the picker; leave setup as-is.
+      return
+    }
+    await saveJournalHandle(handle)
+    setJournalHandle(handle)
+    setJournalSetupOpen(false)
+    track('journal/setup')
+    if (ropesRef.current.some((rope) => rope.length > 0)) {
+      setConfirmSaveAfterSetup(true)
+    } else {
+      toast('Voice journal set up', {
+        description: `Saving to “${handle.name}”.`,
+      })
+    }
+  }, [])
 
   const handleRecordingComplete = useCallback(() => {
     // The PCM is already in the ropes; just settle the timeline to the duration
@@ -671,6 +782,11 @@ function App() {
           onOpenVowelChartSettings={() => setShowVowelChartSettings(true)}
           showUpgradeAll={settings.transcriptionMode === 'large'}
           onUpgradeAll={upgradeVisibleTranscriptions}
+          journalEnabled={journalFlagOn}
+          journalSetUp={journalHandle !== null}
+          onSetUpJournal={() => setJournalSetupOpen(true)}
+          onSaveToJournal={() => void handleSaveToJournal()}
+          onViewJournal={handleViewJournal}
         />
         <div className="relative flex flex-col grow overflow-hidden">
           <Plot
@@ -764,6 +880,48 @@ function App() {
           />
         </div>
       </main>
+      {journalFlagOn && (
+        <>
+          <JournalSetupModal
+            open={journalSetupOpen}
+            onOpenChange={setJournalSetupOpen}
+            supported={fsaSupported}
+            onChooseFolder={() => void handleChooseJournalFolder()}
+            folderName={journalHandle?.name}
+          />
+          <Dialog
+            open={confirmSaveAfterSetup}
+            onOpenChange={setConfirmSaveAfterSetup}
+          >
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Save this recording?</DialogTitle>
+                <DialogDescription>
+                  Your voice journal is set up
+                  {journalHandle ? ` in “${journalHandle.name}”` : ''}. Save the
+                  current recording to it now?
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setConfirmSaveAfterSetup(false)}
+                >
+                  Not now
+                </Button>
+                <Button
+                  onClick={() => {
+                    setConfirmSaveAfterSetup(false)
+                    void handleSaveToJournal()
+                  }}
+                >
+                  Save
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </>
+      )}
     </>
   )
 }

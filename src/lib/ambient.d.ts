@@ -75,3 +75,28 @@ declare function registerProcessor(
 declare const sampleRate: number
 declare const currentTime: number
 declare const currentFrame: number
+
+// File System Access API surface not yet in the standard DOM lib. The handle
+// interfaces themselves (FileSystemDirectoryHandle etc.) are standardised and
+// present, but the permission methods and the directory picker entry point are
+// not, so we declare just what the voice journal uses.
+interface FileSystemHandlePermissionDescriptor {
+  mode?: 'read' | 'readwrite'
+}
+
+interface FileSystemHandle {
+  queryPermission?(
+    descriptor?: FileSystemHandlePermissionDescriptor,
+  ): Promise<PermissionState>
+  requestPermission?(
+    descriptor?: FileSystemHandlePermissionDescriptor,
+  ): Promise<PermissionState>
+}
+
+interface Window {
+  showDirectoryPicker?(options?: {
+    id?: string
+    mode?: 'read' | 'readwrite'
+    startIn?: string | FileSystemHandle
+  }): Promise<FileSystemDirectoryHandle>
+}

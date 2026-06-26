@@ -28,11 +28,13 @@ import type { AudioRope } from './AudioRope'
 export async function exportMp3(ropes: AudioRope[], gains: number[]) {
   const mp3 = await ropesToMp3(ropes, gains)
 
-  const ts = new Date()
-    .toISOString()
-    .replace(/[:.]/g, '-')
-    .replace('T', '_')
-    .slice(0, 19)
+  // Local-time, sortable, Windows-legal timestamp, e.g. `2026-06-26_14-30-05`,
+  // so the filename reads as the user's wall-clock moment (mirrors journalFs).
+  const d = new Date()
+  const p = (n: number) => String(n).padStart(2, '0')
+  const ts =
+    `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}` +
+    `_${p(d.getHours())}-${p(d.getMinutes())}-${p(d.getSeconds())}`
   const url = URL.createObjectURL(new Blob([mp3], { type: 'audio/mpeg' }))
   const a = document.createElement('a')
   a.href = url

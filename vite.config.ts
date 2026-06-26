@@ -179,6 +179,7 @@ const config = defineConfig({
         ipa: 'ipa.html',
         practice: 'practice.html',
         privacy: 'privacy.html',
+        journal: 'journal.html',
       },
     },
   },

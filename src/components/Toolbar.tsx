@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import {
+  BookOpen,
   Captions,
   CircleDot,
   Download,
@@ -9,8 +10,10 @@ import {
   FolderOpen,
   Menu,
   MicVocal,
+  NotebookPen,
   Pause,
   Play,
+  Save,
   Settings2,
   SkipBack,
   Sparkles,
@@ -22,6 +25,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '#/components/ui/dropdown-menu'
@@ -47,6 +51,11 @@ export function Toolbar({
   onOpenVowelChartSettings,
   showUpgradeAll,
   onUpgradeAll,
+  journalEnabled,
+  journalSetUp,
+  onSetUpJournal,
+  onSaveToJournal,
+  onViewJournal,
 }: {
   openFilePicker: () => void
   onNew: () => void
@@ -64,6 +73,13 @@ export function Toolbar({
   onOpenVowelChartSettings: () => void
   showUpgradeAll: boolean
   onUpgradeAll: (() => void) | null
+  /** Whether the voice-journal feature flag is on (gates the menu items). */
+  journalEnabled: boolean
+  /** Whether a journal folder has been chosen. */
+  journalSetUp: boolean
+  onSetUpJournal: () => void
+  onSaveToJournal: () => void
+  onViewJournal: () => void
 }) {
   return (
     <header className="flex align-center justify-end gap-1 p-2 flex-wrap">
@@ -164,6 +180,31 @@ export function Toolbar({
             <CircleDot className="size-4" />
             Vowel chart settings
           </DropdownMenuItem>
+          {journalEnabled && (
+            <>
+              <DropdownMenuSeparator />
+              {journalSetUp ? (
+                <>
+                  <DropdownMenuItem
+                    onClick={onSaveToJournal}
+                    disabled={exportAudioDisabled}
+                  >
+                    <Save className="size-4" />
+                    Save to voice journal
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={onViewJournal}>
+                    <BookOpen className="size-4" />
+                    View voice journal…
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                <DropdownMenuItem onClick={onSetUpJournal}>
+                  <NotebookPen className="size-4" />
+                  Set up voice journal
+                </DropdownMenuItem>
+              )}
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </header>
