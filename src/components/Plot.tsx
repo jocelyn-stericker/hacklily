@@ -319,8 +319,6 @@ interface PlotContextValue {
   tMinSec: number
   tMaxSec: number
   dpr: number
-  cursorSec: number
-  hoverSec: number | null
   yAxis: YAxis
   speechStripHeight: number
 }
@@ -639,7 +637,7 @@ function HorizGridLines({ gridHzOrAmp }: { gridHzOrAmp: number[] }) {
       {gridHzOrAmp.map((hzOrAmp) => (
         <div
           key={hzOrAmp}
-          className="absolute left-0 right-0 h-px bg-black/[0.2] dark:bg-white/[0.2]"
+          className="absolute left-0 right-0 h-px bg-black/20 dark:bg-white/20"
           style={{
             top: toY(hzOrAmp),
           }}
@@ -718,23 +716,10 @@ export function Plot({
       tMinSec,
       tMaxSec,
       dpr,
-      cursorSec,
-      hoverSec,
       yAxis,
       speechStripHeight,
     }),
-    [
-      plotPad,
-      height,
-      width,
-      tMinSec,
-      tMaxSec,
-      dpr,
-      cursorSec,
-      hoverSec,
-      yAxis,
-      speechStripHeight,
-    ],
+    [plotPad, height, width, tMinSec, tMaxSec, dpr, yAxis, speechStripHeight],
   )
 
   const gridHzOrAmp =
