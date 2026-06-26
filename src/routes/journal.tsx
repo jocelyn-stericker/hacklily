@@ -11,7 +11,9 @@ import {
   ArrowLeft,
   ChartColumn,
   ChartSpline,
+  Download,
   ExternalLink,
+  FolderInput,
   FolderOpen,
   FolderSync,
   Loader2,
@@ -21,6 +23,8 @@ import {
   Play,
   Settings,
   Trash2,
+  TriangleAlert,
+  Upload,
 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -50,29 +54,56 @@ import {
   TooltipTrigger,
 } from '#/components/ui/tooltip'
 import { track } from '#/lib/analytics'
-import { supportsFileSystemAccess } from '#/lib/browserFeatures'
+import { isIos } from '#/lib/browserFeatures'
+import {
+  buildJournalZip,
+  importJournalFolder,
+  importJournalZip,
+  summarizeSinceExport,
+} from '#/lib/journal/journalArchive'
+import {
+  isPersisted,
+  journalSetupGuidance,
+  loadJournalBackend,
+  requestPersistence,
+  setupOpfsJournal,
+} from '#/lib/journal/journalBackend'
+import type { JournalBackend } from '#/lib/journal/journalBackend'
 import { deleteEntry, ensureAccess, listEntries } from '#/lib/journal/journalFs'
 import type { JournalAccess, JournalEntry } from '#/lib/journal/journalFs'
 import {
   clearJournalHandle,
-  loadJournalHandle,
+  deleteEntryDuration,
+  getLastExportAt,
+  loadEntryDurations,
   saveJournalHandle,
+  setLastExportAt as storeSetLastExportAt,
 } from '#/lib/journal/journalStore'
 import { stashTake } from '#/lib/practiceHandoff'
+import { formatDuration } from '#/lib/utils'
 
 const PAGE_TITLE = 'Voice journal — Braat'
 
 function Journal() {
-  // `undefined` = still loading the saved handle; `null` = none saved.
-  const [handle, setHandle] = useState<
-    FileSystemDirectoryHandle | null | undefined
-  >(undefined)
+  // `undefined` = still resolving the backend; `null` = not set up yet.
+  const [backend, setBackend] = useState<JournalBackend | null | undefined>(
+    undefined,
+  )
   const [granted, setGranted] = useState(false)
   const [entries, setEntries] = useState<JournalEntry[]>([])
   const [audioSettingsOpen, setAudioSettingsOpen] = useState(false)
   const [playingName, setPlayingName] = useState<string | null>(null)
   const [errored, setErrored] = useState<ReadonlySet<string>>(new Set())
-  const [fsaSupported] = useState(supportsFileSystemAccess)
+  // Per-entry take durations (seconds) and the last-export timestamp. Both feed
+  // the "minutes since last export" summary shown above the OPFS entry list.
+  const [durations, setDurations] = useState<Map<string, number>>(new Map())
+  const [lastExportAt, setLastExportAt] = useState<number | null>(null)
+  const [exporting, setExporting] = useState(false)
+  const [importing, setImporting] = useState(false)
+
+  const handle = backend?.handle ?? null
+  const importInputRef = useRef<HTMLInputElement>(null)
+  const importFolderInputRef = useRef<HTMLInputElement>(null)
 
   const audioRef = useRef<HTMLAudioElement>(null)
   const objectUrlRef = useRef<string | null>(null)
@@ -86,7 +117,12 @@ function Journal() {
 
   const refresh = useCallback(async (h: FileSystemDirectoryHandle) => {
     try {
-      setEntries(await listEntries(h))
+      const [list, durs] = await Promise.all([
+        listEntries(h),
+        loadEntryDurations(),
+      ])
+      setEntries(list)
+      setDurations(durs)
     } catch (err) {
       console.error('[journal] failed to list entries:', err)
       toast('Could not read the journal folder')
@@ -102,17 +138,18 @@ function Journal() {
   useEffect(() => {
     let cancelled = false
     void (async () => {
-      const h = await loadJournalHandle()
+      const b = await loadJournalBackend()
       // oxlint-disable-next-line typescript/no-unnecessary-condition -- set by cleanup across the await
       if (cancelled) return
-      if (!h) {
-        setHandle(null)
+      if (!b) {
+        setBackend(null)
         return
       }
-      setHandle(h)
+      setBackend(b)
       let access: JournalAccess = 'prompt'
       try {
-        access = await ensureAccess(h)
+        // OPFS handles report 'granted' immediately; FSA may need re-granting.
+        access = await ensureAccess(b.handle)
       } catch {
         // No user activation available to prompt; the reconnect gate handles it.
       }
@@ -120,7 +157,10 @@ function Journal() {
       if (cancelled) return
       if (access === 'granted') {
         setGranted(true)
-        void refresh(h)
+        void refresh(b.handle)
+        // The summary only matters for OPFS, but loading is cheap and keeps the
+        // FSA path symmetric if we ever surface it there too.
+        void getLastExportAt().then(setLastExportAt)
       }
     })()
     return () => {
@@ -130,9 +170,20 @@ function Journal() {
 
   // Re-list when the tab regains focus: entries may have been added (from the
   // analysis tool's "Save to voice journal") or changed in the OS file manager.
+  // Also re-check OPFS persistence (read-only, so it never re-grants) so the
+  // warning banner appears if persistent storage was revoked while we were away.
   useEffect(() => {
     if (!granted || !handle) return
-    const onFocus = () => void refresh(handle)
+    const onFocus = () => {
+      void refresh(handle)
+      void isPersisted().then((p) =>
+        setBackend((b) =>
+          b && b.kind === 'opfs' && b.persisted !== p
+            ? { ...b, persisted: p }
+            : b,
+        ),
+      )
+    }
     window.addEventListener('focus', onFocus)
     return () => window.removeEventListener('focus', onFocus)
   }, [granted, handle, refresh])
@@ -144,6 +195,7 @@ function Journal() {
     }
   }, [])
 
+  // FSA only: pick (or change) the journal folder.
   const handleChooseFolder = useCallback(async () => {
     if (!window.showDirectoryPicker) return
     let h: FileSystemDirectoryHandle
@@ -153,7 +205,7 @@ function Journal() {
       return // user dismissed the picker
     }
     await saveJournalHandle(h)
-    setHandle(h)
+    setBackend({ kind: 'fsa', handle: h, persisted: true })
     setGranted(true)
     track('journal/setup')
     void refresh(h)
@@ -172,13 +224,162 @@ function Journal() {
     }
   }, [handle, refresh])
 
+  // Desktop without FSA: the user chose to keep the journal in this browser
+  // (OPFS) rather than switch to Chromium. Set it up and start listing. If
+  // persistence was refused (e.g. a private window), say so -- the journal would
+  // otherwise look set up while being unable to save anything.
+  const handleContinueWithOpfs = useCallback(async () => {
+    let b: JournalBackend
+    try {
+      b = await setupOpfsJournal()
+    } catch (err) {
+      // getDirectory() throws where OPFS is blocked (e.g. private browsing).
+      console.error('[journal] failed to set up OPFS storage:', err)
+      toast('Couldn’t set up storage', {
+        description:
+          'This browser blocked private storage — that can happen in a private window. Use a normal window, or a Chromium browser, to keep a journal.',
+      })
+      return
+    }
+    setBackend(b)
+    setGranted(true)
+    track('journal/setup')
+    void refresh(b.handle)
+    if (!b.persisted) {
+      toast('Storage could not be enabled', {
+        description:
+          'A private window won’t keep recordings, so nothing can be saved here. Use a normal window, or a Chromium browser, to keep a journal.',
+      })
+    }
+  }, [refresh])
+
+  // OPFS only: retry the persistent-storage request (e.g. after the user has
+  // installed Braat to the Home Screen). On success, recording is unblocked.
+  const handleEnableStorage = useCallback(async () => {
+    const ok = await requestPersistence()
+    if (ok) {
+      setBackend((b) => (b ? { ...b, persisted: true } : b))
+    } else {
+      toast('Storage could not be enabled', {
+        description: isIos()
+          ? 'Make sure you opened Braat from its Home Screen icon, then try again.'
+          : 'A private window won’t keep recordings. Use a normal window, or a Chromium browser, to keep a journal.',
+      })
+    }
+  }, [])
+
   const handleCloseJournal = useCallback(async () => {
     await clearJournalHandle()
-    setHandle(null)
+    setBackend(null)
     setGranted(false)
     setEntries([])
     setPlayingName(null)
+    setDurations(new Map())
+    setLastExportAt(null)
   }, [])
+
+  // OPFS only: zip every entry for backup/transfer. The OPFS store is
+  // app-private, so this is the only way out -- without it the recordings live
+  // and die with this browser profile.
+  const handleExportZip = useCallback(async () => {
+    if (!handle || entries.length === 0) return
+    setExporting(true)
+    try {
+      const blob = await buildJournalZip(entries, durations)
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
+      a.download = `braat-journal-${stamp}.zip`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+      const now = Date.now()
+      setLastExportAt(now)
+      void storeSetLastExportAt(now)
+      track('journal/export')
+      const totalSec = [...durations.values()].reduce((s, v) => s + v, 0)
+      toast('Exported journal', {
+        description: `${entries.length} entr${entries.length === 1 ? 'y' : 'ies'} · ${formatDuration(totalSec)} recorded`,
+      })
+    } catch (err) {
+      console.error('[journal] failed to export zip:', err)
+      toast('Could not export the journal')
+    } finally {
+      setExporting(false)
+    }
+  }, [handle, entries, durations])
+
+  // OPFS only: merge a previously-exported zip back into the store. Files that
+  // already exist on disk are skipped (dedupe by filename), so re-importing the
+  // same backup is a no-op and importing a different one adds only the new
+  // entries. Durations from the archive's manifest are restored.
+  const handleImportZip = useCallback(async () => {
+    importInputRef.current?.click()
+  }, [])
+
+  const handleImportFile = useCallback(
+    async (file: File) => {
+      if (!handle) return
+      setImporting(true)
+      try {
+        const result = await importJournalZip(handle, file)
+        track('journal/import')
+        void refresh(handle)
+        toast('Imported journal', {
+          description:
+            result.imported === 0
+              ? result.skipped > 0
+                ? `All ${result.skipped} entr${result.skipped === 1 ? 'y' : 'ies'} already present`
+                : 'No entries found in the zip'
+              : `${result.imported} imported${
+                  result.skipped > 0
+                    ? ` · ${result.skipped} skipped (already present)`
+                    : ''
+                }`,
+        })
+      } catch (err) {
+        console.error('[journal] failed to import zip:', err)
+        toast('Could not import the zip', {
+          description: 'Make sure it’s a Braat journal export (.zip).',
+        })
+      } finally {
+        setImporting(false)
+      }
+    },
+    [handle, refresh],
+  )
+
+  const handleImportFolder = useCallback(
+    async (files: FileList) => {
+      if (!handle) return
+      setImporting(true)
+      try {
+        const result = await importJournalFolder(handle, files)
+        track('journal/import')
+        void refresh(handle)
+        toast('Imported folder', {
+          description:
+            result.imported === 0
+              ? result.skipped > 0
+                ? `All ${result.skipped} entr${result.skipped === 1 ? 'y' : 'ies'} already present`
+                : 'No audio files found in the folder'
+              : `${result.imported} imported${
+                  result.skipped > 0
+                    ? ` · ${result.skipped} skipped (already present)`
+                    : ''
+                }`,
+        })
+      } catch (err) {
+        console.error('[journal] failed to import folder:', err)
+        toast('Could not import the folder')
+      } finally {
+        setImporting(false)
+      }
+    },
+    [handle, refresh],
+  )
 
   const handlePlay = useCallback(
     (entry: JournalEntry) => {
@@ -239,6 +440,7 @@ function Journal() {
     }
     try {
       await deleteEntry(handle, entry.name)
+      void deleteEntryDuration(entry.name)
       track('journal/delete')
       void refresh(handle)
       toast('Entry deleted', { description: entry.name })
@@ -248,7 +450,10 @@ function Journal() {
     }
   }, [pendingDelete, handle, playingName, refresh])
 
-  const folderName = handle?.name
+  // The folder section (and its name) is only meaningful for the FSA backend;
+  // OPFS storage is app-private with no user-facing folder.
+  const isFsa = backend?.kind === 'fsa'
+  const folderName = isFsa ? backend.handle.name : undefined
 
   const settingsMenu = (
     <DropdownMenu>
@@ -382,15 +587,149 @@ function Journal() {
       </header>
 
       <div className="flex-1 overflow-y-auto">
-        {handle === undefined ? (
+        {backend?.kind === 'opfs' && granted && (
+          <div className="mx-auto mt-4 flex max-w-2xl flex-col gap-2 rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm">
+            {(() => {
+              const summary = summarizeSinceExport(
+                entries,
+                durations,
+                lastExportAt,
+              )
+              if (entries.length === 0) {
+                return (
+                  <p className="text-muted-foreground">
+                    Export your recordings to a zip you can keep, move, or
+                    recover &mdash; this journal lives inside Braat itself, so a
+                    backup is the only way out.
+                  </p>
+                )
+              }
+              if (lastExportAt === null) {
+                const totalSec = [...durations.values()].reduce(
+                  (s, v) => s + v,
+                  0,
+                )
+                return (
+                  <p className="text-muted-foreground">
+                    You have {entries.length} entr
+                    {entries.length === 1 ? 'y' : 'ies'} (
+                    {formatDuration(totalSec)}) that haven’t been exported yet.
+                  </p>
+                )
+              }
+              if (summary.count === 0) {
+                return (
+                  <p className="text-muted-foreground">
+                    Everything is backed up &mdash; no new recordings since your
+                    last export.
+                  </p>
+                )
+              }
+              return (
+                <p className="text-muted-foreground">
+                  You’ve recorded {formatDuration(summary.seconds)} in{' '}
+                  {summary.count} journal
+                  {summary.count === 1 ? '' : 's'} since you last exported.
+                </p>
+              )
+            })()}
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => void handleExportZip()}
+                disabled={entries.length === 0 || exporting}
+              >
+                {exporting ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Download className="size-4" />
+                )}
+                Export all
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => void handleImportZip()}
+                disabled={importing}
+              >
+                {importing ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Upload className="size-4" />
+                )}
+                Import zip
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => importFolderInputRef.current?.click()}
+                disabled={importing}
+              >
+                <FolderInput className="size-4" />
+                Import folder
+              </Button>
+            </div>
+            <input
+              ref={importInputRef}
+              type="file"
+              accept=".zip,application/zip"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                e.target.value = ''
+                if (file) void handleImportFile(file)
+              }}
+            />
+            <input
+              ref={importFolderInputRef}
+              type="file"
+              // webkitdirectory is non-standard but works cross-browser and is
+              // the only folder-pick primitive available on Safari/Firefox. The
+              // TS DOM type omits it, so we set it via a spread attribute below.
+              className="hidden"
+              onChange={(e) => {
+                const files = e.target.files
+                e.target.value = ''
+                if (files && files.length > 0) void handleImportFolder(files)
+              }}
+              {...({ webkitdirectory: '' } as { webkitdirectory?: string })}
+            />
+          </div>
+        )}
+        {backend?.kind === 'opfs' && !backend.persisted && granted && (
+          <div className="mx-auto mt-4 flex max-w-2xl flex-col gap-3 rounded-lg border-2 border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-800 dark:text-red-300">
+            <div className="flex items-center gap-2 font-semibold">
+              <TriangleAlert className="size-5 shrink-0" />
+              Your recordings could be deleted
+            </div>
+            <p className="leading-relaxed">
+              This browser hasn’t granted Braat protected storage, so your
+              journal can be erased without warning &mdash; when the browser
+              clears site data, or after a period without using Braat. New
+              recordings can’t be saved until you fix this, and you should
+              export a backup now to be safe.
+            </p>
+            <Button
+              variant="destructive"
+              className="self-start"
+              onClick={() => void handleEnableStorage()}
+            >
+              <TriangleAlert className="size-4" />
+              Enable protected storage
+            </Button>
+          </div>
+        )}
+        {backend === undefined ? (
           <div className="flex h-full items-center justify-center text-muted-foreground">
             <Loader2 className="size-6 animate-spin" />
           </div>
-        ) : handle === null ? (
+        ) : backend === null ? (
           <div className="mx-auto max-w-md px-4 py-12">
             <JournalSetupContent
-              supported={fsaSupported}
+              guidance={journalSetupGuidance()}
               onChooseFolder={() => void handleChooseFolder()}
+              onContinueAnyway={() => void handleContinueWithOpfs()}
             />
           </div>
         ) : !granted ? (
@@ -478,11 +817,13 @@ function Journal() {
         )}
       </div>
 
-      {granted && handle && (
+      {granted && backend && (
         <JournalRecorder
-          handle={handle}
-          onSaved={() => void refresh(handle)}
-          folderName={folderName ?? handle.name}
+          handle={backend.handle}
+          onSaved={() => void refresh(backend.handle)}
+          folderName={folderName ?? backend.handle.name}
+          kind={backend.kind}
+          persisted={backend.persisted}
         />
       )}
 
@@ -499,8 +840,9 @@ function Journal() {
           <DialogHeader>
             <DialogTitle>Delete this entry?</DialogTitle>
             <DialogDescription>
-              {pendingDelete?.name} will be permanently removed from “
-              {folderName}”. This can’t be undone.
+              {pendingDelete?.name} will be permanently removed from{' '}
+              {folderName ? `“${folderName}”` : 'this device'}. This can’t be
+              undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

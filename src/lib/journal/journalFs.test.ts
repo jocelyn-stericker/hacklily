@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 
 import {
+  ensureAccess,
   isAudioFileName,
   journalEntryBaseName,
+  queryAccess,
   sortEntriesByModifiedDesc,
   uniqueEntryName,
 } from './journalFs'
@@ -61,6 +63,36 @@ describe('uniqueEntryName', () => {
     expect(uniqueEntryName(date, ['2026-06-26_14-30-05.MP3'])).toBe(
       '2026-06-26_14-30-05-2.mp3',
     )
+  })
+})
+
+describe('access permission shim', () => {
+  // An OPFS directory handle exposes no permission methods.
+  const opfsHandle = {} as FileSystemDirectoryHandle
+
+  it('queryAccess reports OPFS handles (no permission methods) as granted', async () => {
+    await expect(queryAccess(opfsHandle)).resolves.toBe('granted')
+  })
+
+  it('ensureAccess never prompts for an OPFS handle', async () => {
+    await expect(ensureAccess(opfsHandle)).resolves.toBe('granted')
+  })
+
+  it('queryAccess delegates to queryPermission for an FSA handle', async () => {
+    const queryPermission = vi.fn().mockResolvedValue('granted')
+    const handle = { queryPermission } as unknown as FileSystemDirectoryHandle
+    await expect(queryAccess(handle)).resolves.toBe('granted')
+    expect(queryPermission).toHaveBeenCalledWith({ mode: 'readwrite' })
+  })
+
+  it('ensureAccess requests permission when an FSA handle is not yet granted', async () => {
+    const requestPermission = vi.fn().mockResolvedValue('granted')
+    const handle = {
+      queryPermission: vi.fn().mockResolvedValue('prompt'),
+      requestPermission,
+    } as unknown as FileSystemDirectoryHandle
+    await expect(ensureAccess(handle)).resolves.toBe('granted')
+    expect(requestPermission).toHaveBeenCalledWith({ mode: 'readwrite' })
   })
 })
 

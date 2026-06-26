@@ -1,24 +1,26 @@
 # Voice Journal
 
-A voice journal is a flat folder of audio files on the user's own computer,
-accessed via the File System Access API (later possibly Tauri/Ionic). It records
-audio progress over time. Braat reads any browser-decodable audio format but
-always **writes MP3**. Audio never leaves the device — Braat does not upload it,
-and only ever writes when the user asks.
+A voice journal is a flat collection of audio files the user controls, accessed
+through one of two browser storage backends (see _Backends_). It records audio
+progress over time. Braat reads any browser-decodable audio format but always
+**writes MP3**. Audio never leaves the device — Braat does not upload it, and
+only ever writes when the user asks.
 
 This feature is **separate** from practice on purpose: practice is ephemeral
 ("refresh and it's gone"); the journal deliberately persists.
 
 ## Status
 
-**Phases 1 & 2 implemented and reviewed.** Phase 1: set up, save from the
+**Phases 1–3 implemented and reviewed.** Phase 1: set up, save from the
 analysis tool, view/play/open-in-analysis/delete. Phase 2: record a take in
 `/journal` itself (the footer `JournalRecorder`), with VAD-gated start
 (timer waits for speech, leading silence is trimmed) and a practice-style
-footer.
+footer. Phase 3: an OPFS backend for non-Chromium browsers (iOS Home Screen
+app, desktop Firefox/Safari opt-in) with persistent-storage gating, zip
+export/import, and folder import.
 
-`npm run check` and `npm run test` are green; FSA handle I/O is Chromium-only
-and verified by manual spot-check, not CI.
+`npm run check` and `npm run test` are green; FSA/OPFS handle I/O is
+browser-only and verified by manual spot-check, not CI.
 
 ## Feature flag
 
@@ -30,21 +32,30 @@ redirects to `/` in `beforeLoad`).
 
 ## Key facts / constraints
 
+- **Two backends, one API.** Both FSA and OPFS expose `FileSystemDirectoryHandle`,
+  so `journalFs`, `JournalRecorder`, and the route are backend-agnostic. The
+  backend kind (`'fsa' | 'opfs'`) only affects setup guidance, the permission
+  shim, and whether the persistence/export UI is shown.
 - **File System Access is Chromium-only** (Chrome/Edge/Opera) — not Firefox or
-  Safari. Notice copy: _"Currently only Chromium-based browsers (Chrome, Edge)
-  support saving to a folder."_ Probe: `supportsFileSystemAccess()` in
-  `browserFeatures.ts` (`'showDirectoryPicker' in window`).
+  Safari. Probe: `supportsFileSystemAccess()` in `browserFeatures.ts`
+  (`'showDirectoryPicker' in window`). When absent, OPFS is the fallback
+  (`supportsOpfs()` → `navigator.storage.getDirectory`).
 - A `FileSystemDirectoryHandle` is structured-cloneable, so it's stored in
-  IndexedDB. **Permission state is NOT serialized with it.**
+  IndexedDB (FSA) or re-acquired from the OPFS root on load. **Permission state
+  is NOT serialized with it.**
 - **Permission, however, _is_ remembered per-origin for the session** (verified
   in Chromium): once granted in any tab, `queryPermission` returns `'granted'`
   in other tabs and after client-side navigation, until the session ends or the
   user revokes it. So the "reconnect" path is the exception, not the rule.
+  **OPFS handles have no permission model at all** — `queryAccess` reports
+  `'granted'` for any handle lacking `queryPermission`, so OPFS journals skip
+  the reconnect gate entirely.
 - **`requestPermission` needs a user activation (gesture).** This shapes how we
   auto-prompt (see _Permission flow_ below). The fallback when we can't prompt
-  is a one-click **"Reconnect folder"** gate.
+  is a one-click **"Reconnect folder"** gate (FSA only).
 - **No absolute path is available** from the API. We show `handle.name` (the
-  leaf folder name only), never a full path or "reveal in Finder".
+  leaf folder name only), never a full path or "reveal in Finder". OPFS handles
+  are named `journal` (the OPFS subdirectory); there's no user-facing folder.
 - **Order entries by file `lastModified`, not filename** — an existing folder of
   arbitrary audio won't follow our timestamp naming.
 - Our own writes use a sortable, Windows-legal `<timestamp>.mp3` built from
@@ -52,9 +63,15 @@ redirects to `/` in `beforeLoad`).
   as the user's wall-clock moment, collision-safe within a second (`-2`, `-3`, …
   suffix). `exportMp3.ts`'s download filename uses the same local-time format
   (both switched off `toISOString()`/UTC together).
-- Files live on the user's disk, not browser quota/OPFS — no eviction concerns.
-  We don't claim "never leaves this computer" (a synced/Dropbox folder might);
-  the copy says the files are the user's to move/sync/delete as they like.
+- **FSA:** files live on the user's disk, not browser quota/OPFS — no eviction
+  concerns. We don't claim "never leaves this computer" (a synced/Dropbox folder
+  might); the copy says the files are the user's to move/sync/delete as they
+  like.
+- **OPFS:** files live in the browser's app-private store. They are **not**
+  durable unless `navigator.storage.persisted()` is true; on iOS that further
+  requires running as an installed Home Screen app. Without persistence, WebKit
+  may evict them after ~7 days of non-use (Safari ITP). The UI blocks recording
+  and shows a red warning banner until persistence is granted.
 
 ## Permission flow (as built)
 
@@ -86,21 +103,31 @@ How each entry point gets access:
 ## Privacy & copy (final wording)
 
 Framing: saving is always the user's choice; the files are real files the user
-controls; be mindful of **who can open the folder** (not "never leaves this
-computer", which a synced folder would falsify).
+controls; be mindful of **who can open the folder** (FSA) or **export
+regularly** (OPFS, since the store is app-private).
 
-- **Setup (`JournalSetupContent`):**
-  _"Pick a folder on this computer to use as your voice journal. You can save
-  recordings there to track your voice over time, and any audio files in the
-  folder show up here too."_ then
-  _"Nothing is saved unless you ask. The files are yours — keep, move, sync, or
-  delete them however you like — and anyone who can open the folder can play
-  them back."_
-- **`/journal` footer:** states where entries land + the same reassurance —
-  _"Entries are saved to “{folder}”. The files are yours — keep, move, sync, or
-  delete them however you like, and anyone who can open the folder can play them
-  back."_ (Avoids "Nothing is saved unless you ask" directly under the Record
-  button, where it read oddly.)
+- **Setup (`JournalSetupContent`):** branches on `JournalSetupGuidance`
+  (`journalSetupGuidance()` in `journalBackend.ts`):
+  - _`choose-folder`_ (FSA): _"Pick a folder on this computer to use as your
+    voice journal. … The files are yours — keep, move, sync, or delete them
+    however you like — and anyone who can open the folder can play them back."_
+  - _`add-to-home`_ (iOS, not yet installed): Share → Add to Home Screen
+    instructions. iOS can't keep a durable journal from a plain Safari tab.
+  - _`use-chromium`_ (desktop Firefox/Safari): recommends a Chromium browser
+    for a real on-disk folder, but offers a **"Continue in this browser"**
+    button that opts into the OPFS store with a manual-export caveat.
+  - _`unsupported`_: very old browser with neither FSA nor OPFS.
+- **`/journal` footer:** states where entries land + the reassurance. OPFS:
+  _"Entries are saved privately on this device — nothing is uploaded. Export
+  them regularly to keep a copy you control."_ FSA: the folder-name copy above.
+- **OPFS persistence banner** (red, shown when `kind === 'opfs'` and not
+  persisted): _"Your recordings could be deleted … export a backup now to be
+  safe."_ + a destructive **"Enable protected storage"** button calling
+  `requestPersistence()`.
+- **OPFS export/import bar** (shown when `kind === 'opfs'` and granted): the
+  _"You've recorded X minutes in Y journals since you last exported"_ summary
+  (see _Phase 3_), plus **Export all**, **Import zip**, and **Import folder**
+  buttons.
 - **Practice footer (`PracticeStatusRow.tsx`):** ephemeral framing —
   _"Practice takes stay in your browser and are gone when you leave — nothing is
   saved."_
@@ -109,6 +136,47 @@ computer", which a synced folder would falsify).
   folder you choose. Braat writes there only when you ask, and never uploads
   them. The files are yours — keep, move, sync, or delete them however you
   like. Anyone who can open the folder can play them back."_
+
+## Backends (`journalBackend.ts`)
+
+Resolves where the journal stores its files. The two backends share
+`FileSystemDirectoryHandle`, so the rest of the journal stays backend-agnostic:
+
+- **`'fsa'`** — a user-chosen folder via the File System Access API
+  (Chromium). Durable by nature: a real OS folder the user owns and can see.
+  `persisted` is always `true`.
+- **`'opfs'`** — the Origin Private File System, used where FSA is absent.
+  App-private, and only durable when the browser has granted persistent
+  storage; on iOS that additionally requires an installed Home Screen app.
+  Carries a `persisted` flag; the UI blocks saving when it's false.
+
+Key functions:
+
+- `journalBackendKind()` — `'fsa'` if FSA is present, else `'opfs'` if OPFS is
+  available, else `null`. Synchronous, inspects capabilities only.
+- `loadJournalBackend()` — resolve the backend without a user gesture, for
+  deciding whether the UI shows entries vs. setup guidance. FSA: loads the
+  saved handle from IndexedDB. OPFS on iOS: only if `isStandalone()` (Home
+  Screen app), and re-asks persistence on load (promptless on WebKit). OPFS on
+  desktop: only if the user has opted in (`localStorage.braat-journal-opfs`),
+  and only **observes** `persisted()` (never re-grants — a revoked Firefox
+  permission would otherwise be masked on every reload). Wrapped in try/catch:
+  `getDirectory()` can throw where OPFS is blocked (e.g. Firefox private
+  browsing), and we fall back to setup guidance rather than hanging.
+- `setupOpfsJournal()` — acquires the OPFS directory **first**, then records
+  the opt-in, then requests persistence. The order matters: getDirectory() can
+  throw even though the API is present, and we don't want to persist an opt-in
+  that would make every later load fail.
+- `requestPersistence()` / `isPersisted()` — wrappers around
+  `navigator.storage.persist()` / `persisted()`, both with deliberate runtime
+  guards (`?.`) and `oxlint-disable-next-line typescript/no-unnecessary-condition`
+  comments, since the typed-as-present APIs can be absent in edge browsers.
+- `journalSetupGuidance()` — synchronous, returns `'choose-folder' |
+'add-to-home' | 'use-chromium' | 'unsupported'` for the setup modal.
+
+Platform detection (`browserFeatures.ts`): `supportsOpfs()`, `isStandalone()`
+(`matchMedia('(display-mode: standalone)')` or legacy `navigator.standalone`),
+`isIos()` (handles iPadOS reporting a macOS UA via `maxTouchPoints > 1`).
 
 ## Analytics
 

@@ -51,13 +51,19 @@ import { track } from '#/lib/analytics'
 import { AudioRope, SEG_SAMPLES } from '#/lib/audio/AudioRope'
 import type { AudioRopeGrow, AudioRopeShare } from '#/lib/audio/AudioRope'
 import { exportMp3, ropesToMp3 } from '#/lib/audio/exportMp3'
-import { supportsFileSystemAccess } from '#/lib/browserFeatures'
 import { alignJobActive, alignWorkerLive } from '#/lib/jobs/alignJob'
 import type { Viewport } from '#/lib/jobs/schedule'
+import {
+  journalSetupGuidance,
+  loadJournalBackend,
+  setupOpfsJournal,
+} from '#/lib/journal/journalBackend'
+import type { JournalBackend } from '#/lib/journal/journalBackend'
 import { journalEnabled } from '#/lib/journal/journalEnabled'
 import { deleteEntry, ensureAccess, writeEntry } from '#/lib/journal/journalFs'
 import {
-  loadJournalHandle,
+  deleteEntryDuration,
+  recordEntryDuration,
   saveJournalHandle,
 } from '#/lib/journal/journalStore'
 import { RopeGainCache } from '#/lib/loudness/ropeLoudness'
@@ -367,16 +373,16 @@ function App() {
 
   // --- Voice journal (flag-gated) ---
   const [journalFlagOn] = useState(journalEnabled)
-  const [fsaSupported] = useState(supportsFileSystemAccess)
-  const [journalHandle, setJournalHandle] =
-    useState<FileSystemDirectoryHandle | null>(null)
+  const [journalBackend, setJournalBackend] = useState<JournalBackend | null>(
+    null,
+  )
   const [journalSetupOpen, setJournalSetupOpen] = useState(false)
 
-  // Load any previously chosen folder so the menu can show Save vs. Set up.
-  // Permission isn't requested here (no gesture); that happens on save.
+  // Resolve the journal backend so the menu can show Save vs. Set up. For FSA,
+  // permission isn't requested here (no gesture); that happens on save.
   useEffect(() => {
     if (!journalFlagOn) return
-    void loadJournalHandle().then(setJournalHandle)
+    void loadJournalBackend().then(setJournalBackend)
   }, [journalFlagOn])
 
   const handleViewJournal = useCallback(() => {
@@ -390,10 +396,20 @@ function App() {
   }, [])
 
   const handleSaveToJournal = useCallback(async () => {
-    const handle = journalHandle
-    if (!handle) return
+    const backend = journalBackend
+    if (!backend) return
+    const handle = backend.handle
     const currentRopes = ropesRef.current
     if (!currentRopes.some((rope) => rope.length > 0)) return
+    // OPFS without persistent storage: saving is blocked (the file could be
+    // evicted). Direct the user to the journal, which explains how to enable it.
+    if (!backend.persisted) {
+      toast('Storage isn’t enabled', {
+        description:
+          'Open Braat from its Home Screen icon to save recordings on this device.',
+      })
+      return
+    }
     try {
       const access = await ensureAccess(handle)
       if (access !== 'granted') {
@@ -407,6 +423,11 @@ function App() {
         gainCache.gainsFor(currentRopes),
       )
       const name = await writeEntry(handle, bytes)
+      const durationSec = currentRopes.reduce(
+        (sum, rope) => sum + rope.length / rope.sampleRate,
+        0,
+      )
+      void recordEntryDuration(name, durationSec)
       track('journal/save')
       toast('Saved to voice journal', {
         description: (
@@ -424,14 +445,16 @@ function App() {
         action: {
           label: 'Undo',
           onClick: () => {
-            void deleteEntry(handle, name).catch((err) => handleError(err))
+            void deleteEntry(handle, name)
+              .then(() => deleteEntryDuration(name))
+              .catch((err) => handleError(err))
           },
         },
       })
     } catch (err) {
       handleError(err)
     }
-  }, [journalHandle, gainCache, handleError, handleViewJournal])
+  }, [journalBackend, gainCache, handleError, handleViewJournal])
 
   // After setting up the journal while a recording is loaded, offer to save it
   // straight away rather than making the user re-open the menu.
@@ -447,7 +470,7 @@ function App() {
       return
     }
     await saveJournalHandle(handle)
-    setJournalHandle(handle)
+    setJournalBackend({ kind: 'fsa', handle, persisted: true })
     setJournalSetupOpen(false)
     track('journal/setup')
     if (ropesRef.current.some((rope) => rope.length > 0)) {
@@ -455,6 +478,42 @@ function App() {
     } else {
       toast('Voice journal set up', {
         description: `Saving to “${handle.name}”.`,
+      })
+    }
+  }, [])
+
+  // Desktop without FSA: keep the journal in this browser (OPFS) instead of
+  // switching to Chromium.
+  const handleContinueWithOpfs = useCallback(async () => {
+    let backend
+    try {
+      backend = await setupOpfsJournal()
+    } catch (err) {
+      // getDirectory() throws where OPFS is blocked (e.g. private browsing).
+      console.error('[journal] failed to set up OPFS storage:', err)
+      setJournalSetupOpen(false)
+      toast('Couldn’t set up storage', {
+        description:
+          'This browser blocked private storage — that can happen in a private window. Use a normal window, or a Chromium browser, to keep a journal.',
+      })
+      return
+    }
+    setJournalBackend(backend)
+    setJournalSetupOpen(false)
+    track('journal/setup')
+    if (!backend.persisted) {
+      // Persistence was refused (e.g. a private window) -- saving would fail, so
+      // surface it rather than claiming the journal is ready.
+      toast('Storage could not be enabled', {
+        description:
+          'A private window won’t keep recordings, so nothing can be saved here. Use a normal window, or a Chromium browser, to keep a journal.',
+      })
+    } else if (ropesRef.current.some((rope) => rope.length > 0)) {
+      setConfirmSaveAfterSetup(true)
+    } else {
+      toast('Voice journal set up', {
+        description:
+          'Saved privately in this browser. Export a backup regularly.',
       })
     }
   }, [])
@@ -783,7 +842,7 @@ function App() {
           showUpgradeAll={settings.transcriptionMode === 'large'}
           onUpgradeAll={upgradeVisibleTranscriptions}
           journalEnabled={journalFlagOn}
-          journalSetUp={journalHandle !== null}
+          journalSetUp={journalBackend !== null}
           onSetUpJournal={() => setJournalSetupOpen(true)}
           onSaveToJournal={() => void handleSaveToJournal()}
           onViewJournal={handleViewJournal}
@@ -885,9 +944,14 @@ function App() {
           <JournalSetupModal
             open={journalSetupOpen}
             onOpenChange={setJournalSetupOpen}
-            supported={fsaSupported}
+            guidance={journalSetupGuidance()}
             onChooseFolder={() => void handleChooseJournalFolder()}
-            folderName={journalHandle?.name}
+            onContinueAnyway={() => void handleContinueWithOpfs()}
+            folderName={
+              journalBackend?.kind === 'fsa'
+                ? journalBackend.handle.name
+                : undefined
+            }
           />
           <Dialog
             open={confirmSaveAfterSetup}
@@ -898,8 +962,10 @@ function App() {
                 <DialogTitle>Save this recording?</DialogTitle>
                 <DialogDescription>
                   Your voice journal is set up
-                  {journalHandle ? ` in “${journalHandle.name}”` : ''}. Save the
-                  current recording to it now?
+                  {journalBackend?.kind === 'fsa'
+                    ? ` in “${journalBackend.handle.name}”`
+                    : ''}
+                  . Save the current recording to it now?
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>

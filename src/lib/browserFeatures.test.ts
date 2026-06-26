@@ -7,7 +7,10 @@ import {
   checkFeatures,
   checkLocalTranscription,
   isBrowserTranscriptionAvailable,
+  isIos,
+  isStandalone,
   resetTrackRecognitionProbeForTests,
+  supportsOpfs,
   supportsTrackRecognition,
 } from './browserFeatures'
 
@@ -282,6 +285,103 @@ describe('transcription feature checks', () => {
         available: vi.fn().mockResolvedValue('available'),
       }
       await expect(checkLocalTranscription()).resolves.toBe(false)
+    })
+  })
+})
+
+describe('journal backend feature checks', () => {
+  let originalNavigator: any
+  let originalWindow: any
+
+  beforeEach(() => {
+    originalNavigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator')
+    originalWindow = Object.getOwnPropertyDescriptor(globalThis, 'window')
+  })
+
+  afterEach(() => {
+    restore('navigator', originalNavigator)
+    restore('window', originalWindow)
+  })
+
+  function restore(key: string, desc: PropertyDescriptor | undefined) {
+    if (desc) Object.defineProperty(globalThis, key, desc)
+    else delete (globalThis as any)[key]
+  }
+
+  function setGlobal(key: string, value: unknown) {
+    Object.defineProperty(globalThis, key, { value, configurable: true })
+  }
+
+  describe('supportsOpfs', () => {
+    it('is true when navigator.storage.getDirectory exists', () => {
+      setGlobal('navigator', { storage: { getDirectory: () => {} } })
+      expect(supportsOpfs()).toBe(true)
+    })
+
+    it('is false without the Storage API', () => {
+      setGlobal('navigator', {})
+      expect(supportsOpfs()).toBe(false)
+    })
+
+    it('is false when only estimate() exists (no OPFS)', () => {
+      setGlobal('navigator', { storage: { estimate: () => {} } })
+      expect(supportsOpfs()).toBe(false)
+    })
+  })
+
+  describe('isStandalone', () => {
+    it('is true via the standalone display-mode media query', () => {
+      setGlobal('window', {
+        matchMedia: (q: string) => ({ matches: q.includes('standalone') }),
+      })
+      setGlobal('navigator', {})
+      expect(isStandalone()).toBe(true)
+    })
+
+    it('is true via the legacy iOS navigator.standalone flag', () => {
+      setGlobal('window', { matchMedia: () => ({ matches: false }) })
+      setGlobal('navigator', { standalone: true })
+      expect(isStandalone()).toBe(true)
+    })
+
+    it('is false in an ordinary browser tab', () => {
+      setGlobal('window', { matchMedia: () => ({ matches: false }) })
+      setGlobal('navigator', { standalone: false })
+      expect(isStandalone()).toBe(false)
+    })
+  })
+
+  describe('isIos', () => {
+    it('detects iPhone by user agent', () => {
+      setGlobal('navigator', {
+        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0)',
+        maxTouchPoints: 5,
+      })
+      expect(isIos()).toBe(true)
+    })
+
+    it('detects iPadOS masquerading as macOS via touch points', () => {
+      setGlobal('navigator', {
+        userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+        maxTouchPoints: 5,
+      })
+      expect(isIos()).toBe(true)
+    })
+
+    it('does not flag a real Mac without a touchscreen', () => {
+      setGlobal('navigator', {
+        userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+        maxTouchPoints: 0,
+      })
+      expect(isIos()).toBe(false)
+    })
+
+    it('does not flag a Windows desktop', () => {
+      setGlobal('navigator', {
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+        maxTouchPoints: 0,
+      })
+      expect(isIos()).toBe(false)
     })
   })
 })

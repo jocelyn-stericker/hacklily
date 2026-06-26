@@ -29,6 +29,7 @@
     "@tanstack/router-plugin": "^1.132.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "fflate": "^0.8.3",
     "lucide-react": "^1.17.0",
     "mediabunny": "^1.49.0",
     "next-themes": "^0.4.6",

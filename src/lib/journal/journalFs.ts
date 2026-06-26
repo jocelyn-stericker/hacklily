@@ -86,11 +86,17 @@ function normalizeAccess(state: PermissionState | undefined): JournalAccess {
 
 // Read-only permission check. Safe to call without a user gesture (e.g. on
 // mount) to decide whether the folder is ready or needs reconnecting.
+//
+// OPFS directory handles (the iOS journal backend) have no permission model --
+// they expose no queryPermission/requestPermission -- and are always accessible,
+// so we report 'granted' for them. That lets the recorder and route, which gate
+// on ensureAccess === 'granted', drive an OPFS journal with no special-casing.
 export async function queryAccess(
   handle: FileSystemDirectoryHandle,
   mode: 'read' | 'readwrite' = 'readwrite',
 ): Promise<JournalAccess> {
-  return normalizeAccess(await handle.queryPermission?.({ mode }))
+  if (typeof handle.queryPermission !== 'function') return 'granted'
+  return normalizeAccess(await handle.queryPermission({ mode }))
 }
 
 // Ensure access to the folder, prompting if necessary. The prompt path calls
@@ -122,6 +128,21 @@ export async function writeEntry(
   await writable.write(bytes as unknown as BufferSource)
   await writable.close()
   return name
+}
+
+// Write `bytes` into the folder under an exact filename, used by the zip
+// import path: imported entries keep the name they had in the archive (so a
+// re-import round-trips and a merge dedupes by name). The caller is responsible
+// for collision handling. Throws if a file with `name` already exists.
+export async function writeNamedEntry(
+  handle: FileSystemDirectoryHandle,
+  name: string,
+  bytes: Uint8Array,
+): Promise<void> {
+  const fileHandle = await handle.getFileHandle(name, { create: true })
+  const writable = await fileHandle.createWritable()
+  await writable.write(bytes as unknown as BufferSource)
+  await writable.close()
 }
 
 export async function deleteEntry(

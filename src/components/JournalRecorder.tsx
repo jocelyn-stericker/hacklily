@@ -28,7 +28,12 @@ import type {
   AudioRopeShare,
 } from '#/lib/audio/AudioRope'
 import { ropesToMp3 } from '#/lib/audio/exportMp3'
+import type { JournalBackendKind } from '#/lib/journal/journalBackend'
 import { deleteEntry, ensureAccess, writeEntry } from '#/lib/journal/journalFs'
+import {
+  deleteEntryDuration,
+  recordEntryDuration,
+} from '#/lib/journal/journalStore'
 import { RopeGainCache } from '#/lib/loudness/ropeLoudness'
 import { computeVoicedRange } from '#/lib/practiceState'
 import { formatDuration } from '#/lib/utils'
@@ -45,10 +50,16 @@ export function JournalRecorder({
   handle,
   onSaved,
   folderName,
+  kind,
+  persisted,
 }: {
   handle: FileSystemDirectoryHandle
   onSaved: () => void
   folderName: string
+  kind: JournalBackendKind
+  // For OPFS, whether persistent storage is granted. When false we don't let the
+  // user record, since the take couldn't be safely saved (it could be evicted).
+  persisted: boolean
 }) {
   const [phase, setPhase] = useState<Phase>('idle')
   const [elapsedMs, setElapsedMs] = useState(0)
@@ -218,6 +229,7 @@ export function JournalRecorder({
       }
       const bytes = await ropesToMp3([trimmed], gainCache.gainsFor([trimmed]))
       const name = await writeEntry(handle, bytes)
+      void recordEntryDuration(name, trimmedLength / rope.sampleRate)
       track('journal/record')
       onSaved()
       toast('Saved to voice journal', {
@@ -226,7 +238,10 @@ export function JournalRecorder({
           label: 'Undo',
           onClick: () => {
             void deleteEntry(handle, name)
-              .then(onSaved)
+              .then(() => {
+                void deleteEntryDuration(name)
+                onSaved()
+              })
               .catch((err: unknown) => {
                 console.error('[journal] failed to undo recording:', err)
                 toast('Could not undo')
@@ -285,6 +300,18 @@ export function JournalRecorder({
             <Square className="size-4 fill-current" />
           </Button>
         </div>
+      ) : !persisted ? (
+        // OPFS without persistent storage: recording is blocked because the take
+        // couldn't be kept safely. The route explains how to enable it.
+        <div className="flex flex-col items-center gap-2 px-4 py-4">
+          <Button size="lg" disabled>
+            <Mic />
+            Record entry
+          </Button>
+          <p className="max-w-md text-center text-xs text-muted-foreground">
+            Storage isn’t enabled, so new recordings can’t be saved yet.
+          </p>
+        </div>
       ) : (
         <div className="flex flex-col items-center gap-2 px-4 py-4">
           <Button size="lg" onClick={handleStart}>
@@ -292,9 +319,18 @@ export function JournalRecorder({
             Record entry
           </Button>
           <p className="max-w-md text-center text-xs text-muted-foreground">
-            Entries are saved to “{folderName}”. The files are yours &mdash;
-            keep, move, sync, or delete them however you like, and anyone who
-            can open the folder can play them back.
+            {kind === 'opfs' ? (
+              <>
+                Entries are saved privately on this device &mdash; nothing is
+                uploaded. Export them regularly to keep a copy you control.
+              </>
+            ) : (
+              <>
+                Entries are saved to “{folderName}”. The files are yours &mdash;
+                keep, move, sync, or delete them however you like, and anyone
+                who can open the folder can play them back.
+              </>
+            )}
           </p>
         </div>
       )}

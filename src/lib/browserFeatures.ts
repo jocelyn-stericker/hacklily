@@ -18,6 +18,51 @@ export function supportsFileSystemAccess(): boolean {
   return typeof window !== 'undefined' && 'showDirectoryPicker' in window
 }
 
+// Whether the Origin Private File System is available. Unlike FSA, OPFS exists
+// in Safari and Firefox; it's a sandboxed, app-private directory (not visible in
+// the OS file manager). Braat uses it as the journal backend on iOS, where FSA
+// is absent and there's no other way to keep recordings on-device.
+export function supportsOpfs(): boolean {
+  return (
+    typeof navigator !== 'undefined' &&
+    // `storage` is typed as always present but is absent in older/edge browsers.
+    // oxlint-disable-next-line typescript/no-unnecessary-condition
+    typeof navigator.storage?.getDirectory === 'function'
+  )
+}
+
+// Whether we're running as an installed Home Screen / standalone web app rather
+// than inside a browser tab. This matters on iOS specifically: WebKit exempts an
+// installed web app's script-writable storage (incl. OPFS) from the 7-day
+// eviction cap that applies to ordinary Safari tabs, and it's the heuristic
+// WebKit uses to grant persistent storage. So the OPFS journal only trusts
+// storage here.
+export function isStandalone(): boolean {
+  if (typeof window === 'undefined') return false
+  return (
+    // `matchMedia` is typed as always present but can be absent in some webviews.
+    // oxlint-disable-next-line typescript/no-unnecessary-condition
+    window.matchMedia?.('(display-mode: standalone)').matches === true ||
+    // Legacy iOS-only flag; still the most reliable standalone signal there.
+    (navigator as { standalone?: boolean }).standalone === true
+  )
+}
+
+// iOS / iPadOS detection. We scope the OPFS-journal fallback to iOS because it's
+// the one platform where FSA can never be available -- elsewhere (desktop
+// Firefox/Safari) we'd rather steer users to a Chromium browser for the real,
+// user-visible folder experience than hand them an opaque sandboxed store.
+//
+// iPadOS 13+ Safari reports a desktop macOS user agent, so the UA test alone
+// misses iPads; we disambiguate by touch support (a Mac with a touchscreen is an
+// iPad).
+export function isIos(): boolean {
+  if (typeof navigator === 'undefined') return false
+  const ua = navigator.userAgent
+  if (/iPhone|iPad|iPod/.test(ua)) return true
+  return /Mac/.test(ua) && navigator.maxTouchPoints > 1
+}
+
 // Minimal shape of the on-device Web Speech API. The static `available` and
 // `install` members are only present on the unprefixed `SpeechRecognition`
 // constructor in browsers that support local (on-device) transcription. They
