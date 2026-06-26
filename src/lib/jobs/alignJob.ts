@@ -28,6 +28,10 @@ export type AlignJobDeps = {
   enabled: () => boolean
   /** Whether recording is in progress -- alignment is deferred until it stops. */
   isRecording: () => boolean
+  /** Notified after the job writes lunaBrightness into a chunk's frames, so the
+   *  overlay can re-derive brightness (the in-place write isn't React-observable).
+   *  Optional: tests omit it. */
+  onFramesMutated?: (chunk: AnalysisChunk) => void
 }
 
 let worker: AlignWorker | null = null
@@ -237,6 +241,9 @@ async function alignOne(
         )
       }
     }
+    // The lunaBrightness writes above aren't seen by the React compiler (in-place
+    // mutation), so signal the store to re-derive brightness for this chunk.
+    deps.onFramesMutated?.(chunk)
   } catch (err) {
     const cur = deps.sink.get(chunk)
     if (audio.signal.aborted || err instanceof WorkerTerminatedError) {

@@ -387,6 +387,11 @@ function App() {
       spectrogramRef.current?.append(globalIndex)
       vowelChartRef.current?.append(globalIndex)
       speechStripRef.current?.append(globalIndex)
+      // The appended frame mutates the last chunk in place; mark it dirty so
+      // its derived values (medianF0, brightness) refresh on the next read.
+      transcriptStore.notifyChunkFrames(
+        analysisMutRef.current[analysisMutRef.current.length - 1]!,
+      )
       // Only a structural change needs a publish: a chunk turning voiced adds a
       // button. Pure growth of an already-voiced chunk doesn't -- the snapshot
       // holds the live chunk objects, so the next render (e.g. the viewport
@@ -444,6 +449,18 @@ function App() {
       spectrogramRef.current?.patch(absFrom, absTo)
       vowelChartRef.current?.patch(absFrom, absTo)
       speechStripRef.current?.patch(absFrom, absTo)
+      // f0/formant patches mutate frames in place; mark any chunk overlapping
+      // the range dirty so its derived values (medianF0, brightness) refresh.
+      // Lazy: the recompute happens on the next overlay read, not here.
+      {
+        let offset = 0
+        for (const c of analysisMutRef.current) {
+          const end = offset + c.frames.length
+          if (offset < absTo && end > absFrom)
+            transcriptStore.notifyChunkFrames(c)
+          offset = end
+        }
+      }
       // Only a split/merge/voicing flip changes which chunks the overlay shows.
       if (voicingChanged) {
         // Re-chunking shifted boundaries: any chunk overlapping the patched range

@@ -129,6 +129,7 @@ export function useChunkWorkQueue({
           onModelUnavailable: () => onModelUnavailableRef.current(),
           enabled: () => forcedAlignmentRef.current,
           isRecording: () => isRecordingRef.current,
+          onFramesMutated: (chunk) => store.notifyChunkFrames(chunk),
         }),
       ],
       // Transcribe-before-align: finish all transcription, then run alignment as
@@ -144,7 +145,7 @@ export function useChunkWorkQueue({
 
     // Abort live spans on unmount.
     return () => queue.current?.dispose()
-  }, [transcribeSink, analysisMutRef, ropesRef, getViewport])
+  }, [transcribeSink, analysisMutRef, ropesRef, getViewport, store])
 
   // Structural changes (publishChunkList) wake the scheduler. This is the shared
   // notification hub: one `subscribeList`, two consumers (overlay + queue).

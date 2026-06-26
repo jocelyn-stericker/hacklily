@@ -30,7 +30,11 @@ import {
   useSpeechStripHeight,
   useTimeToX,
 } from './Plot'
-import { useAnalysisChunks, useTranscript } from './TranscriptStore'
+import {
+  useAnalysisChunks,
+  useChunkDerived,
+  useTranscript,
+} from './TranscriptStore'
 import type { TranscriptStore } from './TranscriptStore'
 import { Button } from './ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
@@ -261,6 +265,7 @@ function ChunkOverlay({
   const timeToXDom = useTimeToX(InCanvas.No)
 
   const transcript = useTranscript(store, chunk)
+  const { brightness, medianF0 } = useChunkDerived(store, chunk)
   const result = transcript ? bestResult(transcript) : undefined
   const phonemes = result?.phonemes
   const indicator = transcriptIndicator(transcript)
@@ -294,24 +299,11 @@ function ChunkOverlay({
     onOpenTranscriptionSettings?.()
   }
 
-  const brightness = chunk.frames
-    .map((f) => f.lunaBrightness)
-    .filter((f) => f != null)
-    .reduce((m, a, _, d) => m + a / d.length, 0)
-
   let topText: React.ReactNode = result?.text?.trim() ?? null
 
   if (!topText) {
     topText = <span className="italic">Voiced</span>
   }
-
-  const voicedFrames = chunk.frames.filter((a) => a.f0 > 0)
-  const [medianF0, setMedianF0] = useState(0)
-  useEffect(() => {
-    const sorted = voicedFrames.map((a) => a.f0).sort((a, b) => a - b)
-    // oxlint-disable-next-line react-hooks-js/set-state-in-effect
-    setMedianF0(Math.round(sorted[Math.floor(sorted.length / 2)] ?? 0))
-  }, [voicedFrames, voicedFrames.length])
 
   const alignmentEnabled = settings.forcedAlignment
 
@@ -415,7 +407,7 @@ function ChunkOverlay({
               {indicator.kind === 'error' ? (
                 <div className="mb-2 flex items-start gap-1.5 overflow-hidden rounded-lg border border-red-500/40 bg-red-500/10 px-2.5 py-1.5 text-xs text-red-700 dark:text-red-400">
                   <AlertTriangle className="mt-0.5 size-3 shrink-0" />
-                  <span className="min-w-0 break-words leading-snug">
+                  <span className="min-w-0 wrap-break-word leading-snug">
                     {indicator.error}
                   </span>
                 </div>
