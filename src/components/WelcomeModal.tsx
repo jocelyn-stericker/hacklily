@@ -74,16 +74,6 @@ export function WelcomeModal({
                 </span>
                 <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
               </Link>
-              <Link
-                to="/ipa"
-                className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted"
-              >
-                <Languages className="size-4 shrink-0 text-muted-foreground" />
-                <span className="flex-1">
-                  English to IPA: phonetic transcription
-                </span>
-                <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-              </Link>
               {journalEnabled() && (
                 <Link
                   to="/journal"
@@ -96,6 +86,16 @@ export function WelcomeModal({
                   <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
                 </Link>
               )}
+              <Link
+                to="/ipa"
+                className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted"
+              >
+                <Languages className="size-4 shrink-0 text-muted-foreground" />
+                <span className="flex-1">
+                  English to IPA: phonetic transcription
+                </span>
+                <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+              </Link>
             </div>
           </div>
           <div className="text-xs space-y-2 text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground">

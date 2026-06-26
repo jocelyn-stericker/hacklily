@@ -11,9 +11,11 @@ This feature is **separate** from practice on purpose: practice is ephemeral
 
 ## Status
 
-**Phase 1 implemented and reviewed** (set up, save from the analysis tool,
-view/play/open-in-analysis/delete). **Phase 2 (in-route recording) pending** —
-the `/journal` footer has a disabled "Record entry" button as a placeholder.
+**Phases 1 & 2 implemented and reviewed.** Phase 1: set up, save from the
+analysis tool, view/play/open-in-analysis/delete. Phase 2: record a take in
+`/journal` itself (the footer `JournalRecorder`), with VAD-gated start
+(timer waits for speech, leading silence is trimmed) and a practice-style
+footer.
 
 `npm run check` and `npm run test` are green; FSA handle I/O is Chromium-only
 and verified by manual spot-check, not CI.
@@ -112,9 +114,8 @@ computer", which a synced folder would falsify).
 
 Low-cardinality, no-property event names only, following the `family/value`
 taxonomy (`docs/analytics.md` / `analytics.ts`). Live: `journal/setup`,
-`journal/save`, `journal/analyze`, `journal/delete`. Reserved for Phase 2:
-`journal/record`. Never encode folder names, entry counts, or any
-content-derived value.
+`journal/save`, `journal/analyze`, `journal/delete`, `journal/record`. Never
+encode folder names, entry counts, or any content-derived value.
 
 ## Navigation (as built)
 
@@ -145,7 +146,7 @@ top-of-menu nav group, and not styled as a hyperlink:
   `postMessage('braat:handoff')` (`practiceHandoff.ts`, consumed in
   `index.tsx`). Opening an entry decodes the `File` to PCM then hands off,
   exactly like `handleAnalyzeReference` in `practice.tsx`.
-- **Recording (Phase 2):** `useAudioManager` (the rope `share`/`grow`/`seal`
+- **Recording:** `useAudioManager` (the rope `share`/`grow`/`seal`
   pattern in `practice.tsx`).
 
 ## Infrastructure (built in Phase 1, shared by both phases)
@@ -214,46 +215,61 @@ Implemented. As-built notes (where it differs from the original sketch):
 - **`PracticeSettings.tsx` / `WelcomeModal.tsx`** — flag-gated Voice journal
   link (see _Navigation_). **`PracticeStatusRow.tsx` / `privacy.tsx`** — copy.
 
-## Phase 2 — in-route recording (recommended approach)
+## Phase 2 — in-route recording ✅
 
-Goal: record a single take in `/journal` and save it to the folder. Keep it
-deliberately simpler than practice — no echo/loop/VAD/reference machinery.
+Record a single take in `/journal` and save it to the folder, deliberately
+simpler than practice — no echo/loop/reference machinery — but sharing the
+practice footer's look: same icons, same pending ("Listening…") state, and the
+same floating-on-desktop treatment when active.
 
-- **Recorder** (`JournalRecorder.tsx`, or inline in `journal.tsx`):
-  - `useAudioManager({ active, recording, captureFeatures: { spectrogram:
-false, formant: false, vad: false }, onAudioRopeShare/Grow/Seal, … })`,
-    reusing the rope handler pattern from `practice.tsx`. Hold a
-    `sessionRopeRef` + a `RopeGainCache`.
-  - States: idle → recording (show elapsed timer + Stop) → saving (spinner) →
-    idle. Manual start/stop only.
-  - On Stop: read the sealed rope → `ropesToMp3([rope], gainCache.gainsFor([rope]))`
-    → `writeEntry(handle, bytes)` → refresh the list → toast with **Undo**
-    (reuse `deleteEntry`, like Save) → `track('journal/record')`.
-  - Enable the footer button (currently disabled); keep the existing
-    practice-styled footer + copy.
-- **Permission/gesture:** call `ensureAccess(handle)` inside the Record click
-  before opening the mic, so the write later won't fail. We're already in the
-  `granted` state to reach this UI, so this is usually a no-op query.
-- **Guards:** ignore an empty/too-short take (e.g. < ~300 ms of audio) rather
-  than writing a near-silent file. Surface mic/permission errors via the
-  existing error pattern + toast.
-
-### Recommendations / open questions for Phase 2
-
-- **Mic lifecycle / `persistentMic`.** Decide whether to open the mic only while
-  recording (simplest, matches the journal's lightweight intent) or honor the
-  `persistentMic` setting like practice. Recommend: open-on-record only.
-- **Live visuals.** A live waveform/spectrogram is nice but heavier and pulls in
-  the capture-feature plumbing we just turned off. Recommend: ship with just an
-  elapsed timer (and maybe a simple level meter); defer visuals.
-- **Auto-trim silence.** Practice uses VAD to trim; the journal doesn't need it
-  for v1. If wanted later, it's an opt-in, not default.
-- **Immediate playback.** After saving, the refreshed list already shows the new
-  entry (it sorts newest-first), so explicit "play what I just recorded" is
-  optional. Recommend: rely on the list; revisit if it feels clunky.
-- **Sample rate / channels.** `useAudioManager` yields mono ropes;
-  `ropesToMp3`/`mergeRopes` already handle rate normalization. No new handling
-  needed.
+- **`JournalRecorder.tsx`** — renders the **entire footer** (the floating
+  wrapper + status row + idle copy) for the granted state; the route just drops
+  it in. Takes `handle`, `onSaved` (the parent's `refresh`), and `folderName`
+  (for the idle-state copy).
+  - `useAudioManager({ active: phase !== 'idle', recording: phase ===
+'recording', captureFeatures: { spectrogram: false, formant: false, vad:
+{ redemptionMs: 80, prerollMs: 500 } }, … })`, reusing the rope
+    `share`/`grow`/`seal` handlers from `practice.tsx`. Holds a `sessionRopeRef`,
+    an `analysisRef` of `AnalysisFrame`s, the chunk's `AnalysisParams`, and its own
+    `RopeGainCache`.
+  - **VAD gates the start, never the end.** `onCaptureAppend` pushes each frame
+    and flips `audioActive` on the first one (mic is warm). When a frame reports
+    `speechDetected === true`, it sets `voicedStartMs` — and the elapsed timer
+    only starts then, mirroring practice's `voicedStartMs` gate. VAD never
+    stops the take; only the Stop button (or a too-short take) does.
+  - **Leading- and trailing-silence trim.** On stop, `computeVoicedRange(
+frames, …)` (from `practiceState`) finds the first and last voiced frames;
+    the rope is copied from the first to the last voiced sample (gaps between
+    speech segments are kept) into a fresh `AudioRope` (chunked, since `read`
+    works in ≤64k windows), sealed, and handed to `ropesToMp3`. The VAD
+    preroll/postroll already fold pre-onset and post-offset frames into the
+    voiced region, so the bounds land just outside the speech itself. If no
+    voiced frame was detected, the whole rope is kept (so a quiet-but-valid
+    take isn't dropped solely for silence).
+  - Phases: **idle** (Record button + copy) → **recording** (status row: spinner
+    while mic warms, then pulsing dot + "Listening…" while waiting for speech,
+    then "Stop · m:ss" once counting) → **saving** (spinner + "Saving…") → idle.
+    `active` stays true through `saving` so the pipeline can seal/drain before
+    `STOP_CAPTURE` tears the mic down on return to idle.
+  - On Stop: `setPhase('saving')` (→ `STOP_RECORDING`), then `await` a promise
+    resolved by **`onCaptureComplete`** so the rope is fully sealed → trim →
+    guard (`trimmedLength / sampleRate ≥ 0.3 s`, else toast "Recording too
+    short") → `ensureAccess` → `ropesToMp3([trimmed], …)` → `writeEntry` →
+    `onSaved()` (re-list) → toast with **Undo** (`deleteEntry` → `onSaved`) →
+    `track('journal/record')`.
+- **Footer styling** mirrors `PracticeStatusRow.tsx`: the pulsing-red indicator,
+  the outline "Listening…/Stop · m:ss" button, the red square Stop button, and
+  the `lg:fixed lg:bottom-4 …` floating card on desktop when active. Idle shows
+  the centered Record button + the "Entries are saved to …" copy.
+- **Mic lifecycle:** open-on-record only (`active` follows `phase`), not
+  `persistentMic` — matches the journal's lightweight intent.
+- **Gesture:** `unlockForGesture()` runs synchronously in the Record click.
+  `ensureAccess` at save time is a near-no-op query (we're already `granted` to
+  reach this UI); if the grant has lapsed it toasts rather than throwing.
+- **No live level meter** (deferred — would need a meter-only capture feature or
+  a tap off the worklet). The timer + "Listening…" state cover the gap.
+- **Sample rate / channels:** `useAudioManager` yields mono ropes;
+  `ropesToMp3`/`mergeRopes` handle rate normalization — no new handling needed.
 
 ## Tests & verification
 

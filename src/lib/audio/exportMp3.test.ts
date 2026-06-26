@@ -83,7 +83,8 @@ function makeRope(lengthSamples = 44100, sampleRate = 44100): AudioRope {
 describe('exportMp3', () => {
   beforeEach(() => {
     vi.useFakeTimers()
-    vi.setSystemTime(new Date('2026-01-15T14:30:45.123Z'))
+    // Local components so the local-time filename is timezone-agnostic.
+    vi.setSystemTime(new Date(2026, 0, 15, 14, 30, 45, 123))
   })
 
   afterEach(() => {

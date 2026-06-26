@@ -3,8 +3,8 @@
 
 // The voice journal: a folder of audio files on the user's computer (via the
 // File System Access API) that persists across sessions, unlike practice takes.
-// Phase 1 lists, plays, and opens entries in the analysis tool; recording in
-// the route comes in Phase 2 (the footer button is present but disabled).
+// Lists, plays, opens entries in the analysis tool, and deletes them; recording
+// a new entry in the route lives in JournalRecorder (rendered in the footer).
 
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import {
@@ -26,6 +26,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import { AudioSettingsModal } from '#/components/AudioSettingsModal'
+import { JournalRecorder } from '#/components/JournalRecorder'
 import { JournalSetupContent } from '#/components/JournalSetupModal'
 import { Button } from '#/components/ui/button'
 import {
@@ -478,27 +479,12 @@ function Journal() {
         )}
       </div>
 
-      {granted && (
-        <div className="shrink-0 border-t border-border">
-          <div className="flex flex-col items-center gap-2 px-4 py-4">
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button size="lg" disabled>
-                    <Mic />
-                    Record entry
-                  </Button>
-                }
-              />
-              <TooltipContent sideOffset={8}>Coming soon</TooltipContent>
-            </Tooltip>
-            <p className="max-w-md text-center text-xs text-muted-foreground">
-              Entries are saved to “{folderName}”. The files are yours &mdash;
-              keep, move, sync, or delete them however you like, and anyone who
-              can open the folder can play them back.
-            </p>
-          </div>
-        </div>
+      {granted && handle && (
+        <JournalRecorder
+          handle={handle}
+          onSaved={() => void refresh(handle)}
+          folderName={folderName ?? handle.name}
+        />
       )}
 
       <AudioSettingsModal
