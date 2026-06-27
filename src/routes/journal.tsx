@@ -59,6 +59,7 @@ import {
   buildJournalZip,
   importJournalFolder,
   importJournalZip,
+  measureAudioDuration,
   summarizeSinceExport,
 } from '#/lib/journal/journalArchive'
 import {
@@ -76,6 +77,7 @@ import {
   deleteEntryDuration,
   getLastExportAt,
   loadEntryDurations,
+  recordEntryDuration,
   saveJournalHandle,
   setLastExportAt as storeSetLastExportAt,
 } from '#/lib/journal/journalStore'
@@ -123,6 +125,38 @@ function Journal() {
       ])
       setEntries(list)
       setDurations(durs)
+
+      // Backfill durations for entries that don't have one — e.g. files added
+      // externally to the journal folder, or imported before duration tracking.
+      // Decode each and persist; fire-and-forget, best-effort. Runs in the
+      // background so the list renders immediately with what we already know.
+      const missing = list.filter((e) => !durs.has(e.name))
+      if (missing.length > 0) {
+        void (async () => {
+          let filled = 0
+          for (const entry of missing) {
+            const bytes = new Uint8Array(await entry.file.arrayBuffer())
+            const measured = await measureAudioDuration(bytes)
+            if (measured !== null) {
+              void recordEntryDuration(entry.name, measured)
+              filled += 1
+              // Update the visible map so the list picks up the new value.
+              setDurations((prev) => {
+                const next = new Map(prev)
+                next.set(entry.name, measured)
+                return next
+              })
+            }
+          }
+          console.info(
+            '[journal] backfilled durations for',
+            filled,
+            'of',
+            missing.length,
+            'entries without one',
+          )
+        })()
+      }
     } catch (err) {
       console.error('[journal] failed to list entries:', err)
       toast('Could not read the journal folder')
@@ -325,6 +359,13 @@ function Journal() {
       setImporting(true)
       try {
         const result = await importJournalZip(handle, file)
+        console.info(
+          '[journal] import zip:',
+          result.imported,
+          'imported,',
+          result.skipped,
+          'skipped',
+        )
         track('journal/import')
         void refresh(handle)
         toast('Imported journal', {
@@ -357,6 +398,13 @@ function Journal() {
       setImporting(true)
       try {
         const result = await importJournalFolder(handle, files)
+        console.info(
+          '[journal] import folder:',
+          result.imported,
+          'imported,',
+          result.skipped,
+          'skipped',
+        )
         track('journal/import')
         void refresh(handle)
         toast('Imported folder', {
@@ -794,6 +842,8 @@ function Journal() {
                     <p className="truncate text-sm font-medium">{entry.name}</p>
                     <p className="text-xs text-muted-foreground">
                       {new Date(entry.lastModified).toLocaleString()}
+                      {durations.has(entry.name) &&
+                        ` · ${formatDuration(durations.get(entry.name)!)}`}
                       {isErrored && ' · unsupported format'}
                     </p>
                   </div>

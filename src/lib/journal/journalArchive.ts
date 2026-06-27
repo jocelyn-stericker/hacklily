@@ -129,8 +129,31 @@ export async function buildJournalZip(
 // Merge a zip into an existing journal directory. Files in the archive whose
 // name already exists on disk are skipped (dedupe by filename), so a re-import
 // of the same backup is a no-op rather than a duplicate-everything operation.
-// Durations from the manifest are restored for every imported entry. Returns
-// how many files were written and how many were skipped.
+// Durations from the manifest are restored for every imported entry; entries
+// missing from the manifest are decoded to measure their length. Returns how
+// many files were written and how many were skipped.
+
+// Decode `bytes` as audio to measure its duration in seconds. Best-effort:
+// returns null on a decode failure (corrupt file, unsupported codec, private
+// mode blocking AudioContext creation, etc.) so callers can fall back to no
+// duration rather than surfacing an error. A throwaway AudioContext is created
+// per call; import and backfill are rare, user-initiated batch ops, so the
+// construction cost is acceptable, and creating per-file avoids holding one
+// open across awaits.
+export async function measureAudioDuration(
+  bytes: Uint8Array,
+): Promise<number | null> {
+  let ctx: AudioContext | null = null
+  try {
+    ctx = new AudioContext()
+    const buffer = await ctx.decodeAudioData(bytes.slice().buffer)
+    return buffer.duration
+  } catch {
+    return null
+  } finally {
+    ctx?.close().catch(() => {})
+  }
+}
 
 export interface ImportResult {
   imported: number
@@ -176,9 +199,12 @@ export async function importJournalZip(
     if (typeof dur === 'number') {
       void recordEntryDuration(name, dur)
     } else {
-      // No duration for this entry in the archive; clear any stale value from a
-      // prior import of a different archive so the summary doesn't lie.
-      void deleteEntryDuration(name)
+      // No duration in the archive; decode the file so the summary and list
+      // can show it. If decoding fails, clear any stale value from a prior
+      // import so the summary doesn't lie.
+      const measured = await measureAudioDuration(bytes)
+      if (measured !== null) void recordEntryDuration(name, measured)
+      else void deleteEntryDuration(name)
     }
     imported += 1
     onProgress?.(name)
@@ -189,10 +215,11 @@ export async function importJournalZip(
 
 // Merge a folder of audio files (chosen via an `<input webkitdirectory>` FileList)
 // into the journal directory. Files already present on disk are skipped (dedupe
-// by filename), matching the zip import. Durations can't be recovered from bare
-// audio files, so imported entries get no duration row — the summary under-
-// counts them, same as for any external file added to an FSA folder. Only the
-// basename of each file is used, so a nested backup folder imports flat.
+// by filename), matching the zip import. Each imported file is decoded to
+// measure its duration, so the summary and list can show it; entries that fail
+// to decode get no duration row and are under-counted in the summary, same as
+// any un-decodable file. Only the basename of each file is used, so a nested
+// backup folder imports flat.
 export async function importJournalFolder(
   handle: FileSystemDirectoryHandle,
   files: FileList | File[],
@@ -214,9 +241,11 @@ export async function importJournalFolder(
     }
     const bytes = new Uint8Array(await file.arrayBuffer())
     await writeNamedEntry(handle, file.name, bytes)
-    // No manifest for a folder import; clear any stale duration so the summary
-    // doesn't carry a value from a different source.
-    void deleteEntryDuration(file.name)
+    // Decode to measure the duration. If decoding fails, clear any stale
+    // duration so the summary doesn't carry a value from a different source.
+    const measured = await measureAudioDuration(bytes)
+    if (measured !== null) void recordEntryDuration(file.name, measured)
+    else void deleteEntryDuration(file.name)
     imported += 1
     onProgress?.(file.name)
   }
