@@ -647,28 +647,49 @@ function Journal() {
                 )}
                 Export all
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => void handleImportZip()}
-                disabled={importing}
-              >
-                {importing ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <Upload className="size-4" />
-                )}
-                Import zip
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => importFolderInputRef.current?.click()}
-                disabled={importing}
-              >
-                <FolderInput className="size-4" />
-                Import folder
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button variant="outline" size="sm" disabled={importing} />
+                  }
+                >
+                  {importing ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Upload className="size-4" />
+                  )}
+                  Import...
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="start"
+                  sideOffset={4}
+                  className="w-56"
+                >
+                  {entries.length > 0 && (
+                    <>
+                      <p className="px-1.5 py-1 text-xs text-muted-foreground leading-relaxed">
+                        Imported files are merged with your existing journal
+                        entries.
+                      </p>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
+                  <DropdownMenuItem
+                    onClick={() => void handleImportZip()}
+                    disabled={importing}
+                  >
+                    <Upload className="size-4" />
+                    Add zip file
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => importFolderInputRef.current?.click()}
+                    disabled={importing}
+                  >
+                    <FolderInput className="size-4" />
+                    Add audio in folder
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             <input
               ref={importInputRef}
