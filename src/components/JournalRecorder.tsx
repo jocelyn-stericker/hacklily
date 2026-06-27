@@ -14,12 +14,17 @@ import { Loader2, Mic, Square } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
+import { TranscriptStore } from '#/components/TranscriptStore'
 import { Button } from '#/components/ui/button'
 import { useAudioManager } from '#/components/useAudioManager'
+import { useChunkWorkQueue } from '#/components/useChunkWorkQueue'
+import { useSettings } from '#/components/useSettings'
 import type {
+  AnalysisChunk,
   AnalysisFrame,
   AnalysisParams,
 } from '#/lib/analysis/AnalysisFrame'
+import { appendFrame } from '#/lib/analysis/AnalysisFrame'
 import { track } from '#/lib/analytics'
 import { AudioRope } from '#/lib/audio/AudioRope'
 import type {
@@ -28,14 +33,23 @@ import type {
   AudioRopeShare,
 } from '#/lib/audio/AudioRope'
 import { ropesToMp3 } from '#/lib/audio/exportMp3'
+import type { Viewport } from '#/lib/jobs/schedule'
 import type { JournalBackendKind } from '#/lib/journal/journalBackend'
-import { deleteEntry, ensureAccess, writeEntry } from '#/lib/journal/journalFs'
+import {
+  deleteEntry,
+  deleteEntrySrt,
+  ensureAccess,
+  writeEntry,
+  writeEntrySrt,
+} from '#/lib/journal/journalFs'
+import { formatSrt } from '#/lib/journal/journalSrt'
 import {
   deleteEntryDuration,
   recordEntryDuration,
 } from '#/lib/journal/journalStore'
 import { RopeGainCache } from '#/lib/loudness/ropeLoudness'
 import { computeVoicedRange } from '#/lib/practiceState'
+import { bestResult } from '#/lib/transcription'
 import { formatDuration } from '#/lib/utils'
 
 // Stable empty array so useAudioManager's playback effect doesn't churn.
@@ -61,6 +75,7 @@ export function JournalRecorder({
   // user record, since the take couldn't be safely saved (it could be evicted).
   persisted: boolean
 }) {
+  const [settings] = useSettings()
   const [phase, setPhase] = useState<Phase>('idle')
   const [elapsedMs, setElapsedMs] = useState(0)
   // `audioActive` flips true when the first analysis frame lands (mic is warm).
@@ -70,10 +85,30 @@ export function JournalRecorder({
 
   const sessionRopeRef = useRef<AudioRope | null>(null)
   const analysisRef = useRef<AnalysisFrame[]>([])
+  const analysisChunksRef = useRef<AnalysisChunk[]>([])
   const paramsRef = useRef<AnalysisParams | null>(null)
   const [gainCache] = useState(() => new RopeGainCache())
   // Resolved by onCaptureComplete so handleStop can await a fully sealed rope.
   const doneResolveRef = useRef<(() => void) | null>(null)
+
+  // Transcript store + chunk queue, mirroring the analysis route. The queue
+  // transcribes voiced chunks live (for Chrome local/cloud) so the transcript
+  // is ready — or close to ready — by the time recording stops.
+  const [transcriptStore] = useState(() => new TranscriptStore())
+  const ropesRef = useRef<AudioRope[]>([])
+  const getViewport = useCallback((): Viewport | null => null, [])
+
+  const { onSeal: handleTranscriptionSeal } = useChunkWorkQueue({
+    store: transcriptStore,
+    analysisMutRef: analysisChunksRef,
+    ropesRef,
+    getViewport,
+    transcriptionMode: settings.transcriptionMode,
+    forcedAlignment: false,
+    runHeavyWhileRecording: false,
+    isRecording: phase === 'recording',
+    onModelUnavailable: () => {},
+  })
 
   const noop = useCallback(() => {}, [])
 
@@ -82,27 +117,61 @@ export function JournalRecorder({
     doneResolveRef.current = null
   }, [])
 
-  const handleChunkStart = useCallback((params: AnalysisParams) => {
-    paramsRef.current = params
-  }, [])
+  const handleChunkStart = useCallback(
+    (params: AnalysisParams) => {
+      paramsRef.current = params
+      // Start a fresh chunk timeline for this recording session, mirroring the
+      // analysis route's handleChunkStart. The queue reads this to find voiced
+      // chunks to transcribe.
+      analysisChunksRef.current = [
+        {
+          ...params,
+          startTimeSec: 0,
+          frames: [],
+          voiced: null,
+          recordingStart: true,
+        },
+      ]
+      transcriptStore.publishChunkList(analysisChunksRef.current)
+    },
+    [transcriptStore],
+  )
 
-  const handleAppend = useCallback((frame: AnalysisFrame) => {
-    analysisRef.current.push(frame)
-    setAudioActive((prev) => prev || true)
-    if (frame.speechDetected === true) {
-      setVoicedStartMs((prev) => prev ?? Date.now())
-    }
-  }, [])
+  const handleAppend = useCallback(
+    (frame: AnalysisFrame) => {
+      analysisRef.current.push(frame)
+      setAudioActive((prev) => prev || true)
+      if (frame.speechDetected === true) {
+        setVoicedStartMs((prev) => prev ?? Date.now())
+      }
+      // Feed the frame to the chunk builder so the queue sees voiced chunks as
+      // they form. A structural change (voiced/unvoiced boundary) triggers a
+      // publish so the queue re-scans.
+      const structuralChange = appendFrame(analysisChunksRef.current, frame)
+      if (structuralChange) {
+        transcriptStore.publishChunkList(analysisChunksRef.current)
+      }
+    },
+    [transcriptStore],
+  )
 
   const handleAudioRopeShare = useCallback((share: AudioRopeShare) => {
-    sessionRopeRef.current = new AudioRope(share)
+    const rope = new AudioRope(share)
+    sessionRopeRef.current = rope
+    ropesRef.current = [rope]
   }, [])
   const handleAudioRopeGrow = useCallback((grow: AudioRopeGrow) => {
     sessionRopeRef.current?.grow(grow)
   }, [])
-  const handleAudioRopeSeal = useCallback((_: AudioRopeSeal) => {
-    sessionRopeRef.current?.seal()
-  }, [])
+  const handleAudioRopeSeal = useCallback(
+    (_: AudioRopeSeal) => {
+      sessionRopeRef.current?.seal()
+      // Publish final chunk dimensions and let the queue finish its live spans.
+      transcriptStore.publishChunkList(analysisChunksRef.current)
+      handleTranscriptionSeal()
+    },
+    [transcriptStore, handleTranscriptionSeal],
+  )
 
   const handleNotification = useCallback((message: string) => {
     toast(message)
@@ -150,7 +219,9 @@ export function JournalRecorder({
     // Unlock the AudioContext synchronously in the gesture before any await.
     void audioManager?.unlockForGesture()
     sessionRopeRef.current = null
+    ropesRef.current = []
     analysisRef.current = []
+    analysisChunksRef.current = []
     paramsRef.current = null
     setAudioActive(false)
     setVoicedStartMs(null)
@@ -231,6 +302,28 @@ export function JournalRecorder({
       const name = await writeEntry(handle, bytes)
       void recordEntryDuration(name, trimmedLength / rope.sampleRate)
       track('journal/record')
+
+      // Collect transcripts from the live transcription queue and write an SRT
+      // sidecar. The queue may still be finishing the last chunks, so poll until
+      // every voiced chunk has a transcript (or we time out). Best-effort: a
+      // missing transcript just means that cue is empty.
+      if (settings.transcriptionMode !== 'disabled') {
+        const chunks = analysisChunksRef.current
+        const voicedChunks = chunks.filter((c) => c.voiced)
+        if (voicedChunks.length > 0) {
+          const trimOffsetSec = startSample / rope.sampleRate
+          const segments = await collectTranscripts(
+            transcriptStore,
+            voicedChunks,
+            trimOffsetSec,
+          )
+          if (segments.length > 0) {
+            const srt = formatSrt(segments)
+            await writeEntrySrt(handle, name, srt)
+          }
+        }
+      }
+
       onSaved()
       toast('Saved to voice journal', {
         description: name,
@@ -240,6 +333,7 @@ export function JournalRecorder({
             void deleteEntry(handle, name)
               .then(() => {
                 void deleteEntryDuration(name)
+                void deleteEntrySrt(handle, name)
                 onSaved()
               })
               .catch((err: unknown) => {
@@ -254,7 +348,7 @@ export function JournalRecorder({
       toast('Could not save the recording')
     }
     setPhase('idle')
-  }, [handle, gainCache, onSaved])
+  }, [handle, gainCache, onSaved, settings.transcriptionMode, transcriptStore])
 
   const active = phase !== 'idle'
   const timerActive = voicedStartMs !== null
@@ -344,3 +438,41 @@ const indicator = (
     <span className="relative inline-flex size-3 rounded-full bg-red-500" />
   </span>
 )
+
+type SrtSegment = { startSec: number; endSec: number; text: string }
+
+/**
+ * Poll the transcript store until every voiced chunk has a result (or a
+ * timeout expires), then collect the transcripts as SRT segments. Times are
+ * shifted by `trimOffsetSec` so they match the trimmed recording, not the raw
+ * capture. Best-effort: a chunk without a transcript is omitted.
+ */
+async function collectTranscripts(
+  store: TranscriptStore,
+  voicedChunks: AnalysisChunk[],
+  trimOffsetSec: number,
+): Promise<SrtSegment[]> {
+  // Wait up to ~5s for the queue to finish any in-flight transcription.
+  for (let i = 0; i < 100; i++) {
+    const allDone = voicedChunks.every(
+      (c) => bestResult(store.getTranscript(c) ?? {})?.text !== undefined,
+    )
+    if (allDone) break
+    await new Promise((resolve) => setTimeout(resolve, 50))
+  }
+
+  const segments: SrtSegment[] = []
+  for (const chunk of voicedChunks) {
+    const result = bestResult(store.getTranscript(chunk) ?? {})
+    if (!result?.text) continue
+    const timeStepSec = chunk.timeStepSamples / chunk.sampleRate
+    const startSec = chunk.startTimeSec - trimOffsetSec
+    const endSec = startSec + chunk.frames.length * timeStepSec
+    segments.push({
+      startSec: Math.max(0, startSec),
+      endSec: Math.max(0, endSec),
+      text: result.text,
+    })
+  }
+  return segments
+}

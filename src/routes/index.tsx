@@ -60,7 +60,12 @@ import {
 } from '#/lib/journal/journalBackend'
 import type { JournalBackend } from '#/lib/journal/journalBackend'
 import { journalEnabled } from '#/lib/journal/journalEnabled'
-import { deleteEntry, ensureAccess, writeEntry } from '#/lib/journal/journalFs'
+import {
+  deleteEntry,
+  deleteEntrySrt,
+  ensureAccess,
+  writeEntry,
+} from '#/lib/journal/journalFs'
 import {
   deleteEntryDuration,
   recordEntryDuration,
@@ -447,6 +452,7 @@ function App() {
           onClick: () => {
             void deleteEntry(handle, name)
               .then(() => deleteEntryDuration(name))
+              .then(() => deleteEntrySrt(handle, name))
               .catch((err) => handleError(err))
           },
         },

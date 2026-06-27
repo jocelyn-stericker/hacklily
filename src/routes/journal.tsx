@@ -13,6 +13,7 @@ import {
   ChartSpline,
   Download,
   ExternalLink,
+  FileText,
   FolderInput,
   FolderOpen,
   FolderSync,
@@ -32,6 +33,8 @@ import { toast } from 'sonner'
 import { AudioSettingsModal } from '#/components/AudioSettingsModal'
 import { JournalRecorder } from '#/components/JournalRecorder'
 import { JournalSetupContent } from '#/components/JournalSetupModal'
+import { SrtEditorModal } from '#/components/SrtEditorModal'
+import { TranscriptionSettingsModal } from '#/components/TranscriptionSettingsModal'
 import { Button } from '#/components/ui/button'
 import {
   Dialog,
@@ -53,6 +56,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '#/components/ui/tooltip'
+import { useSettings } from '#/components/useSettings'
 import { track } from '#/lib/analytics'
 import { isIos } from '#/lib/browserFeatures'
 import {
@@ -70,8 +74,17 @@ import {
   setupOpfsJournal,
 } from '#/lib/journal/journalBackend'
 import type { JournalBackend } from '#/lib/journal/journalBackend'
-import { deleteEntry, ensureAccess, listEntries } from '#/lib/journal/journalFs'
+import {
+  deleteEntry,
+  deleteEntrySrt,
+  ensureAccess,
+  listEntries,
+  listEntrySrtAudios,
+  readEntrySrt,
+  writeEntrySrt,
+} from '#/lib/journal/journalFs'
 import type { JournalAccess, JournalEntry } from '#/lib/journal/journalFs'
+import { parseSrt } from '#/lib/journal/journalSrt'
 import {
   clearJournalHandle,
   deleteEntryDuration,
@@ -81,6 +94,11 @@ import {
   saveJournalHandle,
   setLastExportAt as storeSetLastExportAt,
 } from '#/lib/journal/journalStore'
+import {
+  transcribeEntry,
+  generateSrtSkeleton,
+} from '#/lib/journal/journalTranscribe'
+import type { TranscribeStatus } from '#/lib/journal/journalTranscribe'
 import { stashTake } from '#/lib/practiceHandoff'
 import { formatDuration } from '#/lib/utils'
 
@@ -94,6 +112,8 @@ function Journal() {
   const [granted, setGranted] = useState(false)
   const [entries, setEntries] = useState<JournalEntry[]>([])
   const [audioSettingsOpen, setAudioSettingsOpen] = useState(false)
+  const [transcriptionSettingsOpen, setTranscriptionSettingsOpen] =
+    useState(false)
   const [playingName, setPlayingName] = useState<string | null>(null)
   const [errored, setErrored] = useState<ReadonlySet<string>>(new Set())
   // Per-entry take durations (seconds) and the last-export timestamp. Both feed
@@ -103,12 +123,28 @@ function Journal() {
   const [exporting, setExporting] = useState(false)
   const [importing, setImporting] = useState(false)
 
+  // Per-entry transcript state. `transcriptPreviews` carries the first cue's
+  // text per entry (shown as the list title), and `transcribeStatus` carries
+  // the live progress for any entry currently being transcribed.
+  const [transcriptPreviews, setTranscriptPreviews] = useState<
+    Map<string, string>
+  >(new Map())
+  const [transcribeStatus, setTranscribeStatus] = useState<
+    Map<string, TranscribeStatus>
+  >(new Map())
+
+  const [settings] = useSettings()
+
   const handle = backend?.handle ?? null
   const importInputRef = useRef<HTMLInputElement>(null)
   const importFolderInputRef = useRef<HTMLInputElement>(null)
 
   const audioRef = useRef<HTMLAudioElement>(null)
   const objectUrlRef = useRef<string | null>(null)
+
+  // Aborted on unmount to stop the transcript backfill loop — transcription is
+  // heavy and must not keep running once the user leaves `/journal`.
+  const transcribeAbortRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
     document.title = PAGE_TITLE
@@ -117,51 +153,145 @@ function Journal() {
     }
   }, [])
 
-  const refresh = useCallback(async (h: FileSystemDirectoryHandle) => {
-    try {
-      const [list, durs] = await Promise.all([
-        listEntries(h),
-        loadEntryDurations(),
-      ])
-      setEntries(list)
-      setDurations(durs)
-
-      // Backfill durations for entries that don't have one — e.g. files added
-      // externally to the journal folder, or imported before duration tracking.
-      // Decode each and persist; fire-and-forget, best-effort. Runs in the
-      // background so the list renders immediately with what we already know.
-      const missing = list.filter((e) => !durs.has(e.name))
-      if (missing.length > 0) {
-        void (async () => {
-          let filled = 0
-          for (const entry of missing) {
-            const bytes = new Uint8Array(await entry.file.arrayBuffer())
-            const measured = await measureAudioDuration(bytes)
-            if (measured !== null) {
-              void recordEntryDuration(entry.name, measured)
-              filled += 1
-              // Update the visible map so the list picks up the new value.
-              setDurations((prev) => {
-                const next = new Map(prev)
-                next.set(entry.name, measured)
-                return next
-              })
-            }
-          }
-          console.info(
-            '[journal] backfilled durations for',
-            filled,
-            'of',
-            missing.length,
-            'entries without one',
-          )
-        })()
-      }
-    } catch (err) {
-      console.error('[journal] failed to list entries:', err)
-      toast('Could not read the journal folder')
+  // Stop any in-flight transcription when the route unmounts.
+  useEffect(() => {
+    return () => {
+      transcribeAbortRef.current?.abort()
     }
   }, [])
+
+  const refresh = useCallback(
+    async (h: FileSystemDirectoryHandle) => {
+      try {
+        const [list, durs, srtAudios] = await Promise.all([
+          listEntries(h),
+          loadEntryDurations(),
+          listEntrySrtAudios(h),
+        ])
+        setEntries(list)
+        setDurations(durs)
+
+        // Load the first cue's text for every entry with a transcript sidecar,
+        // so the entry list can show it as the title line. Best-effort: a
+        // missing or unparseable sidecar just yields no preview.
+        const previews = new Map<string, string>()
+        for (const entry of list) {
+          if (!srtAudios.has(entry.name)) continue
+          const srt = await readEntrySrt(h, entry.name)
+          if (srt && srt.trim() !== '') {
+            const cues = parseSrt(srt)
+            if (cues && cues.length > 0 && cues[0]!.text) {
+              previews.set(entry.name, cues[0]!.text)
+            }
+          }
+        }
+        setTranscriptPreviews(previews)
+
+        // Backfill durations for entries that don't have one — e.g. files added
+        // externally to the journal folder, or imported before duration tracking.
+        // Decode each and persist; fire-and-forget, best-effort. Runs in the
+        // background so the list renders immediately with what we already know.
+        const missing = list.filter((e) => !durs.has(e.name))
+        if (missing.length > 0) {
+          void (async () => {
+            let filled = 0
+            for (const entry of missing) {
+              const bytes = new Uint8Array(await entry.file.arrayBuffer())
+              const measured = await measureAudioDuration(bytes)
+              if (measured !== null) {
+                void recordEntryDuration(entry.name, measured)
+                filled += 1
+                // Update the visible map so the list picks up the new value.
+                setDurations((prev) => {
+                  const next = new Map(prev)
+                  next.set(entry.name, measured)
+                  return next
+                })
+              }
+            }
+            console.info(
+              '[journal] backfilled durations for',
+              filled,
+              'of',
+              missing.length,
+              'entries without one',
+            )
+          })()
+        }
+
+        // Backfill transcripts for entries lacking an SRT sidecar, when
+        // transcription is enabled. Transcription is heavy (decode + VAD + model
+        // inference), so run one entry at a time, checking the abort signal
+        // between entries so it stops when the route unmounts. Fire-and-forget;
+        // the status map drives the UI, and each completed entry's sidecar is
+        // picked up on the next refresh.
+        if (settings.transcriptionMode !== 'disabled') {
+          const needTranscript = list.filter((e) => !srtAudios.has(e.name))
+          if (needTranscript.length > 0) {
+            // Abort any prior backfill (e.g. from a previous refresh) and start
+            // a new one. Only one backfill runs at a time.
+            transcribeAbortRef.current?.abort()
+            const abort = new AbortController()
+            transcribeAbortRef.current = abort
+            void (async () => {
+              let done = 0
+              for (const entry of needTranscript) {
+                if (abort.signal.aborted) break
+                const status: TranscribeStatus = await transcribeEntry({
+                  file: entry.file,
+                  handle: h,
+                  audioName: entry.name,
+                  mode: settings.transcriptionMode,
+                  signal: abort.signal,
+                  onStatus: (s) => {
+                    setTranscribeStatus((prev) => {
+                      const next = new Map(prev)
+                      next.set(entry.name, s)
+                      return next
+                    })
+                  },
+                })
+                if (status.kind === 'done') {
+                  done += 1
+                  // Surface the preview text immediately rather than waiting for
+                  // the whole batch to finish.
+                  const srt = await readEntrySrt(h, entry.name)
+                  if (srt && srt.trim() !== '') {
+                    const cues = parseSrt(srt)
+                    if (cues && cues.length > 0 && cues[0]!.text) {
+                      setTranscriptPreviews((prev) => {
+                        const next = new Map(prev)
+                        next.set(entry.name, cues[0]!.text)
+                        return next
+                      })
+                    }
+                  }
+                  setTranscribeStatus((prev) => {
+                    const next = new Map(prev)
+                    next.delete(entry.name)
+                    return next
+                  })
+                }
+              }
+              if (abort.signal.aborted) return
+              console.info(
+                '[journal] backfilled transcripts for',
+                done,
+                'of',
+                needTranscript.length,
+                'entries without one',
+              )
+              setTranscribeStatus(new Map())
+            })()
+          }
+        }
+      } catch (err) {
+        console.error('[journal] failed to list entries:', err)
+        toast('Could not read the journal folder')
+      }
+    },
+    [settings.transcriptionMode],
+  )
 
   // Load the saved folder on mount and try to get access straight away.
   // ensureAccess only prompts when permission isn't already granted; navigating
@@ -319,7 +449,7 @@ function Journal() {
     if (!handle || entries.length === 0) return
     setExporting(true)
     try {
-      const blob = await buildJournalZip(entries, durations)
+      const blob = await buildJournalZip(entries, handle)
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
@@ -475,6 +605,83 @@ function Journal() {
     }
   }, [])
 
+  // SRT editor modal: the entry being edited, the loaded SRT text, and whether
+  // an "improve transcript" run is in progress for it.
+  const [srtEditorEntry, setSrtEditorEntry] = useState<JournalEntry | null>(
+    null,
+  )
+  const [srtEditorText, setSrtEditorText] = useState('')
+  const [srtImproving, setSrtImproving] = useState(false)
+
+  // Open the SRT editor for an entry. If a transcript sidecar exists, load it;
+  // otherwise decode + VAD the audio to build an SRT skeleton with `<voiced>`
+  // placeholders the user can fill in by hand.
+  const handleOpenSrtEditor = useCallback(
+    async (entry: JournalEntry) => {
+      if (!handle) return
+      const srt = await readEntrySrt(handle, entry.name)
+      if (srt !== null) {
+        setSrtEditorText(srt)
+      } else {
+        // No sidecar: generate a VAD skeleton so the user has time ranges to
+        // edit. Best-effort — if VAD fails, open with an empty editor.
+        try {
+          const skeleton = await generateSrtSkeleton(entry.file)
+          setSrtEditorText(skeleton)
+        } catch (err) {
+          console.error('[journal] failed to generate SRT skeleton:', err)
+          setSrtEditorText('')
+        }
+      }
+      setSrtEditorEntry(entry)
+    },
+    [handle],
+  )
+
+  // Save the edited SRT back to the journal folder.
+  const handleSaveSrt = useCallback(
+    async (srt: string) => {
+      if (!handle || !srtEditorEntry) return
+      await writeEntrySrt(handle, srtEditorEntry.name, srt)
+      track('journal/edit-srt')
+      await refresh(handle)
+    },
+    [handle, srtEditorEntry, refresh],
+  )
+
+  // Re-transcribe the entry with the large (Whisper) model, overwriting the SRT.
+  const handleImproveTranscript = useCallback(async () => {
+    if (!handle || !srtEditorEntry) return
+    setSrtImproving(true)
+    try {
+      const status = await transcribeEntry({
+        file: srtEditorEntry.file,
+        handle,
+        audioName: srtEditorEntry.name,
+        mode: settings.transcriptionMode,
+        forceTier: 'large',
+        onStatus: (s) => {
+          if (s.kind === 'done' || s.kind === 'error') return
+        },
+      })
+      if (status.kind === 'done') {
+        const srt = await readEntrySrt(handle, srtEditorEntry.name)
+        setSrtEditorText(srt ?? '')
+        await refresh(handle)
+        track('journal/improve-transcript')
+        toast('Transcript improved', {
+          description: 'The updated transcript has been saved.',
+        })
+      } else if (status.kind === 'error') {
+        toast('Could not improve transcript', {
+          description: status.message,
+        })
+      }
+    } finally {
+      setSrtImproving(false)
+    }
+  }, [handle, srtEditorEntry, settings.transcriptionMode, refresh])
+
   // Deletion removes the file from the user's folder on disk, so confirm first.
   const [pendingDelete, setPendingDelete] = useState<JournalEntry | null>(null)
 
@@ -489,6 +696,7 @@ function Journal() {
     try {
       await deleteEntry(handle, entry.name)
       void deleteEntryDuration(entry.name)
+      void deleteEntrySrt(handle, entry.name)
       track('journal/delete')
       void refresh(handle)
       toast('Entry deleted', { description: entry.name })
@@ -528,6 +736,10 @@ function Journal() {
         <DropdownMenuItem onClick={() => setAudioSettingsOpen(true)}>
           <Mic className="size-4" />
           Audio settings
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTranscriptionSettingsOpen(true)}>
+          <FileText className="size-4" />
+          Transcription settings
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
@@ -823,6 +1035,9 @@ function Journal() {
             {entries.map((entry) => {
               const isErrored = errored.has(entry.name)
               const isPlaying = playingName === entry.name
+              const status = transcribeStatus.get(entry.name)
+              const isTranscribing = status?.kind === 'running'
+              const preview = transcriptPreviews.get(entry.name)
               return (
                 <li key={entry.name} className="flex items-center gap-3 py-3">
                   <Button
@@ -839,14 +1054,47 @@ function Journal() {
                     )}
                   </Button>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{entry.name}</p>
+                    <p className="truncate text-sm font-medium">
+                      {preview ?? entry.name}
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       {new Date(entry.lastModified).toLocaleString()}
                       {durations.has(entry.name) &&
                         ` · ${formatDuration(durations.get(entry.name)!)}`}
                       {isErrored && ' · unsupported format'}
+                      {isTranscribing &&
+                        ` · transcribing${
+                          status.total > 0
+                            ? ` (${status.done + 1}/${status.total})`
+                            : '…'
+                        }`}
+                      {!isTranscribing &&
+                        status?.kind === 'error' &&
+                        ' · transcript failed'}
                     </p>
                   </div>
+                  {!isTranscribing && (
+                    <Tooltip>
+                      <TooltipTrigger
+                        render={
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Edit transcript (SRT)"
+                            onClick={() => void handleOpenSrtEditor(entry)}
+                          />
+                        }
+                      >
+                        <FileText className="size-4" />
+                      </TooltipTrigger>
+                      <TooltipContent sideOffset={8}>
+                        Edit transcript (SRT)
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                  {isTranscribing && (
+                    <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                  )}
                   <Tooltip>
                     <TooltipTrigger
                       render={
@@ -901,6 +1149,24 @@ function Journal() {
       <AudioSettingsModal
         open={audioSettingsOpen}
         onOpenChange={setAudioSettingsOpen}
+      />
+
+      <TranscriptionSettingsModal
+        open={transcriptionSettingsOpen}
+        onOpenChange={setTranscriptionSettingsOpen}
+      />
+
+      <SrtEditorModal
+        open={srtEditorEntry !== null}
+        onOpenChange={(open) => !open && setSrtEditorEntry(null)}
+        audioName={srtEditorEntry?.name ?? ''}
+        audioFile={srtEditorEntry?.file ?? null}
+        srt={srtEditorText}
+        onSave={handleSaveSrt}
+        onImprove={handleImproveTranscript}
+        improving={srtImproving}
+        canImprove={settings.transcriptionMode === 'large'}
+        transcriptionDisabled={settings.transcriptionMode === 'disabled'}
       />
 
       <Dialog

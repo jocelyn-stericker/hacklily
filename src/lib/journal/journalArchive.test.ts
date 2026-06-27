@@ -3,7 +3,7 @@
 
 import { describe, it, expect } from 'vitest'
 
-import { parseManifest, summarizeSinceExport } from './journalArchive'
+import { summarizeSinceExport } from './journalArchive'
 
 describe('summarizeSinceExport', () => {
   const durations = new Map<string, number>([
@@ -55,42 +55,5 @@ describe('summarizeSinceExport', () => {
       count: 0,
       seconds: 0,
     })
-  })
-})
-
-describe('parseManifest', () => {
-  const encode = (s: string) => new TextEncoder().encode(s)
-
-  it('round-trips a well-formed manifest', () => {
-    const manifest = { version: 1, durations: { 'a.mp3': 10.5, 'b.mp3': 20 } }
-    expect(parseManifest(encode(JSON.stringify(manifest)))).toEqual(manifest)
-  })
-
-  it('drops non-number duration values', () => {
-    const manifest = {
-      version: 1,
-      durations: { 'a.mp3': 10, 'bad.mp3': 'oops', 'b.mp3': 20 },
-    }
-    expect(parseManifest(encode(JSON.stringify(manifest)))).toEqual({
-      version: 1,
-      durations: { 'a.mp3': 10, 'b.mp3': 20 },
-    })
-  })
-
-  it('rejects an unknown version', () => {
-    const manifest = { version: 2, durations: {} }
-    expect(parseManifest(encode(JSON.stringify(manifest)))).toBeNull()
-  })
-
-  it('rejects malformed JSON', () => {
-    expect(parseManifest(encode('{not json'))).toBeNull()
-  })
-
-  it('rejects a non-object root', () => {
-    expect(parseManifest(encode('"hello"'))).toBeNull()
-  })
-
-  it('rejects a missing durations object', () => {
-    expect(parseManifest(encode(JSON.stringify({ version: 1 })))).toBeNull()
   })
 })

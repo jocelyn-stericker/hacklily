@@ -6,6 +6,8 @@
 // filtering, sorting) carry no handle I/O so they're unit-testable under jsdom
 // without a real directory; the handle operations below build on them.
 
+import { srtNameFor } from './journalSrt'
+
 // --- Pure core (no handle I/O) ---
 
 // Extensions we treat as journal-playable audio. An existing folder may hold
@@ -150,6 +152,74 @@ export async function deleteEntry(
   name: string,
 ): Promise<void> {
   await handle.removeEntry(name)
+}
+
+// --- SRT sidecar transcripts ---
+// Each audio entry may carry a sibling `<basename>.srt` file with its
+// transcript. These are plain text files in the journal folder, readable by
+// any subtitle editor and round-tripped through zip export/import.
+
+// Read an entry's SRT sidecar, or null if it doesn't exist. Resolves the sidecar
+// filename from the audio name (`foo.mp3` -> `foo.srt`).
+export async function readEntrySrt(
+  handle: FileSystemDirectoryHandle,
+  audioName: string,
+): Promise<string | null> {
+  const srtName = srtNameFor(audioName)
+  try {
+    const fileHandle = await handle.getFileHandle(srtName)
+    const file = await fileHandle.getFile()
+    return await file.text()
+  } catch {
+    return null
+  }
+}
+
+// Write (or overwrite) an entry's SRT sidecar. `srt` is the full file text.
+export async function writeEntrySrt(
+  handle: FileSystemDirectoryHandle,
+  audioName: string,
+  srt: string,
+): Promise<void> {
+  const srtName = srtNameFor(audioName)
+  const fileHandle = await handle.getFileHandle(srtName, { create: true })
+  const writable = await fileHandle.createWritable()
+  await writable.write(srt)
+  await writable.close()
+}
+
+// Remove an entry's SRT sidecar if one exists. No-op (resolves) if not.
+export async function deleteEntrySrt(
+  handle: FileSystemDirectoryHandle,
+  audioName: string,
+): Promise<void> {
+  const srtName = srtNameFor(audioName)
+  try {
+    await handle.removeEntry(srtName)
+  } catch {
+    // Missing file is fine.
+  }
+}
+
+// Set of audio entry names (e.g. `foo.mp3`) that have a `.srt` sidecar in the
+// folder. Lets the route show transcript status without reading each file.
+export async function listEntrySrtAudios(
+  handle: FileSystemDirectoryHandle,
+): Promise<Set<string>> {
+  const srtBases = new Set<string>()
+  for await (const entry of handle.values()) {
+    if (entry.kind !== 'file') continue
+    const lower = entry.name.toLowerCase()
+    if (!lower.endsWith('.srt')) continue
+    srtBases.add(entry.name.slice(0, -4))
+  }
+  const audios = new Set<string>()
+  for (const base of srtBases) {
+    for (const ext of AUDIO_EXTENSIONS) {
+      audios.add(`${base}.${ext}`)
+    }
+  }
+  return audios
 }
 
 // List the folder's audio files, newest first. Ordered by file `lastModified`
