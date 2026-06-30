@@ -49,7 +49,6 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react": "^7.30.1",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "file-loader": "^6.2.0",
     "jest": "^28.1.3",
     "jest-environment-jsdom": "^28.1.3",
     "mini-css-extract-plugin": "^2.6.1",
