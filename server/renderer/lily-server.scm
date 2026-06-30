@@ -233,6 +233,23 @@
       (lambda (file)
         (unless (eq? file '())
           (ly:reset-all-fonts)
+          ;; The warm server is launched with --pdf --svg, so the C++
+          ;; output_formats_global list is ("pdf" "svg") and is never
+          ;; cleared between requests. Each backend's framework-*.scm
+          ;; warns about the formats it can't produce:
+          ;;   svg backend -> "ignoring unsupported formats (pdf)"
+          ;;   ps  backend -> "PS backend does not support SVG format"
+          ;; Both are benign (each backend only writes its own format
+          ;; regardless of the list), so suppress them as expected
+          ;; warnings for the backend we've selected.
+          (let ((backend (ly:get-option 'backend)))
+            (cond
+              ((eq? backend 'svg)
+               (ly:expect-warning
+                 (G_ "ignoring unsupported formats ~a") '("pdf")))
+              ((eq? backend 'ps)
+               (ly:expect-warning
+                 (G_ "PS backend does not support SVG format")))))
           (lilypond-file (lambda (key failed-file) #f) file)
           (ly:check-expected-warnings)
           (ly:reset-all-fonts)

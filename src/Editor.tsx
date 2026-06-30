@@ -301,7 +301,7 @@ export default class Editor extends React.PureComponent<Props> {
           className={css(APP_STYLE.urgentEditorNotification)}
           style={{ width }}
         >
-          <Icon icon="warning-sign" /> This song uses LilyPond 2.23, which is an
+          <Icon icon="warning-sign" /> This song uses LilyPond 2.27, which is an
           unstable development version and may change without notice.{" "}
           <a
             onClick={onHideUnstableNotification}

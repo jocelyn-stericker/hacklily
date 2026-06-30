@@ -103,7 +103,7 @@ function cleanLogs(logs: string): string {
       // Move wrapper errors to the start of the page.
       .replace(
         /\/tmp\/lyp\/wrappers\/hacklily.ly:([0-9]*):([0-9]*)/g,
-        "/tmp/hacklily.ly:2:1",
+        "/tmp/hacklily.ly:$1:$2",
       )
       // Hide confusing reference to lyp
       .replace(/`\/tmp\/lyp\/wrappers\/hacklily.ly'/g, "`hacklily-wrapper.ly'")

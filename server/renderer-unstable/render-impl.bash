@@ -20,7 +20,7 @@
 # lily-server.scm, listening on TCP port 1225. For each request we
 # open a fresh connection, write the source to
 # /tmp/lyp/wrappers/hacklily.ly, send a compile s-expression, wait for
-# the <<HACKLILY-DONE>> sentinel (or a 5s timeout), then base64/json-
+# the EOF sentinel (or a 5s timeout), then base64/json-
 # encode the produced output files and emit one JSON response line.
 
 set -u
@@ -92,7 +92,13 @@ while read -r line; do
     timeout 5 bash -c '
         exec 3<>/dev/tcp/localhost/1225
         printf "%s\n" "$1" >&3
-        while IFS= read -r -u 3 line; do
+        # Read line-by-line, but also capture a trailing partial line
+        # (one with no terminating newline). LilyPond progress messages
+        # like "Drawing systems..." are written without a newline; the
+        # following warning that would have supplied it may be suppressed
+        # (ly:expect-warning), so read returns non-zero on EOF with the
+        # partial line in $line -- print it before the loop exits.
+        while IFS= read -r -u 3 line || [ -n "$line" ]; do
             printf "%s\n" "$line"
         done
     ' -- "(hacklily:compile-file \"/tmp/lyp/wrappers\" \"$opts\" \"/tmp/lyp/wrappers/hacklily.ly\")" > /tmp/lyp/wrappers/hacklily.logs 2>/dev/null
