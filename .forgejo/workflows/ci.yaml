@@ -16,14 +16,14 @@ jobs:
         with:
           site: https://www.hacklily.org
           source: ./dist
-          server: https://grebedoc.dev
+          server: grebedoc.dev
           password: ${{ secrets.GREBEDOC_PASSWORD }}
       - name: Deploy to Grebedoc (hacklily.org)
         uses: actions/git-pages@v2
         with:
           site: https://hacklily.org
           source: ./dist
-          server: https://grebedoc.dev
+          server: grebedoc.dev
           password: ${{ secrets.GREBEDOC_PASSWORD }}
 
   build-renderers:
