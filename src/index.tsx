@@ -36,7 +36,7 @@ function render(): void {
       {...getQueryProps()}
       dirtySongs={getDirtySongs()}
       auth={getAuth()}
-      csrf={localStorage.csrf || null}
+      csrf={sessionStorage.csrf || null}
       colourScheme={localStorage.colourScheme || "vs-dark"}
       hideUnstableNotification={getHideUnstableNotification()}
       setQuery={setQuery}
@@ -186,11 +186,11 @@ function setHideUnstableNotification(hideUnstableNotification: boolean) {
 
 function setCSRF(csrf: string | null): void {
   if (!csrf) {
-    delete localStorage.csrf;
-    delete localStorage.csrfQueryParams;
+    delete sessionStorage.csrf;
+    delete sessionStorage.csrfQueryParams;
   } else {
-    localStorage.csrf = csrf;
-    localStorage.csrfQueryParams = JSON.stringify(getQueryProps(), null, 2);
+    sessionStorage.csrf = csrf;
+    sessionStorage.csrfQueryParams = JSON.stringify(getQueryProps(), null, 2);
   }
   render();
 }
@@ -205,12 +205,12 @@ window.addEventListener("popstate", (_ev: PopStateEvent): void => {
 // Add back query props during OAuth flow, if needed.
 const queryProps: QueryProps = getQueryProps();
 if (
-  queryProps.state === localStorage.csrf &&
-  localStorage.csrf &&
-  localStorage.csrfQueryParams
+  queryProps.state === sessionStorage.csrf &&
+  sessionStorage.csrf &&
+  sessionStorage.csrfQueryParams
 ) {
   // no need to render, because setQuery calls render.
-  const newQuery: QueryProps = JSON.parse(localStorage.csrfQueryParams);
+  const newQuery: QueryProps = JSON.parse(sessionStorage.csrfQueryParams);
   setQuery(newQuery, true);
 } else {
   render();

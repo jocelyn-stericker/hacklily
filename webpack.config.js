@@ -70,5 +70,8 @@ module.exports = {
       "REACT_APP_GITHUB_CLIENT_ID",
       "REACT_APP_BACKEND_WS_URL",
     ]),
+    new webpack.EnvironmentPlugin({
+      HOMEPAGE: "https://hacklily.org",
+    }),
   ].filter((a) => !!a),
 };

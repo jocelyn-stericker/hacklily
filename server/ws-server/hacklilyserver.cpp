@@ -234,10 +234,14 @@ void HacklilyServer::_handleTextMessageReceived(QString message)
             return;
         }
         QNetworkRequest request;
-        request.setUrl(QUrl("https://api.github.com/applications/" + _ghClientID + "/tokens/" + requestObj["params"].toObject()["token"].toString()));
+        request.setUrl(QUrl("https://api.github.com/applications/" + _ghClientID + "/token"));
         request.setRawHeader("Accept", QByteArray("application/json"));
+        request.setRawHeader("Content-Type", QByteArray("application/json"));
         request.setRawHeader("Authorization", "Basic " + (_ghClientID + ":" + _ghSecret).toBase64());
-        QNetworkReply *reply = _nam->deleteResource(request);
+        QJsonObject bodyObj;
+        bodyObj["access_token"] = requestObj["params"].toObject()["token"].toString();
+        QJsonDocument bodyDoc(bodyObj);
+        QNetworkReply *reply = _nam->sendCustomRequest(request, "DELETE", QByteArray(bodyDoc.toJson(QJsonDocument::Compact)));
         bool ok;
         int socketID = socket->property("socketID").toInt(&ok);
         if (!ok)
