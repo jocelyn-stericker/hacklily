@@ -26,6 +26,7 @@ import { debounce } from "lodash";
 
 import { decodeArrayBuffer } from "./base64Binary";
 import { MODE_BOTH, MODE_VIEW, ViewMode } from "./Header";
+import { renderVersionFor } from "./lilypondVersion";
 import Logs from "./Logs";
 import RPCClient, { RenderResponse } from "./RPCClient";
 import { APP_STYLE } from "./styles";
@@ -204,13 +205,7 @@ export default class Preview extends React.PureComponent<Props, State> {
         throw new Error("rpc must be set!");
       }
 
-      // Decide whether to use the stable version or not.
-      const maybeVersion = /\\version\s*"(\d+)\.?(\d+)?\.?(\d+)?/gm.exec(code);
-      const versionSlices = maybeVersion
-        ? maybeVersion.slice(1).map((v) => parseInt(v, 10))
-        : [];
-      const isUnstable = versionSlices[0] === 2 && versionSlices[1] > 22;
-      version = isUnstable ? "unstable" : "stable";
+      version = renderVersionFor(code);
 
       const response: RenderResponse = await rpc.call("render", {
         backend: "svg",
@@ -246,9 +241,14 @@ export default class Preview extends React.PureComponent<Props, State> {
           ? `${root.scrollHeight}px`
           : "0";
 
+      // dompurify v3 preserves the <style>{ tspan { white-space: pre; } }</style>
+      // block LilyPond 2.26+ emits (the CDATA wrapper is dropped, but the CSS
+      // rule survives and still applies), so multi-space text/lyrics keep their
+      // spacing. ALLOW_UNKNOWN_PROTOCOLS keeps LilyPond's textedit: links.
+      // See src/Preview.sanitize.test.ts for the regression coverage.
       root.innerHTML = DOMPurify.sanitize(files.join(""), {
         ALLOW_UNKNOWN_PROTOCOLS: true,
-      } as object);
+      });
 
       this.props.onLogsObtained(logs, version);
       if (midi !== this.previousMIDIData) {

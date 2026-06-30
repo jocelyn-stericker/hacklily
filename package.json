@@ -21,7 +21,7 @@
     "react-router-dom": "^6.3.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.18.10",
+    "@babel/core": "^7.29.7",
     "@babel/plugin-proposal-class-properties": "^7.18.6",
     "@babel/plugin-transform-runtime": "^7.18.10",
     "@babel/preset-env": "^7.18.10",
@@ -40,6 +40,7 @@
     "@types/react-dom": "^18.0.6",
     "@typescript-eslint/eslint-plugin": "^5.33.1",
     "@typescript-eslint/parser": "^5.33.1",
+    "babel-jest": "^28.1.3",
     "babel-loader": "^8.2.5",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.1",
@@ -49,6 +50,8 @@
     "eslint-plugin-react": "^7.30.1",
     "eslint-plugin-react-hooks": "^4.6.0",
     "file-loader": "^6.2.0",
+    "jest": "^28.1.3",
+    "jest-environment-jsdom": "^28.1.3",
     "mini-css-extract-plugin": "^2.6.1",
     "monaco-editor-webpack-plugin": "^7.0.1",
     "prettier": "^2.7.1",
@@ -60,7 +63,7 @@
     "webpack-dev-server": "^4.10.0"
   },
   "scripts": {
-    "test": "eslint ./src --ext tsx,ts,js,jsx && tsc --noEmit",
+    "test": "jest && eslint ./src --ext tsx,ts,js,jsx && tsc --noEmit",
     "build": "rimraf dist pkg && env REACT_APP_GITHUB_CLIENT_ID=10a6656f66c8392b4d35 REACT_APP_BACKEND_WS_URL=wss://hacklily-render.nettek.ca/rpc webpack && npm test",
     "start": "rimraf dist pkg && env REACT_APP_GITHUB_CLIENT_ID=5a1e4e51dea710198f18 REACT_APP_BACKEND_WS_URL=ws://localhost:2000 webpack-dev-server --open --mode development",
     "start:remote-backend": "rimraf dist pkg && env REACT_APP_GITHUB_CLIENT_ID=10a6656f66c8392b4d35 REACT_APP_BACKEND_WS_URL=wss://hacklily-render.nettek.ca/rpc webpack-dev-server --open --mode development"

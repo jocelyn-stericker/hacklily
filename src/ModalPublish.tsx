@@ -33,6 +33,7 @@ import React from "react";
 
 import { Auth } from "./auth";
 import { Conflict, File, FileNotFound, ls, rm, write } from "./gitfs";
+import { renderVersionFor } from "./lilypondVersion";
 import ModalSaving from "./ModalSaving";
 import RPCClient from "./RPCClient";
 
@@ -236,14 +237,7 @@ export async function doPublish(
   rpc: RPCClient,
   overwrite: boolean,
 ): Promise<boolean> {
-  // Decide whether to use the stable version or not.
-  let version: "unstable" | "stable" = "stable";
-  const maybeVersion = /\\version\s*"(\d+)\.?(\d+)?\.?(\d+)?/gm.exec(code);
-  const versionSlices = maybeVersion
-    ? maybeVersion.slice(1).map((v) => parseInt(v, 10))
-    : [];
-  const isUnstable = versionSlices[0] === 2 && versionSlices[1] > 22;
-  version = isUnstable ? "unstable" : "stable";
+  const version = renderVersionFor(code);
 
   const pdf: string = (
     await rpc.call("render", {

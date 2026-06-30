@@ -68,70 +68,6 @@ impl PartialEq for ReadyRenderContainer {
 
 impl Eq for ReadyRenderContainer {}
 
-static LILYPOND_INCLUDES: &[&str] = &[
-    "Welcome-to-LilyPond-MacOS.ly",
-    "Welcome_to_LilyPond.ly",
-    "arabic.ly",
-    "articulate.ly",
-    "bagpipe.ly",
-    "base-tkit.ly",
-    "catalan.ly",
-    "chord-modifiers-init.ly",
-    "chord-repetition-init.ly",
-    "context-mods-init.ly",
-    "declarations-init.ly",
-    "deutsch.ly",
-    "drumpitch-init.ly",
-    "dynamic-scripts-init.ly",
-    "english.ly",
-    "engraver-init.ly",
-    "espanol.ly",
-    "event-listener.ly",
-    "festival.ly",
-    "generate-documentation.ly",
-    "generate-interface-doc-init.ly",
-    "grace-init.ly",
-    "graphviz-init.ly",
-    "gregorian.ly",
-    "guile-debugger.ly",
-    "hel-arabic.ly",
-    "init.ly",
-    "italiano.ly",
-    "lilypond-book-preamble.ly",
-    "lyrics-tkit.ly",
-    "makam.ly",
-    "midi-init.ly",
-    "music-functions-init.ly",
-    "nederlands.ly",
-    "norsk.ly",
-    "paper-defaults-init.ly",
-    "performer-init.ly",
-    "piano-tkit.ly",
-    "portugues.ly",
-    "predefined-fretboards-init.ly",
-    "predefined-guitar-fretboards.ly",
-    "predefined-guitar-ninth-fretboards.ly",
-    "predefined-mandolin-fretboards.ly",
-    "predefined-ukulele-fretboards.ly",
-    "property-init.ly",
-    "satb.ly",
-    "scale-definitions-init.ly",
-    "scheme-sandbox.ly",
-    "script-init.ly",
-    "spanners-init.ly",
-    "ssaattbb.ly",
-    "staff-tkit.ly",
-    "string-tunings-init.ly",
-    "suomi.ly",
-    "svenska.ly",
-    "text-replacements.ly",
-    "titling-init.ly",
-    "toc-init.ly",
-    "vlaams.ly",
-    "vocal-tkit.ly",
-    "voice-tkit.ly",
-];
-
 // If this line does not exist in the output, the Hacklily LilyPond REPL is likely dead.
 const CANARY_REPL_LINE_RENDER: &str = "Processing `/tmp/lyp/wrappers/hacklily.ly'";
 const CANARY_REPL_LINE_MUSICXML: &str = "Output to `hacklily.musicxml2ly.ly'";
@@ -156,17 +92,8 @@ async fn handle_request_impl(
             if request.backend == Backend::Svg {
                 request.src = "#(ly:set-option 'backend 'svg)\n".to_owned() + &request.src;
             } else if request.backend == Backend::Pdf {
-                request.src = "\n".to_owned() + &request.src;
-            }
-
-            // HACK: lys doesn't handle global includes, so lets handle them ourselves by
-            // outsmarting their regex.
-            for include in LILYPOND_INCLUDES {
-                let to_replace = "\\include \"".to_owned() + include + "\"";
-                if request.src.contains(&to_replace) {
-                    let replace_with = "\\include  \"".to_owned() + include + "\"";
-                    request.src = request.src.replace(&to_replace, &replace_with);
-                }
+                // PDF is produced by the PS backend in LilyPond 2.27.
+                request.src = "#(ly:set-option 'backend 'ps)\n".to_owned() + &request.src;
             }
 
             let request_json = serde_json::to_string(&request)
@@ -304,8 +231,7 @@ impl ReadyRenderContainer {
                 Ok(result_copy) => match serde_json::from_str::<Response>(&result_copy.1) {
                     Ok(result_copy) => Ok(Response {
                         files: result_copy.files,
-                        // HACK: After the first output, lys doubles newlines!
-                        logs: result_copy.logs.replace("\n\n", "\n"),
+                        logs: result_copy.logs,
                         midi: result_copy.midi,
                     }),
                     Err(err) => Ok(Response {

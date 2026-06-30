@@ -1,34 +1,141 @@
+# syntax=docker/dockerfile:1.6
+# Multi-stage build of LilyPond 2.26.0 (the current stable release
+# branch) from source. Works on both linux/amd64 and linux/arm64 since
+# LilyPond publishes no upstream linux-arm64 binary. Drops the previous
+# lyp/lys dependency entirely; the in-process Scheme render server lives
+# in lily-server.scm. The development branch (2.27.x) is built the same
+# way in ../renderer-unstable.
+
+#---------------------------------------------------------------------
+# Stage 1: build LilyPond from source.
+#---------------------------------------------------------------------
+FROM debian:sid-slim AS builder
+
+ARG LILYPOND_VERSION=2.26.0
+ARG LILYPOND_TARBALL_URL=https://gitlab.com/lilypond/lilypond/-/releases/v${LILYPOND_VERSION}/downloads/lilypond-${LILYPOND_VERSION}.tar.gz
+# Pinned checksum of the lilypond-2.26.0 release tarball. The build
+# verifies this unconditionally (fail-closed); override it when bumping
+# LILYPOND_VERSION. Leaving it blank now fails the build rather than
+# silently compiling an unverified download.
+ARG LILYPOND_TARBALL_SHA256=bbe82dbeba7f7f99ddcd8d1fa134a0d89cafa6e8f815fde5bb01f4208b06fe05
+
+# Build dependencies (autotools-based). See INSTALL.txt sections
+# 1.2.1 (runtime) and 1.2.2 (compile) for the canonical list.
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        ca-certificates \
+        wget \
+        autoconf \
+        automake \
+        pkg-config \
+        bison \
+        flex \
+        libfl-dev \
+        gettext \
+        texinfo \
+        texlive \
+        texlive-fonts-recommended \
+        texlive-metapost \
+        t1utils \
+        fontforge \
+        ghostscript \
+        python3 \
+        guile-3.0-dev \
+        libgmp-dev \
+        libfontconfig1-dev \
+        libfreetype6-dev \
+        libharfbuzz-dev \
+        libpango1.0-dev \
+        libcairo2-dev \
+        libglib2.0-dev \
+        libpng-dev \
+        libreadline-dev \
+        libltdl-dev \
+        && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
+RUN wget -q -O lilypond.tar.gz "${LILYPOND_TARBALL_URL}" && \
+    echo "${LILYPOND_TARBALL_SHA256}  lilypond.tar.gz" | sha256sum -c - && \
+    tar xzf lilypond.tar.gz && \
+    rm lilypond.tar.gz
+
+RUN mkdir -p /src/build && cd /src/build && \
+    /src/lilypond-${LILYPOND_VERSION}/configure \
+        --prefix=/usr/local \
+        --disable-documentation && \
+    make -j"$(nproc)" && \
+    make install
+
+# Smoke-test the freshly built binary.
+RUN echo '{c4}' | lilypond - 2>/dev/null && ls -la /usr/local/bin/lilypond
+
+#---------------------------------------------------------------------
+# Stage 2: runtime image.
+#---------------------------------------------------------------------
 FROM debian:sid-slim
-RUN echo \
-  'deb http://snapshot.debian.org/archive/debian/20230531T025815Z/ sid  main' > /etc/apt/sources.list.d/snapshot.list \
-  && printf "Package: ghostscript\nPin: origin snapshot.debian.org\nPin-Priority: 990\n\n" > /etc/apt/preferences.d/snapshot \
-  && printf "Package: libgs10\nPin: origin snapshot.debian.org\nPin-Priority: 990\n\n" >> /etc/apt/preferences.d/snapshot \
-  && printf "Package: libgs10-common\nPin: origin snapshot.debian.org\nPin-Priority: 990\n\n" >> /etc/apt/preferences.d/snapshot \
-  &&  apt-get -o Acquire::Check-Valid-Until=false update
-RUN apt-get -o Acquire::Check-Valid-Until=false install --no-install-recommends -y ruby curl bzip2 git locales-all gsfonts ghostscript fonts-dejavu-extra psmisc emacs-intl-fonts fonts-noto fonts-ipafont-mincho xfonts-bolkhov-75dpi xfonts-cronyx-100dpi xfonts-cronyx-75dpi patch python3 adduser && \
-    curl -L https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 > /usr/local/bin/jq && \
-    chmod +x /usr/local/bin/jq && echo 42 | jq .
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
-COPY no_lyp_check_update.patch /tmp
+
+# Runtime dependencies. We keep the font set the old image shipped so
+# existing scores render with the same metrics. Guile 3.0 is required
+# for LilyPond 2.27. ghostscript is used by the PS/PDF backends.
+# python3 ships musicxml2ly.
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        adduser \
+        guile-3.0 \
+        ghostscript \
+        gsfonts \
+        fonts-dejavu-extra \
+        fonts-noto \
+        fonts-ipafont-mincho \
+        fonts-urw-base35 \
+        emacs-intl-fonts \
+        xfonts-bolkhov-75dpi \
+        xfonts-cronyx-100dpi \
+        xfonts-cronyx-75dpi \
+        fontconfig \
+        python3 \
+        jq \
+        locales-all \
+        libgmp10 \
+        libltdl7 \
+        libpango-1.0-0 \
+        libpangoft2-1.0-0 \
+        libpangocairo-1.0-0 \
+        libcairo2 \
+        libfontconfig1 \
+        libfreetype6 \
+        libpng16-16 \
+        libharfbuzz0b \
+        libglib2.0-0 \
+        && rm -rf /var/lib/apt/lists/*
+
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
+
+# Pull the installed LilyPond tree out of the builder.
+COPY --from=builder /usr/local /usr/local
+
+# Make sure the dynamic linker can find any libs LilyPond installed
+# under /usr/local/lib (e.g. its own .so files, Guile extensions).
+RUN ldconfig
+
+# Create an unprivileged user. The whole tree under /tmp must be
+# writeable by it (the render loop writes source/output files there).
 RUN adduser --disabled-password --gecos '' r && \
     chown -R r /tmp && \
     chown -R r /home/r && \
-    curl -OL https://github.com/noteflakes/lyp/releases/download/1.3.8/lyp-1.3.8-linux-x86_64.tar.gz && \
-    tar -xzf lyp-1.3.8-linux-x86_64.tar.gz && \
-    chown -R r ./lyp-1.3.8-linux-x86_64 && \
-    su r -c "./lyp-1.3.8-linux-x86_64/bin/lyp install self" && \
-    cd ~r/.lyp && \
-    patch -p0 < /tmp/no_lyp_check_update.patch && \
-    rm /tmp/no_lyp_check_update.patch && \
-    su r -c "source ~/.profile; lyp install lilypond@2.22.2 && cd; git clone https://github.com/lyp-packages/lys; lyp install lys@dev:~/lys" && \
-    rm /home/r/.lyp/lilyponds/*/etc/relocate/gs.reloc && \
-    rm /home/r/.lyp/lilyponds/*/bin/gs && \
-    chown r -R /tmp/* && \
-    chown nobody -R /home/r/.lyp/* /home/r/lys
-RUN apt-get remove -y curl patch && apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/*
-RUN su r -c "source ~/.profile; cd /tmp; echo '{c4}' | lilypond --verbose -"
-COPY render-impl.bash /usr/local/bin
+    mkdir -p /tmp/lyp/wrappers && \
+    chown -R r /tmp/lyp
+
+COPY lily-server.scm /usr/local/share/
+COPY render-impl.bash /usr/local/bin/
+RUN chmod +x /usr/local/bin/render-impl.bash
+
+# Verify the toolchain end-to-end before declaring the image good.
+RUN su r -c "cd /tmp && echo '{c4}' | lilypond -"
+
 USER r
-CMD render-impl.bash
+WORKDIR /tmp
+CMD ["/usr/local/bin/render-impl.bash"]

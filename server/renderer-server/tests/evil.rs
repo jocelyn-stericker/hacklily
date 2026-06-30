@@ -48,14 +48,14 @@ fn evil() {
     }
 
     let simple_stable_response = Response {
-        files: vec![include_str!("ly/simple.ly.2_18_2.svg").to_owned()],
-        logs: include_str!("ly/simple.ly.2_18_2.txt").to_owned(),
+        files: vec![include_str!("ly/simple.ly.2_26_0.svg").to_owned()],
+        logs: include_str!("ly/simple.ly.2_26_0.txt").to_owned(),
         midi: "".to_owned(),
     };
 
     let simple_unstable_response = Response {
-        files: vec![include_str!("ly/simple.ly.2_19_82.svg").to_owned()],
-        logs: include_str!("ly/simple.ly.2_19_82.txt").to_owned(),
+        files: vec![include_str!("ly/simple.ly.2_27_1.svg").to_owned()],
+        logs: include_str!("ly/simple.ly.2_27_1.txt").to_owned(),
         midi: "".to_owned(),
     };
 
