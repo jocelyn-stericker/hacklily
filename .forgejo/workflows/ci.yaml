@@ -1,0 +1,82 @@
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build-site:
+    runs-on: faith
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install deps
+        run: npm ci
+      - name: Build (runs tests via the build script)
+        run: npm run build
+      - name: Deploy to Grebedoc (www.hacklily.org)
+        uses: actions/git-pages@v2
+        with:
+          site: https://www.hacklily.org
+          source: ./dist
+          server: https://grebedoc.dev
+          password: ${{ secrets.GREBEDOC_PASSWORD }}
+      - name: Deploy to Grebedoc (hacklily.org)
+        uses: actions/git-pages@v2
+        with:
+          site: https://hacklily.org
+          source: ./dist
+          server: https://grebedoc.dev
+          password: ${{ secrets.GREBEDOC_PASSWORD }}
+
+  build-renderers:
+    runs-on: faith
+    steps:
+      - uses: actions/checkout@v5
+      - name: Login to Codeberg Container Registry
+        run: echo "${{ secrets.CODEBERG_PACKAGES_TOKEN }}" | docker login codeberg.org -u jocelyn-stericker --password-stdin
+      - name: Build & push stable renderer
+        run: |
+          TAG=codeberg.org/jocelyn-stericker/hacklily-renderer
+          docker build \
+            -t "${TAG}:latest" \
+            -t "${TAG}:0.0.${{ github.run_number }}" \
+            server/renderer
+          docker push "${TAG}:latest"
+          docker push "${TAG}:0.0.${{ github.run_number }}"
+      - name: Build & push unstable renderer
+        run: |
+          TAG=codeberg.org/jocelyn-stericker/hacklily-renderer-unstable
+          docker build \
+            -t "${TAG}:latest" \
+            -t "${TAG}:0.0.${{ github.run_number }}" \
+            server/renderer-unstable
+          docker push "${TAG}:latest"
+          docker push "${TAG}:0.0.${{ github.run_number }}"
+
+  build-renderer-server:
+    runs-on: faith
+    defaults:
+      run:
+        working-directory: server/renderer-server
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install Rust toolchain
+        run: |
+          if ! command -v cargo >/dev/null 2>&1; then
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+            echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          fi
+      - name: Test
+        run: cargo test --locked
+      - name: Configure Codeberg Cargo registry
+        run: |
+          mkdir -p ~/.cargo
+          {
+            printf '[registries.codeberg]\n'
+            printf 'index = "https://codeberg.org/jocelyn-stericker/cargo.git"\n'
+          } >> ~/.cargo/config.toml
+      - name: Publish to Codeberg Cargo registry
+        env:
+          CARGO_REGISTRIES_CODEBERG_TOKEN: ${{ secrets.CODEBERG_PACKAGES_TOKEN }}
+        run: |
+          # Bump the patch to a unique CI version so re-publishes succeed.
+          sed -i -E 's/^version = "[0-9.]+"/version = "0.1.${{ github.run_number }}"/' Cargo.toml
+          cargo publish --registry codeberg --allow-dirty
