@@ -26,54 +26,70 @@ jobs:
           server: grebedoc.dev
           password: ${{ secrets.GREBEDOC_PASSWORD }}
 
-  build-renderers:
+  build-and-publish-server:
     runs-on: faith
     steps:
       - uses: actions/checkout@v5
-      - name: Login to Codeberg Container Registry
-        run: echo "${{ secrets.CODEBERG_PACKAGES_TOKEN }}" | docker login codeberg.org -u jocelyn-stericker --password-stdin
-      - name: Build & push stable renderer
+      # -----------------------------------------------------------------
+      # (1) Build the renderer Docker images. Tag them both with the
+      #     local names the test suite looks up (hacklily-renderer /
+      #     hacklily-renderer-unstable, see tests/util.rs) and with the
+      #     Codeberg Container Registry tags we'll publish under.
+      # -----------------------------------------------------------------
+      - name: Build stable renderer
         run: |
-          TAG=codeberg.org/jocelyn-stericker/hacklily-renderer
           docker build \
-            -t "${TAG}:latest" \
-            -t "${TAG}:0.0.${{ github.run_number }}" \
+            -t hacklily-renderer \
+            -t codeberg.org/jocelyn-stericker/hacklily-renderer:latest \
+            -t codeberg.org/jocelyn-stericker/hacklily-renderer:0.0.${{ github.run_number }} \
             server/renderer
-          docker push "${TAG}:latest"
-          docker push "${TAG}:0.0.${{ github.run_number }}"
-      - name: Build & push unstable renderer
+          docker images | grep hacklily-renderer
+      - name: Build unstable renderer
         run: |
-          TAG=codeberg.org/jocelyn-stericker/hacklily-renderer-unstable
           docker build \
-            -t "${TAG}:latest" \
-            -t "${TAG}:0.0.${{ github.run_number }}" \
+            -t hacklily-renderer-unstable \
+            -t codeberg.org/jocelyn-stericker/hacklily-renderer-unstable:latest \
+            -t codeberg.org/jocelyn-stericker/hacklily-renderer-unstable:0.0.${{ github.run_number }} \
             server/renderer-unstable
-          docker push "${TAG}:latest"
-          docker push "${TAG}:0.0.${{ github.run_number }}"
-
-  build-renderer-server:
-    runs-on: faith
-    defaults:
-      run:
-        working-directory: server/renderer-server
-    steps:
-      - uses: actions/checkout@v5
+          docker images | grep hacklily-renderer-unstable
+      # -----------------------------------------------------------------
+      # (2) Run the renderer-server test suite. The integration tests
+      #     spawn containers from the images built above.
+      # -----------------------------------------------------------------
       - name: Install Rust toolchain
+        working-directory: server/renderer-server
         run: |
           if ! command -v cargo >/dev/null 2>&1; then
             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
             echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
           fi
-      - name: Test
+      - name: Test renderer-server
+        working-directory: server/renderer-server
         run: cargo test --locked
+      # -----------------------------------------------------------------
+      # (3) Publish: push the renderer images and the renderer-server
+      #     crate. These only run if the tests passed.
+      # -----------------------------------------------------------------
+      - name: Login to Codeberg Container Registry
+        run: echo "${{ secrets.CODEBERG_PACKAGES_TOKEN }}" | docker login codeberg.org -u jocelyn-stericker --password-stdin
+      - name: Push stable renderer
+        run: |
+          docker push codeberg.org/jocelyn-stericker/hacklily-renderer:latest
+          docker push codeberg.org/jocelyn-stericker/hacklily-renderer:0.0.${{ github.run_number }}
+      - name: Push unstable renderer
+        run: |
+          docker push codeberg.org/jocelyn-stericker/hacklily-renderer-unstable:latest
+          docker push codeberg.org/jocelyn-stericker/hacklily-renderer-unstable:0.0.${{ github.run_number }}
       - name: Configure Codeberg Cargo registry
+        working-directory: server/renderer-server
         run: |
           mkdir -p ~/.cargo
           {
             printf '[registries.codeberg]\n'
             printf 'index = "https://codeberg.org/jocelyn-stericker/cargo.git"\n'
           } >> ~/.cargo/config.toml
-      - name: Publish to Codeberg Cargo registry
+      - name: Publish renderer-server to Codeberg Cargo registry
+        working-directory: server/renderer-server
         env:
           CARGO_REGISTRIES_CODEBERG_TOKEN: ${{ secrets.CODEBERG_PACKAGES_TOKEN }}
         run: |

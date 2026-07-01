@@ -75,11 +75,10 @@ server/
 
 ## CI/CD
 
-CI runs on Forgejo (Codeberg) via `.forgejo/workflows/ci.yaml`, triggered on every push to `main`. It has three jobs:
+CI runs on Forgejo (Codeberg) via `.forgejo/workflows/ci.yaml`, triggered on every push to `main`. It has two jobs:
 
 1. **build-site** — `npm ci`, `npm run build` (which runs jest + eslint + tsc), then deploys `./dist` to Grebedoc for both `www.hacklily.org` and `hacklily.org` via `actions/git-pages@v2`.
-2. **build-renderers** — builds the stable and unstable renderer Docker images and pushes them to the Codeberg Container Registry, tagged `:latest` and `:0.0.<run_number>`.
-3. **build-renderer-server** — `cargo test --locked`, then `cargo publish` to the Codeberg Cargo registry at a CI-unique version (`0.1.<run_number>`).
+2. **build-and-publish-server** — serialized: builds the stable and unstable renderer Docker images (tagged with the local names the test suite expects, plus the Codeberg Container Registry tags), runs `cargo test --locked` (the integration tests spawn containers from the just-built images), then pushes the images to the Codeberg Container Registry (`:latest` and `:0.0.<run_number>`) and publishes the `renderer_server` crate to the Codeberg Cargo registry at a CI-unique version (`0.1.<run_number>`).
 
 Secrets required (Settings → Actions → Secrets): `GREBEDOC_PASSWORD`, `CODEBERG_PACKAGES_TOKEN`.
 
