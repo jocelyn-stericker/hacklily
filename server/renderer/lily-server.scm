@@ -216,12 +216,12 @@
   (ly:set-option 'include (append (or (ly:get-option 'include) '()) (list v))))
 
 ;; Main entry: chdir to the client's working directory, apply opts,
-;; parse the trailing file argument.  The heavy `ly:parse-init' runs
-;; once in the master at startup (see hacklily:start-server); each
-;; worker is forked from the master's clean post-init state, so user
-;; definitions live in the worker's copy-on-write memory and are
-;; discarded when the worker exits.  No session-terminate or option
-;; save/restore is needed — fork gives us that isolation for free.
+;; parse the trailing file argument.  `ly:parse-init' has already run
+;; in this worker (hacklily:client-handler runs it once, post-fork,
+;; before the request is read — see hacklily:start-server for why it
+;; must not run in the master).  User definitions live in the worker's
+;; copy-on-write memory and are discarded when it exits, so no
+;; session-terminate or option save/restore is needed.
 (define (hacklily:compile-file dir . opts)
   (let* ((opts (hacklily:translate-compile-options opts))
          (opts (getopt-long opts hacklily:compile-options-spec))
@@ -277,9 +277,28 @@
     (listen s 5)
     s))
 
+;; True once this (worker) process has run ly:parse-init. Each worker
+;; is a fresh fork handling exactly one connection, so this starts #f
+;; in every worker and flips true after its first init.
+(define hacklily:initialized #f)
+
 (define (hacklily:client-handler socket)
   (hacklily:debug "start client handler")
   (set! hacklily:socket socket)
+
+  ;; Run LilyPond's heavy init HERE, in the worker, after the fork and
+  ;; BEFORE the request is read/parsed. It must not run in the master
+  ;; (hacklily:start-server explains the fork/Pango deadlock), and it
+  ;; must run before hacklily:eval-one reads the compile s-expr:
+  ;; deferring it until inside the parse (e.g. compile-file) leaves the
+  ;; parser's source-location state off by one, corrupting point-and-
+  ;; click line numbers in the SVG. Done before the stderr redirect so
+  ;; any init output stays off the client's log stream.
+  (unless hacklily:initialized
+    (hacklily:debug "Initializing LilyPond...")
+    (ly:parse-init "declarations-init.ly")
+    (hacklily:debug "LilyPond ready")
+    (set! hacklily:initialized #t))
 
   ;; Redirect LilyPond's C-level stderr (fd 2) onto the socket so all
   ;; log output (Processing, Parsing, message, warning, etc., which
@@ -299,24 +318,33 @@
   (primitive-exit))
 
 (define (hacklily:start-server . args)
-  (let* ((port (if (null? args) hacklily:default-port (car args)))
-         (server-socket (hacklily:open-listening-socket port)))
+  (let ((port (if (null? args) hacklily:default-port (car args))))
     (newline hacklily:log-port)
-    (hacklily:debug (format #f "Listening on port ~a" port))
-    (hacklily:debug "Initializing LilyPond...")
-    (ly:parse-init "declarations-init.ly")
-    (hacklily:debug "LilyPond ready")
-    (flush-all-ports)
-    (while #t
-      (let ((connection (accept server-socket)))
-        (hacklily:fork-worker
-          (lambda () (hacklily:client-handler (car connection))))
-        ;; The worker (grandchild) holds its own dup of the connection
-        ;; fd and sends EOF to the client via (hacklily:close). The
-        ;; master must drop its own copy or it leaks one fd per request;
-        ;; over a long-lived warm process that eventually exhausts
-        ;; RLIMIT_NOFILE and kills accept (and with it the server).
-        (close-port (car connection))))))
+    ;; NOTE: ly:parse-init is deliberately NOT run in the master. It
+    ;; spawns Pango's "[pango] fontconfig" cache-monitor threads, and
+    ;; this server double-forks a worker per request. fork() copies
+    ;; only the calling thread, so a worker inherits any fontconfig /
+    ;; Pango mutex that a background thread held at fork time — locked,
+    ;; with no owner to release it. The worker then deadlocks the
+    ;; instant it does text layout: complex scores (lots of markup /
+    ;; font work) hang forever; trivial ones happen to skip the locked
+    ;; path and survive. Keeping the master free of font threads makes
+    ;; every fork clean; each worker runs parse-init itself, after the
+    ;; fork (see hacklily:compile-file). The expensive Guile/LilyPond
+    ;; load is still shared via COW, so only ~0.2s of init is repaid.
+    (let ((server-socket (hacklily:open-listening-socket port)))
+      (hacklily:debug (format #f "Listening on port ~a" port))
+      (flush-all-ports)
+      (while #t
+        (let ((connection (accept server-socket)))
+          (hacklily:fork-worker
+            (lambda () (hacklily:client-handler (car connection))))
+          ;; The worker (grandchild) holds its own dup of the connection
+          ;; fd and sends EOF to the client via (hacklily:close). The
+          ;; master must drop its own copy or it leaks one fd per request;
+          ;; over a long-lived warm process that eventually exhausts
+          ;; RLIMIT_NOFILE and kills accept (and with it the server).
+          (close-port (car connection)))))))
 
 (define (hacklily:close)
   (shutdown hacklily:socket 1))
