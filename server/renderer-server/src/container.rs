@@ -79,7 +79,7 @@ impl ContainerHandle {
                     "ALL",
                     "--pids-limit=64",
                     "--ulimit=nofile=256:256",
-                    "--cpus=1",
+                    "--cpus=0.8",
                     &image,
                 ])
                 .stdin(Stdio::null())
