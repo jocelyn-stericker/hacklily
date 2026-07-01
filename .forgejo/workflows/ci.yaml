@@ -38,7 +38,7 @@ jobs:
       # -----------------------------------------------------------------
       - name: Build stable renderer
         run: |
-          docker build \
+          docker build --load \
             -t hacklily-renderer \
             -t codeberg.org/jocelyn-stericker/hacklily-renderer:latest \
             -t codeberg.org/jocelyn-stericker/hacklily-renderer:0.0.${{ github.run_number }} \
@@ -46,7 +46,7 @@ jobs:
           docker images | grep hacklily-renderer
       - name: Build unstable renderer
         run: |
-          docker build \
+          docker build --load \
             -t hacklily-renderer-unstable \
             -t codeberg.org/jocelyn-stericker/hacklily-renderer-unstable:latest \
             -t codeberg.org/jocelyn-stericker/hacklily-renderer-unstable:0.0.${{ github.run_number }} \
