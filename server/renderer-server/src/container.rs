@@ -77,7 +77,8 @@ impl ContainerHandle {
                     "--security-opt=no-new-privileges",
                     "--cap-drop",
                     "ALL",
-                    "--pids-limit=200",
+                    "--pids-limit=64",
+                    "--ulimit=nofile=256:256",
                     "--cpus=1",
                     &image,
                 ])

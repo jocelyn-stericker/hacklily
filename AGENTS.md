@@ -63,13 +63,13 @@ server/
 
 ## Key Architectural Decisions
 
-1. **Per-request container isolation**: each render runs in its own Docker container, which is torn down and replaced after the request. This is the security boundary — a malicious score cannot escape into another user's render.
+1. **Pooled warm containers**: the Rust renderer server keeps a per-version pool of long-lived Docker containers (`stable_worker_count` / `unstable_worker_count` in `Config`) and reuses them across requests; a container is only torn down when a render crashes it or on shutdown (`ReadyRenderContainer` → `RenderContainer::Busy` → `Ready` with `num_renders + 1` in `src/renderer.rs`). The security boundary is instead the per-request **worker fork** inside the container: `lily-server.scm` double-forks a fresh worker per connection (`hacklily:fork-worker`), so user `eval`/`ly:parse-file` runs in a grandchild that exits at end of request; the warm master only accepts and forks. A malicious score that escapes its worker (or kills the master via `killall lilypond`) only takes down that one container, which the manager rebuilds (`emit_recycled_or_new_ready_container` in `src/renderer_manager.rs`).
 
 2. **Warm Scheme server**: inside each container, `lily-server.scm` keeps a LilyPond process listening on TCP 1225. `render-impl.bash` connects per request, writes the source, and reads until EOF (the framing signal). The outer bash timeout (5s) is shorter than the Rust harness timeout (8s) so the container emits its own error before being killed.
 
 3. **Stable vs. unstable routing**: `src/lilypondVersion.ts` parses the score's `\version "x.y.z"` and routes 2.27+ to the unstable renderer, everything else to stable. The Rust renderer server keeps separate pools for each.
 
-4. **Sanitization**: rendered SVG/PDF is sanitized with DOMPurify before being shown in the preview (`src/Preview.tsx`, see `src/*.sanitize.test.ts` for the regression tests).
+4. **Sanitization**: rendered SVG is sanitized with DOMPurify before being shown in the preview (`src/Preview.tsx`, see `src/*.sanitize.test.ts` for the regression tests).
 
 5. **GitHub as storage**: scores are saved to / published from the user's own GitHub repos via `src/gitfs.tsx`. The legacy Qt coordinator handles the OAuth flow.
 
