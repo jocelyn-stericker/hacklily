@@ -25,7 +25,11 @@ use crate::config::{CommandSourceConfig, Config};
 use crate::error::HacklilyError;
 use crate::request::{Request, Response};
 
+#[allow(unused_imports)]
+pub use self::coordinator::{coordinator, CoordinatorConfig, SendFut, SharedSink, WsSink};
+
 mod batch;
+mod coordinator;
 mod test_runner;
 mod ws_worker_client;
 
@@ -55,6 +59,24 @@ pub fn new(config: &Config) -> FutureCommandSource {
         CommandSourceConfig::Batch { path } => Box::pin(batch(path.clone())),
         CommandSourceConfig::TestRunner { input, output } => {
             Box::pin(test_runner(input.clone(), output.clone()))
+        }
+        CommandSourceConfig::Coordinator { .. } => {
+            // The coordinator variant carries its config inside the
+            // `CoordinatorConfig` itself; `new` delegates to it.
+            match &config.command_source {
+                CommandSourceConfig::Coordinator {
+                    ws_port,
+                    github_client_id,
+                    github_secret,
+                    workers,
+                } => Box::pin(coordinator(CoordinatorConfig {
+                    ws_port: *ws_port,
+                    github_client_id: github_client_id.clone(),
+                    github_secret: github_secret.clone(),
+                    workers: workers.clone(),
+                })),
+                _ => unreachable!(),
+            }
         }
     }
 }

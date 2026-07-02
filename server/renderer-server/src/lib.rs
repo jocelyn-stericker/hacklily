@@ -17,14 +17,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+pub mod auth;
 mod command_source;
 mod config;
 mod container;
 mod error;
 mod event_loop;
+pub mod jsonrpc;
 mod renderer;
 mod renderer_manager;
 pub mod request;
+pub mod worker_registry;
 
 pub use crate::config::{CommandSourceConfig, Config};
 pub use crate::event_loop::event_loop;

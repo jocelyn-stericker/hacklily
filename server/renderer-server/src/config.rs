@@ -22,6 +22,7 @@ use std::sync::{Arc, Mutex};
 use url::Url;
 
 use super::request::{Request, Response};
+use crate::worker_registry::WorkerRegistryHandle;
 
 #[derive(Clone)]
 pub enum CommandSourceConfig {
@@ -36,6 +37,17 @@ pub enum CommandSourceConfig {
     TestRunner {
         input: Vec<Request>,
         output: Arc<Mutex<HashMap<String, Response>>>,
+    },
+
+    /// Coordinator mode: serve the frontend over WebSocket, with an
+    /// optional local render pool. `ws_port` is shared by frontend
+    /// clients and remote `ws-worker` peers. `workers` is the shared
+    /// registry used to dispatch renders to remote workers.
+    Coordinator {
+        ws_port: u16,
+        github_client_id: String,
+        github_secret: String,
+        workers: WorkerRegistryHandle,
     },
 }
 

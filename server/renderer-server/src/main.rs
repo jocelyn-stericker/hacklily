@@ -25,7 +25,7 @@ use std::path::Path;
 
 extern crate renderer_lib;
 
-use renderer_lib::{event_loop, CommandSourceConfig, Config};
+use renderer_lib::{event_loop, worker_registry::WorkerRegistryHandle, CommandSourceConfig, Config};
 
 #[tokio::main]
 async fn main() {
@@ -92,6 +92,34 @@ async fn main() {
                 ),
         )
         .subcommand(
+            SubCommand::with_name("serve")
+                .about("Run as the Hacklily coordinator: serve the frontend over WebSocket and render locally and/or via remote ws-workers.")
+                .arg(
+                    Arg::with_name("ws-port")
+                        .long("ws-port")
+                        .help("Port to listen on for frontend and worker WebSocket connections")
+                        .required(true)
+                        .value_name("PORT")
+                        .takes_value(true),
+                )
+                .arg(
+                    Arg::with_name("github-client-id")
+                        .long("github-client-id")
+                        .help("GitHub OAuth app client ID (empty disables GitHub integration)")
+                        .required(false)
+                        .value_name("ID")
+                        .takes_value(true),
+                )
+                .arg(
+                    Arg::with_name("github-secret")
+                        .long("github-secret")
+                        .help("GitHub OAuth app client secret (empty disables GitHub integration)")
+                        .required(false)
+                        .value_name("SECRET")
+                        .takes_value(true),
+                ),
+        )
+        .subcommand(
             SubCommand::with_name("batch")
                 .about("Render test cases from a file")
                 .arg(
@@ -147,6 +175,17 @@ async fn main() {
                 )
                 .expect("Invalid coordinator URL (this field was validated above)"),
             },
+            Some("serve") => {
+                let sm = matches.subcommand_matches("serve").unwrap();
+                let ws_port = value_t!(sm.value_of("ws-port"), u16)
+                    .expect("Required config option ws-port malformed or not found.");
+                CommandSourceConfig::Coordinator {
+                    ws_port,
+                    github_client_id: sm.value_of("github-client-id").unwrap_or("").to_owned(),
+                    github_secret: sm.value_of("github-secret").unwrap_or("").to_owned(),
+                    workers: WorkerRegistryHandle::new(),
+                }
+            }
             Some("batch") => CommandSourceConfig::Batch {
                 path: Path::new(
                     &matches

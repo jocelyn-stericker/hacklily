@@ -24,10 +24,11 @@ use std::time::Duration;
 use tokio::sync::mpsc;
 
 use crate::command_source::{QuitSignal, QuitSink, ResponseCallback};
-use crate::config::Config;
+use crate::config::{CommandSourceConfig, Config};
 use crate::renderer::{ReadyRenderContainer, RenderContainer, RendererMeta};
 use crate::renderer_manager::{Command, Event as RenderEvent};
-use crate::request::{Request, Version};
+use crate::request::{Request, Response as RenderResponse, Version};
+use crate::worker_registry::WorkerRegistryHandle;
 
 pub enum Event {
     QueueRequest(Request, ResponseCallback),
@@ -47,6 +48,11 @@ pub struct State {
     command_source_quit_sink: Option<QuitSink>,
     command_source_was_created: bool,
     internal_sink: mpsc::Sender<Event>,
+    /// Remote worker registry. `None` in worker/batch/test-runner
+    /// modes; `Some` in coordinator mode, where it's used to dispatch
+    /// renders to remote `ws-worker` peers when the local pool has no
+    /// ready container for the requested version.
+    workers: Option<WorkerRegistryHandle>,
 }
 
 impl State {
@@ -65,6 +71,10 @@ impl State {
             command_source_quit_sink: None,
             command_source_was_created: false,
             internal_sink,
+            workers: match config.command_source {
+                CommandSourceConfig::Coordinator { ref workers, .. } => Some(workers.clone()),
+                _ => None,
+            },
         };
 
         for i in 0..config.stable_worker_count {
@@ -167,6 +177,26 @@ impl State {
             return;
         }
 
+        // Fail fast if no renderers are attached: no local containers
+        // (created or creating) and no remote workers. This matches the
+        // "fail if there's no render servers attached" requirement.
+        let has_local = self.total_containers > 0;
+        let has_remote = match &self.workers {
+            Some(w) => w.worker_count().await > 0,
+            None => false,
+        };
+        if !has_local && !has_remote {
+            let request_id = request.id.clone();
+            (response_cb)(RenderResponse {
+                files: vec![],
+                logs: "No renderers attached: no local containers and no remote workers."
+                    .to_owned(),
+                midi: String::new(),
+            });
+            warn!("rejected render {}: no renderers attached", request_id);
+            return;
+        }
+
         self.pending_requests
             .entry(request.version)
             .or_insert_with(VecDeque::new)
@@ -218,48 +248,70 @@ impl State {
                 ready_containers.len()
             );
 
-            if pending_requests.is_empty() || ready_containers.is_empty() {
+            if pending_requests.is_empty() {
                 continue;
             }
 
-            let (request, response_cb) = pending_requests.pop_front().expect("len checked above");
-            let container = ready_containers.pop().expect("len checked above");
-            let timeout = Duration::from_millis(container.meta.timeout);
+            // Prefer a local ready container if one is available.
+            if !ready_containers.is_empty() {
+                let (request, response_cb) = pending_requests.pop_front().expect("len checked above");
+                let container = ready_containers.pop().expect("len checked above");
+                let timeout = Duration::from_millis(container.meta.timeout);
 
-            let (render_container, result) = container.handle_request(request.clone(), timeout);
-            self.renderer_manager_command_sender
-                .clone()
-                .send(Command::ReceiveContainer(render_container))
-                .await
-                .expect("Could not send container to manager.");
+                let (render_container, result) = container.handle_request(request.clone(), timeout);
+                self.renderer_manager_command_sender
+                    .clone()
+                    .send(Command::ReceiveContainer(render_container))
+                    .await
+                    .expect("Could not send container to manager.");
 
-            let emergency_command_sender = self.renderer_manager_command_sender.clone();
-            let internal_sink = self.internal_sink.clone();
+                let emergency_command_sender = self.renderer_manager_command_sender.clone();
+                let internal_sink = self.internal_sink.clone();
 
-            tokio::spawn(async move {
-                let f = async move {
-                    match result.await {
-                        Ok(render_result) => {
-                            response_cb(render_result);
+                tokio::spawn(async move {
+                    let f = async move {
+                        match result.await {
+                            Ok(render_result) => {
+                                response_cb(render_result);
+                            }
+                            Err(_) => {
+                                internal_sink
+                                    .send(Event::QueueRequest(request, response_cb))
+                                    .await
+                                    .map(|_| ())
+                                    .unwrap_or(());
+                            }
                         }
-                        Err(_) => {
-                            internal_sink
-                                .send(Event::QueueRequest(request, response_cb))
-                                .await
-                                .map(|_| ())
-                                .unwrap_or(());
+                    };
+                    if AssertUnwindSafe(f).catch_unwind().await.is_err() {
+                        error!("FATAL: panic in renderer");
+                        emergency_command_sender
+                            .send(Command::Abort)
+                            .await
+                            .map(|_| ())
+                            .unwrap_or(());
+                    }
+                });
+                continue;
+            }
+
+            // No local container for this version — try a remote
+            // worker if we have one registered with an idle slot.
+            // Pop first, then attempt dispatch; if dispatch fails,
+            // push back so the request isn't lost.
+            if let Some(workers) = &self.workers {
+                if let Some((request, response_cb)) = pending_requests.pop_front() {
+                    match workers.try_dispatch(request, response_cb).await {
+                        Ok(()) => {}
+                        Err((request, response_cb)) => {
+                            // No idle worker or send failed; re-queue
+                            // and stop trying this version for now.
+                            pending_requests.push_front((request, response_cb));
+                            break;
                         }
                     }
-                };
-                if AssertUnwindSafe(f).catch_unwind().await.is_err() {
-                    error!("FATAL: panic in renderer");
-                    emergency_command_sender
-                        .send(Command::Abort)
-                        .await
-                        .map(|_| ())
-                        .unwrap_or(());
                 }
-            });
+            }
         }
     }
     pub async fn handle_command_source_ready(&mut self, sink: QuitSink) {
