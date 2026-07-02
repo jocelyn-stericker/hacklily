@@ -86,7 +86,7 @@ jobs:
           mkdir -p ~/.cargo
           {
             printf '[registries.codeberg]\n'
-            printf 'index = "https://codeberg.org/jocelyn-stericker/cargo.git"\n'
+            printf 'index = "sparse+https://codeberg.org/api/packages/jocelyn-stericker/cargo/"\n'
           } >> ~/.cargo/config.toml
       - name: Publish renderer-server to Codeberg Cargo registry
         working-directory: server/renderer-server
