@@ -48,15 +48,15 @@ of the three entry points suits you — all land in the identical devshell.
 
 Common tasks are wrapped as `just` recipes (run `just` to list them):
 
-| Recipe | Action |
-| --- | --- |
-| `just install` | `npm ci` — install locked dependencies |
-| `just dev` | Dev server on port 3000 |
-| `just build` | Production build into `dist/` |
-| `just test` | Vitest unit suite |
-| `just e2e` | Slow end-to-end tests |
-| `just check` | Format + lint-fix |
-| `just ci` | Full CI-equivalent gate (lint → test → e2e → build) |
+| Recipe         | Action                                              |
+| -------------- | --------------------------------------------------- |
+| `just install` | `npm ci` — install locked dependencies              |
+| `just dev`     | Dev server on port 3000                             |
+| `just build`   | Production build into `dist/`                       |
+| `just test`    | Vitest unit suite                                   |
+| `just e2e`     | Slow end-to-end tests                               |
+| `just check`   | Format + lint-fix                                   |
+| `just ci`      | Full CI-equivalent gate (lint → test → e2e → build) |
 
 ### Option 1: Devcontainer (VS Code / Codespaces)
 
