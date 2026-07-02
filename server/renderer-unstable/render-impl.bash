@@ -28,6 +28,25 @@ set -u
 cd /tmp
 mkdir -p /tmp/lyp/wrappers
 
+# Fail fast if the fontconfig cache is invalid: a stale or incomplete
+# per-user cache (~/.cache/fontconfig) makes fontconfig rescan every
+# font directory on the first fc-match of each forked worker (~4s),
+# which blows past the 5s render timeout below and surfaces as opaque
+# "Canary died" errors. The Dockerfile pre-warms the cache with
+# `fc-cache -f`; if that cache is missing or stale at runtime, crash
+# here so renderer-server recycles the container instead of slowly
+# failing every render. fc-match is read-only (it never writes the
+# cache), so time it in a fresh subshell: a valid cache resolves in a
+# few milliseconds, an invalid one takes seconds.
+fc_start=$(date +%s.%N)
+fc-match serif >/dev/null 2>&1
+fc_end=$(date +%s.%N)
+fc_dur=$(awk "BEGIN{print $fc_end - $fc_start}")
+if awk "BEGIN{exit !($fc_dur > 1.0)}"; then
+    echo "fontconfig cache is invalid (fc-match took ${fc_dur}s); refusing to start." >&2
+    exit 1
+fi
+
 # Launch the warm LilyPond server in the background. It will print its
 # log to stderr; we don't need it on stdout. We start it with --pdf and
 # --svg so both formats are in LilyPond's output_formats_global list;

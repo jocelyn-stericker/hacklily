@@ -131,6 +131,15 @@ COPY lily-server.scm /usr/local/share/
 COPY render-impl.bash /usr/local/bin/
 RUN chmod +x /usr/local/bin/render-impl.bash
 
+# Build a complete, valid per-user fontconfig cache so the first
+# fc-match in a fresh worker process is fast (~0.01s, not ~4s of
+# cache rebuild). Without this the smoke test below only warms the
+# fonts that {c4} touches, leaving an incomplete cache that fontconfig
+# later declares invalid, forcing a multi-second rescan on every
+# forked worker and tripping the 5s render timeout. See render-impl.bash
+# for the matching runtime validity check.
+RUN su r -c "fc-cache -f"
+
 # Verify the toolchain end-to-end before declaring the image good.
 RUN su r -c "cd /tmp && echo '{c4}' | lilypond -"
 
