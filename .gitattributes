@@ -1,1 +1,2 @@
 package-lock.json binary
+*.pat -linguist-detectable
