@@ -16,3 +16,6 @@ test-assets
 
 # Local copy of media.braat.app clips (npm run media:fetch); _headers is tracked
 /media/references/
+
+# direnv cached devshell environment
+.direnv/
