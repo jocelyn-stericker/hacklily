@@ -1,0 +1,16 @@
+{
+  "name": "braat",
+  "build": { "dockerfile": "Dockerfile" },
+
+  // First-run: trust the .envrc, then warm the devshell + install npm deps
+  // (runs inside the direnv-loaded flake env, so node/npm/just are present).
+  "postCreateCommand": "direnv allow && direnv exec . just install",
+
+  "customizations": {
+    "vscode": {
+      // mkhl.direnv makes VS Code's own terminals/tasks inherit the direnv
+      // (flake devshell) environment — keeps the GUI consistent with the CLI.
+      "extensions": ["mkhl.direnv"]
+    }
+  }
+}
