@@ -142,15 +142,19 @@ RUN chmod +x /usr/local/bin/render-impl.bash
 # for the matching runtime validity check.
 #
 # Normalize the font directory mtimes to a fixed value *before* fc-cache
-# so the value fontconfig bakes into the cache header (offset 0x38)
-# matches the live st_mtime at runtime. buildkit stamps parent-dir
-# mtimes at snapshot-apply time (which differs between build and
-# container start), causing fontconfig's FcDirCacheValid to declare the
-# baked cache stale and trigger a ~4s rescan. Pinning the mtimes to a
-# constant decouples the validity check from the build backend.
-# SOURCE_DATE_EPOCH alone doesn't fix this: fontconfig's read-side
-# FcDirCacheValid compares against the real st_mtime, not SDE.
-RUN find /usr/share/fonts -type d -exec touch -d @1767225600 {} + && \
+# so the value fontconfig bakes into the cache header (offset 0x38) is a
+# known constant (1767225600). This alone is NOT enough: a directory's
+# mtime is a side effect of populating it, so when the image layers are
+# unpacked at container start the font files get written into these dirs
+# and re-stamp their mtime to the unpack wall-clock time. fontconfig's
+# read-side FcDirCacheValid then compares that live st_mtime against the
+# baked constant, sees a mismatch, and triggers a ~4s rescan on every
+# forked worker (SOURCE_DATE_EPOCH doesn't help — the check uses the real
+# st_mtime, not SDE). render-impl.bash reasserts the same mtime at
+# startup, before the first fc-match, so the live value matches the baked
+# header; chown the dirs to r so that runtime touch (which runs as r) can.
+RUN chown -R r /usr/share/fonts && \
+    find /usr/share/fonts -type d -exec touch -d @1767225600 {} + && \
     su r -c "fc-cache -f"
 
 # Verify the toolchain end-to-end before declaring the image good.

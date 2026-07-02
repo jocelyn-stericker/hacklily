@@ -28,6 +28,15 @@ set -u
 cd /tmp
 mkdir -p /tmp/lyp/wrappers
 
+# Reassert the font directory mtimes to the value the Dockerfile baked
+# into the fontconfig cache header. Image-layer unpacking re-stamps these
+# dirs with the container's start time (writing the font files into a dir
+# updates its mtime), which would make FcDirCacheValid reject the baked
+# cache and force a ~4s rescan. Pinning them here, before the first
+# fc-match, makes the live st_mtime match the header again. See the
+# Dockerfile fc-cache step for the matching build-time value.
+find /usr/share/fonts -type d -exec touch -d @1767225600 {} +
+
 # Fail fast if the fontconfig cache is invalid: a stale or incomplete
 # per-user cache (~/.cache/fontconfig) makes fontconfig rescan every
 # font directory on the first fc-match of each forked worker (~4s),
