@@ -91,7 +91,7 @@ jobs:
       - name: Publish renderer-server to Codeberg Cargo registry
         working-directory: server/renderer-server
         env:
-          CARGO_REGISTRIES_CODEBERG_TOKEN: ${{ secrets.CODEBERG_PACKAGES_TOKEN }}
+          CARGO_REGISTRIES_CODEBERG_TOKEN: "Bearer ${{ secrets.CODEBERG_PACKAGES_TOKEN }}"
         run: |
           # Bump the patch to a unique CI version so re-publishes succeed.
           sed -i -E 's/^version = "[0-9.]+"/version = "0.1.${{ github.run_number }}"/' Cargo.toml
