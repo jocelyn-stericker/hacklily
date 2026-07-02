@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config'
+import { configDefaults, defineConfig } from 'vitest/config'
 
 import viteConfig from './vite.config'
 
@@ -20,6 +20,9 @@ export default defineConfig({
     environment: 'node',
     globals: true,
     silent: 'passed-only',
+    // .direnv holds a Nix-store copy of the repo source (no node_modules), so
+    // its duplicated *.test.ts files fail to resolve imports — skip them.
+    exclude: [...configDefaults.exclude, '.direnv/**'],
     execArgv,
     coverage: {
       include: ['src/**/*.{ts,tsx}'],
