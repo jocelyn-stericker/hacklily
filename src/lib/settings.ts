@@ -62,6 +62,16 @@ function normalizeTranscriptionMode(value: unknown): TranscriptionMode {
 export type PracticeTextSize = 'md' | 'lg' | 'xl' | '2xl'
 export type PracticeMode = 'echo' | 'on-demand'
 
+export const VOWEL_CHART_SCALE_MIN = 1.0
+export const VOWEL_CHART_SCALE_MAX = 3.0
+export const VOWEL_CHART_SCALE_STEP = 0.05
+
+export function clampVowelChartScale(value: unknown): number {
+  const n = typeof value === 'number' ? value : NaN
+  if (!Number.isFinite(n)) return VOWEL_CHART_SCALE_MIN
+  return Math.min(VOWEL_CHART_SCALE_MAX, Math.max(VOWEL_CHART_SCALE_MIN, n))
+}
+
 function normalizePracticeTextSize(value: unknown): PracticeTextSize {
   switch (value) {
     case 'md':
@@ -103,6 +113,7 @@ export type SettingsRow = {
   forcedAlignment: boolean
   runHeavyWhileRecording: boolean
   vowelChartAverages: VowelChartAverages
+  vowelChartScale: number
   practiceTextSize: PracticeTextSize
   practicePassageId: string
   practiceMode: PracticeMode
@@ -127,6 +138,7 @@ export const DEFAULT_SETTINGS: SettingsRow = {
   forcedAlignment: false,
   runHeavyWhileRecording: false,
   vowelChartAverages: 'hidden',
+  vowelChartScale: 1.0,
   practiceTextSize: 'lg',
   practicePassageId: 'rainbow',
   practiceMode: 'echo',
@@ -158,6 +170,7 @@ function readFromStorage(): SettingsRow {
           normalizePracticePlayReferenceBeforeTake(
             stored.practicePlayReferenceBeforeTake,
           ),
+        vowelChartScale: clampVowelChartScale(stored.vowelChartScale),
       }
     }
   } catch (err) {

@@ -63,6 +63,7 @@ describe('settings', () => {
         forcedAlignment: false,
         runHeavyWhileRecording: false,
         vowelChartAverages: 'hidden',
+        vowelChartScale: 1.0,
         practiceTextSize: 'lg',
         practicePassageId: 'rainbow',
         practiceMode: 'echo',
@@ -89,6 +90,7 @@ describe('settings', () => {
         forcedAlignment: false,
         runHeavyWhileRecording: false,
         vowelChartAverages: 'hidden',
+        vowelChartScale: 1.0,
         practiceTextSize: 'lg',
         practicePassageId: 'rainbow',
         practiceMode: 'echo',
@@ -114,6 +116,7 @@ describe('settings', () => {
         forcedAlignment: false,
         runHeavyWhileRecording: false,
         vowelChartAverages: 'hidden',
+        vowelChartScale: 1.0,
         practiceTextSize: 'lg',
         practicePassageId: 'rainbow',
         practiceMode: 'echo',
@@ -136,6 +139,7 @@ describe('settings', () => {
         forcedAlignment: false,
         runHeavyWhileRecording: false,
         vowelChartAverages: 'hidden',
+        vowelChartScale: 1.0,
         practiceTextSize: 'lg',
         practicePassageId: 'rainbow',
         practiceMode: 'echo',
@@ -158,6 +162,7 @@ describe('settings', () => {
         forcedAlignment: false,
         runHeavyWhileRecording: false,
         vowelChartAverages: 'hidden',
+        vowelChartScale: 1.0,
         practiceTextSize: 'lg',
         practicePassageId: 'rainbow',
         practiceMode: 'echo',
@@ -181,6 +186,7 @@ describe('settings', () => {
         forcedAlignment: false,
         runHeavyWhileRecording: false,
         vowelChartAverages: 'hidden',
+        vowelChartScale: 1.0,
         practiceTextSize: 'lg',
         practicePassageId: 'rainbow',
         practiceMode: 'echo',
@@ -209,6 +215,7 @@ describe('settings', () => {
         forcedAlignment: false,
         runHeavyWhileRecording: false,
         vowelChartAverages: 'hidden',
+        vowelChartScale: 1.0,
         practiceTextSize: 'lg',
         practicePassageId: 'rainbow',
         practiceMode: 'echo',
@@ -230,6 +237,7 @@ describe('settings', () => {
         forcedAlignment: false,
         runHeavyWhileRecording: false,
         vowelChartAverages: 'hidden',
+        vowelChartScale: 1.0,
         practiceTextSize: 'lg',
         practicePassageId: 'rainbow',
         practiceMode: 'echo',
@@ -251,6 +259,7 @@ describe('settings', () => {
         forcedAlignment: false,
         runHeavyWhileRecording: false,
         vowelChartAverages: 'hidden',
+        vowelChartScale: 1.0,
         practiceTextSize: 'lg',
         practicePassageId: 'rainbow',
         practiceMode: 'echo',
@@ -282,6 +291,7 @@ describe('settings', () => {
         forcedAlignment: false,
         runHeavyWhileRecording: false,
         vowelChartAverages: 'hidden',
+        vowelChartScale: 1.0,
         practiceTextSize: 'lg',
         practicePassageId: 'rainbow',
         practiceMode: 'echo',
@@ -347,5 +357,33 @@ describe('settings', () => {
       expect(DEFAULT_SETTINGS.practiceMode).toBe('echo')
       expect(DEFAULT_SETTINGS.practiceRandomize).toBe(false)
     })
+  })
+})
+
+describe('clampVowelChartScale', () => {
+  let clampVowelChartScale: (value: unknown) => number
+  let VOWEL_CHART_SCALE_MIN: number
+  let VOWEL_CHART_SCALE_MAX: number
+
+  beforeEach(async () => {
+    const settings = await import('./settings')
+    clampVowelChartScale = settings.clampVowelChartScale
+    VOWEL_CHART_SCALE_MIN = settings.VOWEL_CHART_SCALE_MIN
+    VOWEL_CHART_SCALE_MAX = settings.VOWEL_CHART_SCALE_MAX
+  })
+
+  it('passes through in-range values', () => {
+    expect(clampVowelChartScale(1.5)).toBe(1.5)
+  })
+
+  it('clamps below min and above max', () => {
+    expect(clampVowelChartScale(0.2)).toBe(VOWEL_CHART_SCALE_MIN)
+    expect(clampVowelChartScale(9)).toBe(VOWEL_CHART_SCALE_MAX)
+  })
+
+  it('coerces junk to the default (min)', () => {
+    expect(clampVowelChartScale('big')).toBe(VOWEL_CHART_SCALE_MIN)
+    expect(clampVowelChartScale(NaN)).toBe(VOWEL_CHART_SCALE_MIN)
+    expect(clampVowelChartScale(undefined)).toBe(VOWEL_CHART_SCALE_MIN)
   })
 })
