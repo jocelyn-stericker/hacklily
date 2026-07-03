@@ -34,7 +34,7 @@ cargo run -- \
   serve --ws-port 2000 --github-client-id "" --github-secret ""
 ```
 
-`npm start:remote-backend` runs the dev server pointed at the production render backend (`wss://hacklily-render.nettek.ca/rpc`), so you don't need Docker for most frontend work.
+`npm start:remote-backend` runs the dev server pointed at the production render backend (`wss://render.hacklily.org/rpc`), so you don't need Docker for most frontend work.
 
 ## Deployment
 

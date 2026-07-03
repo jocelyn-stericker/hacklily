@@ -8,7 +8,7 @@
 # Frontend development
 npm install
 npm start                      # dev server on :3000 (uses prod render backend by default)
-npm start:remote-backend       # same, explicit (wss://hacklily-render.nettek.ca/rpc)
+npm start:remote-backend       # same, explicit (wss://render.hacklily.org/rpc)
 
 # Build & verify (the build script also runs the full test gate)
 npm run build                  # webpack production build into ./dist, then npm test

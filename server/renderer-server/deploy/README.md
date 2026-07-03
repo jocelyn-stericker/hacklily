@@ -202,14 +202,14 @@ curl -i https://render.hacklily.org/rpc
 ### Point the frontend at it
 
 The SPA reads `REACT_APP_BACKEND_WS_URL` at build time. The production
-build currently bakes `wss://hacklily-render.nettek.ca/rpc` (see
-`package.json`'s `build` script). To use the new host, build with:
+`build` (and `start:remote-backend`) scripts in `package.json` bake
+`wss://render.hacklily.org/rpc`, so a normal `npm run build` (as CI
+does) produces a bundle that talks to this coordinator. To point a
+one-off build elsewhere, override it:
 ```sh
 REACT_APP_BACKEND_WS_URL=wss://render.hacklily.org/rpc npm run build
 ```
-(i.e. update the `build` and `start:remote-backend` scripts in
-`package.json`). This is a frontend change, separate from this deploy
-package.
+This is a frontend concern, separate from this deploy package.
 
 ## One-time install
 

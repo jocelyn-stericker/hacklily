@@ -25,6 +25,13 @@ jobs:
           source: ./dist
           server: grebedoc.dev
           password: ${{ secrets.GREBEDOC_PASSWORD }}
+      - name: Deploy to Grebedoc (beta.hacklily.org)
+        uses: actions/git-pages@v2
+        with:
+          site: https://beta.hacklily.org
+          source: ./dist
+          server: grebedoc.dev
+          password: ${{ secrets.GREBEDOC_PASSWORD }}
 
   build-and-publish-server:
     runs-on: faith
