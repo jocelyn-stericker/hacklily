@@ -31,6 +31,25 @@ import Logs from "./Logs";
 import RPCClient, { RenderResponse } from "./RPCClient";
 import { APP_STYLE } from "./styles";
 
+// Restrict <use> href/xlink:href to internal #fragment identifiers only.
+// External URIs (https:, data:, javascript:) are blocked at the attribute
+// level so the <use> element itself (allowed via ADD_TAGS in sanitize()) is
+// preserved but rendered inert. The hook is idempotent — if HMR registers
+// it twice, both invocations set keepAttr = false (or not), always the same.
+DOMPurify.addHook(
+  "uponSanitizeAttribute",
+  function hacklily_use_fragment_only(node, hookEvent) {
+    if (
+      node.nodeName?.toLowerCase() === "use" &&
+      (hookEvent.attrName === "href" || hookEvent.attrName === "xlink:href")
+    ) {
+      if (!hookEvent.attrValue.startsWith("#")) {
+        hookEvent.keepAttr = false;
+      }
+    }
+  },
+);
+
 /**
  * How long the code must not be edited for a preview to render.
  */
@@ -245,9 +264,14 @@ export default class Preview extends React.PureComponent<Props, State> {
       // block LilyPond 2.26+ emits (the CDATA wrapper is dropped, but the CSS
       // rule survives and still applies), so multi-space text/lyrics keep their
       // spacing. ALLOW_UNKNOWN_PROTOCOLS keeps LilyPond's textedit: links.
-      // See src/Preview.sanitize.test.ts for the regression coverage.
+      // ADD_TAGS admits <use> so LilyPond glyph references survive, and
+      // ADD_ATTR passes pointer-events through for interaction. A module-level
+      // uponSanitizeAttribute hook strips non-fragment href/xlink:href on use.
+      // See src/Preview.sanitize.test.ts for regression coverage.
       root.innerHTML = DOMPurify.sanitize(files.join(""), {
         ALLOW_UNKNOWN_PROTOCOLS: true,
+        ADD_TAGS: ["use"],
+        ADD_ATTR: ["pointer-events"],
       });
 
       this.props.onLogsObtained(logs, version);
