@@ -71,13 +71,13 @@ export const SHORTCUTS = {
     group: 'Transcription',
   },
   vowelChartBigger: {
-    keys: 'equal',
+    keys: 'equal, w',
     label: 'Enlarge vowel chart',
     scope: 'timeline',
     group: 'View',
   },
   vowelChartSmaller: {
-    keys: 'minus',
+    keys: 'minus, s',
     label: 'Shrink vowel chart',
     scope: 'timeline',
     group: 'View',
@@ -230,10 +230,17 @@ export function formatKeys(
   keys: string,
   isMac: boolean = isMacPlatform(),
 ): string {
-  const parts = keys
-    .split('+')
-    .map((t) => labelForToken(t.trim().toLowerCase(), isMac))
-  return isMac ? parts.join('') : parts.join('+')
+  // A `,` separates interchangeable keys (react-hotkeys-hook syntax), a `+`
+  // separates keys in one combo. Render alternatives as "X / Y".
+  return keys
+    .split(',')
+    .map((combo) => {
+      const parts = combo
+        .split('+')
+        .map((t) => labelForToken(t.trim().toLowerCase(), isMac))
+      return isMac ? parts.join('') : parts.join('+')
+    })
+    .join(' / ')
 }
 
 /**

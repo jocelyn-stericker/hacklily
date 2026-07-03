@@ -35,6 +35,13 @@ describe('formatKeys', () => {
       expect(formatKeys('minus', mac)).toBe('-')
     }
   })
+
+  it('renders comma-separated alternative keys as "X / Y"', () => {
+    for (const mac of [true, false]) {
+      expect(formatKeys('equal, w', mac)).toBe('+ / W')
+      expect(formatKeys('minus, s', mac)).toBe('- / S')
+    }
+  })
 })
 
 describe('SHORTCUTS registry', () => {
