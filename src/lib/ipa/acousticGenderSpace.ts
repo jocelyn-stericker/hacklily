@@ -126,7 +126,7 @@ const IPA_TO_ARPABET = {
   ts: 'CH',
   ɯ: 'UW1',
   x: 'HH',
-  y: 'IY',
+  y: 'IY1',
 } as const
 
 export const LUNA_ARPABET_TO_REFERENCE_FORMANTS: Partial<
