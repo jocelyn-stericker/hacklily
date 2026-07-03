@@ -74,11 +74,11 @@ class ModalAbout extends React.PureComponent<Props> {
           <p>
             You can view Hacklily&apos;s source and contribute code on{" "}
             <a
-              href="https://github.com/emilyskidsister/hacklily"
+              href="https://codeberg.org/jocelyn-stericker/hacklily"
               target="_blank"
               rel="noopener noreferrer"
             >
-              GitHub
+              Codeberg
             </a>
             .
           </p>
