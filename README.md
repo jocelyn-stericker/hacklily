@@ -38,7 +38,7 @@ cargo run -- \
 
 ## Deployment
 
-The `serve` coordinator listens on **plain TCP** (`--ws-port`) and does **not** terminate TLS itself. In production it sits behind a TLS-terminating reverse proxy: the proxy presents the public `wss://…` certificate and forwards plain `ws://` to the coordinator's port. The coordinator ignores the HTTP path (it upgrades any WebSocket handshake), so the proxy can route `/rpc` or any other path to it. The same reverse proxy that fronts the SPA can do this — just add a WebSocket-capable location block proxying to the coordinator port and ensure it passes through `Upgrade`/`Connection` headers.
+The `serve` coordinator listens on **plain TCP** (`--ws-port`, bound to `127.0.0.1` by default via `--bind-address`) and does **not** terminate TLS itself. In production it sits behind a TLS-terminating reverse proxy: the proxy presents the public `wss://…` certificate and forwards plain `ws://` to the coordinator's port. The coordinator ignores the HTTP path (it upgrades any WebSocket handshake), so the proxy can route `/rpc` or any other path to it. The same reverse proxy that fronts the SPA can do this — just add a WebSocket-capable location block proxying to the coordinator port and ensure it passes through `Upgrade`/`Connection` headers.
 
 Graceful shutdown: send the process **SIGTERM** (this is what systemd, k8s, and `docker stop` send). The coordinator drains in-flight renders and exits 0; because a single render can take up to the render timeout (~8s), set the supervisor's termination grace period to exceed that so in-flight user renders aren't cut off mid-deploy. (SIGINT / Ctrl-C does the same thing for interactive use.)
 

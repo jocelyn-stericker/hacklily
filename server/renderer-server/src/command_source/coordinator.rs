@@ -135,6 +135,11 @@ impl ConnState {
 /// Configuration for the coordinator command source.
 #[derive(Clone)]
 pub struct CoordinatorConfig {
+    /// Interface to bind the WebSocket listener on. Defaults to
+    /// `127.0.0.1` so the plain `ws://` port is only reachable from a
+    /// local reverse proxy; `0.0.0.0` exposes it (unencrypted) to the
+    /// network.
+    pub bind_address: std::net::IpAddr,
     pub ws_port: u16,
     pub github_client_id: String,
     pub github_secret: String,
@@ -152,10 +157,10 @@ pub async fn coordinator(
     let (quit_sink, quit_stream) = tokio::sync::mpsc::channel::<QuitSignal>(50);
     let parent_quit_sink = quit_sink.clone();
 
-    let listener = TcpListener::bind(("0.0.0.0", cfg.ws_port))
+    let listener = TcpListener::bind((cfg.bind_address, cfg.ws_port))
         .await
         .map_err(|e| HacklilyError::CommandSourceError(format!("bind failed: {}", e)))?;
-    info!("coordinator listening on :{}", cfg.ws_port);
+    info!("coordinator listening on {}:{}", cfg.bind_address, cfg.ws_port);
 
     let conn = ConnState { status: cfg.status.clone() };
     let github: Arc<dyn GitHub> = Arc::new(auth::ReqwestGitHub::new().map_err(|e| {
@@ -668,6 +673,7 @@ mod tests {
         // a real WebSocket client.
         let port = ephemeral_port();
         let cfg = CoordinatorConfig {
+            bind_address: "127.0.0.1".parse().unwrap(),
             ws_port: port,
             github_client_id: String::new(),
             github_secret: String::new(),

@@ -42,10 +42,15 @@ pub enum CommandSourceConfig {
 
     /// Coordinator mode: serve the frontend over WebSocket, with an
     /// optional local render pool. `ws_port` is shared by frontend
-    /// clients and remote `ws-worker` peers. `workers` is the shared
+    /// clients and remote `ws-worker` peers. `bind_address` is the
+    /// interface to listen on — `127.0.0.1` by default so the plain
+    /// `ws://` listener is only reachable from the local TLS-terminating
+    /// reverse proxy; set `0.0.0.0` only if you have no proxy and accept
+    /// that the listener is unencrypted. `workers` is the shared
     /// registry used to dispatch renders to remote workers. `status`
     /// is the shared live-state snapshot backing `get_status`.
     Coordinator {
+        bind_address: std::net::IpAddr,
         ws_port: u16,
         github_client_id: String,
         github_secret: String,

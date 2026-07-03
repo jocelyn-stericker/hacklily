@@ -61,6 +61,7 @@ async fn coordinator_dispatches_render_to_remote_worker_end_to_end() {
         render_timeout_msec: 8000,
         status: status.clone(),
         command_source: CommandSourceConfig::Coordinator {
+            bind_address: "127.0.0.1".parse().unwrap(),
             ws_port: port,
             github_client_id: String::new(),
             github_secret: String::new(),

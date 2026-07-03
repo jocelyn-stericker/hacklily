@@ -65,12 +65,14 @@ pub fn new(config: &Config) -> FutureCommandSource {
             // `CoordinatorConfig` itself; `new` delegates to it.
             match &config.command_source {
                 CommandSourceConfig::Coordinator {
+                    bind_address,
                     ws_port,
                     github_client_id,
                     github_secret,
                     workers,
                     status,
                 } => Box::pin(coordinator(CoordinatorConfig {
+                    bind_address: *bind_address,
                     ws_port: *ws_port,
                     github_client_id: github_client_id.clone(),
                     github_secret: github_secret.clone(),

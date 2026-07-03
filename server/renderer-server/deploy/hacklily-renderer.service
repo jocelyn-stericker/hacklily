@@ -41,6 +41,7 @@ ExecStart=%h/.local/bin/renderer_server \
   --unstable-worker-count ${UNSTABLE_WORKER_COUNT} \
   --render-timeout-msec ${RENDER_TIMEOUT_MSEC} \
   serve \
+  --bind-address ${BIND_ADDRESS} \
   --ws-port ${WS_PORT} \
   --github-client-id ${GITHUB_CLIENT_ID} \
   --github-secret ${GITHUB_SECRET}

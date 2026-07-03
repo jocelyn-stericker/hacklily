@@ -49,11 +49,77 @@ host are the GitHub OAuth values in the `env` file.
   rootless docker instead and set `DOCKER_HOST` in the `env` file.)
 - **systemd** with a user manager. On most distros this is default.
 - A **TLS-terminating reverse proxy** in front of the coordinator: the
-  unit binds plain `ws://` on `WS_PORT` (default 2000) and does **not**
-  do TLS. The proxy presents the public `wss://` certificate and
-  forwards plain `ws://` to `WS_PORT`. The frontend connects to
-  `wss://<your-host>/rpc`; remote `ws-worker` peers connect to the same
-  URL.
+  unit binds plain `ws://` on `BIND_ADDRESS:WS_PORT` (default
+  `127.0.0.1:2000`) and does **not** do TLS. The proxy presents the
+  public `wss://` certificate and forwards plain `ws://` to that
+  address. The frontend connects to `wss://<your-host>/rpc`; remote
+  `ws-worker` peers connect to the same URL. Because the listener
+  defaults to `127.0.0.1`, only the local proxy can reach it — the
+  plain `ws://` port is never on the network, which is what you want.
+  Set `BIND_ADDRESS=0.0.0.0` only if you have no proxy and accept an
+  unencrypted listener.
+
+## Firewall (external reach)
+
+Even with `BIND_ADDRESS=127.0.0.1`, lock the box down so only the
+ports you intend to expose are reachable from the internet. On Fedora
+the right tool is **firewalld** (the default; it drives nftables under
+the hood — don't hand-write nftables/iptables rules alongside it).
+
+The intended external surface for a coordinator host is just **ssh
+(22/tcp), http (80/tcp), https (443/tcp)** — the coordinator's plain
+`ws://` port (`WS_PORT`) is **not** in that list, because the proxy
+reaches it on loopback. Add anything else you need day-to-day (e.g.
+mosh on `60000–61000/udp`).
+
+```sh
+sudo systemctl enable --now firewalld
+firewall-cmd --get-default-zone        # confirm your external iface is in it
+firewall-cmd --get-active-zones
+firewall-cmd --list-all                # see what's currently open
+
+ZONE=$(firewall-cmd --get-default-zone)
+
+# Apply to runtime first (reversible), test a FRESH ssh session, then
+# commit. Keep your current session open the whole time.
+sudo firewall-cmd --zone=$ZONE --add-service=ssh
+sudo firewall-cmd --zone=$ZONE --add-service=http
+sudo firewall-cmd --zone=$ZONE --add-service=https
+# mosh: prefer the built-in service, fall back to the port range.
+sudo firewall-cmd --zone=$ZONE --add-service=mosh 2>/dev/null \
+  || sudo firewall-cmd --zone=$ZONE --add-port=60000-61000/udp
+
+# Close anything that shouldn't be public. Run only the lines that
+# appeared in --list-all above (e.g. the Fedora Server preset opens
+# cockpit on 9090):
+sudo firewall-cmd --zone=$ZONE --remove-port=2000/tcp        # the coordinator's plain ws port, if it leaked
+sudo firewall-cmd --zone=$ZONE --remove-service=cockpit      # only if you don't use the cockpit web UI
+
+# Verify from ANOTHER machine: 2000 should now refuse, 443/22 open.
+# firewalld does not filter loopback, so the proxy on this box still
+# reaches 127.0.0.1:WS_PORT.
+
+sudo firewall-cmd --runtime-to-permanent   # snapshot exactly what you tested
+sudo firewall-cmd --reload                  # confirm it parses
+firewall-cmd --list-all
+```
+
+`--runtime-to-permanent` is the clean idiom: it commits the live config
+you just verified, so a `--permanent` typo can't diverge from it. It
+survives reboot because `enable --now` already started firewalld.
+
+Two caveats:
+
+- **There may be a second firewall in front of you.** If the host is a
+  VPS, the provider often has a network-level firewall / security group
+  (Hetzner cloud firewall, AWS/GCP security group, …) that is the true
+  boundary. Host firewalld is still correct, but check the provider
+  panel too so the two agree.
+- **`BIND_ADDRESS=127.0.0.1` is the durable fix for the plain-ws
+  exposure; the firewall is defense-in-depth.** If firewalld is ever
+  disabled (rescue boot, migration), a `0.0.0.0` bind would re-expose
+  the unencrypted listener. Keep the default `127.0.0.1` unless you
+  have a specific reason to widen it.
 
 ## One-time install
 
@@ -149,8 +215,12 @@ renderer_server \
 ```
 
 (Workers identify themselves to the coordinator with an `i_haz_computes`
-JSON-RPC message on connect; there is no shared secret.) A worker host
-needs the two renderer images pulled/retagged the same way —
-`update.sh` does that, or run the `docker pull`/`docker tag` lines it
-contains by hand. You can wrap a worker in its own user unit the same
+JSON-RPC message on connect; there is no shared secret.) Note that
+workers connect to the **public `wss://` URL on 443**, the same path the
+browser uses — they do not talk to `WS_PORT` directly. So the
+coordinator's `BIND_ADDRESS=127.0.0.1` and the firewall closing `WS_PORT`
+do not interfere with remote workers; the reverse proxy fronts them too.
+A worker host needs the two renderer images pulled/retagged the same
+way — `update.sh` does that, or run the `docker pull`/`docker tag` lines
+it contains by hand. You can wrap a worker in its own user unit the same
 way, just with a different `ExecStart`.

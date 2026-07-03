@@ -103,6 +103,16 @@ async fn main() {
                         .takes_value(true),
                 )
                 .arg(
+                    Arg::with_name("bind-address")
+                        .long("bind-address")
+                        .help("Interface to listen on. Defaults to 127.0.0.1 so the plain ws:// port is only reachable from a local TLS-terminating reverse proxy; set to 0.0.0.0 to expose it (unencrypted) directly.")
+                        .required(false)
+                        .value_name("IP")
+                        .takes_value(true)
+                        .default_value("127.0.0.1")
+                        .validator(is_ip_addr),
+                )
+                .arg(
                     Arg::with_name("github-client-id")
                         .long("github-client-id")
                         .help("GitHub OAuth app client ID (empty disables GitHub integration)")
@@ -187,7 +197,13 @@ async fn main() {
                 let sm = matches.subcommand_matches("serve").unwrap();
                 let ws_port = value_t!(sm.value_of("ws-port"), u16)
                     .expect("Required config option ws-port malformed or not found.");
+                let bind_address = sm
+                    .value_of("bind-address")
+                    .expect("bind-address has a default_value, so it is always present")
+                    .parse::<std::net::IpAddr>()
+                    .expect("bind-address was validated by is_ip_addr");
                 CommandSourceConfig::Coordinator {
+                    bind_address,
                     ws_port,
                     github_client_id: sm.value_of("github-client-id").unwrap_or("").to_owned(),
                     github_secret: sm.value_of("github-secret").unwrap_or("").to_owned(),
@@ -227,6 +243,12 @@ fn is_url(val: &str) -> Result<(), String> {
     } else {
         Ok(())
     }
+}
+
+fn is_ip_addr(val: &str) -> Result<(), String> {
+    val.parse::<std::net::IpAddr>()
+        .map(|_| ())
+        .map_err(|_| format!("{} is not a valid IP address", val))
 }
 
 fn file_exists(val: &str) -> Result<(), String> {
