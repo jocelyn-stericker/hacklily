@@ -103,6 +103,25 @@ function App() {
   const vowelChartBoxRef = useRef<HTMLDivElement>(null)
   const [chartFocused, setChartFocused] = useState(false)
   const [mouseOverChart, setMouseOverChart] = useState(false)
+  const vowelIdleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const bumpVowelChartIdle = useCallback(() => {
+    if (vowelIdleTimerRef.current) clearTimeout(vowelIdleTimerRef.current)
+    vowelIdleTimerRef.current = setTimeout(() => {
+      vowelChartBoxRef.current?.blur()
+    }, 4000)
+  }, [])
+
+  useEffect(() => {
+    if (chartFocused) {
+      bumpVowelChartIdle()
+    } else if (vowelIdleTimerRef.current) {
+      clearTimeout(vowelIdleTimerRef.current)
+      vowelIdleTimerRef.current = null
+    }
+    return () => {
+      if (vowelIdleTimerRef.current) clearTimeout(vowelIdleTimerRef.current)
+    }
+  }, [chartFocused, bumpVowelChartIdle])
 
   const [settings] = useSettings()
 
@@ -831,8 +850,9 @@ function App() {
           settings.vowelChartScale + direction * VOWEL_CHART_SCALE_STEP,
         ),
       })
+      if (chartFocused) bumpVowelChartIdle()
     },
-    [settings.vowelChartScale],
+    [settings.vowelChartScale, chartFocused, bumpVowelChartIdle],
   )
 
   useHotkeys(
@@ -1000,6 +1020,11 @@ function App() {
                     onBlur={() => setChartFocused(false)}
                     onKeyDown={(e) => {
                       if (e.key === 'Escape') vowelChartBoxRef.current?.blur()
+                    }}
+                    onWheel={(e) => {
+                      if (!chartFocused) return
+                      e.preventDefault()
+                      resizeVowelChart(e.deltaY < 0 ? 1 : -1)
                     }}
                     className={cn(
                       'absolute z-10 border border-[#ccccdd] dark:border-[#2a2a3a] right-0 bottom-auto top-0 left-auto md:right-0 outline-none',
