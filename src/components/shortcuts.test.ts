@@ -28,6 +28,13 @@ describe('formatKeys', () => {
       expect(formatKeys('arrowright', mac)).toBe('→')
     }
   })
+
+  it('formats the vowel-chart resize keys as +/-', () => {
+    for (const mac of [true, false]) {
+      expect(formatKeys('equal', mac)).toBe('+')
+      expect(formatKeys('minus', mac)).toBe('-')
+    }
+  })
 })
 
 describe('SHORTCUTS registry', () => {

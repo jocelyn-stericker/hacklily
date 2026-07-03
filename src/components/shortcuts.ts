@@ -70,6 +70,18 @@ export const SHORTCUTS = {
     scope: 'timeline',
     group: 'Transcription',
   },
+  vowelChartBigger: {
+    keys: 'equal',
+    label: 'Enlarge vowel chart',
+    scope: 'timeline',
+    group: 'View',
+  },
+  vowelChartSmaller: {
+    keys: 'minus',
+    label: 'Shrink vowel chart',
+    scope: 'timeline',
+    group: 'View',
+  },
   newSession: {
     keys: 'n',
     label: 'New session',
@@ -184,6 +196,8 @@ const KEY_LABELS: Record<string, string> = {
   escape: 'Esc',
   enter: 'Enter',
   backspace: '⌫',
+  equal: '+',
+  minus: '-',
 }
 
 function labelForToken(token: string, isMac: boolean): string {
