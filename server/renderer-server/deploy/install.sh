@@ -199,8 +199,18 @@ if [ "$INSTALL_NGINX" -eq 1 ]; then
   sudo systemctl reload nginx
 
   echo "    enabling certbot renewal timer"
-  sudo systemctl enable --now certbot.timer 2>/dev/null \
-    || echo "WARN: certbot.timer not found; ensure 'certbot renew' is scheduled." >&2
+  # Fedora ships it as certbot-renew.timer; Debian/Ubuntu as certbot.timer.
+  # Try both so this works across distros.
+  if systemctl cat certbot-renew.timer >/dev/null 2>&1; then
+    sudo systemctl enable --now certbot-renew.timer
+    echo "    enabled certbot-renew.timer"
+  elif systemctl cat certbot.timer >/dev/null 2>&1; then
+    sudo systemctl enable --now certbot.timer
+    echo "    enabled certbot.timer"
+  else
+    echo "WARN: no certbot renewal timer found (neither certbot-renew.timer" >&2
+    echo "       nor certbot.timer). Create one or schedule 'certbot renew' yourself." >&2
+  fi
 fi
 
 cat <<EOF
@@ -226,7 +236,7 @@ if [ "$INSTALL_NGINX" -eq 1 ]; then
      Verify (from elsewhere):
        curl -i https://${DOMAIN}/rpc        # expect 400/426 from the WS upgrade check
        curl -i https://${DOMAIN}/           # expect 301 -> https://hacklily.org
-     Renewals are automatic via certbot.timer; nginx reloads on renew.
+     Renewals are automatic via the certbot renewal timer; nginx reloads on renew.
 
   6. Point the frontend at it: build the SPA with
        REACT_APP_BACKEND_WS_URL=wss://${DOMAIN}/rpc
