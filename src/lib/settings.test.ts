@@ -6,10 +6,13 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 
 import {
+  clampVowelChartScale,
   DEFAULT_SETTINGS,
   buildAudioConstraints,
   preferredSampleRate,
   updateSettings,
+  VOWEL_CHART_SCALE_MAX,
+  VOWEL_CHART_SCALE_MIN,
 } from './settings'
 import type { SettingsRow } from './settings'
 
@@ -361,17 +364,6 @@ describe('settings', () => {
 })
 
 describe('clampVowelChartScale', () => {
-  let clampVowelChartScale: (value: unknown) => number
-  let VOWEL_CHART_SCALE_MIN: number
-  let VOWEL_CHART_SCALE_MAX: number
-
-  beforeEach(async () => {
-    const settings = await import('./settings')
-    clampVowelChartScale = settings.clampVowelChartScale
-    VOWEL_CHART_SCALE_MIN = settings.VOWEL_CHART_SCALE_MIN
-    VOWEL_CHART_SCALE_MAX = settings.VOWEL_CHART_SCALE_MAX
-  })
-
   it('passes through in-range values', () => {
     expect(clampVowelChartScale(1.5)).toBe(1.5)
   })

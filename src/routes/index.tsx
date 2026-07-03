@@ -156,6 +156,19 @@ function App() {
     hoverFrame,
   } = useTimelineState(analysisMut)
 
+  // The chart container unmounts (rather than losing focus normally) when
+  // recording starts or the averages are hidden, so onBlur never fires --
+  // force-clear the focus flag here to avoid a stale focus ring on remount.
+  useEffect(() => {
+    if (
+      status.value === 'recording' ||
+      settings.vowelChartAverages === 'hidden'
+    ) {
+      // oxlint-disable-next-line react-hooks-js/set-state-in-effect
+      setChartFocused(false)
+    }
+  }, [status.value, settings.vowelChartAverages])
+
   const { openFilePicker } = useAudioImport({
     handleAnalyze,
     onStart: () => {
@@ -1027,6 +1040,8 @@ function App() {
                   <div
                     ref={vowelChartBoxRef}
                     tabIndex={0}
+                    role="group"
+                    aria-label="Vowel chart"
                     onMouseEnter={() => setMouseOverChart(true)}
                     onMouseLeave={() => setMouseOverChart(false)}
                     onFocus={() => setChartFocused(true)}
