@@ -315,10 +315,11 @@ pub enum TerminalRenderContainer {
 impl RenderContainer {
     pub fn new(meta: RendererMeta) -> RenderContainer {
         let image = meta.image.to_owned();
+        let timeout = meta.timeout;
 
         RenderContainer::Creating(
             meta,
-            FutureObj::new(Box::new(ContainerHandle::create(image))),
+            FutureObj::new(Box::new(ContainerHandle::create(image, timeout))),
         )
     }
 

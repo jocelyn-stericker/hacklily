@@ -61,10 +61,21 @@ fn random_between(min: u64, max: u64) -> u64 {
 }
 
 impl ContainerHandle {
-    pub async fn create(image: String) -> Result<(ContainerHandle, Child), HacklilyError> {
+    pub async fn create(
+        image: String,
+        render_timeout_msec: u64,
+    ) -> Result<(ContainerHandle, Child), HacklilyError> {
         let max_tries: u8 = 2;
         for _ in 0..max_tries {
             debug!("creating container with image {}", image);
+
+            // Surface the Rust harness render timeout to render-impl.bash
+            // so its inner `timeout` can fire 500ms earlier and emit a
+            // proper error response (with partial logs) before the harness
+            // kills the container. See render-impl.bash for the matching
+            // read of HACKLILY_RENDER_TIMEOUT_MS.
+            let render_timeout_env =
+                format!("HACKLILY_RENDER_TIMEOUT_MS={}", render_timeout_msec);
 
             let mut create = Command::new("docker");
             let create = create
@@ -80,6 +91,8 @@ impl ContainerHandle {
                     "--pids-limit=64",
                     "--ulimit=nofile=256:256",
                     "--cpus=0.8",
+                    "-e",
+                    &render_timeout_env,
                     &image,
                 ])
                 .stdin(Stdio::null())

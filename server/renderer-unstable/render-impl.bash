@@ -20,13 +20,26 @@
 # lily-server.scm, listening on TCP port 1225. For each request we
 # open a fresh connection, write the source to
 # /tmp/lyp/wrappers/hacklily.ly, send a compile s-expression, wait for
-# the EOF sentinel (or a 5s timeout), then base64/json-
+# the EOF sentinel (or the inner timeout), then base64/json-
 # encode the produced output files and emit one JSON response line.
 
 set -u
 
 cd /tmp
 mkdir -p /tmp/lyp/wrappers
+
+# renderer-server passes its --render-timeout-msec into the container as
+# HACKLILY_RENDER_TIMEOUT_MS (the Rust harness kills the container after
+# that long). The inner `timeout` below is set to 500ms less than that,
+# so the bash loop emits its own error response (with partial logs)
+# *before* the harness tears the container down. Default to 8000ms
+# (→ 7.5s inner) when unset, e.g. when running render-impl.bash by hand.
+RUST_TIMEOUT_MS=${HACKLILY_RENDER_TIMEOUT_MS:-8000}
+if awk "BEGIN{exit !($RUST_TIMEOUT_MS <= 500)}"; then
+    echo "HACKLILY_RENDER_TIMEOUT_MS ($RUST_TIMEOUT_MS) must exceed 500ms; refusing to start." >&2
+    exit 1
+fi
+INNER_TIMEOUT_SEC=$(awk "BEGIN{printf \"%.1f\", ($RUST_TIMEOUT_MS - 500)/1000}")
 
 # Reassert the font directory mtimes to the value the Dockerfile baked
 # into the fontconfig cache header. Image-layer unpacking re-stamps these
@@ -40,7 +53,7 @@ find /usr/share/fonts -type d -exec touch -d @1767225600 {} +
 # Fail fast if the fontconfig cache is invalid: a stale or incomplete
 # per-user cache (~/.cache/fontconfig) makes fontconfig rescan every
 # font directory on the first fc-match of each forked worker (~4s),
-# which blows past the 5s render timeout below and surfaces as opaque
+# which blows past the inner render timeout below and surfaces as opaque
 # "Canary died" errors. The Dockerfile pre-warms the cache with
 # `fc-cache -f`; if that cache is missing or stale at runtime, crash
 # here so renderer-server recycles the container instead of slowly
@@ -107,17 +120,18 @@ while read -r line; do
 
     # Open a TCP connection to the warm server, write the s-expr, read
     # until the worker closes the connection (EOF — the framing signal,
-    # unfakeable by user source). The outer timeout (5s) is deliberately
-    # shorter than the Rust harness's render timeout (8s) so the bash
-    # emits its own error response before the harness kills the
-    # container. No inner read timeout: a crash/kill of the worker that
-    # skips shutdown is caught by the outer timeout; legitimate slow
-    # renders with long pauses between log lines are not penalized.
+    # unfakeable by user source). The outer timeout is deliberately 500ms
+    # shorter than the Rust harness's render timeout (HACKLILY_RENDER_TIMEOUT_MS,
+    # 8s in production → 7.5s here) so the bash emits its own error
+    # response before the harness kills the container. No inner read
+    # timeout: a crash/kill of the worker that skips shutdown is caught by
+    # the outer timeout; legitimate slow renders with long pauses between
+    # log lines are not penalized.
     #
     # Logs are written to a file (not a bash variable) so they survive a
     # timeout kill. stdout stays clean for the JSON response.
     rm -f /tmp/lyp/wrappers/hacklily.logs
-    timeout 5 bash -c '
+    timeout "$INNER_TIMEOUT_SEC" bash -c '
         exec 3<>/dev/tcp/localhost/1225
         printf "%s\n" "$1" >&3
         # Read line-by-line, but also capture a trailing partial line
@@ -145,14 +159,14 @@ while read -r line; do
             echo 'failed to render' >&2
             continue
         fi
-        # Non-zero status WITH partial logs means the 5s timeout fired
+        # Non-zero status WITH partial logs means the inner timeout fired
         # mid-render. This previously slipped through as a "success" and
         # the half-written (or absent) output was packaged as a normal
         # response. Instead surface the partial logs plus an explicit
         # error as a proper {files,logs,midi} response (empty files): the
         # user sees the failure, the canary line in the partial logs is
         # preserved, and the container survives for reuse.
-        printf '\nfailed to render: timed out after 5s' >> /tmp/lyp/wrappers/hacklily.logs
+        printf '\nfailed to render: timed out after %ss' "$INNER_TIMEOUT_SEC" >> /tmp/lyp/wrappers/hacklily.logs
         jq -Rs . /tmp/lyp/wrappers/hacklily.logs > /tmp/lyp/wrappers/hacklily.logs.json 2>/dev/null
         jq -cn '{files: [""], logs: ($logs | fromjson), midi: ""}' \
             --rawfile logs /tmp/lyp/wrappers/hacklily.logs.json

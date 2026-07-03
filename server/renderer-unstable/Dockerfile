@@ -136,7 +136,7 @@ RUN chmod +x /usr/local/bin/render-impl.bash
 # cache rebuild). Without this the smoke test below only warms the
 # fonts that {c4} touches, leaving an incomplete cache that fontconfig
 # later declares invalid, forcing a multi-second rescan on every
-# forked worker and tripping the 5s render timeout. See render-impl.bash
+# forked worker and tripping the inner render timeout. See render-impl.bash
 # for the matching runtime validity check.
 #
 # Normalize the font directory mtimes to a fixed value *before* fc-cache
