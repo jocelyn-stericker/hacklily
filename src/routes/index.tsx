@@ -100,6 +100,9 @@ function App() {
   const [showTranscriptionSettings, setShowTranscriptionSettings] =
     useState(false)
   const [showVowelChartSettings, setShowVowelChartSettings] = useState(false)
+  const vowelChartBoxRef = useRef<HTMLDivElement>(null)
+  const [chartFocused, setChartFocused] = useState(false)
+  const [mouseOverChart, setMouseOverChart] = useState(false)
 
   const [settings] = useSettings()
 
@@ -989,9 +992,22 @@ function App() {
               {status.value !== 'recording' &&
                 settings.vowelChartAverages !== 'hidden' && (
                   <div
+                    ref={vowelChartBoxRef}
+                    tabIndex={0}
+                    onMouseEnter={() => setMouseOverChart(true)}
+                    onMouseLeave={() => setMouseOverChart(false)}
+                    onFocus={() => setChartFocused(true)}
+                    onBlur={() => setChartFocused(false)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') vowelChartBoxRef.current?.blur()
+                    }}
                     className={cn(
-                      'absolute z-10 pointer-events-none border border-[#ccccdd] dark:border-[#2a2a3a] right-0 bottom-auto top-0 left-auto md:right-0',
-                      !hoverFrame?.speechDetected && 'hidden',
+                      'absolute z-10 border border-[#ccccdd] dark:border-[#2a2a3a] right-0 bottom-auto top-0 left-auto md:right-0 outline-none',
+                      chartFocused && 'ring-2 ring-sky-400',
+                      !hoverFrame?.speechDetected &&
+                        !mouseOverChart &&
+                        !chartFocused &&
+                        'hidden',
                     )}
                     style={{
                       width: 240 * settings.vowelChartScale,
