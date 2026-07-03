@@ -208,7 +208,12 @@
 (define (hacklily:opt:pdf v) (ly:set-option 'backend 'ps))
 (define (hacklily:opt:png v) (ly:set-option 'backend 'cairo))
 (define (hacklily:opt:ps v) (ly:set-option 'backend 'ps))
-(define (hacklily:opt:svg v) (ly:set-option 'backend 'svg))
+;; SVG is rendered by the Cairo backend: ~15x faster than LilyPond's
+;; legacy 'svg backend (which re-emits every glyph as an inline outline
+;; path). Cairo emits both formats when the format list is (pdf svg),
+;; but render-impl.bash only collects the .svg. Kept in sync with the
+;; #(ly:set-option 'backend 'cairo) injected by renderer-server.
+(define (hacklily:opt:svg v) (ly:set-option 'backend 'cairo))
 (define (hacklily:opt:output v) (set! (paper-variable #f 'output-filename) v))
 (define (hacklily:opt:persist v) #f)
 (define (hacklily:opt:include v)
@@ -241,7 +246,10 @@
           ;;   ps  backend -> "PS backend does not support SVG format"
           ;; Both are benign (each backend only writes its own format
           ;; regardless of the list), so suppress them as expected
-          ;; warnings for the backend we've selected.
+          ;; warnings for the backend we've selected. The cairo backend
+          ;; (used for SVG requests) supports both formats and emits no
+          ;; such warning, so it needs no expectation -- it writes both a
+          ;; .pdf and a .svg and render-impl.bash keeps only the .svg.
           (let ((backend (ly:get-option 'backend)))
             (cond
               ((eq? backend 'svg)

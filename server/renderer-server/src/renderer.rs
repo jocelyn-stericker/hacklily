@@ -90,7 +90,14 @@ async fn handle_request_impl(
     match &mut child.stdin {
         Some(stdin) => {
             if request.backend == Backend::Svg {
-                request.src = "#(ly:set-option 'backend 'svg)\n".to_owned() + &request.src;
+                // SVG is rendered by the Cairo backend, which is ~15x faster
+                // than LilyPond's legacy 'svg backend (the latter re-emits
+                // every glyph as an inline outline path). Point-and-click
+                // links in Cairo's SVG output require a patched libcairo --
+                // the stock SVG surface silently drops CAIRO_TAG_LINK -- see
+                // the renderer Dockerfile. Kept in sync with hacklily:opt:svg
+                // in lily-server.scm.
+                request.src = "#(ly:set-option 'backend 'cairo)\n".to_owned() + &request.src;
             } else if request.backend == Backend::Pdf {
                 // PDF is produced by the PS backend in LilyPond 2.27.
                 request.src = "#(ly:set-option 'backend 'ps)\n".to_owned() + &request.src;
