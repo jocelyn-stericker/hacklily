@@ -179,12 +179,19 @@ function detectFormants(signal: Float32Array): { f1: number; f2: number } {
   return { f1: median(f1s), f2: median(f2s) }
 }
 
-// Reference vowels (adult-male-ish), within the chart's F1 200–1100 /
-// F2 650–3300 Hz plotting ranges.
+// Reference vowels (adult-male-ish) spanning the chart, all within the F1
+// 200–1100 / F2 650–3300 Hz plotting box. Chosen for coverage of the corners,
+// edges and centre so the marker is checked across the whole IPA space.
 const VOWELS = {
-  i: { f1: 300, f2: 2300, f3: 3000 }, // front, close: top-left
-  ɑ: { f1: 750, f2: 1150, f3: 2600 }, // back, open: bottom-right
-  u: { f1: 350, f2: 900, f3: 2400 }, // back, close: top-right
+  i: { f1: 300, f2: 2300, f3: 3000 }, // close front: top-left
+  ɪ: { f1: 400, f2: 2000, f3: 2800 }, // near-close front
+  ɛ: { f1: 550, f2: 1800, f3: 2600 }, // open-mid front
+  æ: { f1: 660, f2: 1700, f3: 2500 }, // near-open front: bottom-left
+  ɑ: { f1: 750, f2: 1150, f3: 2600 }, // open back: bottom-right
+  ɔ: { f1: 580, f2: 900, f3: 2500 }, // open-mid back
+  ʊ: { f1: 440, f2: 1000, f3: 2400 }, // near-close back
+  u: { f1: 350, f2: 900, f3: 2400 }, // close back: top-right
+  ə: { f1: 500, f2: 1500, f3: 2500 }, // mid central
 }
 
 function detectVowel(v: { f1: number; f2: number; f3: number }) {

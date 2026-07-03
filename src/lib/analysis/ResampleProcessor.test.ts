@@ -282,4 +282,37 @@ describe('ResamplerStreamProcessor', () => {
 
     expect(totalOutput).toBeGreaterThan(0)
   })
+
+  // The realtime formant path resamples the mic (44.1 kHz) down to 11 kHz before
+  // formant tracking, and the tracked F1/F2 place the vowel-chart marker. If the
+  // resampler shifted frequencies, every marker would land in the wrong spot, so
+  // pin that it preserves the vowel-formant band (up to the 5.5 kHz ceiling).
+  it('preserves formant-band frequencies through 44.1 kHz -> 11 kHz', () => {
+    const estimateFreq = (sig: Float32Array, rate: number): number => {
+      // Zero-crossing rate over the steady middle (skip warm-up/edge taper).
+      const a = Math.floor(sig.length * 0.3)
+      const b = Math.floor(sig.length * 0.7)
+      let crossings = 0
+      for (let i = a + 1; i < b; i++) {
+        if (sig[i - 1]! < 0 !== sig[i]! < 0) crossings++
+      }
+      return crossings / 2 / ((b - a) / rate)
+    }
+
+    for (const freq of [500, 1000, 1500, 2000, 2300, 3000, 4000]) {
+      const resampler = new ResamplerStreamProcessor(44100, 11000, 50)
+      const input = generateSineWave(freq, 0.5, 44100)
+      const out: number[] = []
+      const buf = new Float32Array(2048)
+      for (let i = 0; i < input.length; i += 128) {
+        resampler.feed(input.subarray(i, i + 128))
+        let n
+        while ((n = resampler.drain(buf)) > 0) {
+          for (let k = 0; k < n; k++) out.push(buf[k]!)
+        }
+      }
+      const detected = estimateFreq(Float32Array.from(out), 11000)
+      expect(Math.abs(detected - freq)).toBeLessThan(30) // within ~1%
+    }
+  })
 })
