@@ -100,8 +100,8 @@ Forgejo supports GitHub Actions syntax, but compatibility with third-party marke
 
 Store and track references, feedback, and project plans in `docs/`. Always use `docs/` over dotfiles, notes apps, or other personal storage when there is a chance it could be useful for another user. When creating a file in `docs/`, add a pointer here:
 
- - `docs/align-bench-plan.md`: Plans for looking into benchmarking and improving forced alignment
- - `docs/analytics.md`: Description of how analytics are implemented in Braat
- - `docs/brightness-fixes.md`: Plans for improving the brightness score
- - `docs/memory-improvements.md`: Details of a mostly-complete project which substantially reduced memory use
- - `docs/partial-align-plan.md`: Plans for using partial alignment to more accurately and quickly analyze speech from practice takes
+- `docs/align-bench-plan.md`: Plans for looking into benchmarking and improving forced alignment
+- `docs/analytics.md`: Description of how analytics are implemented in Braat
+- `docs/brightness-fixes.md`: Plans for improving the brightness score
+- `docs/memory-improvements.md`: Details of a mostly-complete project which substantially reduced memory use
+- `docs/partial-align-plan.md`: Plans for using partial alignment to more accurately and quickly analyze speech from practice takes
