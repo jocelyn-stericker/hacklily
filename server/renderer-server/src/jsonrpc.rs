@@ -31,7 +31,7 @@ use serde_json::{json, Value};
 pub const JSONRPC_VERSION: &str = "2.0";
 
 // Custom error codes carried over from the legacy Qt coordinator
-// (`server/ws-server/hacklilyserver.h`). The frontend treats these
+// (the former Qt `HacklilyServer`, now retired). The frontend treats these
 // generically, so preserving them keeps wire compatibility.
 pub const ERROR_JSON_PARSE: i64 = 1;
 pub const ERROR_INTERNAL: i64 = 2;
@@ -83,13 +83,14 @@ fn default_null() -> Value {
     Value::Null
 }
 
-impl Request {
+impl std::str::FromStr for Request {
+    type Err = Box<Response>;
     /// Parse a text frame into a typed request. Returns the JSON-RPC
     /// parse-error response that should be sent back if parsing fails,
     /// matching the legacy Qt behaviour in `_handleTextMessageReceived`.
     /// The error is boxed to keep the `Err` variant small (the `Response`
     /// carries `serde_json::Value`s).
-    pub fn from_str(text: &str) -> Result<Self, Box<Response>> {
+    fn from_str(text: &str) -> Result<Self, Self::Err> {
         match serde_json::from_str::<Self>(text) {
             Ok(req) if req.jsonrpc == JSONRPC_VERSION => Ok(req),
             Ok(_) => Err(Box::new(Response::error(
@@ -166,7 +167,7 @@ mod tests {
     #[test]
     fn parses_frontend_request_with_string_id() {
         let raw = r#"{"jsonrpc":"2.0","id":"42","method":"render","params":{"backend":"svg","src":"c4"}}"#;
-        let req = Request::from_str(raw).expect("parses");
+        let req = raw.parse::<Request>().expect("parses");
         assert_eq!(req.id, json!("42"));
         assert_eq!(req.method, "render");
         assert_eq!(req.params["backend"], "svg");
@@ -176,22 +177,46 @@ mod tests {
     #[test]
     fn parses_worker_handshake_with_null_id() {
         let raw = r#"{"jsonrpc":"2.0","id":null,"method":"i_haz_computes","params":{"max_jobs":4}}"#;
-        let req = Request::from_str(raw).expect("parses");
+        let req = raw.parse::<Request>().expect("parses");
         assert!(req.id.is_null());
         assert_eq!(req.params["max_jobs"], 4);
+    }
+
+    /// Regression: the `ws-worker` handshake is produced by
+    /// `command_source/ws_worker_client.rs` as a JSON-RPC 2.0 request
+    /// whose `id` is a Uuid (serialized as a string). An earlier
+    /// version of the worker sent the handshake *without* a `jsonrpc`
+    /// field, which `Request::from_str` rejected — silently breaking
+    /// every worker connection. This test pins the exact wire shape.
+    #[test]
+    fn parses_real_worker_handshake_with_uuid_string_id() {
+        let raw = r#"{"jsonrpc":"2.0","id":"7e4f1c8e-9d3a-4f2b-8a1c-2e5d6f7a8b9c","method":"i_haz_computes","params":{"max_jobs":4}}"#;
+        let req = raw.parse::<Request>().expect("parses");
+        assert_eq!(req.method, "i_haz_computes");
+        assert_eq!(req.params["max_jobs"], 4);
+        assert!(req.id.is_string());
+    }
+
+    /// Regression companion: a handshake missing `jsonrpc` (the old,
+    /// broken worker wire format) must be rejected, not silently
+    /// accepted as a worker.
+    #[test]
+    fn rejects_handshake_without_jsonrpc_field() {
+        let raw = r#"{"method":"i_haz_computes","id":"7e4f1c8e-9d3a-4f2b-8a1c-2e5d6f7a8b9c","params":{"max_jobs":4}}"#;
+        assert!(raw.parse::<Request>().is_err());
     }
 
     #[test]
     fn parses_request_with_omitted_params() {
         let raw = r#"{"jsonrpc":"2.0","id":"7","method":"ping"}"#;
-        let req = Request::from_str(raw).expect("parses");
+        let req = raw.parse::<Request>().expect("parses");
         assert_eq!(req.params, json!({}));
     }
 
     #[test]
     fn rejects_bad_jsonrpc_version() {
         let raw = r#"{"jsonrpc":"1.0","id":"1","method":"ping"}"#;
-        let err = Request::from_str(raw).expect_err("rejects");
+        let err = raw.parse::<Request>().expect_err("rejects");
         assert_eq!(err.error.expect("error").code, STDERR_INVALID_REQUEST);
         // The framing error has a null id per spec.
         assert!(err.id.is_null());
@@ -200,7 +225,7 @@ mod tests {
     #[test]
     fn rejects_malformed_json() {
         let raw = "{not json";
-        let err = Request::from_str(raw).expect_err("rejects");
+        let err = raw.parse::<Request>().expect_err("rejects");
         assert_eq!(err.error.expect("error").code, STDERR_PARSE_ERROR);
     }
 

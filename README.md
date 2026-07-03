@@ -12,13 +12,11 @@ Hacklily has three parts:
 
 - **Frontend** (`src/`) — a React 18 SPA bundled with webpack. Monaco provides the editor; the preview talks to the renderer over a JSON-RPC 2.0 WebSocket. Three webpack entry points: `index` (the editor), `status` (a public server-status page), and `musicxml2ly` (the MusicXML importer).
 - **Renderer** (`server/renderer/` and `server/renderer-unstable/`) — Docker images that build LilyPond from source (stable 2.26, unstable 2.27). Each container runs a warm LilyPond Scheme server (`lily-server.scm`) and a bash frame (`render-impl.bash`) that reads one JSON request per line on stdin and emits one JSON response per line on stdout.
-- **Renderer server** (`server/renderer-server/`, Rust) — a coordinator/worker harness that keeps a pool of renderer containers warm, routes render requests (stable vs. unstable, picked from the score's `\version`), enforces an 8s render timeout, and tears down and replaces containers after each request for isolation.
-
-A separate Qt WebSocket coordinator (`server/ws-server/`) is the legacy frontend-facing server; it does OAuth and fans work out to Rust workers. It builds LilyPond images on startup and is slowly being replaced by the Rust renderer server.
+- **Renderer server** (`server/renderer-server/`, Rust) — a single binary that does three jobs: in `serve` mode it is the frontend-facing coordinator (WebSocket JSON-RPC, GitHub OAuth, a public `get_status` page) **and** the local render pool; in `ws-worker` mode it offers compute to a remote coordinator; in `batch` mode it renders test cases from a file. It keeps a pool of renderer containers warm, routes render requests (stable vs. unstable, picked from the score's `\version`), enforces an 8s render timeout, and tears down and replaces containers after each request for isolation. A coordinator with `--stable-worker-count 0 --unstable-worker-count 0` runs in pure-coordinator mode, dispatching renders to remote `ws-worker` peers (and failing requests if none are attached). The legacy Qt5 coordinator that used to live in `server/ws-server/` has been removed.
 
 ## Running locally
 
-You need Node, Qt 5 (with `qmake`), and Docker.
+You need Node and Docker.
 
 ```bash
 # frontend (without GitHub integration)
@@ -27,21 +25,26 @@ npm start          # http://localhost:3000, talks to the remote render backend b
 
 # or, with the local backend:
 npm start          # in one shell — REACT_APP_BACKEND_WS_URL defaults to the prod backend
-cd server && mkdir -p build && cd build
-qmake ../ws-server && make
-./ws-server \
-  --renderer-path ../renderer \
-  --renderer-unstable-path ../renderer-unstable \
-  --renderer-docker-tag hacklily-renderer \
-  --renderer-unstable-docker-tag hacklily-renderer-unstable \
-  --jobs 4 --ws-port 2000
+cd server/renderer-server
+cargo run -- \
+  --stable-docker-tag hacklily-renderer \
+  --unstable-docker-tag hacklily-renderer-unstable \
+  --stable-worker-count 4 --unstable-worker-count 4 \
+  --render-timeout-msec 8000 \
+  serve --ws-port 2000 --github-client-id "" --github-secret ""
 ```
 
-`npm start:remote-backend` runs the dev server pointed at the production render backend (`wss://hacklily-render.nettek.ca/rpc`), so you don't need Docker or Qt for most frontend work.
+`npm start:remote-backend` runs the dev server pointed at the production render backend (`wss://hacklily-render.nettek.ca/rpc`), so you don't need Docker for most frontend work.
+
+## Deployment
+
+The `serve` coordinator listens on **plain TCP** (`--ws-port`) and does **not** terminate TLS itself. In production it sits behind a TLS-terminating reverse proxy: the proxy presents the public `wss://…` certificate and forwards plain `ws://` to the coordinator's port. The coordinator ignores the HTTP path (it upgrades any WebSocket handshake), so the proxy can route `/rpc` or any other path to it. The same reverse proxy that fronts the SPA can do this — just add a WebSocket-capable location block proxying to the coordinator port and ensure it passes through `Upgrade`/`Connection` headers.
+
+Graceful shutdown: send the process **SIGTERM** (this is what systemd, k8s, and `docker stop` send). The coordinator drains in-flight renders and exits 0; because a single render can take up to the render timeout (~8s), set the supervisor's termination grace period to exceed that so in-flight user renders aren't cut off mid-deploy. (SIGINT / Ctrl-C does the same thing for interactive use.)
 
 ## Status
 
-Hacklily is stable and live at <https://www.hacklily.org>. The renderer is being migrated off the legacy Qt coordinator onto the Rust renderer server.
+Hacklily is stable and live at <https://www.hacklily.org>. The renderer is fully on the Rust renderer server, which now serves the frontend directly (the legacy Qt5 coordinator has been retired).
 
 ## Contributing
 

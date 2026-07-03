@@ -22,6 +22,7 @@ use std::sync::{Arc, Mutex};
 use url::Url;
 
 use super::request::{Request, Response};
+use crate::status::StatusHandle;
 use crate::worker_registry::WorkerRegistryHandle;
 
 #[derive(Clone)]
@@ -42,12 +43,14 @@ pub enum CommandSourceConfig {
     /// Coordinator mode: serve the frontend over WebSocket, with an
     /// optional local render pool. `ws_port` is shared by frontend
     /// clients and remote `ws-worker` peers. `workers` is the shared
-    /// registry used to dispatch renders to remote workers.
+    /// registry used to dispatch renders to remote workers. `status`
+    /// is the shared live-state snapshot backing `get_status`.
     Coordinator {
         ws_port: u16,
         github_client_id: String,
         github_secret: String,
         workers: WorkerRegistryHandle,
+        status: StatusHandle,
     },
 }
 
@@ -61,4 +64,8 @@ pub struct Config {
 
     pub render_timeout_msec: u64,
     pub command_source: CommandSourceConfig,
+    /// Shared live-state snapshot for `get_status`. Present in every
+    /// mode but only written/read in coordinator mode; the other
+    /// modes simply never touch it.
+    pub status: StatusHandle,
 }

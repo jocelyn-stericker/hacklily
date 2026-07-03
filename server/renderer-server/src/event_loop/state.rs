@@ -28,7 +28,10 @@ use crate::config::{CommandSourceConfig, Config};
 use crate::renderer::{ReadyRenderContainer, RenderContainer, RendererMeta};
 use crate::renderer_manager::{Command, Event as RenderEvent};
 use crate::request::{Request, Response as RenderResponse, Version};
+use crate::status::StatusHandle;
 use crate::worker_registry::WorkerRegistryHandle;
+
+use std::sync::atomic::Ordering;
 
 pub enum Event {
     QueueRequest(Request, ResponseCallback),
@@ -53,6 +56,9 @@ pub struct State {
     /// renders to remote `ws-worker` peers when the local pool has no
     /// ready container for the requested version.
     workers: Option<WorkerRegistryHandle>,
+    /// Shared live-state snapshot. Always present; the event loop
+    /// publishes local-pool and backlog counters here for `get_status`.
+    status: StatusHandle,
 }
 
 impl State {
@@ -75,6 +81,7 @@ impl State {
                 CommandSourceConfig::Coordinator { ref workers, .. } => Some(workers.clone()),
                 _ => None,
             },
+            status: config.status.clone(),
         };
 
         for i in 0..config.stable_worker_count {
@@ -99,6 +106,7 @@ impl State {
                 .await;
         }
 
+        state.republish_local_status();
         (state, internal_events)
     }
 
@@ -203,6 +211,7 @@ impl State {
             .push_back((request, response_cb));
 
         self.process_if_possible().await;
+        self.republish_local_status();
     }
 
     pub async fn handle_manager_event(&mut self, clean_event: RenderEvent) {
@@ -222,12 +231,15 @@ impl State {
 
                     self.process_if_possible().await;
                 }
+                self.republish_local_status();
             }
             RenderEvent::ContainerTerminated => {
                 self.total_containers -= 1;
+                self.republish_local_status();
             }
             RenderEvent::Fatal => {
                 self.total_containers -= 1;
+                self.republish_local_status();
                 error!("FATAL: renderer sent a fatal event, so something must be very wrong.");
                 self.gracefully_quit().await;
             }
@@ -313,6 +325,7 @@ impl State {
                 }
             }
         }
+        self.republish_local_status();
     }
     pub async fn handle_command_source_ready(&mut self, sink: QuitSink) {
         if self.stopping {
@@ -344,5 +357,28 @@ impl State {
 
     pub fn is_done(&self) -> bool {
         self.stopping && self.total_containers == 0
+    }
+
+    /// Recompute local-pool and backlog counters from in-memory state
+    /// and publish them to the shared `StatusSnapshot`. The event loop
+    /// is single-tasked, so these reads are race-free; the snapshot's
+    /// atomics only matter for the cross-task `get_status` reader.
+    fn republish_local_status(&self) {
+        let snap = self.status.snapshot();
+        let total = self.total_containers.max(0) as u64;
+        let free: usize = self
+            .ready_containers
+            .values()
+            .map(|heap| heap.len())
+            .sum();
+        let backlog: usize = self
+            .pending_requests
+            .values()
+            .map(|q| q.len())
+            .sum();
+        snap.local_total.store(total, Ordering::Relaxed);
+        snap.local_free.store(free as u64, Ordering::Relaxed);
+        snap.local_busy.store(total.saturating_sub(free as u64), Ordering::Relaxed);
+        snap.backlog.store(backlog as u64, Ordering::Relaxed);
     }
 }

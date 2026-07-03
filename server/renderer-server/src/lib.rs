@@ -27,6 +27,7 @@ pub mod jsonrpc;
 mod renderer;
 mod renderer_manager;
 pub mod request;
+pub mod status;
 pub mod worker_registry;
 
 pub use crate::config::{CommandSourceConfig, Config};

@@ -20,7 +20,7 @@
 // The worker registry tracks connected remote renderer workers and
 // manages render dispatch to them. It replaces the Qt coordinator's
 // `_freeWorkers` / `_busyWorkers` / `_remoteProcessingRequests` maps
-// (`server/ws-server/hacklilyserver.cpp`).
+// (the former Qt `HacklilyServer`, now retired).
 //
 // Remote workers are version-agnostic: the coordinator sends a render
 // request with the `version` field in params, and the worker's own
@@ -43,6 +43,8 @@ use tokio::sync::Mutex;
 use crate::command_source::ResponseCallback;
 use crate::jsonrpc;
 use crate::request::{Request, Response as RenderResponse};
+use crate::status::StatusHandle;
+use std::sync::atomic::Ordering;
 
 /// A cloneable handle to the worker registry. Cheap to clone (the
 /// inner state is behind an `Arc<Mutex<...>>`). Used by `State` to
@@ -51,6 +53,7 @@ use crate::request::{Request, Response as RenderResponse};
 #[derive(Clone)]
 pub struct WorkerRegistryHandle {
     inner: Arc<Mutex<WorkerRegistryState>>,
+    status: Option<StatusHandle>,
 }
 
 struct WorkerRegistryState {
@@ -104,7 +107,29 @@ impl WorkerRegistryHandle {
     pub fn new() -> Self {
         WorkerRegistryHandle {
             inner: Arc::new(Mutex::new(WorkerRegistryState::new())),
+            status: None,
         }
+    }
+
+    /// Like `new` but also publishes remote worker counts into the
+    /// shared `StatusSnapshot` (for `get_status`). Used by the
+    /// coordinator in `serve` mode.
+    pub fn with_status(status: StatusHandle) -> Self {
+        WorkerRegistryHandle {
+            inner: Arc::new(Mutex::new(WorkerRegistryState::new())),
+            status: Some(status),
+        }
+    }
+
+    /// Recompute and publish `remote_*` counters. Callers must NOT
+    /// hold `inner` lock when calling this (it acquires it).
+    async fn republish_status(&self) {
+        let Some(status) = self.status.as_ref() else { return };
+        let snap = status.snapshot();
+        let state = self.inner.lock().await;
+        snap.remote_total.store(state.workers.len() as u64, Ordering::Relaxed);
+        snap.remote_busy.store(state.pending.len() as u64, Ordering::Relaxed);
+        snap.remote_free.store(state.idle.len() as u64, Ordering::Relaxed);
     }
 
     /// Number of currently-registered workers (not slots). Used by
@@ -145,6 +170,8 @@ impl WorkerRegistryHandle {
             max_jobs,
             state.idle.len(),
         );
+        drop(state);
+        self.republish_status().await;
     }
 
     /// Unregister a worker (on disconnect). Drains all idle slots for
@@ -186,6 +213,8 @@ impl WorkerRegistryHandle {
             removed_idle,
             failed_ids.len(),
         );
+        drop(state);
+        self.republish_status().await;
     }
 
     /// Try to dispatch a render request to an idle remote worker.
@@ -260,6 +289,8 @@ impl WorkerRegistryHandle {
             },
         );
         debug!("dispatched render to worker {}", worker_id);
+        drop(state);
+        self.republish_status().await;
         Ok(())
     }
 
@@ -288,6 +319,8 @@ impl WorkerRegistryHandle {
         // Invoke the callback (it spawns its own async task to send
         // the response back to the frontend).
         (pending.callback)(response);
+        drop(state);
+        self.republish_status().await;
     }
 }
 
@@ -409,5 +442,43 @@ mod tests {
 
         reg.unregister_worker("w1").await;
         assert_eq!(reg.idle_slot_count().await, 0);
+    }
+
+    #[tokio::test]
+    async fn with_status_publishes_remote_counts() {
+        let status = StatusHandle::new();
+        let reg = WorkerRegistryHandle::with_status(status.clone());
+        let snap = status.snapshot();
+
+        // Initially empty.
+        assert_eq!(snap.remote_total.load(Ordering::Relaxed), 0);
+        assert_eq!(snap.remote_free.load(Ordering::Relaxed), 0);
+
+        reg.register_worker("w1".into(), 2, discard_sink()).await;
+        assert_eq!(snap.remote_total.load(Ordering::Relaxed), 1);
+        assert_eq!(snap.remote_free.load(Ordering::Relaxed), 2);
+        assert_eq!(snap.remote_busy.load(Ordering::Relaxed), 0);
+
+        // Dispatching moves a slot from free to busy.
+        match reg.try_dispatch(sample_request("rx"), cb_noop()).await {
+            Ok(()) => {}
+            Err(_) => panic!("dispatch ok"),
+        }
+        assert_eq!(snap.remote_free.load(Ordering::Relaxed), 1);
+        assert_eq!(snap.remote_busy.load(Ordering::Relaxed), 1);
+
+        // A response returns the slot to free.
+        reg.handle_response(
+            "rx",
+            RenderResponse { files: vec![], logs: "ok".into(), midi: String::new() },
+        )
+        .await;
+        assert_eq!(snap.remote_free.load(Ordering::Relaxed), 2);
+        assert_eq!(snap.remote_busy.load(Ordering::Relaxed), 0);
+
+        // Unregistering zeroes the totals.
+        reg.unregister_worker("w1").await;
+        assert_eq!(snap.remote_total.load(Ordering::Relaxed), 0);
+        assert_eq!(snap.remote_free.load(Ordering::Relaxed), 0);
     }
 }

@@ -27,19 +27,13 @@ cargo test --locked
 cargo build
 ```
 
-For the legacy Qt coordinator:
-
-```bash
-cd server && mkdir -p build && cd build
-qmake ../ws-server && make
-```
+The renderer server is now also the frontend-facing coordinator: run it in `serve` mode to serve the SPA over WebSocket (with an optional local render pool and remote `ws-worker` peers). `serve` takes `--ws-port`, `--github-client-id`, `--github-secret`, plus the usual `--stable-worker-count`/`--unstable-worker-count` (either may be `0` for pure-coordinator mode, in which case renders are dispatched to remote workers or failed if none are attached).
 
 ## Tech Stack
 
 - **Frontend**: React 18, webpack 5, TypeScript 4.7, Monaco editor, Aphrodite (CSS-in-JS), Blueprint.js, react-router-dom 6. Babel transpiles (no native TS in webpack); jest uses the same babel config.
 - **Renderer**: Docker images built from `server/renderer/Dockerfile` (LilyPond 2.26 stable) and `server/renderer-unstable/Dockerfile` (LilyPond 2.27 unstable). LilyPond is compiled from source for arm64/amd64 parity. Each container runs `lily-server.scm` (a warm Scheme server) framed by `render-impl.bash`.
-- **Renderer server** (`server/renderer-server/`): Rust + tokio. Manages a pool of renderer containers, routes requests (stable vs. unstable based on the score's `\version`), enforces an 8s render timeout, and tears down containers after each request for isolation.
-- **Legacy coordinator** (`server/ws-server/`): Qt5 WebSocket server. Does GitHub OAuth, fans work to Rust workers, and can build renderer images on startup. Being replaced by the Rust renderer server.
+- **Renderer server** (`server/renderer-server/`): Rust + tokio. The single binary now does both jobs: in `serve` mode it is the frontend-facing coordinator (WebSocket JSON-RPC, GitHub OAuth, `get_status` analytics) **and** the local render pool; in `ws-worker` mode it offers compute to a remote coordinator; in `batch` mode it renders test cases from a file. It manages a pool of renderer containers, routes requests (stable vs. unstable based on the score's `\version`), enforces an 8s render timeout, and tears down containers after each request for isolation. The legacy Qt5 coordinator (`server/ws-server/`) has been removed.
 
 ## Layout
 
@@ -56,9 +50,7 @@ src/                       Frontend (React SPA)
 server/
   renderer/                Stable LilyPond 2.26 Docker image
   renderer-unstable/       Unstable LilyPond 2.27 Docker image
-  renderer-server/         Rust coordinator/worker (the new backend)
-  ws-server/               Legacy Qt5 WebSocket coordinator
-  build/                   gitignored Qt build output
+  renderer-server/         Rust coordinator/worker (the backend — serves frontend, renders locally, dispatches to remote ws-workers)
 ```
 
 ## Key Architectural Decisions
@@ -71,7 +63,9 @@ server/
 
 4. **Sanitization**: rendered SVG is sanitized with DOMPurify before being shown in the preview (`src/Preview.tsx`, see `src/*.sanitize.test.ts` for the regression tests).
 
-5. **GitHub as storage**: scores are saved to / published from the user's own GitHub repos via `src/gitfs.tsx`. The legacy Qt coordinator handles the OAuth flow.
+5. **GitHub as storage**: scores are saved to / published from the user's own GitHub repos via `src/gitfs.tsx`. The coordinator (renderer-server in `serve` mode) handles the OAuth flow (`src/auth.rs`).
+6. **TLS termination is external**: the `serve` coordinator binds plain TCP and does **not** do TLS. In production it sits behind a TLS-terminating reverse proxy that presents the public `wss://` certificate and forwards plain `ws://` to the coordinator's `--ws-port` (the coordinator upgrades any WebSocket handshake, so the proxy path is irrelevant). See README "Deployment".
+7. **Graceful shutdown**: SIGTERM (and SIGINT) drain in-flight renders and exit 0 (`event_loop` installs a `SIGTERM` handler that maps to `GracefullyQuit`). A render can take up to the render timeout (~8s), so a supervisor's termination grace period should exceed that. This matters more now that the coordinator is the long-lived frontend-facing process.
 
 ## CI/CD
 

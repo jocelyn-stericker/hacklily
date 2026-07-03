@@ -32,21 +32,12 @@ use uuid::Uuid;
 
 use crate::command_source::{QuitSignal, QuitSink, RequestStream, ResponseCallback};
 use crate::error::HacklilyError;
+use crate::jsonrpc;
 use crate::request::{Backend, Request, Response, Version};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct IHazComputesParams {
     max_jobs: u64,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(tag = "method")]
-enum WsCoordinatorMethod {
-    #[serde(rename = "i_haz_computes")]
-    IHazComputes {
-        id: Uuid,
-        params: IHazComputesParams,
-    },
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -93,15 +84,25 @@ async fn ws_worker_client_impl(
             let (mut sink, stream) = duplex.split();
             debug!("Connected to server");
 
-            let cmd = serde_json::to_string(&WsCoordinatorMethod::IHazComputes {
-                id: Uuid::new_v4(),
-                params: IHazComputesParams { max_jobs },
-            })
-            .map_err(|err| {
-                HacklilyError::CommandSourceError(
-                    "Could not build hello JSON command: ".to_owned() + &err.to_string(),
-                )
-            })?;
+            // Send the handshake as a proper JSON-RPC 2.0 request so the
+            // coordinator's `Request::from_str` (which requires
+            // `jsonrpc == "2.0"`) accepts it. The id is a fresh Uuid;
+            // the coordinator acks with a JSON-RPC success response,
+            // which this worker silently drops (it only acts on
+            // `render` requests).
+            let handshake = jsonrpc::Request {
+                jsonrpc: jsonrpc::JSONRPC_VERSION.to_owned(),
+                id: serde_json::json!(Uuid::new_v4()),
+                method: jsonrpc::method::I_HAZ_COMPUTES.to_owned(),
+                params: serde_json::to_value(IHazComputesParams { max_jobs })
+                    .unwrap_or_else(|_| serde_json::json!({})),
+            };
+            let cmd = serde_json::to_string(&handshake)
+                .map_err(|err| {
+                    HacklilyError::CommandSourceError(
+                        "Could not build hello JSON command: ".to_owned() + &err.to_string(),
+                    )
+                })?;
 
             let cmd = Message::Text(cmd);
 

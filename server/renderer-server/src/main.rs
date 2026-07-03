@@ -25,7 +25,7 @@ use std::path::Path;
 
 extern crate renderer_lib;
 
-use renderer_lib::{event_loop, worker_registry::WorkerRegistryHandle, CommandSourceConfig, Config};
+use renderer_lib::{event_loop, status::StatusHandle, worker_registry::WorkerRegistryHandle, CommandSourceConfig, Config};
 
 #[tokio::main]
 async fn main() {
@@ -146,6 +146,12 @@ async fn main() {
         }))
         .init();
 
+    // One shared snapshot for the whole process: the event loop
+    // publishes local-pool/backlog counts, the worker registry
+    // publishes remote counts, and the coordinator publishes
+    // client + analytics counts. Only meaningfully used in `serve` mode.
+    let status = StatusHandle::new();
+
     let config = Config {
         stable_docker_tag: matches
             .value_of("stable-docker-tag")
@@ -163,6 +169,8 @@ async fn main() {
 
         render_timeout_msec: value_t!(matches.value_of("render-timeout-msec"), u64)
             .expect("Required config option render-timeout-msec malformed or not found."),
+
+        status: status.clone(),
 
         command_source: match matches.subcommand_name() {
             Some("ws-worker") => CommandSourceConfig::Worker {
@@ -183,7 +191,8 @@ async fn main() {
                     ws_port,
                     github_client_id: sm.value_of("github-client-id").unwrap_or("").to_owned(),
                     github_secret: sm.value_of("github-secret").unwrap_or("").to_owned(),
-                    workers: WorkerRegistryHandle::new(),
+                    workers: WorkerRegistryHandle::with_status(status.clone()),
+                    status: status.clone(),
                 }
             }
             Some("batch") => CommandSourceConfig::Batch {

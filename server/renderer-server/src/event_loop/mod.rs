@@ -139,9 +139,32 @@ pub async fn event_loop(config: Config) {
     let manager = RendererManager::new();
     let (mut state, internal_events) = State::new(&config, manager.command_sender).await;
 
-    let ctrl_c = Box::pin(tokio::signal::ctrl_c())
-        .map(|_| Event::GracefullyQuit)
-        .into_stream();
+    // Treat SIGINT (Ctrl-C) and SIGTERM (the signal supervisors send
+    // on stop/deploy) as graceful-quit requests. The coordinator is a
+    // long-lived frontend-facing process, so handling SIGTERM lets
+    // systemd/k8s/`docker stop` drain in-flight renders instead of
+    // killing the process mid-request. Up to an ~8s render timeout may
+    // elapse before shutdown completes, so the supervisor's grace
+    // period should exceed the render timeout.
+    let quit_signals = {
+        let quit = async {
+            #[cfg(unix)]
+            {
+                use tokio::signal::unix::{signal, SignalKind};
+                let mut term = signal(SignalKind::terminate())
+                    .expect("could not install SIGTERM handler");
+                tokio::select! {
+                    _ = tokio::signal::ctrl_c() => {}
+                    _ = term.recv() => {}
+                }
+            }
+            #[cfg(not(unix))]
+            {
+                tokio::signal::ctrl_c().await;
+            }
+        };
+        Box::pin(quit).map(|_| Event::GracefullyQuit).into_stream()
+    };
 
     let manager_events = ReceiverStream::new(manager.event_receiver)
         .map(Box::new)
@@ -159,7 +182,7 @@ pub async fn event_loop(config: Config) {
     )
     .await;
 
-    let events = stream::select(ReceiverStream::new(command_source_events), ctrl_c);
+    let events = stream::select(ReceiverStream::new(command_source_events), quit_signals);
     let events = stream::select(events, manager_events);
     let mut events = stream::select(events, ReceiverStream::new(internal_events));
 

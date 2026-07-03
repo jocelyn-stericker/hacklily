@@ -39,6 +39,7 @@ pub fn run_test(requests: Vec<Request>) -> HashMap<String, Response> {
         unstable_docker_tag: "hacklily-renderer-unstable".to_owned(),
         unstable_worker_count: worker_count,
         render_timeout_msec: 8000,
+        status: renderer_lib::status::StatusHandle::new(),
         command_source: CommandSourceConfig::TestRunner {
             input: requests,
             output: output.clone(),

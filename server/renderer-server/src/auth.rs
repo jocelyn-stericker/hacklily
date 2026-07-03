@@ -18,8 +18,8 @@
  */
 
 // GitHub OAuth flow for the coordinator, porting the responsibilities
-// previously held by the Qt `HacklilyServer` (`server/ws-server/
-// hacklilyserver.cpp`):
+// previously held by the former Qt `HacklilyServer` (removed in
+// `server/ws-server/`, now retired):
 //
 //   * `signIn` — exchange the temporary `code` for an access token at
 //     `https://github.com/login/oauth/access_token`, then fetch the

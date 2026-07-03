@@ -69,11 +69,13 @@ pub fn new(config: &Config) -> FutureCommandSource {
                     github_client_id,
                     github_secret,
                     workers,
+                    status,
                 } => Box::pin(coordinator(CoordinatorConfig {
                     ws_port: *ws_port,
                     github_client_id: github_client_id.clone(),
                     github_secret: github_secret.clone(),
                     workers: workers.clone(),
+                    status: status.clone(),
                 })),
                 _ => unreachable!(),
             }

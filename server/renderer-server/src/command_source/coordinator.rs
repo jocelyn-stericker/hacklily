@@ -18,7 +18,7 @@
  */
 
 // The coordinator command source: a WebSocket server that replaces the
-// legacy Qt `HacklilyServer` (`server/ws-server/hacklilyserver.cpp`).
+// legacy Qt `HacklilyServer` (now retired; formerly `server/ws-server/`).
 //
 // It listens on one port shared by frontend clients and remote renderer
 // workers (distinguished by the first JSON-RPC message: workers send
@@ -38,7 +38,6 @@ use log::{debug, error, info, warn};
 use serde::Deserialize;
 use serde_json::{json, Value};
 use std::sync::Arc;
-use std::time::SystemTime;
 use tokio::net::TcpListener;
 use tokio::sync::Mutex;
 use tokio_stream::wrappers::ReceiverStream;
@@ -92,6 +91,8 @@ use crate::command_source::{QuitSignal, QuitSink, RequestStream, ResponseCallbac
 use crate::error::HacklilyError;
 use crate::jsonrpc::{self, method, Request, Response};
 use crate::request::{Backend, Request as RenderRequest, Response as RenderResponse, Version};
+use crate::status::StatusHandle;
+use std::sync::atomic::Ordering;
 
 /// Parameters for the `render` method, mirroring `RenderParams` in
 /// `src/RPCClient.tsx`. `version` is optional there and defaults to
@@ -114,24 +115,20 @@ struct IHazComputesParams {
     max_jobs: u64,
 }
 
-/// Shared coordinator state visible to all connections. Counts and
-/// analytics are `Mutex<u64>` so the per-connection tasks can update
-/// them without a separate actor. The worker registry is deferred to
-/// the router step; for now we only track the connected count for
-/// `get_status`.
-#[derive(Debug, Default)]
-struct SharedState {
-    analytics_renders: Mutex<u64>,
-    analytics_saves: Mutex<u64>,
-    analytics_sign_in: Mutex<u64>,
-    remote_worker_count: Mutex<u64>,
+/// Shared coordinator state visible to all connections. Analytics
+/// counters and the live frontend-client count live in the shared
+/// `StatusSnapshot` (so `get_status` can also surface the event
+/// loop's local-pool and backlog numbers and the registry's remote
+/// counts). The per-connection tasks bump them via atomics — no
+/// async locking needed.
+#[derive(Clone)]
+struct ConnState {
+    status: StatusHandle,
 }
 
-impl SharedState {
-    async fn bump(counter: &Mutex<u64>) -> u64 {
-        let mut guard = counter.lock().await;
-        *guard += 1;
-        *guard
+impl ConnState {
+    fn bump(counter: &std::sync::atomic::AtomicU64) -> u64 {
+        StatusHandle::bump(counter)
     }
 }
 
@@ -142,6 +139,7 @@ pub struct CoordinatorConfig {
     pub github_client_id: String,
     pub github_secret: String,
     pub workers: crate::worker_registry::WorkerRegistryHandle,
+    pub status: StatusHandle,
 }
 
 /// Build the coordinator command source. Binds the WebSocket listener
@@ -159,7 +157,7 @@ pub async fn coordinator(
         .map_err(|e| HacklilyError::CommandSourceError(format!("bind failed: {}", e)))?;
     info!("coordinator listening on :{}", cfg.ws_port);
 
-    let shared = Arc::new(SharedState::default());
+    let conn = ConnState { status: cfg.status.clone() };
     let github: Arc<dyn GitHub> = Arc::new(auth::ReqwestGitHub::new().map_err(|e| {
         HacklilyError::CommandSourceError(format!("could not build GitHub client: {}", e.message))
     })?);
@@ -172,7 +170,7 @@ pub async fn coordinator(
     // per connection. Cancellation is via the quit stream: when the
     // quit sink fires, the select below exits and the listener drops.
     let mut quit = Box::pin(ReceiverStream::new(quit_stream));
-    let shared_acc_loop = shared.clone();
+    let conn_acc_loop = conn.clone();
     let github_acc_loop = github.clone();
     let cfg_acc_loop = cfg.clone();
     let req_tx_acc_loop = req_tx.clone();
@@ -187,13 +185,13 @@ pub async fn coordinator(
             match next.await {
                 futures::future::Either::Left((Ok((stream, addr)), _quit)) => {
                     debug!("coordinator: new connection from {}", addr);
-                    let shared = shared_acc_loop.clone();
+                    let conn = conn_acc_loop.clone();
                     let github = github_acc_loop.clone();
                     let cfg = cfg_acc_loop.clone();
                     let req_tx = req_tx_acc_loop.clone();
                     tokio::spawn(handle_connection(
                         stream,
-                        shared,
+                        conn,
                         github,
                         cfg,
                         req_tx,
@@ -225,7 +223,7 @@ pub async fn coordinator(
 /// then dispatches accordingly.
 async fn handle_connection(
     raw_stream: tokio::net::TcpStream,
-    shared: Arc<SharedState>,
+    conn: ConnState,
     github: Arc<dyn GitHub>,
     cfg: CoordinatorConfig,
     req_tx: tokio::sync::mpsc::Sender<Result<(RenderRequest, ResponseCallback), HacklilyError>>,
@@ -252,7 +250,7 @@ async fn handle_connection(
         None => return,
     };
 
-    let req = match Request::from_str(&first) {
+    let req = match first.parse::<Request>() {
         Ok(r) => r,
         Err(err) => {
             let resp = *err;
@@ -262,9 +260,9 @@ async fn handle_connection(
     };
 
     if req.method == method::I_HAZ_COMPUTES {
-        handle_worker(ws, req, shared, cfg.workers.clone()).await;
+        handle_worker(ws, req, cfg.workers.clone()).await;
     } else {
-        handle_frontend_first(ws, req, shared, github, cfg, req_tx).await;
+        handle_frontend_first(ws, req, conn, github, cfg, req_tx).await;
     }
 }
 
@@ -276,7 +274,6 @@ async fn handle_connection(
 async fn handle_worker(
     mut ws: tokio_tungstenite::WebSocketStream<tokio::net::TcpStream>,
     req: Request,
-    shared: Arc<SharedState>,
     workers: crate::worker_registry::WorkerRegistryHandle,
 ) {
     let params: IHazComputesParams = match serde_json::from_value(req.params.clone()) {
@@ -290,7 +287,6 @@ async fn handle_worker(
         }
     };
     info!("coordinator: worker registered (max_jobs={})", params.max_jobs);
-    *shared.remote_worker_count.lock().await += 1;
 
     // Split so the sink can be shared with the registry for dispatch.
     let (sink, mut stream) = ws.split();
@@ -300,14 +296,10 @@ async fn handle_worker(
         .register_worker(worker_id.clone(), params.max_jobs, sink.clone())
         .await;
 
-    // Acknowledge registration with a no-op success so the worker's
-    // handshake future resolves (the worker client currently ignores
-    // the response, but replying keeps the protocol symmetric).
-    let ack = Response::success(req.id, json!("ok"));
-    let _ = {
-        let mut g = sink.lock().await;
-        g.send_text(ack.serialize()).await
-    };
+    // No handshake ack is sent: the `ws-worker` client does not wait for
+    // one (it starts processing the inbound stream immediately and only
+    // acts on `render` requests). Sending a JSON-RPC response here would
+    // just surface as a warn-level parse failure on the worker.
 
     // Drain render responses from the worker until it disconnects.
     while let Some(msg) = stream.next().await {
@@ -364,7 +356,6 @@ async fn handle_worker(
         }
     }
     workers.unregister_worker(&worker_id).await;
-    *shared.remote_worker_count.lock().await -= 1;
     info!("coordinator: worker disconnected");
 }
 
@@ -374,7 +365,7 @@ async fn handle_worker(
 async fn handle_frontend_first(
     ws: tokio_tungstenite::WebSocketStream<tokio::net::TcpStream>,
     first_req: Request,
-    shared: Arc<SharedState>,
+    conn: ConnState,
     github: Arc<dyn GitHub>,
     cfg: CoordinatorConfig,
     req_tx: tokio::sync::mpsc::Sender<Result<(RenderRequest, ResponseCallback), HacklilyError>>,
@@ -383,11 +374,17 @@ async fn handle_frontend_first(
     let (sink, stream) = ws.split();
     let sink: SharedSink = Arc::new(tokio::sync::Mutex::new(Box::new(TungsteniteSink(sink))));
 
+    // Track this frontend connection in the live active-user count.
+    // Workers don't go through this path, so only frontend clients
+    // are counted (matching the Qt `_sockets` map).
+    let snap = conn.status.snapshot();
+    snap.active_users.fetch_add(1, Ordering::Relaxed);
+
     // Process the already-read first message, then the rest.
     if let Err(e) = dispatch_frontend_message(
         first_req,
         sink.clone(),
-        &shared,
+        &conn,
         github.clone(),
         &cfg,
         &req_tx,
@@ -395,6 +392,7 @@ async fn handle_frontend_first(
     .await
     {
         warn!("coordinator: error processing first message: {:?}", e);
+        snap.active_users.fetch_sub(1, Ordering::Relaxed);
         return;
     }
 
@@ -402,7 +400,7 @@ async fn handle_frontend_first(
     while let Some(msg) = stream.next().await {
         match msg {
             Ok(tokio_tungstenite::tungstenite::Message::Text(t)) => {
-                let req = match Request::from_str(&t) {
+                let req = match t.parse::<Request>() {
                     Ok(r) => r,
                     Err(err) => {
                         let resp = *err;
@@ -411,14 +409,18 @@ async fn handle_frontend_first(
                     }
                 };
                 if let Err(e) =
-                    dispatch_frontend_message(req, sink.clone(), &shared, github.clone(), &cfg, &req_tx).await
+                    dispatch_frontend_message(req, sink.clone(), &conn, github.clone(), &cfg, &req_tx).await
                 {
                     warn!("coordinator: error processing message: {:?}", e);
                     // Keep going — one bad request shouldn't kill the session.
                 }
             }
             Ok(tokio_tungstenite::tungstenite::Message::Ping(p)) => {
-                let _ = send_text(sink.clone(), String::from_utf8_lossy(&p).to_string()).await;
+                // Reply with a Pong frame (not Text). Browsers can't emit
+                // WS pings, so this rarely fires for frontend sockets,
+                // but correctness matters and tungstenite doesn't auto-pong.
+                let mut g = sink.lock().await;
+                let _ = g.send_pong(p).await;
             }
             Ok(tokio_tungstenite::tungstenite::Message::Close(_)) => break,
             Ok(_) => {}
@@ -428,6 +430,7 @@ async fn handle_frontend_first(
             }
         }
     }
+    snap.active_users.fetch_sub(1, Ordering::Relaxed);
     debug!("coordinator: frontend connection closed");
 }
 
@@ -437,7 +440,7 @@ async fn handle_frontend_first(
 async fn dispatch_frontend_message(
     req: Request,
     sink: SharedSink,
-    shared: &Arc<SharedState>,
+    conn: &ConnState,
     github: Arc<dyn GitHub>,
     cfg: &CoordinatorConfig,
     req_tx: &tokio::sync::mpsc::Sender<Result<(RenderRequest, ResponseCallback), HacklilyError>>,
@@ -448,7 +451,7 @@ async fn dispatch_frontend_message(
             let _ = send_text(sink, resp.serialize()).await;
         }
         method::NOTIFY_SAVED => {
-            SharedState::bump(&shared.analytics_saves).await;
+            ConnState::bump(&conn.status.snapshot().analytics_saves);
             let resp = Response::success(req.id, json!("ok"));
             let _ = send_text(sink, resp.serialize()).await;
         }
@@ -466,7 +469,7 @@ async fn dispatch_frontend_message(
                 let _ = send_text(sink, resp.serialize()).await;
                 return Ok(());
             }
-            SharedState::bump(&shared.analytics_renders).await;
+            ConnState::bump(&conn.status.snapshot().analytics_renders);
             let rpc_id = req.id;
             let id = rpc_id.to_string();
             let request = RenderRequest {
@@ -507,7 +510,7 @@ async fn dispatch_frontend_message(
             .await
             {
                 Ok(auth_obj) => {
-                    SharedState::bump(&shared.analytics_sign_in).await;
+                    ConnState::bump(&conn.status.snapshot().analytics_sign_in);
                     let resp = Response::success(req.id, serde_json::to_value(&auth_obj).unwrap());
                     let _ = send_text(sink, resp.serialize()).await;
                 }
@@ -545,21 +548,32 @@ async fn dispatch_frontend_message(
             }
         }
         method::GET_STATUS => {
-            let renders = *shared.analytics_renders.lock().await;
-            let saves = *shared.analytics_saves.lock().await;
-            let sign_in = *shared.analytics_sign_in.lock().await;
-            let remote = *shared.remote_worker_count.lock().await;
+            let snap = conn.status.snapshot();
+            let local_total = snap.local_total.load(Ordering::Relaxed);
+            let local_busy = snap.local_busy.load(Ordering::Relaxed);
+            let local_free = snap.local_free.load(Ordering::Relaxed);
+            let remote_total = snap.remote_total.load(Ordering::Relaxed);
+            let remote_busy = snap.remote_busy.load(Ordering::Relaxed);
+            let remote_free = snap.remote_free.load(Ordering::Relaxed);
+            let backlog = snap.backlog.load(Ordering::Relaxed);
+            let active_users = snap.active_users.load(Ordering::Relaxed);
+            let renders = snap.analytics_renders.load(Ordering::Relaxed);
+            let saves = snap.analytics_saves.load(Ordering::Relaxed);
+            let sign_in = snap.analytics_sign_in.load(Ordering::Relaxed);
+            let total = local_total + remote_total;
+            let busy = local_busy + remote_busy;
+            let free = local_free + remote_free;
             let result = json!({
-                "alive": true,
-                "total_worker_count": remote,
-                "local_worker_count": 0u64,
-                "remote_worker_count": remote,
-                "busy_worker_count": 0u64,
-                "free_worker_count": remote,
-                "backlog": 0u64,
-                "startup_time": iso_now(),
-                "uptime_secs": 0u64,
-                "current_active_users": 0u64,
+                "alive": total > 0,
+                "total_worker_count": total,
+                "local_worker_count": local_total,
+                "remote_worker_count": remote_total,
+                "busy_worker_count": busy,
+                "free_worker_count": free,
+                "backlog": backlog,
+                "startup_time": conn.status.startup_time(),
+                "uptime_secs": conn.status.uptime_secs(),
+                "current_active_users": active_users,
                 "analytics_renders": renders,
                 "analytics_saves": saves,
                 "analytics_sign_in": sign_in,
@@ -589,16 +603,6 @@ async fn send_text(sink: SharedSink, text: String) -> Result<(), HacklilyError> 
         .map_err(|e| HacklilyError::CommandSourceError(format!("ws send failed: {}", e)))
 }
 
-fn iso_now() -> String {
-    // RFC3339-ish, matching the Qt `QDateTime::toString(Qt::ISODate)`.
-    let secs = SystemTime::now()
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .map(|d| d.as_secs())
-        .unwrap_or(0);
-    // Crude formatting without a chrono dep; the frontend only displays
-    // this string, so precision isn't critical.
-    format!("unix:{}", secs)
-}
 
 // Helper module to deserialize signIn params without adding a public
 // struct. Kept private to this module.
@@ -641,11 +645,11 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn shared_state_bumps_counters() {
-        let shared = SharedState::default();
-        let v = SharedState::bump(&shared.analytics_renders).await;
+    async fn status_handle_bumps_counters() {
+        let status = StatusHandle::new();
+        let v = StatusHandle::bump(&status.snapshot().analytics_renders);
         assert_eq!(v, 1);
-        let v = SharedState::bump(&shared.analytics_renders).await;
+        let v = StatusHandle::bump(&status.snapshot().analytics_renders);
         assert_eq!(v, 2);
     }
 
@@ -668,6 +672,7 @@ mod tests {
             github_client_id: String::new(),
             github_secret: String::new(),
             workers: crate::worker_registry::WorkerRegistryHandle::new(),
+            status: StatusHandle::new(),
         };
         let (stream, quit_sink) = coordinator(cfg).await.expect("coordinator starts");
 
