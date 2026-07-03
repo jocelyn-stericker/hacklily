@@ -60,6 +60,18 @@ body.modeBoth svg + svg {
   margin-top: 6px;
 }
 
+/* The Cairo backend emits point-and-click targets as transparent
+   <a><rect> overlays that appear *before* (i.e. painted behind) the note
+   glyphs. Make the glyph/line layer click-through so a click on a note
+   falls to its overlay rect (which sets pointer-events="all"); otherwise
+   the note ink, painted on top, would swallow the click and no textedit
+   link would fire. The overlay rects are <rect>, so this rule leaves
+   them clickable. */
+svg use,
+svg path {
+  pointer-events: none;
+}
+
 @font-face {
   font-family: "emmentaler-11";
   src: url("/emmentaler-11.otf") format("opentype");
