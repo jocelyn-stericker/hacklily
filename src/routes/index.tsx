@@ -75,7 +75,11 @@ import {
 import { RopeGainCache } from '#/lib/loudness/ropeLoudness'
 import { registerMemSource } from '#/lib/memProbe'
 import { takePracticeData } from '#/lib/practiceHandoff'
-import { updateSettings } from '#/lib/settings'
+import {
+  clampVowelChartScale,
+  updateSettings,
+  VOWEL_CHART_SCALE_STEP,
+} from '#/lib/settings'
 import {
   consumeBundledCrashFlag,
   transcribeWorkerStats,
@@ -817,6 +821,35 @@ function App() {
     ],
     { scopes: 'timeline' },
   )
+  const resizeVowelChart = useCallback(
+    (direction: 1 | -1) => {
+      void updateSettings({
+        vowelChartScale: clampVowelChartScale(
+          settings.vowelChartScale + direction * VOWEL_CHART_SCALE_STEP,
+        ),
+      })
+    },
+    [settings.vowelChartScale],
+  )
+
+  useHotkeys(
+    SHORTCUTS.vowelChartBigger.keys,
+    (e) => {
+      e.preventDefault()
+      resizeVowelChart(1)
+    },
+    [resizeVowelChart],
+    { scopes: 'timeline' },
+  )
+  useHotkeys(
+    SHORTCUTS.vowelChartSmaller.keys,
+    (e) => {
+      e.preventDefault()
+      resizeVowelChart(-1)
+    },
+    [resizeVowelChart],
+    { scopes: 'timeline' },
+  )
   useHotkeys(
     SHORTCUTS.newSession.keys,
     (e) => {
@@ -957,9 +990,15 @@ function App() {
                 settings.vowelChartAverages !== 'hidden' && (
                   <div
                     className={cn(
-                      'absolute z-10 pointer-events-none border border-[#ccccdd] dark:border-[#2a2a3a] right-0 h-40 bottom-auto top-0 left-auto md:right-0 md:w-60 md:h-48',
+                      'absolute z-10 pointer-events-none border border-[#ccccdd] dark:border-[#2a2a3a] right-0 bottom-auto top-0 left-auto md:right-0',
                       !hoverFrame?.speechDetected && 'hidden',
                     )}
+                    style={{
+                      width: 240 * settings.vowelChartScale,
+                      height: 192 * settings.vowelChartScale,
+                      maxWidth: '90vw',
+                      maxHeight: '80vh',
+                    }}
                   >
                     <VowelChart
                       analysisMut={analysisMut}
