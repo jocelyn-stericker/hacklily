@@ -79,17 +79,27 @@ function strokeArrow(
   ctx.stroke()
 }
 
+// Fractional position of a formant within the plot area, independent of the
+// canvas size or DPR — so the marker lands in the same *relative* spot at every
+// zoom level. 0..1: F1 fraction is 0 at the top (low F1) → 1 at the bottom;
+// F2 fraction is 0 at the left (high F2, front vowels) → 1 at the right.
+export function f1ToFraction(f1: number): number {
+  return (hzToBark(f1) - BARK_F1_MIN) / (BARK_F1_MAX - BARK_F1_MIN)
+}
+
+export function f2ToFraction(f2: number): number {
+  return 1 - (hzToBark(f2) - BARK_F2_MIN) / (BARK_F2_MAX - BARK_F2_MIN)
+}
+
 function f1ToY(f1: number, h: number, dpr: number): number {
   const pad = PAD * dpr
-  const frac = (hzToBark(f1) - BARK_F1_MIN) / (BARK_F1_MAX - BARK_F1_MIN)
-  return pad + frac * (h - 2 * pad)
+  return pad + f1ToFraction(f1) * (h - 2 * pad)
 }
 
 // High F2 -> left (front vowels), low F2 -> right (back vowels)
 function f2ToX(f2: number, w: number, dpr: number): number {
   const pad = PAD * dpr
-  const frac = 1 - (hzToBark(f2) - BARK_F2_MIN) / (BARK_F2_MAX - BARK_F2_MIN)
-  return pad + frac * (w - 2 * pad)
+  return pad + f2ToFraction(f2) * (w - 2 * pad)
 }
 
 function useCanvasSize(canvas: HTMLCanvasElement | null) {
@@ -124,6 +134,7 @@ function drawVowelChart(
   width: number,
   height: number,
   dpr: number,
+  symbolScale: number,
   trail: VoicedAnalysisFrame[],
   theme: VowelChartTheme,
   vowels: Vowel[],
@@ -137,6 +148,11 @@ function drawVowelChart(
 
   const ctx = canvas.getContext('2d', { alpha: false })!
   const pad = PAD * dpr
+  // Device pixels scaled by the chart's zoom, so markers, labels, dots and line
+  // widths grow with the panel instead of staying tiny. Vowel *positions* still
+  // come from f2ToX/f1ToY (plot geometry), so they spread out with the box; only
+  // the drawn symbol sizes use glyphUnit.
+  const glyphUnit = dpr * symbolScale
   const plotX = pad
   const plotY = pad
   const plotW = w - 2 * pad
@@ -160,7 +176,7 @@ function drawVowelChart(
     const vow_ɛ = getVowel('ɛ')!
     const vow_ʌ = getVowel('ʌ')!
     ctx.strokeStyle = theme.guideLine
-    ctx.lineWidth = dpr
+    ctx.lineWidth = glyphUnit
     ctx.beginPath()
     ctx.moveTo(f2ToX(vow_i.f2, w, dpr), f1ToY(vow_i.f1, h, dpr))
     ctx.lineTo(f2ToX(vow_ɑ.f2, w, dpr), f1ToY(vow_ɑ.f1, h, dpr))
@@ -185,7 +201,7 @@ function drawVowelChart(
     ctx.stroke()
 
     // Vowel reference markers
-    ctx.font = `${11 * dpr}px Georgia, "Times New Roman", serif`
+    ctx.font = `${11 * glyphUnit}px Georgia, "Times New Roman", serif`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     for (const v of vowels) {
@@ -195,10 +211,10 @@ function drawVowelChart(
         continue
 
       ctx.beginPath()
-      ctx.arc(x, y, 11 * dpr, 0, Math.PI * 2)
+      ctx.arc(x, y, 11 * glyphUnit, 0, Math.PI * 2)
       ctx.strokeStyle = theme.vowelCircle
       ctx.fillStyle = theme.bg100
-      ctx.lineWidth = dpr
+      ctx.lineWidth = glyphUnit
       ctx.stroke()
       ctx.fill()
 
@@ -209,7 +225,7 @@ function drawVowelChart(
 
   // Trail of recent voiced frames (already filtered + tail-bounded by caller)
   if (trail.length > 1) {
-    ctx.lineWidth = 1.5 * dpr
+    ctx.lineWidth = 1.5 * glyphUnit
     for (let i = 1; i < trail.length; i++) {
       const alpha = (i / trail.length) * 0.5
       const s = trail[i]!
@@ -228,25 +244,25 @@ function drawVowelChart(
     const x = f2ToX(s.f2, w, dpr)
     const y = f1ToY(s.f1, h, dpr)
 
-    const glow = ctx.createRadialGradient(x, y, 0, x, y, 14 * dpr)
+    const glow = ctx.createRadialGradient(x, y, 0, x, y, 14 * glyphUnit)
     glow.addColorStop(0, `rgba(${theme.trailRgb},0.35)`)
     glow.addColorStop(1, `rgba(${theme.trailRgb},0)`)
     ctx.beginPath()
-    ctx.arc(x, y, 14 * dpr, 0, Math.PI * 2)
+    ctx.arc(x, y, 14 * glyphUnit, 0, Math.PI * 2)
     ctx.fillStyle = glow
     ctx.fill()
 
     ctx.beginPath()
-    ctx.arc(x, y, 5 * dpr, 0, Math.PI * 2)
+    ctx.arc(x, y, 5 * glyphUnit, 0, Math.PI * 2)
     ctx.fillStyle = theme.dot
     ctx.fill()
   }
 
   // Axis labels with long canvas-drawn arrows showing direction
-  ctx.font = `${8 * dpr}px monospace`
+  ctx.font = `${8 * glyphUnit}px monospace`
   ctx.fillStyle = theme.label
   ctx.strokeStyle = theme.label
-  ctx.lineWidth = dpr
+  ctx.lineWidth = glyphUnit
   ctx.lineCap = 'round'
 
   // "F1" label at top-left, long downward arrow below it
@@ -260,7 +276,7 @@ function drawVowelChart(
     plotY + 15 * dpr,
     f1ArrowX,
     plotY + plotH * 0.86,
-    4 * dpr,
+    4 * glyphUnit,
   )
 
   // "F2" label at bottom-right, long leftward arrow to its left
@@ -275,7 +291,7 @@ function drawVowelChart(
     f2LabelY,
     plotX + 20 * dpr,
     f2LabelY,
-    4 * dpr,
+    4 * glyphUnit,
   )
 
   ctx.lineCap = 'butt'
@@ -356,6 +372,7 @@ export function VowelChart({
   const theme =
     scheme === 'dark' ? VOWEL_CHART_DARK_THEME : VOWEL_CHART_LIGHT_THEME
   const [settings] = useSettings()
+  const symbolScale = settings.vowelChartScale
 
   const group =
     settings.vowelChartAverages === 'hidden'
@@ -371,11 +388,22 @@ export function VowelChart({
       width,
       height,
       dpr,
+      symbolScale,
       voicedTrailUpToCursor(analysisMut, cursorSec),
       theme,
       vowels,
     )
-  }, [canvas, width, height, dpr, analysisMut, cursorSec, theme, vowels])
+  }, [
+    canvas,
+    width,
+    height,
+    dpr,
+    symbolScale,
+    analysisMut,
+    cursorSec,
+    theme,
+    vowels,
+  ])
 
   useImperativeHandle(
     ref,
@@ -387,6 +415,7 @@ export function VowelChart({
           width,
           height,
           dpr,
+          symbolScale,
           voicedTrailUpToCursor(analysisMut, cursorSec),
           theme,
           vowels,
@@ -399,13 +428,24 @@ export function VowelChart({
           width,
           height,
           dpr,
+          symbolScale,
           voicedTrailUpToCursor(analysisMut, cursorSec),
           theme,
           vowels,
         )
       },
     }),
-    [canvas, width, height, dpr, analysisMut, cursorSec, theme, vowels],
+    [
+      canvas,
+      width,
+      height,
+      dpr,
+      symbolScale,
+      analysisMut,
+      cursorSec,
+      theme,
+      vowels,
+    ],
   )
 
   return <canvas ref={(el) => setCanvas(el)} className="w-full h-full" />
