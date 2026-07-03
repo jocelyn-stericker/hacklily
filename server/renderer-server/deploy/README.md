@@ -12,8 +12,10 @@ Files:
 | --- | --- |
 | `hacklily-renderer.service` | systemd *user* unit (coordinator + local pool) |
 | `env.example`              | configuration + GitHub OAuth secrets, copied to `~/.config/hacklily-renderer/env` |
-| `install.sh`               | one-time install: cargo registry, crate, images, unit, lingering |
+| `install.sh`               | one-time install: cargo registry, crate, images, unit, lingering, **and the nginx reverse proxy + Let's Encrypt cert** |
 | `update.sh`                | pull latest crate + images, then restart (installed as `hacklily-renderer-update`) |
+| `nginx/render.hacklily.org.conf`         | nginx site: `wss://…/rpc` -> `ws://127.0.0.1:2000`, everything else -> `https://hacklily.org` |
+| `nginx/render.hacklily.org.http-only.conf` | temporary HTTP-only site used only for the initial Let's Encrypt challenge |
 
 ## No credentials on the host
 
@@ -48,16 +50,16 @@ host are the GitHub OAuth values in the `env` file.
   (The `docker` group is effectively root; if that bothers you, use
   rootless docker instead and set `DOCKER_HOST` in the `env` file.)
 - **systemd** with a user manager. On most distros this is default.
-- A **TLS-terminating reverse proxy** in front of the coordinator: the
-  unit binds plain `ws://` on `BIND_ADDRESS:WS_PORT` (default
-  `127.0.0.1:2000`) and does **not** do TLS. The proxy presents the
-  public `wss://` certificate and forwards plain `ws://` to that
-  address. The frontend connects to `wss://<your-host>/rpc`; remote
-  `ws-worker` peers connect to the same URL. Because the listener
-  defaults to `127.0.0.1`, only the local proxy can reach it — the
-  plain `ws://` port is never on the network, which is what you want.
-  Set `BIND_ADDRESS=0.0.0.0` only if you have no proxy and accept an
-  unencrypted listener.
+- A **TLS-terminating reverse proxy** in front of the coordinator.
+  `install.sh --email you@example.org` sets this up for you: it installs
+  nginx + certbot, issues a Let's Encrypt certificate for the render
+  host, and installs `nginx/render.hacklily.org.conf`, which proxies
+  `wss://<domain>/rpc` -> `ws://127.0.0.1:2000` and redirects everything
+  else to `https://hacklily.org`. The coordinator's `BIND_ADDRESS`
+  default (`127.0.0.1`) means only this local proxy can reach it. See
+  [Reverse proxy and DNS](#reverse-proxy-and-dns) below. Pass
+  `--no-nginx` to skip this (e.g. if you already run your own reverse
+  proxy).
 
 ## Firewall (external reach)
 
@@ -121,20 +123,112 @@ Two caveats:
   the unencrypted listener. Keep the default `127.0.0.1` unless you
   have a specific reason to widen it.
 
+## Reverse proxy and DNS
+
+The coordinator speaks plain `ws://` on `127.0.0.1:2000`; browsers and
+remote workers reach it over `wss://` on 443 via an nginx reverse proxy
+that terminates TLS with a Let's Encrypt certificate. `install.sh`
+installs the whole thing; this section is the background and the DNS
+you need first.
+
+### DNS
+
+Point the render host at the coordinator box (here `faith.nettek.ca`).
+The cleanest is a CNAME (no IP to keep in sync), added wherever the
+`hacklily.org` zone is managed:
+
+```dns
+; zone: hacklily.org
+render.hacklily.org.   3600   IN CNAME   faith.nettek.ca.
+```
+
+If you'd rather use flat records (e.g. the `nettek.ca` and `hacklily.org`
+zones are on different providers and you don't want a cross-zone CNAME),
+find faith's public IPs and add A/AAAA records directly:
+
+```sh
+dig +short faith.nettek.ca A      # faith's IPv4
+dig +short faith.nettek.ca AAAA    # faith's IPv6, if any
+```
+```dns
+render.hacklily.org.   3600   IN A      FAITH_IPV4
+render.hacklily.org.   3600   IN AAAA   FAITH_IPV6   ; only if present
+```
+
+DNS must resolve **before** you run `install.sh`'s nginx step: Let's
+Encrypt validates by fetching `http://render.hacklily.org/.well-known/
+acme-challenge/…`, so the name has to point at this box. `install.sh`
+checks this and aborts with a helpful message if it doesn't match.
+
+### What `install.sh --email …` does
+
+1. `dnf install -y nginx certbot policycoreutils-python-utils`.
+2. **SELinux**: if enforcing, labels `tcp/2000` as `http_port_t` so
+   nginx (`httpd_t`) may `proxy_pass` to `127.0.0.1:2000`. Without this,
+   the proxy is silently denied under enforcing mode — a classic Fedora
+   gotcha. (Alternative: `sudo setsebool -P httpd_can_network_connect 1`.)
+3. Installs the HTTP-only site, starts nginx, and runs
+   `certbot certonly --webroot -w /var/www/html -d render.hacklily.org`.
+   Webroot (not the nginx plugin) keeps the dependency surface to just
+   `certbot`.
+4. Replaces the site with `nginx/render.hacklily.org.conf` and reloads.
+5. Enables `certbot.timer` so renewals are automatic; the `--deploy-hook
+   "systemctl reload nginx"` saved at issuance reloads nginx after each
+   renewal.
+
+### The site, in one breath
+
+`wss://render.hacklily.org/rpc` (exact-match `location = /rpc`) is
+proxied to `ws://127.0.0.1:2000` with `Upgrade`/`Connection` headers and
+a 75s read/send timeout (comfortably above the 8s render timeout and
+the worker ping interval). Every other path on `render.hacklily.org`
+returns `301 https://hacklily.org$request_uri` so the render host never
+serves the SPA by accident. HTTP on `:80` serves the ACME challenge and
+otherwise redirects to HTTPS. The config is self-contained (modern TLS
+cipher list inline) so it doesn't depend on certbot-generated include
+files.
+
+### Verify
+
+From another machine:
+```sh
+curl -i https://render.hacklily.org/        # expect 301 -> https://hacklily.org
+# a bare GET on /rpc without an Upgrade header: the coordinator's WS
+# handshake check typically yields 400/426, which confirms the proxy
+# reaches it (a 502/504 would mean it can't):
+curl -i https://render.hacklily.org/rpc
+```
+
+### Point the frontend at it
+
+The SPA reads `REACT_APP_BACKEND_WS_URL` at build time. The production
+build currently bakes `wss://hacklily-render.nettek.ca/rpc` (see
+`package.json`'s `build` script). To use the new host, build with:
+```sh
+REACT_APP_BACKEND_WS_URL=wss://render.hacklily.org/rpc npm run build
+```
+(i.e. update the `build` and `start:remote-backend` scripts in
+`package.json`). This is a frontend change, separate from this deploy
+package.
+
 ## One-time install
 
 From a checkout of this repo on the deploy host:
 
 ```sh
 cd server/renderer-server/deploy
-./install.sh
+./install.sh --email you@example.org
+# --domain render.hacklily.org is the default; --no-nginx skips the
+# reverse proxy (e.g. if you run your own).
 ```
 
 That installs the latest published `renderer_server` crate to
 `~/.local/bin`, pulls and retags both renderer images, drops the unit
 into `~/.config/systemd/user/`, enables lingering (so the service runs
 at boot without anyone logged in), and **enables** (but does not start)
-the service.
+the service. With `--email` it also brings up the nginx reverse proxy
+and a Let's Encrypt cert for `render.hacklily.org` (see [Reverse proxy
+and DNS](#reverse-proxy-and-dns); have DNS pointing at the box first).
 
 Then edit the config and start it:
 
