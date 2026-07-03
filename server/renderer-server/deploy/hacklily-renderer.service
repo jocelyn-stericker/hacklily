@@ -1,0 +1,66 @@
+# systemd *user* unit for the Hacklily renderer server running as a
+# coordinator (`serve` mode) with an optional local render pool.
+#
+# Install with deploy/install.sh, which copies this file to
+# ~/.config/systemd/user/hacklily-renderer.service. Run
+# `systemctl --user daemon-reload` after editing.
+#
+# Secrets and tunables live in ~/.config/hacklily-renderer/env
+# (see deploy/env.example); they are injected via EnvironmentFile=.
+# No Codeberg credentials are needed on this host: the Cargo crate
+# and the container images are pulled anonymously from the public
+# Codeberg registries (the owning account must remain public).
+#
+# Restarting the service never pulls anything. To update the crate
+# and images, run `hacklily-renderer-update` (installed by install.sh
+# from deploy/update.sh); it pulls the latest versions and then
+# restarts this service.
+
+[Unit]
+Description=Hacklily renderer server (coordinator + local render pool)
+Documentation=https://codeberg.org/jocelyn-stericker/hacklily
+# The user manager reaches default.target well after boot, so the
+# system docker daemon and networking are normally up already. The
+# ExecStartPre below additionally waits for docker to be reachable.
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+EnvironmentFile=%h/.config/hacklily-renderer/env
+
+# Wait for the docker daemon before starting. If docker is still
+# coming up at boot, this fails and Restart=on-failure retries it
+# (within the relaxed StartLimit below) until docker is ready.
+ExecStartPre=/bin/sh -c 'docker info >/dev/null'
+
+ExecStart=%h/.local/bin/renderer_server serve \
+  --ws-port ${WS_PORT} \
+  --github-client-id ${GITHUB_CLIENT_ID} \
+  --github-secret ${GITHUB_SECRET} \
+  --stable-docker-tag ${STABLE_DOCKER_TAG} \
+  --stable-worker-count ${STABLE_WORKER_COUNT} \
+  --unstable-docker-tag ${UNSTABLE_DOCKER_TAG} \
+  --unstable-worker-count ${UNSTABLE_WORKER_COUNT} \
+  --render-timeout-msec ${RENDER_TIMEOUT_MSEC}
+
+# Crash recovery. A non-zero exit or death by signal (segfault,
+# abort, etc.) counts as a failure and triggers a restart. A clean
+# exit after `systemctl --user stop` (SIGTERM -> graceful drain ->
+# exit 0) is not a failure, so stop does not loop.
+Restart=on-failure
+RestartSec=3
+# Generous burst so we can ride out docker-not-ready at boot without
+# hitting the default 5-in-10s ceiling.
+StartLimitIntervalSec=60
+StartLimitBurst=20
+
+# SIGTERM triggers a graceful drain of in-flight renders; shutdown can
+# take up to the render timeout (~8s), so give systemd a grace period
+# beyond that before sending SIGKILL.
+KillSignal=SIGTERM
+FinalKillSignal=SIGKILL
+TimeoutStopSec=30
+
+[Install]
+WantedBy=default.target

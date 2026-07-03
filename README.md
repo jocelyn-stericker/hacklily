@@ -42,6 +42,8 @@ The `serve` coordinator listens on **plain TCP** (`--ws-port`) and does **not** 
 
 Graceful shutdown: send the process **SIGTERM** (this is what systemd, k8s, and `docker stop` send). The coordinator drains in-flight renders and exits 0; because a single render can take up to the render timeout (~8s), set the supervisor's termination grace period to exceed that so in-flight user renders aren't cut off mid-deploy. (SIGINT / Ctrl-C does the same thing for interactive use.)
 
+A ready-to-use **systemd user service** (unit file, env template, install + update scripts, and docs) lives in [`server/renderer-server/deploy/`](server/renderer-server/deploy/). It runs the `serve` coordinator, restarts on crashes, pulls the published crate and renderer images from the public Codeberg registries (no credentials stored on the host), and updates with a single `hacklily-renderer-update` command that pulls the latest versions and restarts. See [`server/renderer-server/deploy/README.md`](server/renderer-server/deploy/README.md) for install and usage.
+
 ## Status
 
 Hacklily is stable and live at <https://www.hacklily.org>. The renderer is fully on the Rust renderer server, which now serves the frontend directly (the legacy Qt5 coordinator has been retired).
