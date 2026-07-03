@@ -34,15 +34,16 @@ EnvironmentFile=%h/.config/hacklily-renderer/env
 # (within the relaxed StartLimit below) until docker is ready.
 ExecStartPre=/bin/sh -c 'docker info >/dev/null'
 
-ExecStart=%h/.local/bin/renderer_server serve \
-  --ws-port ${WS_PORT} \
-  --github-client-id ${GITHUB_CLIENT_ID} \
-  --github-secret ${GITHUB_SECRET} \
+ExecStart=%h/.local/bin/renderer_server \
   --stable-docker-tag ${STABLE_DOCKER_TAG} \
   --stable-worker-count ${STABLE_WORKER_COUNT} \
   --unstable-docker-tag ${UNSTABLE_DOCKER_TAG} \
   --unstable-worker-count ${UNSTABLE_WORKER_COUNT} \
-  --render-timeout-msec ${RENDER_TIMEOUT_MSEC}
+  --render-timeout-msec ${RENDER_TIMEOUT_MSEC} \
+  serve \
+  --ws-port ${WS_PORT} \
+  --github-client-id ${GITHUB_CLIENT_ID} \
+  --github-secret ${GITHUB_SECRET}
 
 # Crash recovery. A non-zero exit or death by signal (segfault,
 # abort, etc.) counts as a failure and triggers a restart. A clean
