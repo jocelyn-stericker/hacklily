@@ -173,7 +173,6 @@ export function practiceReducer(
   state: PracticeState,
   action: PracticeAction,
 ): PracticeState {
-  console.log(action)
   switch (action.type) {
     case 'START_RECORDING':
       return {
@@ -270,10 +269,18 @@ export function practiceReducer(
         : state
 
     case 'STOP_REFERENCE':
+      // Explicitly stopping the reference ends any loop in progress: there is no
+      // longer a reference whose end could advance the loop. Clearing loopPhase
+      // (and the pending flags) is what lets the mic close — otherwise a manual
+      // stop after a Ctrl/Cmd-click leaves loopPhase='reference' pinning the
+      // capture pipeline open (and REFERENCE_ENDED could mis-fire a recording).
       return {
         ...state,
         referencePlayback: null,
+        loopPhase: null,
         pendingReferenceStart: false,
+        pendingReferenceRestart: false,
+        pendingRecordRestart: false,
       }
 
     case 'REFERENCE_ENDED': {

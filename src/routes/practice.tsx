@@ -16,7 +16,7 @@
 //  - A single VAD "sensitivity" knob (item 3 of the `TODO(vad)` list).
 
 import { createFileRoute, Link, useBlocker } from '@tanstack/react-router'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Keyboard } from 'lucide-react'
 import {
   useCallback,
   useEffect,
@@ -47,6 +47,8 @@ import {
   PracticeTakesDrawer,
   PracticeTakesSidebar,
 } from '#/components/PracticeTakes'
+import { SHORTCUTS, useActiveScope } from '#/components/shortcuts'
+import { useShortcutsHelp } from '#/components/ShortcutsHelp'
 import { Button } from '#/components/ui/button'
 import {
   Select,
@@ -60,6 +62,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '#/components/ui/tooltip'
+import { TooltipButton } from '#/components/ui/tooltipButton'
 import { useAudioManager } from '#/components/useAudioManager'
 import { useReferencePlayer } from '#/components/useReferencePlayer'
 import { useSettings } from '#/components/useSettings'
@@ -530,6 +533,15 @@ function Practice() {
         type: 'SET_DRILL_INDEX',
         index: segmentIndexToDrillIndex(segIdx),
       })
+      // Outside a continuous reference-before-take loop, a manual tap is a
+      // standalone reference play. Clear any leaked loopPhase (e.g. from a
+      // Ctrl/Cmd-click that armed the reference phase) so this reference's end
+      // doesn't mis-fire a recording and pin the mic open. STOP_REFERENCE
+      // clears it for the same-sentence (stop) case; this covers tapping a
+      // different sentence, which dispatches START_REFERENCE instead.
+      if (!playRefBeforeTake) {
+        dispatch({ type: 'SET_LOOP_PHASE', phase: null })
+      }
       refToggle(pId, segIdx, voiceId)
     },
     [
@@ -537,6 +549,31 @@ function Practice() {
       refToggle,
       saveVoicedTakeIfRecording,
       segmentIndexToDrillIndex,
+      playRefBeforeTake,
+    ],
+  )
+
+  // Ctrl/Cmd+click on a sentence: select it, play its reference, then start
+  // recording a take — a one-gesture "reference then take". Reuses the same
+  // reference-phase machinery as handleStartSession (loopPhase='reference' →
+  // REFERENCE_ENDED arms pendingRecordRestart), so it works from any phase; an
+  // in-progress take is saved first, never dropped.
+  const handleReferenceThenTake = useCallback(
+    async (_pId: string, segIdx: number, _voiceId: string) => {
+      void audioManager?.unlockForGesture()
+      await saveVoicedTakeIfRecording()
+      dispatch({ type: 'SET_ERROR', error: null })
+      dispatch({
+        type: 'SET_DRILL_INDEX',
+        index: segmentIndexToDrillIndex(segIdx),
+      })
+      prepareReferencePhase()
+    },
+    [
+      audioManager,
+      saveVoicedTakeIfRecording,
+      segmentIndexToDrillIndex,
+      prepareReferencePhase,
     ],
   )
 
@@ -763,8 +800,12 @@ function Practice() {
     [],
   )
 
+  // Practice-scoped shortcuts: only fire while this route is mounted. Keys come
+  // from the registry in src/lib/shortcuts.ts.
+  useActiveScope('practice')
+
   useHotkeys(
-    'space',
+    SHORTCUTS.practiceAdvance.keys,
     (e) => {
       e.preventDefault()
       if (state.sessionPhase === 'idle') {
@@ -778,21 +819,23 @@ function Practice() {
       }
     },
     [handleStartSession, handleEndSession, handleNextTake],
+    { scopes: 'practice' },
   )
 
   useHotkeys(
-    'esc',
+    SHORTCUTS.practiceEnd.keys,
     (e) => {
       e.preventDefault()
       void handleEndSession()
     },
     [handleEndSession],
+    { scopes: 'practice' },
   )
 
   const textSizeClass = TEXT_SIZE_CLASS[settings.practiceTextSize]
 
   useHotkeys(
-    'arrowleft',
+    SHORTCUTS.practicePrev.keys,
     (e) => {
       if (sentences.length > 0) {
         e.preventDefault()
@@ -800,11 +843,11 @@ function Practice() {
       }
     },
     [sentences.length],
-    { enabled: sentences.length > 0 },
+    { enabled: sentences.length > 0, scopes: 'practice' },
   )
 
   useHotkeys(
-    'arrowright',
+    SHORTCUTS.practiceNext.keys,
     (e) => {
       if (sentences.length > 0) {
         e.preventDefault()
@@ -812,7 +855,29 @@ function Practice() {
       }
     },
     [sentences.length],
-    { enabled: sentences.length > 0 },
+    { enabled: sentences.length > 0, scopes: 'practice' },
+  )
+
+  useHotkeys(
+    SHORTCUTS.practiceReplayRef.keys,
+    (e) => {
+      if (sentences.length > 0) {
+        e.preventDefault()
+        void handleToggleReference(
+          passageId,
+          referenceSegmentIndex,
+          referenceVoiceId,
+        )
+      }
+    },
+    [
+      sentences.length,
+      handleToggleReference,
+      passageId,
+      referenceSegmentIndex,
+      referenceVoiceId,
+    ],
+    { enabled: sentences.length > 0, scopes: 'practice' },
   )
 
   // Keep sentence count in the reducer for the playback-end handler
@@ -860,6 +925,7 @@ function Practice() {
   ])
 
   const selectedTitle = passage.title
+  const { openShortcutsHelp } = useShortcutsHelp()
 
   // --- Main render ---
   return (
@@ -879,6 +945,17 @@ function Practice() {
         </Tooltip>
         <h1 className="text-lg font-bold shrink-0">Practice</h1>
         <div className="ml-auto flex items-center gap-2 min-w-0">
+          <TooltipButton
+            label="Keyboard shortcuts (?)"
+            variant="ghost"
+            size="icon"
+            // Touch-only devices can't use keyboard shortcuts and have the
+            // least header space, so hide this there (fine pointer ≈ keyboard).
+            className="shrink-0 no-fine-pointer:hidden"
+            onClick={openShortcutsHelp}
+          >
+            <Keyboard className="size-5" />
+          </TooltipButton>
           <Select value={passageId} onValueChange={handlePassageChange}>
             <SelectTrigger className="w-62 min-w-0 shrink">
               <SelectValue>{selectedTitle}</SelectValue>
@@ -931,6 +1008,7 @@ function Practice() {
                   playing={referencePlaying}
                   loading={refPlayback?.status === 'loading'}
                   onToggle={handleToggleReference}
+                  onToggleAndRecord={handleReferenceThenTake}
                 />
               </div>
               <PracticePassageFooter
@@ -960,6 +1038,7 @@ function Practice() {
                     playing={referencePlaying}
                     loading={refPlayback?.status === 'loading'}
                     onToggle={handleToggleReference}
+                    onToggleAndRecord={handleReferenceThenTake}
                   />
                 </div>
               </div>

@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import { Dialogs } from '#/components/Dialogs'
 import { JournalSetupModal } from '#/components/JournalSetupModal'
 import { Plot } from '#/components/Plot'
+import { SHORTCUTS, useActiveScope } from '#/components/shortcuts'
 import { Spectrogram } from '#/components/Spectrogram'
 import type { SpectrogramHandle } from '#/components/Spectrogram'
 import { SpeechStrip } from '#/components/SpeechStrip'
@@ -715,8 +716,14 @@ function App() {
   const isRecording =
     status.value === 'recording' || status.value === 'analyzing'
 
+  // Timeline-scoped shortcuts: only fire while this route is mounted. See
+  // src/lib/shortcuts.ts for the registry (keys/labels) that these read from.
+  const notRecording =
+    status.value !== 'recording' && status.value !== 'analyzing'
+  useActiveScope('timeline')
+
   useHotkeys(
-    'space',
+    SHORTCUTS.playPause.keys,
     (e) => {
       e.preventDefault()
       if (status.value === 'playing' || status.value === 'recording') {
@@ -726,72 +733,78 @@ function App() {
       }
     },
     [status, hasData, handlePauseTracked, handlePlay],
+    { scopes: 'timeline' },
   )
-  useHotkeys('shift+arrowleft', handleBackToStart, [handleBackToStart], {
-    enabled: status.value !== 'recording' && status.value !== 'analyzing',
+  useHotkeys(SHORTCUTS.jumpStart.keys, handleBackToStart, [handleBackToStart], {
+    enabled: notRecording,
+    scopes: 'timeline',
   })
   useHotkeys(
-    'shift+arrowright',
+    SHORTCUTS.jumpEnd.keys,
     (e) => {
       e.preventDefault()
       handleJump(Infinity)
     },
     [handleJump],
-    { enabled: status.value !== 'recording' && status.value !== 'analyzing' },
+    { enabled: notRecording, scopes: 'timeline' },
   )
   useHotkeys(
-    'arrowleft',
+    SHORTCUTS.jumpBack.keys,
     (e) => {
       e.preventDefault()
       handleJump(-0.5)
     },
     [handleJump],
-    { enabled: status.value !== 'recording' && status.value !== 'analyzing' },
+    { enabled: notRecording, scopes: 'timeline' },
   )
   useHotkeys(
-    'arrowright',
+    SHORTCUTS.jumpForward.keys,
     (e) => {
       e.preventDefault()
       handleJump(0.5)
     },
     [handleJump],
-    { enabled: status.value !== 'recording' && status.value !== 'analyzing' },
+    { enabled: notRecording, scopes: 'timeline' },
   )
   useHotkeys(
-    'r',
+    SHORTCUTS.record.keys,
     () => {
-      if (status.value !== 'recording' && status.value !== 'analyzing') {
+      if (notRecording) {
         handleStart()
       }
     },
-    [status, handleStart],
+    [notRecording, handleStart],
+    { scopes: 'timeline' },
   )
   useHotkeys(
-    'mod+o',
+    SHORTCUTS.openFile.keys,
     (e) => {
       e.preventDefault()
       handleOpen()
     },
     [handleOpen],
+    { scopes: 'timeline' },
   )
   useHotkeys(
-    'mod+e',
+    SHORTCUTS.exportAudio.keys,
     (e) => {
       e.preventDefault()
       if (!exportAudioDisabled) void handleExportAudio()
     },
     [exportAudioDisabled, handleExportAudio],
+    { scopes: 'timeline' },
   )
   useHotkeys(
-    'mod+comma',
+    SHORTCUTS.audioSettings.keys,
     (e) => {
       e.preventDefault()
       handleOpenAudioSettings()
     },
     [handleOpenAudioSettings],
+    { scopes: 'timeline' },
   )
   useHotkeys(
-    't',
+    SHORTCUTS.upgradeTranscripts.keys,
     () => {
       if (settings.transcriptionMode === 'large' && hasUpgradableVisible) {
         upgradeVisibleTranscriptions()
@@ -802,6 +815,27 @@ function App() {
       hasUpgradableVisible,
       upgradeVisibleTranscriptions,
     ],
+    { scopes: 'timeline' },
+  )
+  useHotkeys(
+    SHORTCUTS.newSession.keys,
+    (e) => {
+      e.preventDefault()
+      handleNew()
+    },
+    [handleNew],
+    { scopes: 'timeline' },
+  )
+  useHotkeys(
+    SHORTCUTS.saveToJournal.keys,
+    (e) => {
+      e.preventDefault()
+      if (journalFlagOn && journalBackend !== null && !exportAudioDisabled) {
+        void handleSaveToJournal()
+      }
+    },
+    [journalFlagOn, journalBackend, exportAudioDisabled, handleSaveToJournal],
+    { scopes: 'timeline' },
   )
 
   const virtualWidthSec =

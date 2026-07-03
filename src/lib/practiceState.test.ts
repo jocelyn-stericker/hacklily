@@ -542,6 +542,27 @@ describe('practiceReducer', () => {
       state = practiceReducer(state, { type: 'STOP_REFERENCE' })
       expect(state.referencePlayback).toBeNull()
     })
+
+    // Regression: Ctrl/Cmd-click arms the reference phase (loopPhase='reference'),
+    // then plain-clicking the same sentence stops it. Without clearing loopPhase,
+    // loopActive stays true and the mic never closes.
+    it('clears loopPhase and pending flags so the loop cannot linger', () => {
+      let state = practiceReducer(initialPracticeState(), {
+        type: 'PREPARE_REFERENCE_PHASE',
+      })
+      state = practiceReducer(state, {
+        type: 'START_REFERENCE',
+        passageId: 'rainbow',
+        segmentIndex: 1,
+        voiceId: 'af_heart',
+      })
+      expect(state.loopPhase).toBe('reference')
+      state = practiceReducer(state, { type: 'STOP_REFERENCE' })
+      expect(state.loopPhase).toBeNull()
+      expect(state.pendingReferenceStart).toBe(false)
+      expect(state.pendingReferenceRestart).toBe(false)
+      expect(state.pendingRecordRestart).toBe(false)
+    })
   })
 
   describe('REFERENCE_ENDED', () => {

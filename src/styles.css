@@ -89,6 +89,11 @@
   }
 }
 
+/* Matches when the device has no fine pointer (touch-only). A fine pointer
+   (mouse/trackpad) correlates well with having a physical keyboard, so this
+   gates keyboard-shortcut affordances that are useless on touch devices. */
+@custom-variant no-fine-pointer (@media not (any-pointer: fine));
+
 @utility no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;

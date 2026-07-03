@@ -8,6 +8,7 @@ import {
   Download,
   FilePlus,
   FolderOpen,
+  Keyboard,
   Menu,
   MicVocal,
   NotebookPen,
@@ -20,6 +21,8 @@ import {
 } from 'lucide-react'
 
 import braatPng from '#/braat.png'
+import { formatKeys, shortcutTitle, SHORTCUTS } from '#/components/shortcuts'
+import { useShortcutsHelp } from '#/components/ShortcutsHelp'
 import { Button } from '#/components/ui/button'
 import {
   DropdownMenu,
@@ -31,8 +34,6 @@ import {
 } from '#/components/ui/dropdown-menu'
 
 import type { TimelineState, Status } from './useTimelineState'
-
-const MOD = navigator.platform.startsWith('Mac') ? '⌘' : 'Ctrl+'
 
 export function Toolbar({
   openFilePicker,
@@ -81,6 +82,7 @@ export function Toolbar({
   onSaveToJournal: () => void
   onViewJournal: () => void
 }) {
+  const { openShortcutsHelp } = useShortcutsHelp()
   return (
     <header className="flex align-center justify-end gap-1 p-2 flex-wrap">
       <h1 className="text-lg font-bold bg-[#8ace00] mr-2">
@@ -91,7 +93,7 @@ export function Toolbar({
         <Button
           variant="default"
           className="h-10 w-10 cursor-pointer"
-          title="Upgrade all visible transcripts (T)"
+          title={shortcutTitle('upgradeTranscripts')}
           disabled={!onUpgradeAll}
           onClick={onUpgradeAll ?? undefined}
         >
@@ -101,7 +103,7 @@ export function Toolbar({
       <Button
         variant="default"
         className="h-10 w-10 cursor-pointer"
-        title="Back to start (Shift+←)"
+        title={shortcutTitle('jumpStart')}
         disabled={
           (timelineState.cursorSec === 0 &&
             timelineState.viewportLeftSec === 0) ||
@@ -116,7 +118,7 @@ export function Toolbar({
         variant="default"
         className="h-10 w-10 cursor-pointer"
         disabled={status.value === 'recording' || status.value === 'analyzing'}
-        title="Record from microphone (R)"
+        title={shortcutTitle('record')}
         onClick={onStart}
       >
         <MicVocal className="size-6" />
@@ -125,7 +127,7 @@ export function Toolbar({
         <Button
           variant="default"
           className="h-10 w-10 cursor-pointer"
-          title="Pause (Space)"
+          title={shortcutTitle('playPause')}
           onClick={onPause}
         >
           <Pause className="size-6" />
@@ -134,7 +136,7 @@ export function Toolbar({
         <Button
           variant="default"
           className="h-10 w-10 cursor-pointer"
-          title="Play (Space)"
+          title={shortcutTitle('playPause')}
           onClick={onPlay}
           disabled={playDisabled}
         >
@@ -152,25 +154,34 @@ export function Toolbar({
         <DropdownMenuContent align="end" className="min-w-56">
           <DropdownMenuItem onClick={onNew}>
             <FilePlus className="size-4" />
-            New
+            {SHORTCUTS.newSession.label}
+            <DropdownMenuShortcut>
+              {formatKeys(SHORTCUTS.newSession.keys)}
+            </DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={openFilePicker}>
             <FolderOpen className="size-4" />
-            Open audio file
-            <DropdownMenuShortcut>{MOD}O</DropdownMenuShortcut>
+            {SHORTCUTS.openFile.label}
+            <DropdownMenuShortcut>
+              {formatKeys(SHORTCUTS.openFile.keys)}
+            </DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={onExportAudio}
             disabled={exportAudioDisabled}
           >
             <Download className="size-4" />
-            Export mono MP3
-            <DropdownMenuShortcut>{MOD}E</DropdownMenuShortcut>
+            {SHORTCUTS.exportAudio.label}
+            <DropdownMenuShortcut>
+              {formatKeys(SHORTCUTS.exportAudio.keys)}
+            </DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={onOpenAudioSettings}>
             <Settings2 className="size-4" />
-            Audio settings
-            <DropdownMenuShortcut>{MOD},</DropdownMenuShortcut>
+            {SHORTCUTS.audioSettings.label}
+            <DropdownMenuShortcut>
+              {formatKeys(SHORTCUTS.audioSettings.keys)}
+            </DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={onOpenTranscriptionSettings}>
             <Captions className="size-4" />
@@ -179,6 +190,13 @@ export function Toolbar({
           <DropdownMenuItem onClick={onOpenVowelChartSettings}>
             <CircleDot className="size-4" />
             Vowel chart settings
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={openShortcutsHelp}>
+            <Keyboard className="size-4" />
+            {SHORTCUTS.help.label}
+            <DropdownMenuShortcut>
+              {formatKeys(SHORTCUTS.help.keys)}
+            </DropdownMenuShortcut>
           </DropdownMenuItem>
           {journalEnabled && (
             <>
@@ -190,7 +208,10 @@ export function Toolbar({
                     disabled={exportAudioDisabled}
                   >
                     <Save className="size-4" />
-                    Save to voice journal
+                    {SHORTCUTS.saveToJournal.label}
+                    <DropdownMenuShortcut>
+                      {formatKeys(SHORTCUTS.saveToJournal.keys)}
+                    </DropdownMenuShortcut>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={onViewJournal}>
                     <BookOpen className="size-4" />

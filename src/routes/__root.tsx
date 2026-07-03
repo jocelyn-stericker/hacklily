@@ -5,9 +5,11 @@
 
 import { Outlet, createRootRoute } from '@tanstack/react-router'
 import { useEffect, useRef } from 'react'
+import { HotkeysProvider } from 'react-hotkeys-hook'
 import { toast } from 'sonner'
 import { registerSW } from 'virtual:pwa-register'
 
+import { ShortcutsHelpProvider } from '#/components/ShortcutsHelp'
 import { Toaster } from '#/components/ui/sonner'
 import { TooltipProvider } from '#/components/ui/tooltip'
 import { installMemProbe } from '#/lib/memProbe'
@@ -38,9 +40,13 @@ function RootDocument() {
     })
   }, [])
   return (
-    <TooltipProvider>
-      <Outlet />
-      <Toaster invert={true} />
-    </TooltipProvider>
+    <HotkeysProvider initiallyActiveScopes={['global']}>
+      <ShortcutsHelpProvider>
+        <TooltipProvider>
+          <Outlet />
+          <Toaster invert={true} />
+        </TooltipProvider>
+      </ShortcutsHelpProvider>
+    </HotkeysProvider>
   )
 }

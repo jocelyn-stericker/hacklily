@@ -3,6 +3,7 @@
 
 import { Loader2, Pause, Play, StopCircle } from 'lucide-react'
 
+import { formatKeys } from '#/components/shortcuts'
 import { cn } from '#/lib/utils'
 
 import { TooltipButton } from './ui/tooltipButton'
@@ -17,6 +18,7 @@ export function PracticeReferenceText({
   playing,
   loading,
   onToggle,
+  onToggleAndRecord,
 }: {
   segments: readonly string[]
   passageId: string
@@ -30,7 +32,17 @@ export function PracticeReferenceText({
   /** True when the active reference segment is buffering. */
   loading: boolean
   onToggle: (passageId: string, segmentIndex: number, voiceId: string) => void
+  /**
+   * Ctrl/Cmd+click (or Ctrl/Cmd+Enter/Space) on a sentence: play its reference
+   * and then start recording a take. Plain activation still just toggles play.
+   */
+  onToggleAndRecord: (
+    passageId: string,
+    segmentIndex: number,
+    voiceId: string,
+  ) => void
 }) {
+  const mod = formatKeys('mod')
   return (
     <div className="space-y-1">
       {segments.map((sentence, i) => {
@@ -44,11 +56,22 @@ export function PracticeReferenceText({
             <span
               role="button"
               tabIndex={0}
-              onClick={() => onToggle(passageId, i, voiceId)}
+              title={`Click to play reference · ${mod}-click to record a take`}
+              onClick={(e) => {
+                if (e.ctrlKey || e.metaKey) {
+                  onToggleAndRecord(passageId, i, voiceId)
+                } else {
+                  onToggle(passageId, i, voiceId)
+                }
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault()
-                  onToggle(passageId, i, voiceId)
+                  if (e.ctrlKey || e.metaKey) {
+                    onToggleAndRecord(passageId, i, voiceId)
+                  } else {
+                    onToggle(passageId, i, voiceId)
+                  }
                 }
               }}
               className={cn(
@@ -67,14 +90,18 @@ export function PracticeReferenceText({
               className="inline-flex align-baseline select-none text-muted-foreground/60 pl-0.5"
             >
               <TooltipButton
-                label={
-                  isPlaying ? 'Pause reference' : 'Play reference for sentence'
-                }
+                label={`${isPlaying ? 'Pause reference' : 'Play reference'} · ${mod}-click to record a take`}
                 variant="ghost"
                 size="icon-sm"
                 tabIndex={-1}
                 className="size-5 -my-1 align-baseline"
-                onClick={() => onToggle(passageId, i, voiceId)}
+                onClick={(e) => {
+                  if (e.ctrlKey || e.metaKey) {
+                    onToggleAndRecord(passageId, i, voiceId)
+                  } else {
+                    onToggle(passageId, i, voiceId)
+                  }
+                }}
               >
                 {isLoading ? (
                   <Loader2 className="size-3 animate-spin" />
@@ -101,6 +128,7 @@ export function PracticeReferenceDrillButton({
   playing,
   loading,
   onToggle,
+  onToggleAndRecord,
 }: {
   passageId: string
   segmentIndex: number
@@ -110,18 +138,31 @@ export function PracticeReferenceDrillButton({
   playing: boolean
   loading: boolean
   onToggle: (passageId: string, segmentIndex: number, voiceId: string) => void
+  /** Ctrl/Cmd+click: play the reference and then start recording a take. */
+  onToggleAndRecord: (
+    passageId: string,
+    segmentIndex: number,
+    voiceId: string,
+  ) => void
 }) {
   const isActive =
     activePassageId === passageId && activeSegmentIndex === segmentIndex
   const isPlaying = isActive && playing
   const isLoading = isActive && loading
+  const mod = formatKeys('mod')
   return (
     <TooltipButton
-      label={isPlaying ? 'Stop reference' : 'Play reference for sentence'}
+      label={`${isPlaying ? 'Stop reference' : 'Play reference'} · ${mod}-click to record a take`}
       variant="outline"
       size="icon"
       className="mt-1 shrink-0"
-      onClick={() => onToggle(passageId, segmentIndex, voiceId)}
+      onClick={(e) => {
+        if (e.ctrlKey || e.metaKey) {
+          onToggleAndRecord(passageId, segmentIndex, voiceId)
+        } else {
+          onToggle(passageId, segmentIndex, voiceId)
+        }
+      }}
     >
       {isLoading ? (
         <Loader2 className="size-4 animate-spin" />
