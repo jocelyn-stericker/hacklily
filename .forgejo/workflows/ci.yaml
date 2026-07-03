@@ -2,23 +2,34 @@ on:
   push:
     branches:
       - main
+  pull_request:
+
 jobs:
-  deploy:
+  check:
     runs-on: faith
     steps:
       - uses: actions/checkout@v5
       - name: Install deps
         run: npm ci
       - name: Lint
-        run: |
-          npm run lint
-      - name: Test
-        run: |
-          npm run test
-          npm run e2e
+        run: npm run lint
+      - name: Unit tests
+        run: npm run test
+      - name: E2E tests
+        run: npm run e2e
       - name: Build
-        run: |
-          npm run build
+        run: npm run build
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: check
+    runs-on: faith
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install deps
+        run: npm ci
+      - name: Build
+        run: npm run build
       - name: Deploy website
         uses: actions/git-pages@v2
         with:
