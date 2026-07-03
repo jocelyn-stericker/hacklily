@@ -855,6 +855,19 @@ function App() {
     [settings.vowelChartScale, chartFocused, bumpVowelChartIdle],
   )
 
+  useEffect(() => {
+    const el = vowelChartBoxRef.current
+    if (!el) return
+    // React has passive event handlers, so we can't block page scrolling via prop!
+    const onWheel = (e: WheelEvent) => {
+      if (!chartFocused) return
+      e.preventDefault()
+      resizeVowelChart(e.deltaY < 0 ? 1 : -1)
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+  }, [chartFocused, resizeVowelChart])
+
   useHotkeys(
     SHORTCUTS.vowelChartBigger.keys,
     (e) => {
@@ -1020,11 +1033,6 @@ function App() {
                     onBlur={() => setChartFocused(false)}
                     onKeyDown={(e) => {
                       if (e.key === 'Escape') vowelChartBoxRef.current?.blur()
-                    }}
-                    onWheel={(e) => {
-                      if (!chartFocused) return
-                      e.preventDefault()
-                      resizeVowelChart(e.deltaY < 0 ? 1 : -1)
                     }}
                     className={cn(
                       'absolute z-10 border border-[#ccccdd] dark:border-[#2a2a3a] right-0 bottom-auto top-0 left-auto md:right-0 outline-none',
