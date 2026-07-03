@@ -31,6 +31,10 @@ import Logs from "./Logs";
 import RPCClient, { RenderResponse } from "./RPCClient";
 import { APP_STYLE } from "./styles";
 
+// ─────────────────────────────────────────────────────────────
+// DOMPurify hooks
+// ─────────────────────────────────────────────────────────────
+
 // Restrict <use> href/xlink:href to internal #fragment identifiers only.
 // External URIs (https:, data:, javascript:) are blocked at the attribute
 // level so the <use> element itself (allowed via ADD_TAGS in sanitize()) is
@@ -49,6 +53,87 @@ DOMPurify.addHook(
     }
   },
 );
+
+/**
+ * Pattern: a CSS-function `url(#…)` reference to a same-document fragment.
+ * Captures the fragment identifier so it can be prefixed.
+ */
+const URL_FRAGMENT_RE = /url\(\s*#([^)\s]+)\s*\)/g;
+
+/**
+ * Sanitize SVG/HTML and prefix every `id` and fragment reference with
+ * a caller-chosen string, isolating this batch of markup from others
+ * rendered into the same document.
+ *
+ * The hook:
+ *  - Prefixes `id` attribute values so glyphs, clips, gradients etc.
+ *    don't collide across score previews.
+ *  - Prefixes fragment references in `<use href/xlink:href="#…">` so
+ *    glyph lookups still resolve after the rename.
+ *  - Prefixes fragments inside `url(#…)` in styling attributes
+ *    (`clip-path`, `fill`, `mask`, `style`, etc.) so CSS and
+ *    presentation-attribute references stay correct.
+ */
+export function sanitizeSvg(dirty: string, idPrefix: string): string {
+  const hook = function prefixIds(
+    node: Element,
+    hookEvent: Record<string, any>,
+  ) {
+    // Skip attributes already stripped by an earlier hook.
+    if (hookEvent.keepAttr === false) {
+      return;
+    }
+
+    const lcName = hookEvent.attrName;
+    let value = hookEvent.attrValue;
+    let changed = false;
+
+    if (lcName === "id") {
+      // Prefix every id — the hook fires once per attribute, so each id
+      // gets visited exactly once.
+      if (typeof value === "string" && !value.startsWith(idPrefix)) {
+        value = idPrefix + value;
+        changed = true;
+      }
+    } else if (
+      (lcName === "href" || lcName === "xlink:href") &&
+      node.nodeName?.toLowerCase() === "use"
+    ) {
+      // Prefix #fragment references on <use> so they still point to the
+      // renamed glyph/g id.
+      if (typeof value === "string" && value.startsWith("#")) {
+        value = "#" + idPrefix + value.slice(1);
+        changed = true;
+      }
+    } else if (typeof value === "string") {
+      // Prefix fragments inside url(#…) — covers clip-path, fill, mask,
+      // filter, marker-*, and inline style.
+      const replaced = value.replace(
+        URL_FRAGMENT_RE,
+        (_match: string, fragment: string) => `url(#${idPrefix}${fragment})`,
+      );
+      if (replaced !== value) {
+        value = replaced;
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      hookEvent.attrValue = value;
+    }
+  };
+
+  DOMPurify.addHook("uponSanitizeAttribute", hook);
+  try {
+    return DOMPurify.sanitize(dirty, {
+      ALLOW_UNKNOWN_PROTOCOLS: true,
+      ADD_TAGS: ["use"],
+      ADD_ATTR: ["pointer-events"],
+    });
+  } finally {
+    DOMPurify.removeHook("uponSanitizeAttribute", hook);
+  }
+}
 
 /**
  * How long the code must not be edited for a preview to render.
@@ -267,12 +352,18 @@ export default class Preview extends React.PureComponent<Props, State> {
       // ADD_TAGS admits <use> so LilyPond glyph references survive, and
       // ADD_ATTR passes pointer-events through for interaction. A module-level
       // uponSanitizeAttribute hook strips non-fragment href/xlink:href on use.
+      // A per-call hook prefixes every id and fragment reference so multiple
+      // score previews in the same document don't collide, and pages within a
+      // multi-page score don't clobber each other's glyph/clip/gradient IDs.
       // See src/Preview.sanitize.test.ts for regression coverage.
-      root.innerHTML = DOMPurify.sanitize(files.join(""), {
-        ALLOW_UNKNOWN_PROTOCOLS: true,
-        ADD_TAGS: ["use"],
-        ADD_ATTR: ["pointer-events"],
-      });
+      root.innerHTML = files
+        .map((page, i) =>
+          sanitizeSvg(
+            page,
+            `p${crypto.randomUUID().replace(/-/g, "")}-pg${i}-`,
+          ),
+        )
+        .join("");
 
       this.props.onLogsObtained(logs, version);
       if (midi !== this.previousMIDIData) {

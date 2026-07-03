@@ -9,4 +9,8 @@ module.exports = {
   transform: {
     "^.+\\.[jt]sx?$": "babel-jest",
   },
+  moduleNameMapper: {
+    "\\.svg$": "<rootDir>/src/__mocks__/staticFile.js",
+    "\\.(png|jpg|jpeg|gif|webp|woff|woff2)$": "<rootDir>/src/__mocks__/staticFile.js",
+  },
 };

@@ -24,6 +24,14 @@
  *  6. Dangerous content DOMPurify must strip is stripped (<script>, event
  *     handlers, javascript: URIs, external https: on <use>), so the iframe
  *     (which is NOT sandboxed) stays safe.
+ *
+ * The `sanitizeSvg`-prefixed path adds:
+ *  7. All `id` values get a controllable prefix for collision isolation.
+ *  8. `<use>` fragment references are prefixed to match renamed ids.
+ *  9. `url(#…)` references (clip-path, fill, mask, etc.) are prefixed.
+ * 10. Per-page prefixing keeps multi-page score IDs isolated.
+ * 11. The security hook (non-fragment use hrefs stripped) still fires
+ *     before the prefix hook, so dangerous URIs are removed regardless.
  */
 
 import DOMPurify from "dompurify";
@@ -178,5 +186,110 @@ describe("Preview DOMPurify sanitization", () => {
       `<svg xmlns="http://www.w3.org/2000/svg"><g pointer-events="all"><circle cx="5" cy="5" r="3"/></g></svg>`,
     );
     expect(clean.toLowerCase()).not.toContain("pointer-events");
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// ID-prefix sanitization
+// ─────────────────────────────────────────────────────────────
+// Replicates the per-call hook setup in Preview.tsx's sanitizeSvg() so the
+// real production code path is exercised, not a test double.
+
+import { sanitizeSvg } from "./Preview";
+
+describe("sanitizeSvg ID prefixing", () => {
+  test("prefixes id attributes", () => {
+    const dirty = `<svg><g id="note"/></svg>`;
+    const clean = sanitizeSvg(dirty, "p1-");
+    expect(clean).toContain('id="p1-note"');
+  });
+
+  test("prefixes <use href=#fragment> references", () => {
+    const dirty = `<svg><use href="#glyph-0"/></svg>`;
+    const clean = sanitizeSvg(dirty, "x-");
+    expect(clean).toContain('href="#x-glyph-0"');
+  });
+
+  test("prefixes <use xlink:href=#fragment> references", () => {
+    const dirty = `<svg xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="#glyph-0"/></svg>`;
+    const clean = sanitizeSvg(dirty, "x-");
+    expect(clean).toContain('xlink:href="#x-glyph-0"');
+  });
+
+  test("does not double-prefix already-prefixed ids", () => {
+    const dirty = `<svg><g id="p1-note"/></svg>`;
+    const clean = sanitizeSvg(dirty, "p1-");
+    // Count occurrences — should be exactly one "p1-" before note.
+    expect(clean).toContain('id="p1-note"');
+    expect(clean).not.toContain('id="p1-p1-note"');
+  });
+
+  test("prefixes url(#…) in styling attributes", () => {
+    const dirty = `<svg><path clip-path="url(#clip1)" fill="url(#grad1)"/></svg>`;
+    const clean = sanitizeSvg(dirty, "r-");
+    expect(clean).toContain('clip-path="url(#r-clip1)"');
+    expect(clean).toContain('fill="url(#r-grad1)"');
+  });
+
+  test("prefixes url(#…) in inline style", () => {
+    const dirty = `<svg><path style="clip-path: url(#clip2); fill: url(#g2)"/></svg>`;
+    const clean = sanitizeSvg(dirty, "s-");
+    expect(clean).toContain("clip-path: url(#s-clip2)");
+    expect(clean).toContain("fill: url(#s-g2)");
+  });
+
+  test("still strips non-fragment href on <use> (security hook fires first)", () => {
+    const dirty = `<svg><use href="javascript:alert(1)"/></svg>`;
+    const clean = sanitizeSvg(dirty, "p-");
+    expect(clean).toContain("<use");
+    expect(clean.toLowerCase()).not.toContain("javascript:");
+    expect(clean).not.toContain('href="');
+  });
+
+  test("prefix is controllable — different prefixes produce different output", () => {
+    const dirty = `<svg><defs><g id="glyph"/></defs><use href="#glyph"/></svg>`;
+    const a = sanitizeSvg(dirty, "a-");
+    const b = sanitizeSvg(dirty, "b-");
+    expect(a).toContain('id="a-glyph"');
+    expect(a).toContain('href="#a-glyph"');
+    expect(b).toContain('id="b-glyph"');
+    expect(b).toContain('href="#b-glyph"');
+    expect(a).not.toContain('href="#b-glyph"');
+    expect(b).not.toContain('href="#a-glyph"');
+  });
+
+  test("does not prefix non-fragment URI attributes (textedit: survives)", () => {
+    const dirty = `<svg><a xlink:href="textedit:///tmp/hacklily.ly:2:1:3"><rect/></a></svg>`;
+    const clean = sanitizeSvg(dirty, "p-");
+    expect(clean).toContain("textedit:");
+    // The xlink:href value starts with "textedit:", not "#" — no prefix added.
+    expect(clean).toContain('xlink:href="textedit:///tmp/hacklily.ly:2:1:3"');
+  });
+
+  test("per-page prefixes isolate pages in a multi-page score", () => {
+    const page1 = `<svg><defs><g id="glyph-0"/></defs><use href="#glyph-0"/></svg>`;
+    const page2 = `<svg><defs><g id="glyph-0"/></defs><use href="#glyph-0"/></svg>`;
+    const prefixed1 = sanitizeSvg(page1, "r-pg0-");
+    const prefixed2 = sanitizeSvg(page2, "r-pg1-");
+    // Each page's IDs are isolated from the other.
+    expect(prefixed1).toContain('id="r-pg0-glyph-0"');
+    expect(prefixed1).toContain('href="#r-pg0-glyph-0"');
+    expect(prefixed2).toContain('id="r-pg1-glyph-0"');
+    expect(prefixed2).toContain('href="#r-pg1-glyph-0"');
+    // Neither page references the other's prefixed id.
+    expect(prefixed1).not.toContain('href="#r-pg1-');
+    expect(prefixed2).not.toContain('href="#r-pg0-');
+  });
+
+  test("prefix hook does not leak between sanitizeSvg calls", () => {
+    // The hook is registered and removed per call.  This call should not
+    // affect a subsequent ordinary sanitize.
+    sanitizeSvg(`<svg><g id="tmp"/></svg>`, "leak-");
+    const clean = DOMPurify.sanitize(
+      `<svg><g id="tmp"/></svg>`,
+      PREVIEW_CONFIG,
+    );
+    expect(clean).toContain('id="tmp"');
+    expect(clean).not.toContain('id="leak-');
   });
 });
