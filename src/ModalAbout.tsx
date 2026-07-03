@@ -70,6 +70,7 @@ class ModalAbout extends React.PureComponent<Props> {
             </a>
             !
           </p>
+          {renderLilyPondVersions()}
           <p>
             You can view Hacklily&apos;s source and contribute code on{" "}
             <a
@@ -144,6 +145,32 @@ class ModalAbout extends React.PureComponent<Props> {
       </Dialog>
     );
   }
+}
+
+function renderLilyPondVersions(): JSX.Element | null {
+  const stable: string | undefined =
+    process.env.REACT_APP_STABLE_LILYPOND_VERSION;
+  const unstable: string | undefined =
+    process.env.REACT_APP_UNSTABLE_LILYPOND_VERSION;
+  if (!stable && !unstable) {
+    return null;
+  }
+  return (
+    <p className={`${Classes.TEXT_SMALL} ${Classes.TEXT_MUTED}`}>
+      LilyPond renderer versions:{" "}
+      {stable && (
+        <span>
+          stable <strong>{stable}</strong>
+        </span>
+      )}
+      {stable && unstable && " · "}
+      {unstable && (
+        <span>
+          unstable <strong>{unstable}</strong>
+        </span>
+      )}
+    </p>
+  );
 }
 
 export default ModalAbout;

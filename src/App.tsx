@@ -243,7 +243,11 @@ interface State {
   makelilyInsertCB?(ly: string): void;
 }
 
-const DEFAULT_SONG: string = `\\header {
+const DEFAULT_SONG: string = `\\version "${
+  process.env.REACT_APP_STABLE_LILYPOND_VERSION || "2.26.0"
+}"
+
+\\header {
   title = "Untitled"
   composer = "Composer"
 }

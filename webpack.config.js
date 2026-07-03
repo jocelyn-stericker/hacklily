@@ -1,9 +1,25 @@
 const path = require("path");
+const fs = require("fs");
 const webpack = require("webpack");
 const CopyPlugin = require("copy-webpack-plugin");
 const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
 
 const dist = path.resolve(__dirname, "dist");
+
+/** Read the LilyPond version string from a Dockerfile's ARG LILYPOND_VERSION. */
+function readLilyPondVersion(dockerfilePath) {
+  const content = fs.readFileSync(
+    path.resolve(__dirname, dockerfilePath),
+    "utf8"
+  );
+  const match = content.match(/^ARG LILYPOND_VERSION=(.+)/m);
+  if (!match) {
+    throw new Error(
+      `Could not find ARG LILYPOND_VERSION in ${dockerfilePath}`
+    );
+  }
+  return match[1].trim();
+}
 
 module.exports = {
   mode: "production",
@@ -72,6 +88,16 @@ module.exports = {
     ]),
     new webpack.EnvironmentPlugin({
       HOMEPAGE: "https://hacklily.org",
+    }),
+    // Bake the LilyPond versions from the Dockerfiles into the bundle
+    // so the frontend can display them without a server roundtrip.
+    new webpack.DefinePlugin({
+      "process.env.REACT_APP_STABLE_LILYPOND_VERSION": JSON.stringify(
+        readLilyPondVersion("server/renderer/Dockerfile")
+      ),
+      "process.env.REACT_APP_UNSTABLE_LILYPOND_VERSION": JSON.stringify(
+        readLilyPondVersion("server/renderer-unstable/Dockerfile")
+      ),
     }),
   ].filter((a) => !!a),
 };
