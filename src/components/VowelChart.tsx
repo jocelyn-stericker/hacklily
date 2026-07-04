@@ -7,10 +7,10 @@ import { useEffect, useImperativeHandle, useMemo, useState } from 'react'
 import type { RefObject } from 'react'
 
 import { useSettings } from '#/components/useSettings'
-import { isVoiced } from '#/lib/analysis/AnalysisFrame'
+import { hasPlottableFormants } from '#/lib/analysis/AnalysisFrame'
 import type {
   AnalysisChunk,
-  VoicedAnalysisFrame,
+  PlottableFormantFrame,
 } from '#/lib/analysis/AnalysisFrame'
 import { HILLENBRAND } from '#/lib/analysis/hillenbrand'
 import { hzToBark } from '#/lib/dsp/bark'
@@ -140,7 +140,7 @@ function drawVowelChart(
   height: number,
   dpr: number,
   symbolScale: number,
-  trail: VoicedAnalysisFrame[],
+  trail: PlottableFormantFrame[],
   theme: VowelChartTheme,
   vowels: Vowel[],
 ): void {
@@ -312,12 +312,15 @@ export interface VowelChartHandle {
 // instead of scanning (and allocating) the whole recording. The output array is
 // reused across redraws and bounded by TRAIL_LEN. The common live-recording
 // case (cursor at the end) only touches the last TRAIL_LEN voiced frames.
-const trailOut: VoicedAnalysisFrame[] = []
+const trailOut: PlottableFormantFrame[] = []
 
 export function voicedTrailUpToCursor(
   analysis: AnalysisChunk[],
   cursorSec: number,
-): VoicedAnalysisFrame[] {
+  // When true, keep pitched frames the VAD marks as non-speech (issue #16), so
+  // a held tone still leaves a trail. Default false = speech-only (isVoiced).
+  includeUnvoiced = false,
+): PlottableFormantFrame[] {
   trailOut.length = 0
 
   // Locate the chunk holding the cursor via each chunk's authoritative
@@ -352,7 +355,7 @@ export function voicedTrailUpToCursor(
     const frames = analysis[c]!.frames
     for (let f = c === ci ? fi : frames.length - 1; f >= 0; f--) {
       const frame = frames[f]!
-      if (isVoiced(frame)) {
+      if (hasPlottableFormants(frame, !includeUnvoiced)) {
         trailOut.push(frame)
         if (trailOut.length >= TRAIL_LEN) break outer
       }
@@ -378,6 +381,7 @@ export function VowelChart({
     scheme === 'dark' ? VOWEL_CHART_DARK_THEME : VOWEL_CHART_LIGHT_THEME
   const [settings] = useSettings()
   const symbolScale = settings.vowelChartScale
+  const includeUnvoiced = settings.showFormantsWithoutSpeech
 
   const group =
     settings.vowelChartAverages === 'hidden'
@@ -394,7 +398,7 @@ export function VowelChart({
       height,
       dpr,
       symbolScale,
-      voicedTrailUpToCursor(analysisMut, cursorSec),
+      voicedTrailUpToCursor(analysisMut, cursorSec, includeUnvoiced),
       theme,
       vowels,
     )
@@ -404,6 +408,7 @@ export function VowelChart({
     height,
     dpr,
     symbolScale,
+    includeUnvoiced,
     analysisMut,
     cursorSec,
     theme,
@@ -421,7 +426,7 @@ export function VowelChart({
           height,
           dpr,
           symbolScale,
-          voicedTrailUpToCursor(analysisMut, cursorSec),
+          voicedTrailUpToCursor(analysisMut, cursorSec, includeUnvoiced),
           theme,
           vowels,
         )
@@ -434,7 +439,7 @@ export function VowelChart({
           height,
           dpr,
           symbolScale,
-          voicedTrailUpToCursor(analysisMut, cursorSec),
+          voicedTrailUpToCursor(analysisMut, cursorSec, includeUnvoiced),
           theme,
           vowels,
         )
@@ -446,6 +451,7 @@ export function VowelChart({
       height,
       dpr,
       symbolScale,
+      includeUnvoiced,
       analysisMut,
       cursorSec,
       theme,

@@ -21,6 +21,7 @@ import type { SpectrogramTheme } from '#/lib/theme'
 
 import { InCanvas, usePlotPad, usePlotSize, useTimeToX, useHzToY } from './Plot'
 import { useColourScheme } from './useColourScheme'
+import { useSettings } from './useSettings'
 
 const FPS_WINDOW_MS = 1000
 
@@ -410,12 +411,33 @@ function drawFormants(
   freqToY: (hz: number) => number,
   dpr: number,
   lod: number,
+  // When false, formants are drawn for any pitched frame even if the VAD
+  // reports no speech (issue #16 -- e.g. a held sustained vowel).
+  requireSpeech: boolean,
 ): void {
   const step = 1 << lod
   if (lod >= FORMANT_LINE_LOD) {
-    drawFormantLines(ctx, startFrame, endFrame, frames, freqToY, dpr, step)
+    drawFormantLines(
+      ctx,
+      startFrame,
+      endFrame,
+      frames,
+      freqToY,
+      dpr,
+      step,
+      requireSpeech,
+    )
   } else {
-    drawFormantDots(ctx, startFrame, endFrame, frames, freqToY, dpr, step)
+    drawFormantDots(
+      ctx,
+      startFrame,
+      endFrame,
+      frames,
+      freqToY,
+      dpr,
+      step,
+      requireSpeech,
+    )
   }
 }
 
@@ -427,6 +449,7 @@ function drawFormantDots(
   freqToY: (hz: number) => number,
   dpr: number,
   step: number,
+  requireSpeech: boolean,
 ): void {
   for (const { key, color } of FORMANT_TRACKS) {
     const r = FORMANT_LINE_WIDTH * dpr
@@ -434,7 +457,7 @@ function drawFormantDots(
     for (let f = startFrame; f < endFrame; f++) {
       const sample = frames[f]!
       if (
-        !(sample.pitchDetected && sample.speechDetected) ||
+        !(sample.pitchDetected && (!requireSpeech || sample.speechDetected)) ||
         sample[key] === null
       )
         continue
@@ -459,6 +482,7 @@ function drawFormantLines(
   freqToY: (hz: number) => number,
   dpr: number,
   step: number,
+  requireSpeech: boolean,
 ): void {
   for (const { key, color } of FORMANT_TRACKS) {
     ctx.beginPath()
@@ -467,7 +491,7 @@ function drawFormantLines(
     for (let f = startFrame; f < endFrame; f++) {
       const sample = frames[f]!
       if (
-        !(sample.pitchDetected && sample.speechDetected) ||
+        !(sample.pitchDetected && (!requireSpeech || sample.speechDetected)) ||
         sample[key] === null
       ) {
         pen = false
@@ -503,6 +527,7 @@ function paintTile(
   theme: SpectrogramTheme,
   freqToY: (hz: number) => number,
   dpr: number,
+  requireSpeech: boolean,
 ): void {
   const tile = off.tilesByLod.get(lod)?.[t]
   const ctx = tile?.ctx
@@ -519,6 +544,7 @@ function paintTile(
     freqToY,
     dpr,
     lod,
+    requireSpeech,
   )
 }
 
@@ -534,6 +560,7 @@ function renderTile(
   freqToY: (hz: number) => number,
   dpr: number,
   lru: TileLru,
+  requireSpeech: boolean,
 ): void {
   const tile = tilesForLod(off, lod)[t]
   if (!tile) return
@@ -545,7 +572,7 @@ function renderTile(
   tile.canvas = canvas
   tile.ctx = ctx
   lru.register(tile, tileBytes(tile.cols, off.canvasHeight))
-  paintTile(off, levels, frames, lod, t, theme, freqToY, dpr)
+  paintTile(off, levels, frames, lod, t, theme, freqToY, dpr, requireSpeech)
 }
 
 // Repaint a tile in place if it's currently materialized; no-op otherwise (an
@@ -561,10 +588,11 @@ function repaintTile(
   freqToY: (hz: number) => number,
   dpr: number,
   lru: TileLru,
+  requireSpeech: boolean,
 ): void {
   const tile = off.tilesByLod.get(lod)?.[t]
   if (!tile || !tile.canvas) return
-  paintTile(off, levels, frames, lod, t, theme, freqToY, dpr)
+  paintTile(off, levels, frames, lod, t, theme, freqToY, dpr, requireSpeech)
   lru.touch(tile)
 }
 
@@ -680,6 +708,9 @@ interface BlitContext {
   freqToY: (hz: number) => number
   dpr: number
   lru: TileLru
+  // Passed through to the formant draw: when false, formants are drawn for any
+  // pitched frame even without VAD speech (issue #16).
+  requireSpeech: boolean
   // Level of detail to blit this draw (target lod normally; the frozen proxy lod
   // while zooming). Set by `draw`.
   lod: number
@@ -779,6 +810,7 @@ function blitChunks(
               bc.freqToY,
               bc.dpr,
               bc.lru,
+              bc.requireSpeech,
             )
         : // Proxy (active zoom): blit only what's already materialized, rescaled.
           // Touch it so eviction keeps the on-screen proxy alive through the gesture.
@@ -1004,6 +1036,12 @@ export function Spectrogram({
   const theme =
     scheme === 'dark' ? SPECTROGRAM_DARK_THEME : SPECTROGRAM_LIGHT_THEME
 
+  const [settings] = useSettings()
+  // Formants require VAD speech by default; the option relaxes that to any
+  // pitched frame so a held vowel keeps its tracks (issue #16). Toggling it
+  // invalidates the tile cache (below), since tiles bake in their formants.
+  const requireSpeech = !settings.showFormantsWithoutSpeech
+
   const allLevelsRef = useRef<ChunkLevelsState[]>([])
   const allOffRef = useRef<(OffscreenState | null)[]>([])
   const displayBufRef = useRef<DisplayBufState | null>(null)
@@ -1158,7 +1196,7 @@ export function Spectrogram({
     tilesGenRef.current += 1
 
     // Note: this must include everything in the previous effect
-  }, [analysisMut, dbRange, canvasHeight, freqToY, dpr, theme])
+  }, [analysisMut, dbRange, canvasHeight, freqToY, dpr, theme, requireSpeech])
 
   const fromRef = useRef<number | null>(null)
   // Infinity = "to totalFrames" (append pending); explicit number = max patch to
@@ -1201,6 +1239,7 @@ export function Spectrogram({
             freqToY,
             dpr,
             lru: tileLruRef.current,
+            requireSpeech,
             lod: lodRef.current,
             materialize: true,
           },
@@ -1233,6 +1272,7 @@ export function Spectrogram({
     timeToX,
     debug,
     theme,
+    requireSpeech,
   ])
 
   useImperativeHandle(ref, () => {
@@ -1419,6 +1459,7 @@ export function Spectrogram({
                 freqToY,
                 dpr,
                 tileLruRef.current,
+                requireSpeech,
               )
             }
           }
@@ -1445,6 +1486,7 @@ export function Spectrogram({
               freqToY,
               dpr,
               lru: tileLruRef.current,
+              requireSpeech,
               lod: lodRef.current,
               materialize: true,
             },
@@ -1472,7 +1514,7 @@ export function Spectrogram({
         drawFrame.current = requestAnimationFrame(handleFrame)
       },
     }
-  }, [canvasHeight, analysisMut, freqToY, dbRange, dpr, theme])
+  }, [canvasHeight, analysisMut, freqToY, dbRange, dpr, theme, requireSpeech])
 
   return (
     <>

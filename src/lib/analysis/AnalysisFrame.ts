@@ -92,8 +92,28 @@ export type VoicedAnalysisFrame = AnalysisFrame & {
   f2: number
 }
 
-export function isVoiced(f: AnalysisFrame): f is VoicedAnalysisFrame {
-  return f.pitchDetected && !!f.speechDetected && f.f1 !== null && f.f2 !== null
+// A frame whose formants can be plotted: pitch present with F1/F2 estimated.
+// Unlike VoicedAnalysisFrame this does NOT assert `speechDetected`, so it also
+// covers a held tone the VAD has given up on (issue #16).
+export type PlottableFormantFrame = AnalysisFrame & {
+  pitchDetected: true
+  f1: number
+  f2: number
+}
+
+// `requireSpeech` (default true) reproduces isVoiced: formants show only while
+// the VAD also reports speech. Pass false to keep plotting formants for any
+// pitched frame -- used when the "show formants without speech" option is on.
+export function hasPlottableFormants(
+  f: AnalysisFrame,
+  requireSpeech = true,
+): f is PlottableFormantFrame {
+  return (
+    f.pitchDetected &&
+    f.f1 !== null &&
+    f.f2 !== null &&
+    (!requireSpeech || !!f.speechDetected)
+  )
 }
 
 export function splitChunkAt(

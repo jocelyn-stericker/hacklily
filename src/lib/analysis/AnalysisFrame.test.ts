@@ -10,6 +10,7 @@ import {
   frameTimeSec,
   framesToChunks,
   framesVoiced,
+  hasPlottableFormants,
   mergeChunkAt,
   reconcileVoicingAt,
   totalFrames,
@@ -643,5 +644,47 @@ describe('reconcileVoicingAt across recording boundaries', () => {
     const boundary = chunks.find((c) => c.recordingStart)!
     expect(boundary.frames).toHaveLength(1)
     expect(boundary.voiced).toBe(false)
+  })
+})
+
+describe('hasPlottableFormants', () => {
+  const pitched = { pitchDetected: true, f1: 500, f2: 1500 }
+
+  it('requires VAD speech by default', () => {
+    const held = makeFrame(silenceSpectrum(), {
+      ...pitched,
+      speechDetected: false,
+    })
+    expect(hasPlottableFormants(held)).toBe(false)
+    // ...but a held tone qualifies once speech is not required (issue #16).
+    expect(hasPlottableFormants(held, false)).toBe(true)
+  })
+
+  it('accepts a pitched speech frame either way', () => {
+    const speech = makeFrame(silenceSpectrum(), {
+      ...pitched,
+      speechDetected: true,
+    })
+    expect(hasPlottableFormants(speech)).toBe(true)
+    expect(hasPlottableFormants(speech, false)).toBe(true)
+  })
+
+  it('rejects frames without pitch or formants regardless of the flag', () => {
+    const noPitch = makeFrame(silenceSpectrum(), {
+      pitchDetected: false,
+      speechDetected: true,
+      f1: 500,
+      f2: 1500,
+    })
+    const noFormants = makeFrame(silenceSpectrum(), {
+      pitchDetected: true,
+      speechDetected: true,
+      f1: null,
+      f2: null,
+    })
+    for (const req of [true, false]) {
+      expect(hasPlottableFormants(noPitch, req)).toBe(false)
+      expect(hasPlottableFormants(noFormants, req)).toBe(false)
+    }
   })
 })

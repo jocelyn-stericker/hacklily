@@ -82,6 +82,12 @@ export const SHORTCUTS = {
     scope: 'timeline',
     group: 'View',
   },
+  toggleFormantsWithoutSpeech: {
+    keys: 's',
+    label: 'Show unvoiced formants',
+    scope: 'timeline',
+    group: 'View',
+  },
   newSession: {
     keys: 'n',
     label: 'New session',

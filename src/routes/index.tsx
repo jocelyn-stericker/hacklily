@@ -803,6 +803,24 @@ function App() {
     [handleOpenAudioSettings],
     { scopes: 'timeline' },
   )
+  const toggleFormantsWithoutSpeech = useCallback(() => {
+    const next = !settings.showFormantsWithoutSpeech
+    void updateSettings({ showFormantsWithoutSpeech: next })
+    toast(
+      next
+        ? 'Showing formants without speech'
+        : 'Formants shown only during speech',
+    )
+  }, [settings.showFormantsWithoutSpeech])
+  useHotkeys(
+    SHORTCUTS.toggleFormantsWithoutSpeech.keys,
+    (e) => {
+      e.preventDefault()
+      toggleFormantsWithoutSpeech()
+    },
+    [toggleFormantsWithoutSpeech],
+    { scopes: 'timeline' },
+  )
   useHotkeys(
     SHORTCUTS.upgradeTranscripts.keys,
     () => {
@@ -890,6 +908,8 @@ function App() {
               onSetUpJournal={() => setJournalSetupOpen(true)}
               onSaveToJournal={() => void handleSaveToJournal()}
               onViewJournal={handleViewJournal}
+              showFormantsWithoutSpeech={settings.showFormantsWithoutSpeech}
+              onToggleFormantsWithoutSpeech={toggleFormantsWithoutSpeech}
             />
           }
         />
@@ -926,7 +946,9 @@ function App() {
                 fMinHz: 50,
                 fMaxHz: 5500,
                 hover:
-                  hoverFrame?.pitchDetected && hoverFrame.speechDetected
+                  hoverFrame?.pitchDetected &&
+                  (settings.showFormantsWithoutSpeech ||
+                    hoverFrame.speechDetected)
                     ? {
                         f0: hoverFrame.f0,
                         f1: hoverFrame.f1,
@@ -962,7 +984,11 @@ function App() {
               <VowelChartBox
                 analysisMut={analysisMut}
                 cursorSec={timelineState.hoverSec ?? timelineState.cursorSec}
-                speechDetected={Boolean(hoverFrame?.speechDetected)}
+                speechDetected={
+                  settings.showFormantsWithoutSpeech
+                    ? Boolean(hoverFrame?.pitchDetected)
+                    : Boolean(hoverFrame?.speechDetected)
+                }
                 recording={status.value === 'recording'}
                 chartRef={vowelChartRef}
               />

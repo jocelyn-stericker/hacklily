@@ -25,6 +25,7 @@ import { useShortcutsHelp } from '#/components/ShortcutsHelp'
 import { Button } from '#/components/ui/button'
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
@@ -56,6 +57,8 @@ export function Toolbar({
   onSetUpJournal,
   onSaveToJournal,
   onViewJournal,
+  showFormantsWithoutSpeech,
+  onToggleFormantsWithoutSpeech,
 }: {
   openFilePicker: () => void
   onNew: () => void
@@ -80,6 +83,9 @@ export function Toolbar({
   onSetUpJournal: () => void
   onSaveToJournal: () => void
   onViewJournal: () => void
+  /** Whether formants are shown for pitched frames the VAD calls non-speech. */
+  showFormantsWithoutSpeech: boolean
+  onToggleFormantsWithoutSpeech: () => void
 }) {
   const { openShortcutsHelp } = useShortcutsHelp()
   // The Braat logo and cross-tool switcher live in the shared NavBar; this is
@@ -188,6 +194,15 @@ export function Toolbar({
             <CircleDot className="size-4" />
             Vowel chart settings
           </DropdownMenuItem>
+          <DropdownMenuCheckboxItem
+            checked={showFormantsWithoutSpeech}
+            onCheckedChange={onToggleFormantsWithoutSpeech}
+          >
+            {SHORTCUTS.toggleFormantsWithoutSpeech.label}
+            <DropdownMenuShortcut>
+              {formatKeys(SHORTCUTS.toggleFormantsWithoutSpeech.keys)}
+            </DropdownMenuShortcut>
+          </DropdownMenuCheckboxItem>
           <DropdownMenuItem onClick={openShortcutsHelp}>
             <Keyboard className="size-4" />
             {SHORTCUTS.help.label}

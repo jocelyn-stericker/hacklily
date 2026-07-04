@@ -80,6 +80,31 @@ describe('voicedTrailUpToCursor', () => {
     ).not.toThrow()
   })
 
+  it('drops pitched non-speech frames by default, keeps them when includeUnvoiced', () => {
+    // A held tone: pitch + formants present, but the VAD marks it non-speech.
+    const speech = makeFrame({
+      pitchDetected: true,
+      speechDetected: true,
+      f1: 500,
+      f2: 1500,
+    })
+    const held = makeFrame({
+      pitchDetected: true,
+      speechDetected: false,
+      f1: 520,
+      f2: 1480,
+    })
+    const chunk = makeChunk([speech, held], 0)
+    const cursorSec = 2 * STEP_SEC // past both frames
+
+    // trailOut is a reused module array, so copy each result before the next call.
+    const speechOnly = [...voicedTrailUpToCursor([chunk], cursorSec)]
+    expect(speechOnly).toEqual([speech])
+
+    const withHeld = [...voicedTrailUpToCursor([chunk], cursorSec, true)]
+    expect(withHeld).toEqual([speech, held])
+  })
+
   it('returns voiced frames from a prior chunk when the cursor chunk is empty', () => {
     const voicedFrame = makeFrame({
       pitchDetected: true,

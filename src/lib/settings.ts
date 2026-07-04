@@ -114,6 +114,13 @@ export type SettingsRow = {
   runHeavyWhileRecording: boolean
   vowelChartAverages: VowelChartAverages
   vowelChartScale: number
+  /**
+   * Keep drawing formants (spectrogram overlay + vowel chart) while pitch is
+   * present even after the VAD stops detecting speech -- e.g. holding a
+   * sustained vowel, whose held tone the speech-trained VAD gives up on after a
+   * second or two (issue #16).
+   */
+  showFormantsWithoutSpeech: boolean
   practiceTextSize: PracticeTextSize
   practicePassageId: string
   practiceMode: PracticeMode
@@ -139,6 +146,7 @@ export const DEFAULT_SETTINGS: SettingsRow = {
   runHeavyWhileRecording: false,
   vowelChartAverages: 'hidden',
   vowelChartScale: 1.0,
+  showFormantsWithoutSpeech: false,
   practiceTextSize: 'lg',
   practicePassageId: 'rainbow',
   practiceMode: 'echo',
@@ -171,6 +179,10 @@ function readFromStorage(): SettingsRow {
             stored.practicePlayReferenceBeforeTake,
           ),
         vowelChartScale: clampVowelChartScale(stored.vowelChartScale),
+        showFormantsWithoutSpeech:
+          typeof stored.showFormantsWithoutSpeech === 'boolean'
+            ? stored.showFormantsWithoutSpeech
+            : DEFAULT_SETTINGS.showFormantsWithoutSpeech,
       }
     }
   } catch (err) {
