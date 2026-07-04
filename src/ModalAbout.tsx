@@ -82,6 +82,27 @@ class ModalAbout extends React.PureComponent<Props> {
             </a>
             .
           </p>
+          <p>
+            Hacklily counts anonymous, cookieless usage stats with{" "}
+            <a
+              href="https://www.goatcounter.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              GoatCounter
+            </a>{" "}
+            to see which features get used &mdash; nothing that identifies you.
+            The numbers are public:{" "}
+            <a
+              href="https://stats.hacklily.org"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              stats.hacklily.org
+            </a>
+            . See the <a href="privacy-statement.html">privacy statement</a> for
+            details.
+          </p>
           <div
             className={`${Classes.TEXT_SMALL} ${Classes.TEXT_MUTED}`}
             style={{ position: "relative" }}

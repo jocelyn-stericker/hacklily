@@ -18,13 +18,5 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import React from "react";
-import ReactDOM from "react-dom";
-
-import { initAnalytics, trackPageview } from "../analytics";
-import Status from "./Status";
-
-initAnalytics();
-trackPageview("/status", "Status — Hacklily");
-
-ReactDOM.render(<Status />, document.getElementById("root"));
+declare const text: string;
+export = text;

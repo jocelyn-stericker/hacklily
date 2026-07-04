@@ -45,6 +45,7 @@
             <li>Sheet music you enter into Hacklily is rendered on a server I run, and may be stored for debugging for up to 7 days. Aggregate information
             may be stored for longer for analytics and performance monitoring.</li>
             <li>I collect your email address, IP address, GitHub username, and name to run the service, for analytics, and for debugging.</li>
+            <li>Separately, anonymous, cookieless usage counts (which features get used) are public at <a href="https://stats.hacklily.org">stats.hacklily.org</a> &mdash; see "Analytics" below.</li>
         </ul>
     </div>
 
@@ -82,6 +83,30 @@
     I use DOM Storage (a technology similar to cookies) to store unsaved versions of your songs as well
     as Personal Information on your computer, even once you close Hacklily. DOM Storage must be enabled to log in via GitHub
     or store unsaved versions of songs. You can remove this information by logging out using the menu.
+
+    <h2>Analytics</h2>
+    <p>
+    Hacklily counts anonymous, aggregate usage with <a href="https://www.goatcounter.com">GoatCounter</a>, a
+    privacy-focused, open-source analytics tool. GoatCounter sets no cookies and stores no identifiers on your
+    device, so there is nothing to consent to. It does not retain your IP address; it derives a salted,
+    daily-rotating hash server-side to approximate unique visitors, then discards the address.
+    </p>
+    <p>
+    What is collected: which page you visit (the editor, the MusicXML importer, or the status page), and a
+    small, fixed set of interaction events &mdash; for example that a render, a MusicXML import, a MIDI
+    playback, or a GitHub save/publish happened, and whether the LilyPond version was "stable" or "unstable"
+    &mdash; along with coarse technical details GoatCounter derives from the request (referring site, browser,
+    screen size, and country). Song contents, filenames, GitHub usernames, and repository names are
+    <strong>never</strong> included in this data, even though they often appear in Hacklily's own URLs.
+    </p>
+    <p>
+    The numbers are public, in the spirit of the project: <a href="https://stats.hacklily.org">stats.hacklily.org</a>.
+    </p>
+    <p>
+    I do not act on Do Not Track or Global Privacy Control signals; see
+    <a href="https://www.arp242.net/dnt.html">this explanation of why</a> for the reasoning. Any content
+    blocker that blocks GoatCounter will stop this counting.
+    </p>
 
     <h2>Service Providers</h2>
     This site is hosted using GitHub Pages. GitHub may store your IP address and other Personal Information when you access

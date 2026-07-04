@@ -1,4 +1,8 @@
 module.exports = {
+    // Vendored third-party code, kept byte-identical to upstream so it can be
+    // diffed directly -- see src/vendor/goatcounter-count.js. Only the .js is
+    // verbatim; our own .d.ts shims alongside it stay linted.
+    "ignorePatterns": ["src/vendor/*.js"],
     "env": {
         "browser": true,
         "es6": true

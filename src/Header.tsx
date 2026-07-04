@@ -36,6 +36,7 @@ import React from "react";
 
 import logoSvg from "./logo.svg";
 
+import { track } from "./analytics";
 import { Auth } from "./auth";
 import FileMenu from "./FileMenu";
 
@@ -303,6 +304,7 @@ export default class Header extends React.PureComponent<Props> {
       return;
     }
 
+    track("midi-playback");
     let player: Player;
     if (this.state.player) {
       player = this.state.player;

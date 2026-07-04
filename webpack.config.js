@@ -3,6 +3,7 @@ const fs = require("fs");
 const webpack = require("webpack");
 const CopyPlugin = require("copy-webpack-plugin");
 const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
+const TerserPlugin = require("terser-webpack-plugin");
 
 const dist = path.resolve(__dirname, "dist");
 
@@ -39,12 +40,31 @@ module.exports = {
         type: "asset/resource",
       },
       {
+        // Vendored third-party scripts (e.g. src/vendor/goatcounter-count.js)
+        // are imported for their bundled URL, not executed as our own JS --
+        // treat them as opaque assets so webpack doesn't run them through
+        // babel. This alone does NOT protect them from the production
+        // minifier below (TerserPlugin matches by *output* filename, not by
+        // module type, so it would otherwise still re-minify these) -- see
+        // the `optimization.minimizer` exclude.
+        test: /\.js$/,
+        include: path.resolve(__dirname, "src/vendor"),
+        type: "asset/resource",
+        generator: {
+          // Fixed, unhashed name: src/analytics.ts and
+          // static/about-javascript.html's JS license label link to this
+          // path directly, and keeping it stable makes the output trivially
+          // diffable against upstream.
+          filename: "vendor/[name][ext]",
+        },
+      },
+      {
         test: /\.css$/i,
         use: ["style-loader", "css-loader"],
       },
       {
         test: /\.m?[jt]sx?$/,
-        exclude: /(node_modules|bower_components)/,
+        exclude: [/(node_modules|bower_components)/, path.resolve(__dirname, "src/vendor")],
         use: {
           loader: "babel-loader",
           options: {
@@ -79,8 +99,34 @@ module.exports = {
   devServer: {
     static: dist,
   },
+  optimization: {
+    minimizer: [
+      // Re-declares webpack's own default minimizer, but excluding vendored
+      // scripts emitted via the asset/resource rule above -- Terser matches
+      // assets by output filename regardless of module type, so without this
+      // exclude it would silently re-minify src/vendor/goatcounter-count.js,
+      // stripping its license header and breaking the byte-for-byte diff
+      // against upstream that vendoring verbatim is meant to preserve.
+      new TerserPlugin({
+        exclude: /^vendor\//,
+      }),
+    ],
+  },
   plugins: [
-    new CopyPlugin({ patterns: [path.resolve(__dirname, "static")] }),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, "static"),
+          // Mark these as already-minimized so TerserPlugin's default
+          // asset-name-based `test` (which matches *any* .js asset in the
+          // compilation, not just webpack's own bundles) leaves them alone.
+          // Without this, production builds silently re-minify prebuilt JS
+          // copied verbatim from static/ (e.g. hackmidi's prebuilt bundle),
+          // corrupting sourcemaps and stripping any license headers.
+          info: { minimized: true },
+        },
+      ],
+    }),
     new MonacoWebpackPlugin(),
     new webpack.EnvironmentPlugin([
       "REACT_APP_GITHUB_CLIENT_ID",

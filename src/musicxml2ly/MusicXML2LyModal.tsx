@@ -21,6 +21,7 @@
 import { Classes, Dialog } from "@blueprintjs/core";
 import React from "react";
 
+import { track } from "../analytics";
 import RPCClient from "../RPCClient";
 
 interface Props {
@@ -60,6 +61,7 @@ export default class MusicXML2LyModal extends React.PureComponent<Props> {
       src,
     });
     const file = rendered.result.files[0];
+    track("musicxml-import");
     alert(rendered.result.logs);
     location.href = `/#src=${encodeURIComponent(file)}`;
   };

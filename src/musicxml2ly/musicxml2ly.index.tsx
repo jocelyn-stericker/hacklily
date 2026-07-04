@@ -21,6 +21,10 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
+import { initAnalytics, trackPageview } from "../analytics";
 import MusicXML2Ly from "./MusicXML2Ly";
+
+initAnalytics();
+trackPageview("/musicxml2ly", "Import MusicXML — Hacklily");
 
 ReactDOM.render(<MusicXML2Ly />, document.getElementById("root"));

@@ -24,6 +24,7 @@ import * as monacoEditor from "monaco-editor";
 import React from "react";
 import { debounce } from "lodash";
 
+import { track } from "./analytics";
 import { decodeArrayBuffer } from "./base64Binary";
 import { MODE_BOTH, MODE_VIEW, ViewMode } from "./Header";
 import { renderVersionFor } from "./lilypondVersion";
@@ -338,12 +339,15 @@ export default class Preview extends React.PureComponent<Props, State> {
         throw new Error("Could not get sheet music view root!");
       }
 
+      // A successful compile yields at least one non-empty SVG page; an empty
+      // result means LilyPond produced logs but no output (e.g. a syntax
+      // error), which we treat as an error state below and must not count as a
+      // render.
+      const hasOutput = files.length > 0 && files[0].trim() !== "";
+
       // If we've gotten into an error state, keep the existing height
       // so that we don't rescroll on update.
-      root.style.minHeight =
-        files.length === 0 || files[0].trim() === ""
-          ? `${root.scrollHeight}px`
-          : "0";
+      root.style.minHeight = hasOutput ? "0" : `${root.scrollHeight}px`;
 
       // dompurify v3 preserves the <style>{ tspan { white-space: pre; } }</style>
       // block LilyPond 2.26+ emits (the CDATA wrapper is dropped, but the CSS
@@ -365,6 +369,9 @@ export default class Preview extends React.PureComponent<Props, State> {
         )
         .join("");
 
+      if (hasOutput) {
+        track(`render/${version}`);
+      }
       this.props.onLogsObtained(logs, version);
       if (midi !== this.previousMIDIData) {
         if (midi) {

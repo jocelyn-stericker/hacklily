@@ -24,6 +24,7 @@ import Makelily from "makelily"; // note: use for types only
 import * as monacoEditor from "monaco-editor";
 import React from "react";
 
+import { initAnalytics, track, trackPageview } from "./analytics";
 import { Auth, checkLogin, revokeGitHubAuth } from "./auth";
 import Editor from "./Editor";
 import { cat, FileNotFound, getDefaultBranch, getOrCreateRepo } from "./gitfs";
@@ -304,6 +305,17 @@ export default class App extends React.PureComponent<Props, State> {
   private socket: WebSocket | null = null;
 
   componentDidMount(): void {
+    initAnalytics();
+    trackPageview("/editor", "Hacklily");
+    // Fires once per real page load (this component instance persists across
+    // the query-param navigation index.tsx does via history.pushState), so
+    // this distinguishes "opened a specific song/snippet link" from starting
+    // at a blank sandbox -- without recording which song or whose it is.
+    if (this.props.edit) {
+      track("load-link");
+    } else if (this.props.src) {
+      track("load-src");
+    }
     window.addEventListener("resize", this.handleWindowResize);
     this.connectToWS();
     this.fetchSong();
@@ -504,6 +516,7 @@ export default class App extends React.PureComponent<Props, State> {
       );
 
       if (req.status >= 400) {
+        track("song-not-found");
         alert("Could not fetch the requested song.");
 
         return;
@@ -550,6 +563,7 @@ export default class App extends React.PureComponent<Props, State> {
       });
     } catch (err) {
       if (err instanceof FileNotFound) {
+        track("song-not-found");
         this.props.setQuery({
           edit: undefined,
           src: undefined,
@@ -618,6 +632,7 @@ export default class App extends React.PureComponent<Props, State> {
       const ok: boolean = await doUnpublish(auth, path, this.rpc);
 
       if (ok) {
+        track("github/delete");
         const cleanSongs: { [key: string]: Song } = JSON.parse(
           JSON.stringify(this.state.cleanSongs),
         );
@@ -656,6 +671,7 @@ export default class App extends React.PureComponent<Props, State> {
       return;
     }
 
+    track("export/midi");
     const name = this.getSongName();
     const blob = new Blob([midi], { type: "audio/midi" });
     const src = URL.createObjectURL(blob);
@@ -693,6 +709,7 @@ export default class App extends React.PureComponent<Props, State> {
 
       console.log(pdf);
 
+      track("export/pdf");
       this.triggerDownload(`${name}.pdf`, "data:text/plain;base64," + pdf);
     } catch (err) {
       alert("Could not export PDF.");
@@ -708,6 +725,7 @@ export default class App extends React.PureComponent<Props, State> {
       return;
     }
 
+    track("export/ly");
     const name = this.getSongName();
     this.triggerDownload(
       `${name}.ly`,
@@ -889,6 +907,7 @@ export default class App extends React.PureComponent<Props, State> {
     const makelilyComponent: typeof Makelily = (await import("makelily"))
       .default;
 
+    track(`makelily/${tool || this.state.makelilyTool}`);
     this.setState({
       showMakelily: makelilyComponent,
       ...editor.getMakelilyProperties(),
@@ -978,6 +997,7 @@ export default class App extends React.PureComponent<Props, State> {
 
       try {
         await doPublish(song.src, auth, path, this.rpc, true);
+        track("github/save");
         const cleanSongs: { [key: string]: Song } = JSON.parse(
           JSON.stringify(this.state.cleanSongs),
         );
@@ -1057,6 +1077,7 @@ export default class App extends React.PureComponent<Props, State> {
         auth.repoDetails = await getOrCreateRepo(auth);
         // Note: needs to be in this order, or saveAs will disappear.
         this.props.setAuth(auth);
+        track("github/connect");
         this.props.setQuery(
           {
             code: undefined,

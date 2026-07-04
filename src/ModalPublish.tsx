@@ -31,6 +31,7 @@ import {
 import { css, StyleSheet } from "aphrodite";
 import React from "react";
 
+import { track } from "./analytics";
 import { Auth } from "./auth";
 import { Conflict, File, FileNotFound, ls, rm, write } from "./gitfs";
 import { renderVersionFor } from "./lilypondVersion";
@@ -181,6 +182,7 @@ class ModalPublish extends React.PureComponent<Props, State> {
       const { code, auth, rpc } = this.props;
       const { filename } = this.state;
       await doPublish(code, auth, `${filename}.ly`, rpc, false);
+      track("github/publish");
     } catch (err) {
       if (err instanceof FileNotFound) {
         didFail = true;
