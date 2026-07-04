@@ -31,7 +31,7 @@ import countScriptUrl from "./vendor/goatcounter-count.js";
 // cookie-consent banner.
 //
 // Pageview and event *paths* are always a fixed, generic label (e.g.
-// "/editor", "github/save") -- never the real URL. Real Hacklily URLs embed
+// "/", "github/save") -- strip track names and such from URL. Real Hacklily URLs embed
 // GitHub usernames, repo names, and filenames (e.g. ?edit=user/repo/song.ly),
 // and the dashboard at stats.hacklily.org is public, so sending the actual
 // location would leak who's editing what.
@@ -186,7 +186,7 @@ export function initAnalytics(): void {
 }
 
 /**
- * Record a pageview. `path` should be a fixed, generic label like "/editor"
+ * Record a pageview. `path` should be a fixed, generic label like ""
  * -- never the real location, which can embed a GitHub username/repo/file.
  */
 export function trackPageview(path: string, title?: string): void {

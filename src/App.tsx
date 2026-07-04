@@ -306,7 +306,7 @@ export default class App extends React.PureComponent<Props, State> {
 
   componentDidMount(): void {
     initAnalytics();
-    trackPageview("/editor", "Hacklily");
+    trackPageview("/", "Hacklily");
     // Fires once per real page load (this component instance persists across
     // the query-param navigation index.tsx does via history.pushState), so
     // this distinguishes "opened a specific song/snippet link" from starting

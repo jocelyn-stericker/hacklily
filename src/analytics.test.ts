@@ -73,7 +73,7 @@ describe("analytics", () => {
     simulateCountJsLoaded(count);
 
     track("midi-playback");
-    trackPageview("/editor", "Hacklily");
+    trackPageview("/", "Hacklily");
 
     expect(count).toHaveBeenNthCalledWith(1, {
       path: "midi-playback",
@@ -84,7 +84,7 @@ describe("analytics", () => {
     // Pageviews stay session-based (no no_session), so per-session visits are
     // counted rather than every navigation.
     expect(count).toHaveBeenNthCalledWith(2, {
-      path: "/editor",
+      path: "/",
       title: "Hacklily",
     });
   });
@@ -115,7 +115,7 @@ describe("analytics", () => {
     // location.search in `q` and a referrer in `r`; echo the referrer we pass
     // so we can exercise same-origin vs external.
     window.goatcounter!.get_data = (vars) => ({
-      p: "/editor",
+      p: "/",
       q: "?edit=user/repo/song.ly",
       r: vars?.referrer,
       s: 1920,
