@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 
 import { Dialogs } from '#/components/Dialogs'
 import { JournalSetupModal } from '#/components/JournalSetupModal'
+import { NavBar } from '#/components/NavBar'
 import { Plot } from '#/components/Plot'
 import { SHORTCUTS, useActiveScope } from '#/components/shortcuts'
 import { Spectrogram } from '#/components/Spectrogram'
@@ -863,28 +864,34 @@ function App() {
         onCloseVowelChartSettings={setShowVowelChartSettings}
       />
       <main className="h-dvh flex flex-col overflow-hidden">
-        <Toolbar
-          openFilePicker={handleOpen}
-          onNew={handleNew}
-          timelineState={timelineState}
-          status={status}
-          onBackToStart={handleBackToStart}
-          onStart={handleStart}
-          onPause={handlePauseTracked}
-          onPlay={handlePlay}
-          playDisabled={!hasData}
-          onExportAudio={handleExportAudio}
-          exportAudioDisabled={exportAudioDisabled}
-          onOpenAudioSettings={handleOpenAudioSettings}
-          onOpenTranscriptionSettings={() => setShowTranscriptionSettings(true)}
-          onOpenVowelChartSettings={() => setShowVowelChartSettings(true)}
-          showUpgradeAll={settings.transcriptionMode === 'large'}
-          onUpgradeAll={upgradeVisibleTranscriptions}
-          journalEnabled={journalFlagOn}
-          journalSetUp={journalBackend !== null}
-          onSetUpJournal={() => setJournalSetupOpen(true)}
-          onSaveToJournal={() => void handleSaveToJournal()}
-          onViewJournal={handleViewJournal}
+        <NavBar
+          actions={
+            <Toolbar
+              openFilePicker={handleOpen}
+              onNew={handleNew}
+              timelineState={timelineState}
+              status={status}
+              onBackToStart={handleBackToStart}
+              onStart={handleStart}
+              onPause={handlePauseTracked}
+              onPlay={handlePlay}
+              playDisabled={!hasData}
+              onExportAudio={handleExportAudio}
+              exportAudioDisabled={exportAudioDisabled}
+              onOpenAudioSettings={handleOpenAudioSettings}
+              onOpenTranscriptionSettings={() =>
+                setShowTranscriptionSettings(true)
+              }
+              onOpenVowelChartSettings={() => setShowVowelChartSettings(true)}
+              showUpgradeAll={settings.transcriptionMode === 'large'}
+              onUpgradeAll={upgradeVisibleTranscriptions}
+              journalEnabled={journalFlagOn}
+              journalSetUp={journalBackend !== null}
+              onSetUpJournal={() => setJournalSetupOpen(true)}
+              onSaveToJournal={() => void handleSaveToJournal()}
+              onViewJournal={handleViewJournal}
+            />
+          }
         />
         <div className="relative flex flex-col grow overflow-hidden">
           <Plot

@@ -20,7 +20,6 @@ import {
   Sparkles,
 } from 'lucide-react'
 
-import braatPng from '#/braat.png'
 import { formatKeys, shortcutTitle, SHORTCUTS } from '#/components/shortcuts'
 import { useShortcutsHelp } from '#/components/ShortcutsHelp'
 import { Button } from '#/components/ui/button'
@@ -83,12 +82,10 @@ export function Toolbar({
   onViewJournal: () => void
 }) {
   const { openShortcutsHelp } = useShortcutsHelp()
+  // The Braat logo and cross-tool switcher live in the shared NavBar; this is
+  // just the Analyze tool's own controls, rendered as the NavBar's actions.
   return (
-    <header className="flex align-center justify-end gap-1 p-2 flex-wrap">
-      <h1 className="text-lg font-bold bg-[#8ace00] mr-2">
-        <img src={braatPng} className="h-10" />
-      </h1>
-      <div className="grow" />
+    <div className="flex items-center justify-end gap-1 flex-wrap">
       {showUpgradeAll && (
         <Button
           variant="default"
@@ -228,6 +225,6 @@ export function Toolbar({
           )}
         </DropdownMenuContent>
       </DropdownMenu>
-    </header>
+    </div>
   )
 }

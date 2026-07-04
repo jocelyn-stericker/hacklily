@@ -8,7 +8,6 @@
 
 import { createFileRoute, Link } from '@tanstack/react-router'
 import {
-  ArrowLeft,
   ChartColumn,
   ChartSpline,
   Download,
@@ -33,6 +32,7 @@ import { toast } from 'sonner'
 import { AudioSettingsModal } from '#/components/AudioSettingsModal'
 import { JournalRecorder } from '#/components/JournalRecorder'
 import { JournalSetupContent } from '#/components/JournalSetupModal'
+import { NavBar } from '#/components/NavBar'
 import { SrtEditorModal } from '#/components/SrtEditorModal'
 import { TranscriptionSettingsModal } from '#/components/TranscriptionSettingsModal'
 import { Button } from '#/components/ui/button'
@@ -829,22 +829,7 @@ function Journal() {
 
   return (
     <main className="h-dvh flex flex-col overflow-hidden bg-background text-foreground">
-      <header className="flex items-center gap-3 bg-sky-600 p-2 text-white shrink-0">
-        <Tooltip>
-          <TooltipTrigger>
-            <Link
-              to="/"
-              className="flex items-center gap-1.5 text-base text-white/90! hover:text-white! transition-colors shrink-0"
-            >
-              <ArrowLeft className="size-6" />
-              <span className="hidden sm:inline">Braat</span>
-            </Link>
-          </TooltipTrigger>
-          <TooltipContent sideOffset={8}>Back to analysis</TooltipContent>
-        </Tooltip>
-        <h1 className="text-lg font-bold shrink-0">Voice journal</h1>
-        <div className="ml-auto flex items-center gap-2">{settingsMenu}</div>
-      </header>
+      <NavBar actions={settingsMenu} />
 
       <div className="flex-1 overflow-y-auto">
         {backend?.kind === 'opfs' && granted && (

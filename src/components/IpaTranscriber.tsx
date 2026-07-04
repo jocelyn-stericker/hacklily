@@ -6,6 +6,7 @@ import { Check, Copy } from 'lucide-react'
 import * as React from 'react'
 import { useEffect, useMemo, useState } from 'react'
 
+import { NavBar } from '#/components/NavBar'
 import { Button } from '#/components/ui/button'
 import { Label } from '#/components/ui/label'
 import { Switch } from '#/components/ui/switch'
@@ -78,155 +79,152 @@ export function IpaTranscriber() {
   }, [engine, text, voice, keepStress, tie])
 
   return (
-    <main className="h-dvh overflow-y-auto bg-background text-foreground">
-      <div className="mx-auto w-full max-w-2xl px-4 py-10 sm:py-14">
-        <Link
-          to="/"
-          className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-        >
-          ← Braat
-        </Link>
-
-        <header className="mt-4">
-          <h1 className="font-heading text-3xl font-semibold tracking-tight">
-            English to IPA
-          </h1>
-          <p className="mt-3 text-muted-foreground">
-            Convert English text to its International Phonetic Alphabet (IPA)
-            transcription. The conversion runs entirely in your browser using a
-            WebAssembly build of{' '}
-            <a
-              href="https://github.com/espeak-ng/espeak-ng"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline underline-offset-4 hover:text-foreground"
-            >
-              eSpeak NG
-            </a>
-            — nothing you type is sent to a server.
-          </p>
-        </header>
-
-        <section className="mt-8" aria-label="Transcriber">
-          <Label htmlFor="ipa-input" className="mb-2">
-            English text
-          </Label>
-          <textarea
-            id="ipa-input"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            rows={4}
-            spellCheck={false}
-            placeholder="Type or paste English text…"
-            className="w-full resize-y rounded-lg border border-input bg-transparent px-3 py-2 text-base outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm dark:bg-input/30"
-          />
-
-          <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3">
-            <div
-              role="group"
-              aria-label="Accent"
-              className="inline-flex overflow-hidden rounded-lg border border-input"
-            >
-              <AccentButton
-                active={voice === 'en'}
-                onClick={() => setVoice('en')}
+    <main className="h-dvh flex flex-col overflow-hidden bg-background text-foreground">
+      <NavBar />
+      <div className="flex-1 overflow-y-auto">
+        <div className="mx-auto w-full max-w-2xl px-4 py-10 sm:py-14">
+          <header>
+            <h1 className="font-heading text-3xl font-semibold tracking-tight">
+              English to IPA
+            </h1>
+            <p className="mt-3 text-muted-foreground">
+              Convert English text to its International Phonetic Alphabet (IPA)
+              transcription. The conversion runs entirely in your browser using
+              a WebAssembly build of{' '}
+              <a
+                href="https://github.com/espeak-ng/espeak-ng"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline underline-offset-4 hover:text-foreground"
               >
-                British (en)
-              </AccentButton>
-              <AccentButton
-                active={voice === 'en-us'}
-                onClick={() => setVoice('en-us')}
+                eSpeak NG
+              </a>
+              — nothing you type is sent to a server.
+            </p>
+          </header>
+
+          <section className="mt-8" aria-label="Transcriber">
+            <Label htmlFor="ipa-input" className="mb-2">
+              English text
+            </Label>
+            <textarea
+              id="ipa-input"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              rows={4}
+              spellCheck={false}
+              placeholder="Type or paste English text…"
+              className="w-full resize-y rounded-lg border border-input bg-transparent px-3 py-2 text-base outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm dark:bg-input/30"
+            />
+
+            <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3">
+              <div
+                role="group"
+                aria-label="Accent"
+                className="inline-flex overflow-hidden rounded-lg border border-input"
               >
-                American (en-us)
-              </AccentButton>
+                <AccentButton
+                  active={voice === 'en'}
+                  onClick={() => setVoice('en')}
+                >
+                  British (en)
+                </AccentButton>
+                <AccentButton
+                  active={voice === 'en-us'}
+                  onClick={() => setVoice('en-us')}
+                >
+                  American (en-us)
+                </AccentButton>
+              </div>
+
+              <Label className="gap-2">
+                <Switch checked={keepStress} onCheckedChange={setKeepStress} />
+                Stress marks
+              </Label>
+
+              <Label className="gap-2">
+                <Switch checked={tie} onCheckedChange={setTie} />
+                Tie diphthongs
+              </Label>
             </div>
 
-            <Label className="gap-2">
-              <Switch checked={keepStress} onCheckedChange={setKeepStress} />
-              Stress marks
+            <Label htmlFor="ipa-output" className="mt-6 mb-2">
+              IPA transcription
             </Label>
+            <Output ipa={ipa} engineLoading={!engine} loadError={loadError} />
+          </section>
 
-            <Label className="gap-2">
-              <Switch checked={tie} onCheckedChange={setTie} />
-              Tie diphthongs
-            </Label>
-          </div>
+          <section className="mt-14 space-y-8 text-sm leading-relaxed text-muted-foreground">
+            <div>
+              <h2 className="font-heading text-lg font-medium text-foreground">
+                What is IPA?
+              </h2>
+              <p className="mt-2">
+                The International Phonetic Alphabet is a standard set of symbols
+                for representing the sounds of spoken language. Each symbol maps
+                to a specific sound, so a word’s pronunciation can be written
+                down unambiguously regardless of its spelling — useful for
+                language learning, linguistics, singing, and accent work.
+              </p>
+            </div>
+            <div>
+              <h2 className="font-heading text-lg font-medium text-foreground">
+                How this works
+              </h2>
+              <p className="mt-2">
+                English spelling doesn’t map cleanly to pronunciation, so this
+                tool uses eSpeak NG’s pronunciation rules and dictionary to turn
+                text into phonemes, then renders them as IPA. Stress marks (
+                <span className="font-mono">ˈ ˌ</span>) can be kept or dropped,
+                and diphthongs can be tied with a{' '}
+                <span className="font-mono">◌͡◌</span> if you prefer that
+                notation. The output is a phonemic transcription and may differ
+                from a careful hand transcription in some cases.
+              </p>
+            </div>
+            <div>
+              <h2 className="font-heading text-lg font-medium text-foreground">
+                Privacy
+              </h2>
+              <p className="mt-2">Text you enter is not uploaded anywhere.</p>
+            </div>
+          </section>
 
-          <Label htmlFor="ipa-output" className="mt-6 mb-2">
-            IPA transcription
-          </Label>
-          <Output ipa={ipa} engineLoading={!engine} loadError={loadError} />
-        </section>
-
-        <section className="mt-14 space-y-8 text-sm leading-relaxed text-muted-foreground">
-          <div>
-            <h2 className="font-heading text-lg font-medium text-foreground">
-              What is IPA?
-            </h2>
-            <p className="mt-2">
-              The International Phonetic Alphabet is a standard set of symbols
-              for representing the sounds of spoken language. Each symbol maps
-              to a specific sound, so a word’s pronunciation can be written down
-              unambiguously regardless of its spelling — useful for language
-              learning, linguistics, singing, and accent work.
+          <footer className="mt-14 space-y-1 border-t border-border pt-6 text-xs text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground">
+            <p>
+              Part of <Link to="/">Braat</Link>, free software released under
+              the{' '}
+              <a
+                href="https://www.gnu.org/licenses/agpl-3.0.html"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GNU AGPL v3 or (at your option) any later version
+              </a>
+              . Braat source code &amp; feedback on{' '}
+              <a
+                href="https://codeberg.org/jocelyn-stericker/braat"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Codeberg
+              </a>
+              . My lightweight phoneme library/eSpeak NG node module is also{' '}
+              <a
+                href="https://codeberg.org/jocelyn-stericker/espeak-phonemes"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                freely available
+              </a>
+              .
             </p>
-          </div>
-          <div>
-            <h2 className="font-heading text-lg font-medium text-foreground">
-              How this works
-            </h2>
-            <p className="mt-2">
-              English spelling doesn’t map cleanly to pronunciation, so this
-              tool uses eSpeak NG’s pronunciation rules and dictionary to turn
-              text into phonemes, then renders them as IPA. Stress marks (
-              <span className="font-mono">ˈ ˌ</span>) can be kept or dropped,
-              and diphthongs can be tied with a{' '}
-              <span className="font-mono">◌͡◌</span> if you prefer that notation.
-              The output is a phonemic transcription and may differ from a
-              careful hand transcription in some cases.
+            <p>
+              Made by Jocelyn Stericker &lt;
+              <a href="mailto:jocelyn@nettek.ca">jocelyn@nettek.ca</a>&gt;
             </p>
-          </div>
-          <div>
-            <h2 className="font-heading text-lg font-medium text-foreground">
-              Privacy
-            </h2>
-            <p className="mt-2">Text you enter is not uploaded anywhere.</p>
-          </div>
-        </section>
-
-        <footer className="mt-14 space-y-1 border-t border-border pt-6 text-xs text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground">
-          <p>
-            Part of <Link to="/">Braat</Link>, free software released under the{' '}
-            <a
-              href="https://www.gnu.org/licenses/agpl-3.0.html"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              GNU AGPL v3 or (at your option) any later version
-            </a>
-            . Braat source code &amp; feedback on{' '}
-            <a
-              href="https://codeberg.org/jocelyn-stericker/braat"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Codeberg
-            </a>
-            . My lightweight phoneme library/eSpeak NG node module is also{' '}
-            <a
-              href="https://codeberg.org/jocelyn-stericker/espeak-phonemes"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              freely available
-            </a>
-            .
-          </p>
-          <p>
-            Made by Jocelyn Stericker &lt;
-            <a href="mailto:jocelyn@nettek.ca">jocelyn@nettek.ca</a>&gt;
-          </p>
-        </footer>
+          </footer>
+        </div>
       </div>
     </main>
   )

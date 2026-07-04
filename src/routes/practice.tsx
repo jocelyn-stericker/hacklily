@@ -15,8 +15,8 @@
 //  - Rope segmentation for unbounded sessions (§5 option (a)).
 //  - A single VAD "sensitivity" knob (item 3 of the `TODO(vad)` list).
 
-import { createFileRoute, Link, useBlocker } from '@tanstack/react-router'
-import { ArrowLeft, Keyboard } from 'lucide-react'
+import { createFileRoute, useBlocker } from '@tanstack/react-router'
+import { Keyboard } from 'lucide-react'
 import {
   useCallback,
   useEffect,
@@ -30,6 +30,7 @@ import { useHotkeys } from 'react-hotkeys-hook'
 import { toast } from 'sonner'
 
 import { AudioSettingsModal } from '#/components/AudioSettingsModal'
+import { NavBar } from '#/components/NavBar'
 import { PracticeCurrentSentence } from '#/components/PracticeCurrentSentence'
 import { PracticeDialogs } from '#/components/PracticeDialogs'
 import { PracticeDrillPager } from '#/components/PracticeDrillPager'
@@ -57,11 +58,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '#/components/ui/select'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '#/components/ui/tooltip'
 import { TooltipButton } from '#/components/ui/tooltipButton'
 import { useAudioManager } from '#/components/useAudioManager'
 import { useReferencePlayer } from '#/components/useReferencePlayer'
@@ -930,63 +926,52 @@ function Practice() {
   // --- Main render ---
   return (
     <main className="h-dvh flex flex-col overflow-hidden bg-background text-foreground">
-      <header className="flex items-center gap-3 border-b border-border p-2 shrink-0">
-        <Tooltip>
-          <TooltipTrigger>
-            <Link
-              to="/"
-              className="flex items-center gap-1.5 text-base text-muted-foreground hover:text-foreground transition-colors shrink-0"
+      <NavBar
+        actions={
+          <div className="flex items-center gap-2 min-w-0">
+            <TooltipButton
+              label="Keyboard shortcuts (?)"
+              variant="ghost"
+              size="icon"
+              // Touch-only devices can't use keyboard shortcuts and have the
+              // least header space, so hide this there (fine pointer ≈ keyboard).
+              className="shrink-0 no-fine-pointer:hidden"
+              onClick={openShortcutsHelp}
             >
-              <ArrowLeft className="size-6" />
-              <span className="hidden sm:inline">Braat</span>
-            </Link>
-          </TooltipTrigger>
-          <TooltipContent sideOffset={8}>Back to analysis</TooltipContent>
-        </Tooltip>
-        <h1 className="text-lg font-bold shrink-0">Practice</h1>
-        <div className="ml-auto flex items-center gap-2 min-w-0">
-          <TooltipButton
-            label="Keyboard shortcuts (?)"
-            variant="ghost"
-            size="icon"
-            // Touch-only devices can't use keyboard shortcuts and have the
-            // least header space, so hide this there (fine pointer ≈ keyboard).
-            className="shrink-0 no-fine-pointer:hidden"
-            onClick={openShortcutsHelp}
-          >
-            <Keyboard className="size-5" />
-          </TooltipButton>
-          <Select value={passageId} onValueChange={handlePassageChange}>
-            <SelectTrigger className="w-62 min-w-0 shrink">
-              <SelectValue>{selectedTitle}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {passages.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {p.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <PracticeSettings
-            textSize={settings.practiceTextSize}
-            onTextSizeChange={handleTextSizeChange}
-            mode={settings.practiceMode}
-            onModeChange={handleModeChange}
-            onOpenAudioSettings={handleOpenAudioSettings}
-            autoAdvance={autoAdvance}
-            onAutoAdvanceChange={handleAutoAdvanceChange}
-            randomize={randomize}
-            onRandomizeChange={handleRandomizeChange}
-            referenceVoice={settings.practiceReferenceVoice}
-            onReferenceVoiceChange={handleReferenceVoiceChange}
-            playReferenceBeforeTake={playRefBeforeTake}
-            onPlayReferenceBeforeTakeChange={
-              handlePlayReferenceBeforeTakeChange
-            }
-          />
-        </div>
-      </header>
+              <Keyboard className="size-5" />
+            </TooltipButton>
+            <Select value={passageId} onValueChange={handlePassageChange}>
+              <SelectTrigger className="w-62 min-w-0 shrink">
+                <SelectValue>{selectedTitle}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {passages.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <PracticeSettings
+              textSize={settings.practiceTextSize}
+              onTextSizeChange={handleTextSizeChange}
+              mode={settings.practiceMode}
+              onModeChange={handleModeChange}
+              onOpenAudioSettings={handleOpenAudioSettings}
+              autoAdvance={autoAdvance}
+              onAutoAdvanceChange={handleAutoAdvanceChange}
+              randomize={randomize}
+              onRandomizeChange={handleRandomizeChange}
+              referenceVoice={settings.practiceReferenceVoice}
+              onReferenceVoiceChange={handleReferenceVoiceChange}
+              playReferenceBeforeTake={playRefBeforeTake}
+              onPlayReferenceBeforeTakeChange={
+                handlePlayReferenceBeforeTakeChange
+              }
+            />
+          </div>
+        }
+      />
 
       <div className="flex-1 flex flex-col lg:flex-row min-h-0">
         <div className="flex-1 overflow-y-auto lg:pb-32">
