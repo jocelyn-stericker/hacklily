@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 import { createFileRoute, useBlocker } from '@tanstack/react-router'
+import { ScatterChart } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { toast } from 'sonner'
@@ -174,6 +175,18 @@ function App() {
       setChartFocused(false)
     }
   }, [status.value, settings.vowelChartAverages])
+
+  // The chart is on screen while hovering voiced audio, while the pointer is
+  // over it, or while focused. When it's off screen, a handle is shown to open
+  // it — otherwise it's undiscoverable that the chart exists or is interactive.
+  const vowelChartVisible =
+    Boolean(hoverFrame?.speechDetected) || mouseOverChart || chartFocused
+
+  // Give the box real DOM focus whenever focus is turned on (handle click or a
+  // body click), so the ring, Escape and click-away-to-blur all work.
+  useEffect(() => {
+    if (chartFocused) vowelChartBoxRef.current?.focus()
+  }, [chartFocused])
 
   const { openFilePicker } = useAudioImport({
     handleAnalyze,
@@ -1092,41 +1105,57 @@ function App() {
               />
               {status.value !== 'recording' &&
                 settings.vowelChartAverages !== 'hidden' && (
-                  <div
-                    ref={vowelChartBoxRef}
-                    tabIndex={0}
-                    role="group"
-                    aria-label="Vowel chart"
-                    onMouseEnter={() => setMouseOverChart(true)}
-                    onMouseLeave={() => setMouseOverChart(false)}
-                    onFocus={() => setChartFocused(true)}
-                    onBlur={() => setChartFocused(false)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Escape') vowelChartBoxRef.current?.blur()
-                    }}
-                    className={cn(
-                      'absolute z-10 border border-[#ccccdd] dark:border-[#2a2a3a] right-0 bottom-auto top-0 left-auto md:right-0 outline-none',
-                      chartFocused && 'ring-2 ring-sky-400',
-                      !hoverFrame?.speechDetected &&
-                        !mouseOverChart &&
-                        !chartFocused &&
-                        'hidden',
+                  <>
+                    {/* Handle shown when the chart is off screen: an always-there
+                        affordance so users discover the (otherwise hover-only)
+                        vowel chart and that it opens for zooming. */}
+                    {!vowelChartVisible && (
+                      <button
+                        type="button"
+                        title="Vowel chart — open to zoom"
+                        aria-label="Open vowel chart"
+                        onClick={() => setChartFocused(true)}
+                        className="absolute z-10 top-0 right-0 m-1 flex items-center justify-center rounded-md border border-border bg-background/70 p-1 text-muted-foreground backdrop-blur-sm transition-colors cursor-pointer hover:text-foreground hover:bg-background/90"
+                      >
+                        <ScatterChart className="size-4" />
+                      </button>
                     )}
-                    style={{
-                      width: 240 * settings.vowelChartScale,
-                      height: 192 * settings.vowelChartScale,
-                      maxWidth: '90vw',
-                      maxHeight: '80vh',
-                    }}
-                  >
-                    <VowelChart
-                      analysisMut={analysisMut}
-                      cursorSec={
-                        timelineState.hoverSec ?? timelineState.cursorSec
-                      }
-                      ref={vowelChartRef}
-                    />
-                  </div>
+                    <div
+                      ref={vowelChartBoxRef}
+                      tabIndex={0}
+                      role="group"
+                      aria-label="Vowel chart"
+                      title="Click to focus, then scroll, +/- or pinch to zoom"
+                      onMouseEnter={() => setMouseOverChart(true)}
+                      onMouseLeave={() => setMouseOverChart(false)}
+                      onFocus={() => setChartFocused(true)}
+                      onBlur={() => setChartFocused(false)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Escape') vowelChartBoxRef.current?.blur()
+                      }}
+                      className={cn(
+                        'absolute z-10 border border-[#ccccdd] dark:border-[#2a2a3a] right-0 bottom-auto top-0 left-auto md:right-0 outline-none',
+                        chartFocused
+                          ? 'ring-2 ring-sky-400 cursor-default'
+                          : 'cursor-zoom-in',
+                        !vowelChartVisible && 'hidden',
+                      )}
+                      style={{
+                        width: 240 * settings.vowelChartScale,
+                        height: 192 * settings.vowelChartScale,
+                        maxWidth: '90vw',
+                        maxHeight: '80vh',
+                      }}
+                    >
+                      <VowelChart
+                        analysisMut={analysisMut}
+                        cursorSec={
+                          timelineState.hoverSec ?? timelineState.cursorSec
+                        }
+                        ref={vowelChartRef}
+                      />
+                    </div>
+                  </>
                 )}
             </Plot>
           </div>
