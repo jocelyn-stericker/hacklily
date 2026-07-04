@@ -91,13 +91,18 @@ export function f2ToFraction(f2: number): number {
   return 1 - (hzToBark(f2) - BARK_F2_MIN) / (BARK_F2_MAX - BARK_F2_MIN)
 }
 
-function f1ToY(f1: number, h: number, dpr: number): number {
+// Pixel Y for a formant, from the plot height alone — independent of width, so
+// squashing the chart's aspect ratio (e.g. a capped width on a narrow phone
+// while height grows) never moves a marker horizontally, only rescales it
+// within its own axis. Exported for testing.
+export function f1ToY(f1: number, h: number, dpr: number): number {
   const pad = PAD * dpr
   return pad + f1ToFraction(f1) * (h - 2 * pad)
 }
 
-// High F2 -> left (front vowels), low F2 -> right (back vowels)
-function f2ToX(f2: number, w: number, dpr: number): number {
+// Pixel X for a formant, from the plot width alone (high F2 -> left/front, low
+// F2 -> right/back). Independent of height, mirroring f1ToY. Exported for testing.
+export function f2ToX(f2: number, w: number, dpr: number): number {
   const pad = PAD * dpr
   return pad + f2ToFraction(f2) * (w - 2 * pad)
 }

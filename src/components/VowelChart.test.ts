@@ -8,7 +8,13 @@ import type { AnalysisChunk, AnalysisFrame } from '#/lib/analysis/AnalysisFrame'
 import { framesVoiced } from '#/lib/analysis/AnalysisFrame'
 import { FormantProcessor } from '#/lib/analysis/FormantProcessor'
 
-import { f1ToFraction, f2ToFraction, voicedTrailUpToCursor } from './VowelChart'
+import {
+  f1ToFraction,
+  f1ToY,
+  f2ToFraction,
+  f2ToX,
+  voicedTrailUpToCursor,
+} from './VowelChart'
 
 const DEFAULT_PARAMS = {
   timeStepSamples: 882,
@@ -268,5 +274,54 @@ describe('vowel-chart marker from synthesised audio', () => {
     // Open /ɑ/ is below close /i/ and /u/ (higher F1 → larger y-fraction).
     expect(f1ToFraction(a.f1)).toBeGreaterThan(f1ToFraction(i.f1))
     expect(f1ToFraction(a.f1)).toBeGreaterThan(f1ToFraction(u.f1))
+  })
+})
+
+// The chart container's width is capped (maxWidth: 90vw) while height grows with
+// zoom, so on a narrow phone a large scale squashes the box to a non-square
+// aspect ratio. f2ToX depends only on width and f1ToY only on height, so each
+// marker keeps its correct proportional position in each axis independently —
+// the plot stretches but nothing is mis-placed.
+describe('vowel-chart placement under non-square aspect ratios', () => {
+  const PAD = 6 // matches PAD in VowelChart.tsx (dpr = 1 here)
+  const relX = (f2: number, w: number) =>
+    (f2ToX(f2, w, 1) - PAD) / (w - 2 * PAD)
+  const relY = (f1: number, h: number) =>
+    (f1ToY(f1, h, 1) - PAD) / (h - 2 * PAD)
+
+  it('maps X from width alone — unaffected by how tall the box is', () => {
+    // Same width, wildly different heights → identical X pixel.
+    expect(f2ToX(2300, 300, 1)).toBeCloseTo(f2ToX(2300, 300, 1), 10)
+    // Relative X equals the F2 fraction at any width (square, narrow, wide).
+    for (const w of [240, 120, 600, 1000]) {
+      expect(relX(2300, w)).toBeCloseTo(f2ToFraction(2300), 10)
+    }
+  })
+
+  it('maps Y from height alone — unaffected by how wide the box is', () => {
+    for (const h of [192, 100, 600, 1200]) {
+      expect(relY(300, h)).toBeCloseTo(f1ToFraction(300), 10)
+    }
+  })
+
+  it('keeps every vowel correctly placed in an extreme squashed box', () => {
+    // Narrow + very tall: the worst-case phone zoom (width capped, height grown).
+    const w = 120
+    const h = 900
+    for (const v of Object.values(VOWELS)) {
+      const x = f2ToX(v.f2, w, 1)
+      const y = f1ToY(v.f1, h, 1)
+      // In bounds (inside the padded plot area).
+      expect(x).toBeGreaterThanOrEqual(PAD)
+      expect(x).toBeLessThanOrEqual(w - PAD)
+      expect(y).toBeGreaterThanOrEqual(PAD)
+      expect(y).toBeLessThanOrEqual(h - PAD)
+      // Correct proportional position despite the distortion.
+      expect(relX(v.f2, w)).toBeCloseTo(f2ToFraction(v.f2), 10)
+      expect(relY(v.f1, h)).toBeCloseTo(f1ToFraction(v.f1), 10)
+    }
+    // Ordering survives the squash: front /i/ left of back /ɑ/, close /i/ above open /ɑ/.
+    expect(f2ToX(VOWELS.i.f2, w, 1)).toBeLessThan(f2ToX(VOWELS.ɑ.f2, w, 1))
+    expect(f1ToY(VOWELS.i.f1, h, 1)).toBeLessThan(f1ToY(VOWELS.ɑ.f1, h, 1))
   })
 })
