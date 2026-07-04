@@ -103,6 +103,12 @@ function App() {
   const vowelChartBoxRef = useRef<HTMLDivElement>(null)
   const [chartFocused, setChartFocused] = useState(false)
   const [mouseOverChart, setMouseOverChart] = useState(false)
+  // Pinch-to-zoom state: the two-finger distance and the chart scale captured
+  // when the pinch began; the live scale is read from a ref so the touch
+  // listener never re-attaches mid-gesture.
+  const pinchStartDistRef = useRef(0)
+  const pinchStartScaleRef = useRef(1)
+  const vowelScaleRef = useRef(0)
   const vowelIdleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const bumpVowelChartIdle = useCallback(() => {
     if (vowelIdleTimerRef.current) clearTimeout(vowelIdleTimerRef.current)
@@ -880,6 +886,55 @@ function App() {
     el.addEventListener('wheel', onWheel, { passive: false })
     return () => el.removeEventListener('wheel', onWheel)
   }, [chartFocused, resizeVowelChart])
+
+  // Keep the live scale in a ref so the pinch listener (attached once per mount)
+  // reads the current value without re-attaching on every zoom tick.
+  useEffect(() => {
+    vowelScaleRef.current = settings.vowelChartScale
+  }, [settings.vowelChartScale])
+
+  // Pinch-to-zoom (touch): two fingers on the chart scale it by the change in
+  // finger distance. Native non-passive listeners so we can preventDefault the
+  // browser's page pinch-zoom. Re-attaches when the chart (un)mounts — it is
+  // only rendered when not recording and averages aren't hidden.
+  useEffect(() => {
+    const el = vowelChartBoxRef.current
+    if (!el) return
+    const distance = (t: TouchList) =>
+      Math.hypot(t[0]!.clientX - t[1]!.clientX, t[0]!.clientY - t[1]!.clientY)
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 2) return
+      e.preventDefault()
+      setChartFocused(true)
+      bumpVowelChartIdle()
+      pinchStartDistRef.current = distance(e.touches)
+      pinchStartScaleRef.current = vowelScaleRef.current
+    }
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length !== 2 || pinchStartDistRef.current === 0) return
+      e.preventDefault()
+      const ratio = distance(e.touches) / pinchStartDistRef.current
+      void updateSettings({
+        vowelChartScale: clampVowelChartScale(
+          pinchStartScaleRef.current * ratio,
+        ),
+      })
+      bumpVowelChartIdle()
+    }
+    const onTouchEnd = (e: TouchEvent) => {
+      if (e.touches.length < 2) pinchStartDistRef.current = 0
+    }
+    el.addEventListener('touchstart', onTouchStart, { passive: false })
+    el.addEventListener('touchmove', onTouchMove, { passive: false })
+    el.addEventListener('touchend', onTouchEnd)
+    el.addEventListener('touchcancel', onTouchEnd)
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart)
+      el.removeEventListener('touchmove', onTouchMove)
+      el.removeEventListener('touchend', onTouchEnd)
+      el.removeEventListener('touchcancel', onTouchEnd)
+    }
+  }, [status.value, settings.vowelChartAverages, bumpVowelChartIdle])
 
   useHotkeys(
     SHORTCUTS.vowelChartBigger.keys,
