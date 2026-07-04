@@ -113,6 +113,14 @@ async fn main() {
                         .validator(is_ip_addr),
                 )
                 .arg(
+                    Arg::with_name("http-status-port")
+                        .long("http-status-port")
+                        .help("Optional HTTP port serving GET /status -> JSON (e.g. 9990). Set to 0 to disable.")
+                        .required(false)
+                        .value_name("PORT")
+                        .takes_value(true),
+                )
+                .arg(
                     Arg::with_name("github-client-id")
                         .long("github-client-id")
                         .help("GitHub OAuth app client ID (empty disables GitHub integration)")
@@ -231,6 +239,25 @@ async fn main() {
             }
         },
     };
+
+    // Start the optional HTTP status endpoint before running the
+    // event loop. It's a tokio background task that reads atomics;
+    // tokio cancels it when main exits.
+    let http_status_port: Option<u16> = match matches.subcommand_name() {
+        Some("serve") => {
+            let sm = matches.subcommand_matches("serve").unwrap();
+            sm.value_of("http-status-port")
+                .map(|v| v.parse::<u16>().expect("http-status-port must be 0-65535"))
+                .filter(|&p| p != 0)
+        }
+        _ => None,
+    };
+    if let Some(port) = http_status_port {
+        let status_for_http = status.clone();
+        tokio::spawn(async move {
+            renderer_lib::http_status::serve(port, status_for_http).await;
+        });
+    }
 
     event_loop(config).await;
 

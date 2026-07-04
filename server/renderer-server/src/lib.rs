@@ -23,6 +23,7 @@ mod config;
 mod container;
 mod error;
 mod event_loop;
+pub mod http_status;
 pub mod jsonrpc;
 mod renderer;
 mod renderer_manager;

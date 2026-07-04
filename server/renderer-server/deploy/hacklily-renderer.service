@@ -43,6 +43,7 @@ ExecStart=%h/.local/bin/renderer_server \
   serve \
   --bind-address ${BIND_ADDRESS} \
   --ws-port ${WS_PORT} \
+  --http-status-port ${HTTP_STATUS_PORT} \
   --github-client-id ${GITHUB_CLIENT_ID} \
   --github-secret ${GITHUB_SECRET}
 

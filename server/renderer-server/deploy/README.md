@@ -182,9 +182,13 @@ checks this and aborts with a helpful message if it doesn't match.
 `wss://render.hacklily.org/rpc` (exact-match `location = /rpc`) is
 proxied to `ws://127.0.0.1:2000` with `Upgrade`/`Connection` headers and
 a 75s read/send timeout (comfortably above the 8s render timeout and
-the worker ping interval). Every other path on `render.hacklily.org`
-returns `301 https://hacklily.org$request_uri` so the render host never
-serves the SPA by accident. HTTP on `:80` serves the ACME challenge and
+the worker ping interval). `https://render.hacklily.org/status` is
+proxied to `http://127.0.0.1:9990/status` — a lightweight HTTP endpoint
+serving the same JSON as the WebSocket `get_status` RPC, for monitoring
+and load-balancer health checks without needing a WebSocket connection.
+Every other path on `render.hacklily.org` returns
+`301 https://hacklily.org$request_uri` so the render host never serves
+the SPA by accident. HTTP on `:80` serves the ACME challenge and
 otherwise redirects to HTTPS. The config is self-contained (modern TLS
 cipher list inline) so it doesn't depend on certbot-generated include
 files.
@@ -198,6 +202,7 @@ curl -i https://render.hacklily.org/        # expect 301 -> https://hacklily.org
 # handshake check typically yields 400/426, which confirms the proxy
 # reaches it (a 502/504 would mean it can't):
 curl -i https://render.hacklily.org/rpc
+curl -i https://render.hacklily.org/status  # expect 200 + JSON
 ```
 
 ### Point the frontend at it

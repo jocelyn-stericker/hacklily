@@ -133,15 +133,18 @@ if [ "$INSTALL_NGINX" -eq 1 ]; then
   sudo dnf install -y nginx certbot policycoreutils-python-utils
 
   # SELinux: nginx runs as httpd_t and may only connect to ports
-  # labeled http_port_t. Port 2000 is not labeled by default, so
-  # proxy_pass http://127.0.0.1:2000 would be silently denied under
-  # enforcing mode. Label it. (If SELinux is disabled this is a no-op
-  # via the getenforce guard; semanage is idempotent-ish below.)
+  # labeled http_port_t. Port 2000 (WebSocket) and port 9990 (HTTP
+  # status) are not labeled by default, so proxy_pass to them would
+  # be silently denied under enforcing mode. Label them. (If SELinux
+  # is disabled this is a no-op via the getenforce guard; semanage
+  # is idempotent-ish below.)
   if command -v getenforce >/dev/null && [ "$(getenforce 2>/dev/null)" = "Enforcing" ]; then
-    echo "    SELinux enforcing: labeling tcp/2000 as http_port_t"
-    sudo semanage port -a -t http_port_t -p tcp 2000 2>/dev/null \
-      || sudo semanage port -m -t http_port_t -p tcp 2000 2>/dev/null \
-      || echo "WARN: could not label port 2000 (already labeled? check: sudo semanage port -l | grep 2000)" >&2
+    for port in 2000 9990; do
+      echo "    SELinux enforcing: labeling tcp/${port} as http_port_t"
+      sudo semanage port -a -t http_port_t -p tcp "${port}" 2>/dev/null \
+        || sudo semanage port -m -t http_port_t -p tcp "${port}" 2>/dev/null \
+        || echo "WARN: could not label port ${port} (already labeled? check: sudo semanage port -l | grep ${port})" >&2
+    done
   fi
 
   sudo mkdir -p "$WEBROOT"
