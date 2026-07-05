@@ -1,0 +1,137 @@
+--- a/pango/pangocairo-fcfont.c
++++ b/pango/pangocairo-fcfont.c
+@@ -96,7 +96,8 @@
+ }
+ 
+ static void
+-cairo_font_iface_init (PangoCairoFontIface *iface)
++cairo_font_iface_init (PangoCairoFontIface *iface,
++                       gpointer             iface_data G_GNUC_UNUSED)
+ {
+   iface->create_font_face = pango_cairo_fc_font_create_font_face;
+   iface->create_base_metrics_for_context = pango_cairo_fc_font_create_base_metrics_for_context;
+--- a/pango/pangocairo-fcfontmap.c
++++ b/pango/pangocairo-fcfontmap.c
+@@ -88,7 +88,8 @@
+ }
+ 
+ static void
+-cairo_font_map_iface_init (PangoCairoFontMapIface *iface)
++cairo_font_map_iface_init (PangoCairoFontMapIface *iface,
++                           gpointer                 iface_data G_GNUC_UNUSED)
+ {
+   iface->set_resolution = pango_cairo_fc_font_map_set_resolution;
+   iface->get_resolution = pango_cairo_fc_font_map_get_resolution_cairo;
+--- a/pango/pangofc-fontmap.c
++++ b/pango/pangofc-fontmap.c
+@@ -1007,8 +1007,13 @@
+   g_mutex_init (&pats->mutex);
+   g_cond_init (&pats->cond);
+ 
++#ifdef __EMSCRIPTEN__
++  match_in_thread (thread_data_new (FC_MATCH, pats));
++  sort_in_thread (thread_data_new (FC_SORT, pats));
++#else
+   g_async_queue_push (fontmap->priv->queue, thread_data_new (FC_MATCH, pats));
+   g_async_queue_push (fontmap->priv->queue, thread_data_new (FC_SORT, pats));
++#endif
+ 
+   g_hash_table_insert (fontmap->priv->patterns_hash, pats->pattern, pats);
+ 
+@@ -1444,7 +1449,8 @@
+ }
+ 
+ static void
+-pango_fc_font_map_list_model_init (GListModelInterface *iface)
++pango_fc_font_map_list_model_init (GListModelInterface *iface,
++                                   gpointer             iface_data G_GNUC_UNUSED)
+ {
+   iface->get_item_type = pango_fc_font_map_get_item_type;
+   iface->get_n_items = pango_fc_font_map_get_n_items;
+@@ -1458,6 +1464,24 @@
+ static void
+ start_fontconfig_thread (PangoFcFontMap *fcfontmap)
+ {
++#ifdef __EMSCRIPTEN__
++  /* Single-threaded wasm: no worker thread. Run the deferred FcInit
++   * synchronously; FC_MATCH/FC_SORT ops are likewise run at submit time
++   * (see pango_fc_patterns_new), and the consumers' cond-wait loops see
++   * their results already present. */
++  gboolean need_init = FALSE;
++
++  g_mutex_lock (&fc_init_mutex);
++  if (fc_initialized == DEFAULT_CONFIG_NOT_INITIALIZED)
++    {
++      fc_initialized = DEFAULT_CONFIG_INITIALIZING;
++      need_init = TRUE;
++    }
++  g_mutex_unlock (&fc_init_mutex);
++
++  if (need_init)
++    init_in_thread (thread_data_new (FC_INIT, NULL));
++#else
+   GThread *thread;
+ 
+   g_mutex_lock (&fc_init_mutex);
+@@ -1473,6 +1497,7 @@
+     }
+ 
+   g_mutex_unlock (&fc_init_mutex);
++#endif
+ }
+ 
+ static void
+@@ -1563,7 +1588,9 @@
+   priv->n_families = -1;
+   priv->families = NULL;
+ 
++#ifndef __EMSCRIPTEN__
+   g_async_queue_push (fcfontmap->priv->queue, thread_data_new (FC_END, NULL));
++#endif
+ 
+   g_async_queue_unref (priv->queue);
+   priv->queue = NULL;
+@@ -3360,7 +3387,8 @@
+ }
+ 
+ static void
+-pango_fc_family_list_model_init (GListModelInterface *iface)
++pango_fc_family_list_model_init (GListModelInterface *iface,
++                                 gpointer             iface_data G_GNUC_UNUSED)
+ {
+   iface->get_item_type = pango_fc_family_get_item_type;
+   iface->get_n_items = pango_fc_family_get_n_items;
+--- a/pango/fonts.c
++++ b/pango/fonts.c
+@@ -2399,7 +2399,8 @@
+ }
+ 
+ static void
+-pango_font_family_list_model_init (GListModelInterface *iface)
++pango_font_family_list_model_init (GListModelInterface *iface,
++                                   gpointer             iface_data G_GNUC_UNUSED)
+ {
+   iface->get_item_type = pango_font_family_get_item_type;
+   iface->get_n_items = pango_font_family_get_n_items;
+--- a/pango/pango-fontmap.c
++++ b/pango/pango-fontmap.c
+@@ -48,7 +48,8 @@
+ 
+ static guint pango_font_map_get_n_items (GListModel *list);
+ 
+-static void pango_font_map_list_model_init (GListModelInterface *iface);
++static void pango_font_map_list_model_init (GListModelInterface *iface,
++                                             gpointer             iface_data);
+ 
+ typedef struct {
+   guint n_families;
+@@ -610,7 +611,8 @@
+ }
+ 
+ static void
+-pango_font_map_list_model_init (GListModelInterface *iface)
++pango_font_map_list_model_init (GListModelInterface *iface,
++                                gpointer             iface_data G_GNUC_UNUSED)
+ {
+   iface->get_item_type = pango_font_map_get_item_type;
+   iface->get_n_items = pango_font_map_get_n_items;

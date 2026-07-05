@@ -1,0 +1,12 @@
+--- a/meson.build
++++ b/meson.build
+@@ -350,7 +350,8 @@
+ 
+ # threads
+ thread_dep = null_dep
+-if host_machine.system() != 'windows'
++# emscripten: single-threaded build; the threads dep would inject -pthread.
++if host_machine.system() != 'windows' and host_machine.system() != 'emscripten'
+   thread_dep = dependency('threads', required: false)
+ 
+   if thread_dep.found()

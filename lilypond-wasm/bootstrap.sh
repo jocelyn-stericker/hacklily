@@ -19,7 +19,8 @@
 #
 # Host prerequisites: gcc/make/pkg-config/curl/git/python3/gperf, plus native
 # dev packages for Guile's own deps: libgc-dev, libgmp-dev, libffi-dev,
-# libunistring-dev (Debian names).
+# libunistring-dev (Debian names). The LilyPond rendering-stack stages
+# additionally need: meson (>= 1.3), ninja-build, python3-packaging.
 #
 # Background on every non-obvious flag and patch: GUILE-WASM-SPIKE.md.
 set -euo pipefail
@@ -39,6 +40,21 @@ GMP_V=6.3.0
 UNISTRING_V=1.3
 FFI_V=3.5.2
 GC_V=8.2.12
+
+# LilyPond rendering-stack deps (the layer LilyPond's configure gates on;
+# see GUILE-WASM-SPIKE.md "What this means for lilypond.wasm")
+ZLIB_V=1.3.1
+LIBPNG_V=1.6.43
+FREETYPE_V=2.13.3
+EXPAT_V=2.7.1
+FONTCONFIG_V=2.15.0
+PCRE2_V=10.44
+GLIB_V=2.80.3
+FRIBIDI_V=1.0.16
+HARFBUZZ_V=8.5.0
+PIXMAN_V=0.42.2
+CAIRO_V=1.18.4
+PANGO_V=1.52.2
 
 if [ "${1:-}" = clean ]; then rm -rf "$WORK"; exit 0; fi
 BROWSER=no
@@ -72,6 +88,36 @@ if need_stage download; then
   fetch "https://github.com/bdwgc/bdwgc/releases/download/v$GC_V/gc-$GC_V.tar.gz" \
         42e5194ad06ab6ffb806c83eb99c03462b495d979cda782f3c72c08af833cd4e
   done_stage download
+fi
+
+if need_stage download-lily-deps; then
+  log "downloading LilyPond rendering-stack sources"
+  # zlib.net deletes old tarballs on every release; use the GitHub mirror.
+  fetch "https://github.com/madler/zlib/releases/download/v$ZLIB_V/zlib-$ZLIB_V.tar.gz" \
+        9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23
+  fetch "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG_V/libpng-$LIBPNG_V.tar.xz" \
+        6a5ca0652392a2d7c9db2ae5b40210843c0bbc081cbd410825ab00cc59f14a6c
+  fetch "https://download.savannah.gnu.org/releases/freetype/freetype-$FREETYPE_V.tar.xz" \
+        0550350666d427c74daeb85d5ac7bb353acba5f76956395995311a9c6f063289
+  fetch "https://github.com/libexpat/libexpat/releases/download/R_${EXPAT_V//./_}/expat-$EXPAT_V.tar.xz" \
+        354552544b8f99012e5062f7d570ec77f14b412a3ff5c7d8d0dae62c0d217c30
+  fetch "https://www.freedesktop.org/software/fontconfig/release/fontconfig-$FONTCONFIG_V.tar.xz" \
+        63a0658d0e06e0fa886106452b58ef04f21f58202ea02a94c39de0d3335d7c0e
+  fetch "https://github.com/PCRE2Project/pcre2/releases/download/pcre2-$PCRE2_V/pcre2-$PCRE2_V.tar.bz2" \
+        d34f02e113cf7193a1ebf2770d3ac527088d485d4e047ed10e5d217c6ef5de96
+  fetch "https://download.gnome.org/sources/glib/${GLIB_V%.*}/glib-$GLIB_V.tar.xz" \
+        3947a0eaddd0f3613d0230bb246d0c69e46142c19022f5c4b1b2e3cba236d417
+  fetch "https://github.com/fribidi/fribidi/releases/download/v$FRIBIDI_V/fribidi-$FRIBIDI_V.tar.xz" \
+        1b1cde5b235d40479e91be2f0e88a309e3214c8ab470ec8a2744d82a5a9ea05c
+  fetch "https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_V/harfbuzz-$HARFBUZZ_V.tar.xz" \
+        77e4f7f98f3d86bf8788b53e6832fb96279956e1c3961988ea3d4b7ca41ddc27
+  fetch "https://www.cairographics.org/releases/pixman-$PIXMAN_V.tar.gz" \
+        ea1480efada2fd948bc75366f7c349e1c96d3297d09a3fe62626e38e234a625e
+  fetch "https://www.cairographics.org/releases/cairo-$CAIRO_V.tar.xz" \
+        445ed8208a6e4823de1226a74ca319d3600e83f6369f99b14265006599c32ccb
+  fetch "https://download.gnome.org/sources/pango/${PANGO_V%.*}/pango-$PANGO_V.tar.xz" \
+        d0076afe01082814b853deec99f9349ece5f2ce83908b8e58ff736b41f78a96b
+  done_stage download-lily-deps
 fi
 
 # --- 2. emsdk ----------------------------------------------------------------
@@ -231,4 +277,219 @@ if [ "$BROWSER" = yes ]; then
   fi
 fi
 
-log "all done — wasm Guile in $PREFIX"
+# --- 8. LilyPond rendering-stack deps -----------------------------------------
+# The layer LilyPond 2.27's configure hard-gates on (all PKG_CHECK_MODULES):
+# fontconfig, freetype2, glib-2.0, gobject-2.0, pangoft2, cairo, libpng, zlib
+# (bdw-gc and guile-3.0 are already above). pcre2 avoids meson wrap downloads;
+# fribidi and harfbuzz are pango's own deps. Everything static, single-
+# threaded: -pthread under emcc flips codegen to shared-memory atomics, which
+# we never want — see the no-pthread patches and per-package notes below.
+
+if need_stage extract-lily-deps; then
+  log "extracting and patching LilyPond rendering-stack sources"
+  for d in zlib-$ZLIB_V libpng-$LIBPNG_V freetype-$FREETYPE_V expat-$EXPAT_V \
+           fontconfig-$FONTCONFIG_V pcre2-$PCRE2_V glib-$GLIB_V \
+           fribidi-$FRIBIDI_V harfbuzz-$HARFBUZZ_V pixman-$PIXMAN_V \
+           cairo-$CAIRO_V pango-$PANGO_V; do
+    rm -rf "$SRC/$d"
+    tar -C "$SRC" -xf "$DL/${d%%-[0-9]*}-${d##*-}".tar.*
+  done
+  # glib: kleisauke/wasm-vips's maintained Emscripten series (network shims,
+  # posix_spawn, function-pointer-cast fixes), then ours to keep meson's
+  # threads dependency (-pthread) out of a single-threaded build.
+  patch -p1 -d "$SRC/glib-$GLIB_V" < "$ROOT/patches/glib-$GLIB_V-emscripten-wasm-vips.patch"
+  patch -p1 -d "$SRC/glib-$GLIB_V" < "$ROOT/patches/glib-$GLIB_V-emscripten-no-pthread.patch"
+  patch -p1 -d "$SRC/harfbuzz-$HARFBUZZ_V" < "$ROOT/patches/harfbuzz-$HARFBUZZ_V-emscripten-no-pthread.patch"
+  # pango: run the deferred-FcInit/match/sort worker ops synchronously on
+  # wasm (no threads) + give iface_init functions their true 2-arg signature
+  # (1-arg versions trap wasm's typed call_indirect — same UB family as the
+  # Guile hashtab patch).
+  patch -p1 -d "$SRC/pango-$PANGO_V" < "$ROOT/patches/pango-$PANGO_V-wasm-single-thread-and-iface-casts.patch"
+  # pango's tests need GIOChannel, which the wasm-vips glib patch trims.
+  sed -i "s/^subdir('tests')/# &  # wasm: needs GIOChannel/" "$SRC/pango-$PANGO_V/meson.build"
+  # fontconfig's bundled config.sub predates the wasm32 triplet.
+  cp "$SRC/guile-$GUILE_V/build-aux/config.sub" "$SRC/fontconfig-$FONTCONFIG_V/"
+  done_stage extract-lily-deps
+fi
+
+# Meson cross file (glib, harfbuzz, cairo, pango). pkg_config_libdir keeps
+# host libraries invisible; --prefer-static (below) makes meson use
+# pkg-config --static so Requires.private chains (e.g. fontconfig -> expat)
+# reach the link line.
+MESON_CROSS="$WORK/emscripten-cross.meson"
+cat > "$MESON_CROSS" <<EOF
+[binaries]
+c = 'emcc'
+cpp = 'em++'
+ar = 'emar'
+ranlib = 'emranlib'
+strip = 'emstrip'
+pkg-config = 'pkg-config'
+exe_wrapper = 'node'
+
+[properties]
+pkg_config_libdir = '$PREFIX/lib/pkgconfig'
+
+[host_machine]
+system = 'emscripten'
+cpu_family = 'wasm32'
+cpu = 'wasm32'
+endian = 'little'
+EOF
+
+# Autotools cross builds: pass BOTH --build and --host (same lesson as
+# Guile's configure: with --host alone, conftests run under node and
+# cross_compiling stays 'no', so build-machine tools get compiled with emcc).
+BUILD_TRIPLET="$(gcc -dumpmachine)"
+# emconfigure clobbers PKG_CONFIG_LIBDIR/PATH; EM_PKG_CONFIG_PATH survives
+# (freetype/fontconfig/etc. find zlib, libpng, expat through it).
+export EM_PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
+
+lily_dep() { # name dir extra-configure-args...
+  local name=$1 dir=$2; shift 2
+  if need_stage "dep-$name"; then
+    log "building $name (wasm)"
+    (cd "$SRC/$dir"
+     emconfigure ./configure --build="$BUILD_TRIPLET" \
+       --host=wasm32-unknown-emscripten \
+       --disable-shared --enable-static --prefix="$PREFIX" "$@" \
+       > "$WORK/$name-configure.log" 2>&1
+     emmake make -j"$JOBS" > "$WORK/$name-build.log" 2>&1
+     emmake make install > "$WORK/$name-install.log" 2>&1)
+    done_stage "dep-$name"
+  fi
+}
+
+meson_dep() { # name dir extra-meson-args...
+  local name=$1 dir=$2; shift 2
+  if need_stage "dep-$name"; then
+    log "building $name (wasm, meson)"
+    (cd "$SRC/$dir"
+     rm -rf _build
+     meson setup _build --cross-file "$MESON_CROSS" --prefix="$PREFIX" \
+       --default-library=static --prefer-static --buildtype=release "$@" \
+       > "$WORK/$name-setup.log" 2>&1
+     ninja -C _build -j"$JOBS" > "$WORK/$name-build.log" 2>&1
+     meson install -C _build > "$WORK/$name-install.log" 2>&1)
+    done_stage "dep-$name"
+  fi
+}
+
+if need_stage dep-zlib; then
+  log "building zlib (wasm)"
+  (cd "$SRC/zlib-$ZLIB_V"
+   emconfigure ./configure --static --prefix="$PREFIX" > "$WORK/zlib-configure.log" 2>&1
+   emmake make -j"$JOBS" libz.a > "$WORK/zlib-build.log" 2>&1
+   emmake make install > "$WORK/zlib-install.log" 2>&1)
+  done_stage dep-zlib
+fi
+
+lily_dep libpng libpng-$LIBPNG_V \
+  CPPFLAGS="-I$PREFIX/include" LDFLAGS="-L$PREFIX/lib"
+
+# CC_BUILD=gcc: the apinames helper runs on the build machine (a wasm build
+# of it can't write ftexport.sym without NODERAWFS). PTHREAD_*=" ": AX_PTHREAD
+# tries user flags first and empty flags "work" (musl stubs), keeping
+# -pthread out of CFLAGS. harfbuzz=no breaks the freetype<->harfbuzz cycle;
+# pango drives harfbuzz itself, LilyPond doesn't need freetype's hb hooks.
+lily_dep freetype freetype-$FREETYPE_V \
+  CC_BUILD=gcc PTHREAD_CFLAGS=" " PTHREAD_LIBS=" " \
+  --with-zlib=yes --with-png=yes --with-harfbuzz=no --with-brotli=no \
+  --with-bzip2=no
+
+lily_dep expat expat-$EXPAT_V \
+  --without-docbook --without-tests --without-examples
+
+# sysconfdir/localstatedir under the prefix so the fonts.conf tree can be
+# preloaded into MEMFS as-is; cross build skips fc-cache at install.
+lily_dep fontconfig fontconfig-$FONTCONFIG_V \
+  --sysconfdir="$PREFIX/etc" --localstatedir="$PREFIX/var" --disable-docs
+
+lily_dep pcre2 pcre2-$PCRE2_V
+
+meson_dep glib glib-$GLIB_V \
+  -Dselinux=disabled -Dxattr=false -Dlibmount=disabled \
+  -Dman-pages=disabled -Ddocumentation=false -Dtests=false \
+  -Dintrospection=disabled -Dnls=disabled -Dglib_debug=disabled
+
+lily_dep fribidi fribidi-$FRIBIDI_V --disable-docs
+
+meson_dep harfbuzz harfbuzz-$HARFBUZZ_V \
+  -Dfreetype=enabled -Dglib=enabled -Dgobject=disabled -Dicu=disabled \
+  -Dcairo=disabled -Dtests=disabled -Ddocs=disabled -Dbenchmark=disabled \
+  -Dintrospection=disabled -Dutilities=disabled
+
+# Library only: pixman's configure hard-codes a -pthread probe that emcc
+# accepts, poisoning the demos/test links; the library never sees the flags.
+if need_stage dep-pixman; then
+  log "building pixman (wasm)"
+  (cd "$SRC/pixman-$PIXMAN_V"
+   emconfigure ./configure --build="$BUILD_TRIPLET" \
+     --host=wasm32-unknown-emscripten \
+     --disable-shared --enable-static --prefix="$PREFIX" \
+     --disable-arm-simd --disable-arm-neon --disable-arm-a64-neon \
+     --disable-mmx --disable-sse2 --disable-ssse3 --disable-vmx \
+     --disable-mips-dspr2 --disable-gtk --disable-libpng \
+     > "$WORK/pixman-configure.log" 2>&1
+   emmake make -j"$JOBS" -C pixman > "$WORK/pixman-build.log" 2>&1
+   emmake make -C pixman install > "$WORK/pixman-install.log" 2>&1
+   emmake make install-pkgconfigDATA >> "$WORK/pixman-install.log" 2>&1)
+  done_stage dep-pixman
+fi
+
+meson_dep cairo cairo-$CAIRO_V \
+  -Dfontconfig=enabled -Dfreetype=enabled \
+  -Dxlib=disabled -Dxcb=disabled -Dquartz=disabled -Ddwrite=disabled \
+  -Dglib=disabled -Dspectre=disabled -Dsymbol-lookup=disabled \
+  -Dtests=disabled -Dzlib=enabled -Dpng=enabled
+
+# glib-mkenums (arch-independent python) came with the cross glib; expose it
+# so meson doesn't fall back to a glib subproject build.
+if need_stage dep-pango; then
+  log "building pango (wasm, meson)"
+  (cd "$SRC/pango-$PANGO_V"
+   rm -rf _build
+   PATH="$PREFIX/bin:$PATH" \
+   meson setup _build --cross-file "$MESON_CROSS" --prefix="$PREFIX" \
+     --default-library=static --prefer-static --buildtype=release \
+     -Dfontconfig=enabled -Dfreetype=enabled -Dcairo=enabled \
+     -Dxft=disabled -Dlibthai=disabled -Dsysprof=disabled \
+     -Dintrospection=disabled -Dinstall-tests=false \
+     > "$WORK/pango-setup.log" 2>&1
+   ninja -C _build -j"$JOBS" > "$WORK/pango-build.log" 2>&1
+   meson install -C _build > "$WORK/pango-install.log" 2>&1)
+  done_stage dep-pango
+fi
+
+# --- 9. pango/cairo smoke test -------------------------------------------------
+# Renders text through pango (fontconfig font map -> pangoft2/harfbuzz) onto
+# a cairo SVG surface under node — LilyPond's text path, end to end.
+log "verifying LilyPond configure gates resolve"
+PKG_CONFIG_LIBDIR="$PREFIX/lib/pkgconfig" pkg-config --modversion \
+  bdw-gc fontconfig freetype2 glib-2.0 gobject-2.0 pangoft2 cairo \
+  libpng zlib guile-3.0
+
+FONTDIR=""
+for d in /usr/share/fonts/truetype/dejavu /usr/share/fonts; do
+  [ -d "$d" ] && FONTDIR=$d && break
+done
+if [ -n "$FONTDIR" ]; then
+  log "building + running pango/cairo smoke test"
+  PANGO_FLAGS="$(PKG_CONFIG_LIBDIR="$PREFIX/lib/pkgconfig" pkg-config --static --cflags --libs pangocairo pangoft2 cairo-svg fontconfig)"
+  emcc -O2 "$ROOT/pango-smoke.c" $PANGO_FLAGS -sNODERAWFS=1 \
+    -sALLOW_MEMORY_GROWTH=1 -sSTACK_SIZE=4194304 -o "$TESTDIR/pango-smoke.js"
+  cat > "$TESTDIR/fonts.conf" <<EOF
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+  <dir>$FONTDIR</dir>
+  <cachedir>$WORK/fccache</cachedir>
+</fontconfig>
+EOF
+  mkdir -p "$WORK/fccache"
+  (cd "$TESTDIR" && FONTCONFIG_FILE="$TESTDIR/fonts.conf" "$NODE" pango-smoke.js)
+else
+  log "no host fonts found; skipping pango smoke test run"
+fi
+
+log "all done — wasm Guile + LilyPond rendering stack in $PREFIX"

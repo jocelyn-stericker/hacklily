@@ -3,6 +3,7 @@
 # downloads
 *.tar.gz
 *.tar.xz
+*.tar.bz2
 
 # extracted / patched source trees (patches live in patches/)
 emsdk/
@@ -13,6 +14,18 @@ guile-wasm-src/
 libffi-*/
 libunistring-*/
 lilypond-*/
+zlib-*/
+libpng-*/
+freetype-*/
+expat-*/
+fontconfig-*/
+pcre2-*/
+glib-*/
+fribidi-*/
+harfbuzz-*/
+pixman-*/
+cairo-*/
+pango-1*/
 
 # build and install trees
 guile-wasm-build/
@@ -23,7 +36,8 @@ work/
 # build logs
 *.log
 
-# linked test outputs (sources: eval-test.c, run-scheme.c, lily-api-test.c)
+# linked test outputs (sources: eval-test.c, run-scheme.c, lily-api-test.c,
+# pango-smoke.c)
 *.wasm
 *.data
 eval-test.js
@@ -31,3 +45,7 @@ run-scheme.js
 run-scheme-memfs.js
 lily-api-test.js
 webtest/
+smoke/*.js
+smoke/out.svg
+emscripten-cross.meson
+dep-hashes.txt
