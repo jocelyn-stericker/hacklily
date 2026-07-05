@@ -1,0 +1,835 @@
+diff -ru a/libguile/atomic.c b/libguile/atomic.c
+--- a/libguile/atomic.c	2019-08-26 08:41:29.000000000 +0000
++++ b/libguile/atomic.c	2026-07-05 00:43:54.227728268 +0000
+@@ -124,11 +124,21 @@
+ #include "atomic.x"
+ }
+ 
++/* WebAssembly traps on indirect calls whose type differs from the
++   callee's definition; give this 0-argument init function the
++   signature scm_c_register_extension expects.  */
++static void
++wrap_ext_scm_init_atomic (void *unused)
++{
++  extern void scm_init_atomic (void);
++  scm_init_atomic ();
++}
++
+ void
+ scm_register_atomic (void)
+ {
+   scm_c_register_extension ("libguile-" SCM_EFFECTIVE_VERSION,
+                             "scm_init_atomic",
+-			    (scm_t_extension_init_func) scm_init_atomic,
++			    wrap_ext_scm_init_atomic,
+ 			    NULL);
+ }
+diff -ru a/libguile/bytevectors.c b/libguile/bytevectors.c
+--- a/libguile/bytevectors.c	2025-11-11 09:56:38.000000000 +0000
++++ b/libguile/bytevectors.c	2026-07-05 00:43:54.227923852 +0000
+@@ -2283,6 +2283,16 @@
+ 
+ /* Initialization.  */
+ 
++/* WebAssembly traps on indirect calls whose type differs from the
++   callee's definition; give this 0-argument init function the
++   signature scm_c_register_extension expects.  */
++static void
++wrap_ext_scm_init_bytevectors (void *unused)
++{
++  extern void scm_init_bytevectors (void);
++  scm_init_bytevectors ();
++}
++
+ void
+ scm_bootstrap_bytevectors (void)
+ {
+@@ -2303,7 +2313,7 @@
+ 
+   scm_c_register_extension ("libguile-" SCM_EFFECTIVE_VERSION,
+                             "scm_init_bytevectors",
+-			    (scm_t_extension_init_func) scm_init_bytevectors,
++			    wrap_ext_scm_init_bytevectors,
+ 			    NULL);
+ 
+   scm_i_register_vector_constructor
+diff -ru a/libguile/custom-ports.c b/libguile/custom-ports.c
+--- a/libguile/custom-ports.c	2023-06-09 21:46:34.000000000 +0000
++++ b/libguile/custom-ports.c	2026-07-05 00:43:54.228239311 +0000
+@@ -195,11 +195,21 @@
+ #include "custom-ports.x"
+ }
+ 
++/* WebAssembly traps on indirect calls whose type differs from the
++   callee's definition; give this 0-argument init function the
++   signature scm_c_register_extension expects.  */
++static void
++wrap_ext_scm_init_custom_ports (void *unused)
++{
++  extern void scm_init_custom_ports (void);
++  scm_init_custom_ports ();
++}
++
+ void
+ scm_register_custom_ports (void)
+ {
+   scm_c_register_extension ("libguile-" SCM_EFFECTIVE_VERSION,
+                             "scm_init_custom_ports",
+-                            (scm_t_extension_init_func) scm_init_custom_ports,
++                            wrap_ext_scm_init_custom_ports,
+                             NULL);
+ }
+diff -ru a/libguile/fdes-finalizers.c b/libguile/fdes-finalizers.c
+--- a/libguile/fdes-finalizers.c	2019-08-26 08:41:29.000000000 +0000
++++ b/libguile/fdes-finalizers.c	2026-07-05 00:43:54.228828647 +0000
+@@ -127,6 +127,16 @@
+ #include "fdes-finalizers.x"
+ }
+ 
++/* WebAssembly traps on indirect calls whose type differs from the
++   callee's definition; give this 0-argument init function the
++   signature scm_c_register_extension expects.  */
++static void
++wrap_ext_scm_init_fdes_finalizers (void *unused)
++{
++  extern void scm_init_fdes_finalizers (void);
++  scm_init_fdes_finalizers ();
++}
++
+ void
+ scm_register_fdes_finalizers ()
+ {
+@@ -134,6 +144,6 @@
+ 
+   scm_c_register_extension ("libguile-" SCM_EFFECTIVE_VERSION,
+                             "scm_init_fdes_finalizers",
+-                            (scm_t_extension_init_func) scm_init_fdes_finalizers,
++                            wrap_ext_scm_init_fdes_finalizers,
+                             NULL);
+ }
+diff -ru a/libguile/foreign-object.c b/libguile/foreign-object.c
+--- a/libguile/foreign-object.c	2019-08-26 08:41:29.000000000 +0000
++++ b/libguile/foreign-object.c	2026-07-05 00:43:54.229008564 +0000
+@@ -222,11 +222,21 @@
+                       (scm_t_subr) sys_add_finalizer_x);
+ }
+ 
++/* WebAssembly traps on indirect calls whose type differs from the
++   callee's definition; give this 0-argument init function the
++   signature scm_c_register_extension expects.  */
++static void
++wrap_ext_scm_init_foreign_object (void *unused)
++{
++  extern void scm_init_foreign_object (void);
++  scm_init_foreign_object ();
++}
++
+ void
+ scm_register_foreign_object (void)
+ {
+   scm_c_register_extension ("libguile-" SCM_EFFECTIVE_VERSION,
+                             "scm_init_foreign_object",
+-                            (scm_t_extension_init_func)scm_init_foreign_object,
++                            wrap_ext_scm_init_foreign_object,
+                             NULL);
+ }
+diff -ru a/libguile/foreign.c b/libguile/foreign.c
+--- a/libguile/foreign.c	2024-04-15 17:58:25.000000000 +0000
++++ b/libguile/foreign.c	2026-07-05 00:43:54.229045273 +0000
+@@ -1386,12 +1386,22 @@
+   scm_define (sym_null, null_pointer);
+ }
+ 
++/* WebAssembly traps on indirect calls whose type differs from the
++   callee's definition; give this 0-argument init function the
++   signature scm_c_register_extension expects.  */
++static void
++wrap_ext_scm_init_foreign (void *unused)
++{
++  extern void scm_init_foreign (void);
++  scm_init_foreign ();
++}
++
+ void
+ scm_register_foreign (void)
+ {
+   scm_c_register_extension ("libguile-" SCM_EFFECTIVE_VERSION,
+                             "scm_init_foreign",
+-                            (scm_t_extension_init_func)scm_init_foreign,
++                            wrap_ext_scm_init_foreign,
+                             NULL);
+   pointer_weak_refs = scm_c_make_weak_table (0, SCM_WEAK_TABLE_KIND_KEY);
+ }
+diff -ru a/libguile/fports.c b/libguile/fports.c
+--- a/libguile/fports.c	2025-04-10 07:46:31.000000000 +0000
++++ b/libguile/fports.c	2026-07-05 00:43:54.229084315 +0000
+@@ -775,6 +775,16 @@
+ #include "fports.x"
+ }
+ 
++/* WebAssembly traps on indirect calls whose type differs from the
++   callee's definition; give this 0-argument init function the
++   signature scm_c_register_extension expects.  */
++static void
++wrap_ext_scm_init_ice_9_fports (void *unused)
++{
++  extern void scm_init_ice_9_fports (void);
++  scm_init_ice_9_fports ();
++}
++
+ void
+ scm_init_fports ()
+ {
+@@ -782,7 +792,7 @@
+ 
+   scm_c_register_extension ("libguile-" SCM_EFFECTIVE_VERSION,
+                             "scm_init_ice_9_fports",
+-			    (scm_t_extension_init_func) scm_init_ice_9_fports,
++			    wrap_ext_scm_init_ice_9_fports,
+ 			    NULL);
+ 
+   /* The following bindings are used early in boot-9.scm.  */
+diff -ru a/libguile/hashtab.c b/libguile/hashtab.c
+--- a/libguile/hashtab.c	2018-09-22 20:51:40.000000000 +0000
++++ b/libguile/hashtab.c	2026-07-05 00:43:54.233499122 +0000
+@@ -44,6 +44,47 @@
+ 
+ #include "hashtab.h"
+ 
++/* WebAssembly traps on indirect calls through a function pointer whose
++   type differs from the callee's definition, so the (scm_t_hash_fn) and
++   (scm_t_assoc_fn) casts of two-argument functions used below are fatal
++   there.  Wrap them with the exact signatures instead.  */
++
++static unsigned long
++wrap_ihashq (SCM obj, unsigned long n, void *closure)
++{
++  return scm_ihashq (obj, n);
++}
++
++static unsigned long
++wrap_ihashv (SCM obj, unsigned long n, void *closure)
++{
++  return scm_ihashv (obj, n);
++}
++
++static unsigned long
++wrap_ihash (SCM obj, unsigned long n, void *closure)
++{
++  return scm_ihash (obj, n);
++}
++
++static SCM
++wrap_sloppy_assq (SCM obj, SCM alist, void *closure)
++{
++  return scm_sloppy_assq (obj, alist);
++}
++
++static SCM
++wrap_sloppy_assv (SCM obj, SCM alist, void *closure)
++{
++  return scm_sloppy_assv (obj, alist);
++}
++
++static SCM
++wrap_sloppy_assoc (SCM obj, SCM alist, void *closure)
++{
++  return scm_sloppy_assoc (obj, alist);
++}
++
+ 
+ 
+ 
+@@ -387,8 +428,8 @@
+ #define FUNC_NAME s_scm_hashq_get_handle
+ {
+   return scm_hash_fn_get_handle (table, key,
+-				 (scm_t_hash_fn) scm_ihashq,
+-				 (scm_t_assoc_fn) scm_sloppy_assq,
++				 wrap_ihashq,
++				 wrap_sloppy_assq,
+ 				 0);
+ }
+ #undef FUNC_NAME
+@@ -402,8 +443,8 @@
+ #define FUNC_NAME s_scm_hashq_create_handle_x
+ {
+   return scm_hash_fn_create_handle_x (table, key, init,
+-				      (scm_t_hash_fn) scm_ihashq,
+-				      (scm_t_assoc_fn) scm_sloppy_assq,
++				      wrap_ihashq,
++				      wrap_sloppy_assq,
+ 				      0);
+ }
+ #undef FUNC_NAME
+@@ -424,8 +465,8 @@
+     return scm_weak_table_refq (table, key, dflt);
+ 
+   return scm_hash_fn_ref (table, key, dflt,
+-			  (scm_t_hash_fn) scm_ihashq,
+-			  (scm_t_assoc_fn) scm_sloppy_assq,
++			  wrap_ihashq,
++			  wrap_sloppy_assq,
+ 			  0);
+ }
+ #undef FUNC_NAME
+@@ -445,8 +486,8 @@
+     }
+ 
+   return scm_hash_fn_set_x (table, key, val,
+-			    (scm_t_hash_fn) scm_ihashq,
+-			    (scm_t_assoc_fn) scm_sloppy_assq,
++			    wrap_ihashq,
++			    wrap_sloppy_assq,
+ 			    0);
+ }
+ #undef FUNC_NAME
+@@ -470,8 +511,8 @@
+     }
+ 
+   return scm_hash_fn_remove_x (table, key,
+-			       (scm_t_hash_fn) scm_ihashq,
+-			       (scm_t_assoc_fn) scm_sloppy_assq,
++			       wrap_ihashq,
++			       wrap_sloppy_assq,
+ 			       0);
+ }
+ #undef FUNC_NAME
+@@ -488,8 +529,8 @@
+ #define FUNC_NAME s_scm_hashv_get_handle
+ {
+   return scm_hash_fn_get_handle (table, key,
+-				 (scm_t_hash_fn) scm_ihashv,
+-				 (scm_t_assoc_fn) scm_sloppy_assv,
++				 wrap_ihashv,
++				 wrap_sloppy_assv,
+ 				 0);
+ }
+ #undef FUNC_NAME
+@@ -503,8 +544,8 @@
+ #define FUNC_NAME s_scm_hashv_create_handle_x
+ {
+   return scm_hash_fn_create_handle_x (table, key, init,
+-				      (scm_t_hash_fn) scm_ihashv,
+-				      (scm_t_assoc_fn) scm_sloppy_assv,
++				      wrap_ihashv,
++				      wrap_sloppy_assv,
+ 				      0);
+ }
+ #undef FUNC_NAME
+@@ -533,8 +574,8 @@
+                                  (void *) SCM_UNPACK (key), dflt);
+ 
+   return scm_hash_fn_ref (table, key, dflt,
+-			  (scm_t_hash_fn) scm_ihashv,
+-			  (scm_t_assoc_fn) scm_sloppy_assv,
++			  wrap_ihashv,
++			  wrap_sloppy_assv,
+ 			  0);
+ }
+ #undef FUNC_NAME
+@@ -556,8 +597,8 @@
+     }
+ 
+   return scm_hash_fn_set_x (table, key, val,
+-			    (scm_t_hash_fn) scm_ihashv,
+-			    (scm_t_assoc_fn) scm_sloppy_assv,
++			    wrap_ihashv,
++			    wrap_sloppy_assv,
+ 			    0);
+ }
+ #undef FUNC_NAME
+@@ -578,8 +619,8 @@
+     }
+ 
+   return scm_hash_fn_remove_x (table, key,
+-			       (scm_t_hash_fn) scm_ihashv,
+-			       (scm_t_assoc_fn) scm_sloppy_assv,
++			       wrap_ihashv,
++			       wrap_sloppy_assv,
+ 			       0);
+ }
+ #undef FUNC_NAME
+@@ -595,8 +636,8 @@
+ #define FUNC_NAME s_scm_hash_get_handle
+ {
+   return scm_hash_fn_get_handle (table, key,
+-				 (scm_t_hash_fn) scm_ihash,
+-				 (scm_t_assoc_fn) scm_sloppy_assoc,
++				 wrap_ihash,
++				 wrap_sloppy_assoc,
+ 				 0);
+ }
+ #undef FUNC_NAME
+@@ -610,8 +651,8 @@
+ #define FUNC_NAME s_scm_hash_create_handle_x
+ {
+   return scm_hash_fn_create_handle_x (table, key, init,
+-				      (scm_t_hash_fn) scm_ihash,
+-				      (scm_t_assoc_fn) scm_sloppy_assoc,
++				      wrap_ihash,
++				      wrap_sloppy_assoc,
+ 				      0);
+ }
+ #undef FUNC_NAME
+@@ -640,8 +681,8 @@
+                                  (void *) SCM_UNPACK (key), dflt);
+ 
+   return scm_hash_fn_ref (table, key, dflt,
+-			  (scm_t_hash_fn) scm_ihash,
+-			  (scm_t_assoc_fn) scm_sloppy_assoc,
++			  wrap_ihash,
++			  wrap_sloppy_assoc,
+ 			  0);
+ }
+ #undef FUNC_NAME
+@@ -664,8 +705,8 @@
+     }
+ 
+   return scm_hash_fn_set_x (table, key, val,
+-			    (scm_t_hash_fn) scm_ihash,
+-			    (scm_t_assoc_fn) scm_sloppy_assoc,
++			    wrap_ihash,
++			    wrap_sloppy_assoc,
+ 			    0);
+ }
+ #undef FUNC_NAME
+@@ -687,8 +728,8 @@
+     }
+ 
+   return scm_hash_fn_remove_x (table, key,
+-			       (scm_t_hash_fn) scm_ihash,
+-			       (scm_t_assoc_fn) scm_sloppy_assoc,
++			       wrap_ihash,
++			       wrap_sloppy_assoc,
+ 			       0);
+ }
+ #undef FUNC_NAME
+diff -ru a/libguile/i18n.c b/libguile/i18n.c
+--- a/libguile/i18n.c	2022-10-21 15:39:38.000000000 +0000
++++ b/libguile/i18n.c	2026-07-05 00:43:54.229551983 +0000
+@@ -1885,12 +1885,22 @@
+   SCM_VARIABLE_SET (scm_global_locale, global_locale_smob);
+ }
+ 
++/* WebAssembly traps on indirect calls whose type differs from the
++   callee's definition; give this 0-argument init function the
++   signature scm_c_register_extension expects.  */
++static void
++wrap_ext_scm_init_i18n (void *unused)
++{
++  extern void scm_init_i18n (void);
++  scm_init_i18n ();
++}
++
+ void
+ scm_bootstrap_i18n ()
+ {
+   scm_c_register_extension ("libguile-" SCM_EFFECTIVE_VERSION,
+                             "scm_init_i18n",
+-			    (scm_t_extension_init_func) scm_init_i18n,
++			    wrap_ext_scm_init_i18n,
+ 			    NULL);
+ 
+ }
+diff -ru a/libguile/instructions.c b/libguile/instructions.c
+--- a/libguile/instructions.c	2020-08-24 13:19:14.000000000 +0000
++++ b/libguile/instructions.c	2026-07-05 00:43:54.229650108 +0000
+@@ -193,12 +193,22 @@
+ }
+ #undef FUNC_NAME
+ 
++/* WebAssembly traps on indirect calls whose type differs from the
++   callee's definition; give this 0-argument init function the
++   signature scm_c_register_extension expects.  */
++static void
++wrap_ext_scm_init_instructions (void *unused)
++{
++  extern void scm_init_instructions (void);
++  scm_init_instructions ();
++}
++
+ void
+ scm_bootstrap_instructions (void)
+ {
+   scm_c_register_extension ("libguile-" SCM_EFFECTIVE_VERSION,
+                             "scm_init_instructions",
+-                            (scm_t_extension_init_func)scm_init_instructions,
++                            wrap_ext_scm_init_instructions,
+                             NULL);
+ }
+ 
+diff -ru a/libguile/intrinsics.c b/libguile/intrinsics.c
+--- a/libguile/intrinsics.c	2023-12-28 11:24:02.000000000 +0000
++++ b/libguile/intrinsics.c	2026-07-05 00:43:54.229741859 +0000
+@@ -582,6 +582,16 @@
+ #define INT64_INTRINSIC(name) name
+ #endif
+ 
++/* WebAssembly traps on indirect calls whose type differs from the
++   callee's definition; give this 0-argument init function the
++   signature scm_c_register_extension expects.  */
++static void
++wrap_ext_scm_init_intrinsics (void *unused)
++{
++  extern void scm_init_intrinsics (void);
++  scm_init_intrinsics ();
++}
++
+ void
+ scm_bootstrap_intrinsics (void)
+ {
+@@ -694,7 +704,7 @@
+ 
+   scm_c_register_extension ("libguile-" SCM_EFFECTIVE_VERSION,
+                             "scm_init_intrinsics",
+-                            (scm_t_extension_init_func)scm_init_intrinsics,
++                            wrap_ext_scm_init_intrinsics,
+                             NULL);
+ }
+ 
+diff -ru a/libguile/ioext.c b/libguile/ioext.c
+--- a/libguile/ioext.c	2024-05-06 09:51:53.000000000 +0000
++++ b/libguile/ioext.c	2026-07-05 00:43:54.229774067 +0000
+@@ -318,6 +318,16 @@
+ #include "ioext.x"
+ }
+ 
++/* WebAssembly traps on indirect calls whose type differs from the
++   callee's definition; give this 0-argument init function the
++   signature scm_c_register_extension expects.  */
++static void
++wrap_ext_scm_init_ice_9_ioext (void *unused)
++{
++  extern void scm_init_ice_9_ioext (void);
++  scm_init_ice_9_ioext ();
++}
++
+ void 
+ scm_init_ioext ()
+ {
+@@ -325,7 +335,7 @@
+ 
+   scm_c_register_extension ("libguile-" SCM_EFFECTIVE_VERSION,
+                             "scm_init_ice_9_ioext",
+-			    (scm_t_extension_init_func) scm_init_ice_9_ioext,
++			    wrap_ext_scm_init_ice_9_ioext,
+ 			    NULL);
+ }
+ 
+diff -ru a/libguile/loader.c b/libguile/loader.c
+--- a/libguile/loader.c	2025-04-10 07:46:31.000000000 +0000
++++ b/libguile/loader.c	2026-07-05 00:43:54.230960155 +0000
+@@ -822,6 +822,16 @@
+ }
+ 
+ 
++/* WebAssembly traps on indirect calls whose type differs from the
++   callee's definition; give this 0-argument init function the
++   signature scm_c_register_extension expects.  */
++static void
++wrap_ext_scm_init_loader (void *unused)
++{
++  extern void scm_init_loader (void);
++  scm_init_loader ();
++}
++
+ void
+ scm_bootstrap_loader (void)
+ {
+@@ -836,7 +846,7 @@
+ 
+   scm_c_register_extension ("libguile-" SCM_EFFECTIVE_VERSION,
+                             "scm_init_loader",
+-                            (scm_t_extension_init_func)scm_init_loader, NULL);
++                            wrap_ext_scm_init_loader, NULL);
+ }
+ 
+ void
+diff -ru a/libguile/poll.c b/libguile/poll.c
+--- a/libguile/poll.c	2019-08-26 08:41:29.000000000 +0000
++++ b/libguile/poll.c	2026-07-05 00:43:54.231480365 +0000
+@@ -219,11 +219,21 @@
+ 
+ }
+ 
++/* WebAssembly traps on indirect calls whose type differs from the
++   callee's definition; give this 0-argument init function the
++   signature scm_c_register_extension expects.  */
++static void
++wrap_ext_scm_init_poll (void *unused)
++{
++  extern void scm_init_poll (void);
++  scm_init_poll ();
++}
++
+ void
+ scm_register_poll (void)
+ {
+   scm_c_register_extension ("libguile-" SCM_EFFECTIVE_VERSION,
+                             "scm_init_poll",
+-			    (scm_t_extension_init_func) scm_init_poll,
++			    wrap_ext_scm_init_poll,
+ 			    NULL);
+ }
+diff -ru a/libguile/ports.c b/libguile/ports.c
+--- a/libguile/ports.c	2025-11-11 09:58:07.000000000 +0000
++++ b/libguile/ports.c	2026-07-05 00:43:54.231553199 +0000
+@@ -4189,6 +4189,16 @@
+   scm_c_define ("%current-warning-port-fluid", cur_warnport_fluid);
+ }
+ 
++/* WebAssembly traps on indirect calls whose type differs from the
++   callee's definition; give this 0-argument init function the
++   signature scm_c_register_extension expects.  */
++static void
++wrap_ext_scm_init_ice_9_ports (void *unused)
++{
++  extern void scm_init_ice_9_ports (void);
++  scm_init_ice_9_ports ();
++}
++
+ void
+ scm_init_ports (void)
+ {
+@@ -4234,7 +4244,7 @@
+ 
+   scm_c_register_extension ("libguile-" SCM_EFFECTIVE_VERSION,
+                             "scm_init_ice_9_ports",
+-			    (scm_t_extension_init_func) scm_init_ice_9_ports,
++			    wrap_ext_scm_init_ice_9_ports,
+ 			    NULL);
+ 
+   /* The following bindings are used early in boot-9.scm.  */
+diff -ru a/libguile/posix.c b/libguile/posix.c
+--- a/libguile/posix.c	2025-11-11 09:56:38.000000000 +0000
++++ b/libguile/posix.c	2026-07-05 00:43:54.231642366 +0000
+@@ -2595,6 +2595,16 @@
+ }
+ 
+ 
++/* WebAssembly traps on indirect calls whose type differs from the
++   callee's definition; give this 0-argument init function the
++   signature scm_c_register_extension expects.  */
++static void
++wrap_ext_scm_init_popen (void *unused)
++{
++  extern void scm_init_popen (void);
++  scm_init_popen ();
++}
++
+ void
+ scm_init_posix ()
+ {
+@@ -2715,6 +2725,6 @@
+   scm_add_feature ("popen");
+   scm_c_register_extension ("libguile-" SCM_EFFECTIVE_VERSION,
+                             "scm_init_popen",
+-			    (scm_t_extension_init_func) scm_init_popen,
++			    wrap_ext_scm_init_popen,
+ 			    NULL);
+ }
+diff -ru a/libguile/programs.c b/libguile/programs.c
+--- a/libguile/programs.c	2019-08-26 08:41:29.000000000 +0000
++++ b/libguile/programs.c	2026-07-05 00:43:54.231806200 +0000
+@@ -375,12 +375,22 @@
+ 
+ 
+ 
++/* WebAssembly traps on indirect calls whose type differs from the
++   callee's definition; give this 0-argument init function the
++   signature scm_c_register_extension expects.  */
++static void
++wrap_ext_scm_init_programs (void *unused)
++{
++  extern void scm_init_programs (void);
++  scm_init_programs ();
++}
++
+ void
+ scm_bootstrap_programs (void)
+ {
+   scm_c_register_extension ("libguile-" SCM_EFFECTIVE_VERSION,
+                             "scm_init_programs",
+-                            (scm_t_extension_init_func)scm_init_programs, NULL);
++                            wrap_ext_scm_init_programs, NULL);
+ }
+ 
+ void
+diff -ru a/libguile/r6rs-ports.c b/libguile/r6rs-ports.c
+--- a/libguile/r6rs-ports.c	2024-06-16 12:47:58.000000000 +0000
++++ b/libguile/r6rs-ports.c	2026-07-05 00:43:54.231904158 +0000
+@@ -909,12 +909,22 @@
+ 
+ /* Initialization.  */
+ 
++/* WebAssembly traps on indirect calls whose type differs from the
++   callee's definition; give this 0-argument init function the
++   signature scm_c_register_extension expects.  */
++static void
++wrap_ext_scm_init_r6rs_ports (void *unused)
++{
++  extern void scm_init_r6rs_ports (void);
++  scm_init_r6rs_ports ();
++}
++
+ void
+ scm_register_r6rs_ports (void)
+ {
+   scm_c_register_extension ("libguile-" SCM_EFFECTIVE_VERSION,
+                             "scm_init_r6rs_ports",
+-			    (scm_t_extension_init_func) scm_init_r6rs_ports,
++			    wrap_ext_scm_init_r6rs_ports,
+ 			    NULL);
+ 
+   initialize_bytevector_input_ports ();
+diff -ru a/libguile/srfi-4.c b/libguile/srfi-4.c
+--- a/libguile/srfi-4.c	2022-01-10 16:58:37.000000000 +0000
++++ b/libguile/srfi-4.c	2026-07-05 00:43:54.232512994 +0000
+@@ -291,6 +291,16 @@
+ 
+ /* Initialization.  */
+ 
++/* WebAssembly traps on indirect calls whose type differs from the
++   callee's definition; give this 0-argument init function the
++   signature scm_c_register_extension expects.  */
++static void
++wrap_ext_scm_init_srfi_4 (void *unused)
++{
++  extern void scm_init_srfi_4 (void);
++  scm_init_srfi_4 ();
++}
++
+ void
+ scm_bootstrap_srfi_4 (void)
+ {
+@@ -314,7 +324,7 @@
+ 
+   scm_c_register_extension ("libguile-" SCM_EFFECTIVE_VERSION,
+                             "scm_init_srfi_4",
+-			    (scm_t_extension_init_func) scm_init_srfi_4,
++			    wrap_ext_scm_init_srfi_4,
+ 			    NULL);
+ }
+ 
+diff -ru a/libguile/srfi-60.c b/libguile/srfi-60.c
+--- a/libguile/srfi-60.c	2022-01-24 22:16:03.000000000 +0000
++++ b/libguile/srfi-60.c	2026-07-05 00:43:54.232541494 +0000
+@@ -403,12 +403,22 @@
+ SCM_REGISTER_PROC (s_srfi60_booleans_to_integer, "booleans->integer", 0, 0, 1, scm_srfi60_list_to_integer);
+ 
+ 
++/* WebAssembly traps on indirect calls whose type differs from the
++   callee's definition; give this 0-argument init function the
++   signature scm_c_register_extension expects.  */
++static void
++wrap_ext_scm_init_srfi_60 (void *unused)
++{
++  extern void scm_init_srfi_60 (void);
++  scm_init_srfi_60 ();
++}
++
+ void
+ scm_register_srfi_60 (void)
+ {
+   scm_c_register_extension ("libguile-" SCM_EFFECTIVE_VERSION,
+                             "scm_init_srfi_60",
+-                            (scm_t_extension_init_func)scm_init_srfi_60, NULL);
++                            wrap_ext_scm_init_srfi_60, NULL);
+ }
+ 
+ void
+diff -ru a/libguile/unicode.c b/libguile/unicode.c
+--- a/libguile/unicode.c	2019-08-26 08:41:29.000000000 +0000
++++ b/libguile/unicode.c	2026-07-05 00:43:54.233008954 +0000
+@@ -87,11 +87,21 @@
+ #endif
+ }
+ 
++/* WebAssembly traps on indirect calls whose type differs from the
++   callee's definition; give this 0-argument init function the
++   signature scm_c_register_extension expects.  */
++static void
++wrap_ext_scm_load_unicode (void *unused)
++{
++  extern void scm_load_unicode (void);
++  scm_load_unicode ();
++}
++
+ void
+ scm_init_unicode (void)
+ {
+   scm_c_register_extension ("libguile-" SCM_EFFECTIVE_VERSION,
+                             "scm_init_unicode",
+-                            (scm_t_extension_init_func)scm_load_unicode,
++                            wrap_ext_scm_load_unicode,
+                             NULL);
+ }
+diff -ru a/libguile/vm.c b/libguile/vm.c
+--- a/libguile/vm.c	2025-04-10 07:46:31.000000000 +0000
++++ b/libguile/vm.c	2026-07-05 00:43:54.233302705 +0000
+@@ -1925,15 +1925,35 @@
+ #undef INIT_BUILTIN
+ }
+ 
++/* WebAssembly traps on indirect calls whose type differs from the
++   callee's definition; give this 0-argument init function the
++   signature scm_c_register_extension expects.  */
++static void
++wrap_ext_scm_init_vm (void *unused)
++{
++  extern void scm_init_vm (void);
++  scm_init_vm ();
++}
++
++/* WebAssembly traps on indirect calls whose type differs from the
++   callee's definition; give this 0-argument init function the
++   signature scm_c_register_extension expects.  */
++static void
++wrap_ext_scm_init_vm_builtins (void *unused)
++{
++  extern void scm_init_vm_builtins (void);
++  scm_init_vm_builtins ();
++}
++
+ void
+ scm_bootstrap_vm (void)
+ {
+   scm_c_register_extension ("libguile-" SCM_EFFECTIVE_VERSION,
+                             "scm_init_vm",
+-                            (scm_t_extension_init_func)scm_init_vm, NULL);
++                            wrap_ext_scm_init_vm, NULL);
+   scm_c_register_extension ("libguile-" SCM_EFFECTIVE_VERSION,
+                             "scm_init_vm_builtins",
+-                            (scm_t_extension_init_func)scm_init_vm_builtins,
++                            wrap_ext_scm_init_vm_builtins,
+                             NULL);
+ 
+   scm_vm_intrinsics.expand_stack = thread_expand_stack;
+diff -ru a/libguile/weak-vector.c b/libguile/weak-vector.c
+--- a/libguile/weak-vector.c	2019-08-26 08:41:29.000000000 +0000
++++ b/libguile/weak-vector.c	2026-07-05 00:43:54.233459331 +0000
+@@ -261,12 +261,22 @@
+ #endif
+ }
+ 
++/* WebAssembly traps on indirect calls whose type differs from the
++   callee's definition; give this 0-argument init function the
++   signature scm_c_register_extension expects.  */
++static void
++wrap_ext_scm_init_weak_vector_builtins (void *unused)
++{
++  extern void scm_init_weak_vector_builtins (void);
++  scm_init_weak_vector_builtins ();
++}
++
+ void
+ scm_init_weak_vectors ()
+ {
+   scm_c_register_extension ("libguile-" SCM_EFFECTIVE_VERSION,
+                             "scm_init_weak_vector_builtins",
+-                            (scm_t_extension_init_func)scm_init_weak_vector_builtins,
++                            wrap_ext_scm_init_weak_vector_builtins,
+                             NULL);
+ }
+ 

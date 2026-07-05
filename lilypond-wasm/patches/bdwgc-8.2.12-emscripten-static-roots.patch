@@ -1,0 +1,19 @@
+diff -ru a/include/private/gcconfig.h b/include/private/gcconfig.h
+--- a/include/private/gcconfig.h	2026-02-05 17:12:20.000000000 +0000
++++ b/include/private/gcconfig.h	2026-07-05 00:43:53.906779127 +0000
+@@ -1477,8 +1477,13 @@
+ #   endif
+ #   ifdef EMSCRIPTEN
+ #     define OS_TYPE "EMSCRIPTEN"
+-#     define DATASTART (ptr_t)ALIGNMENT
+-#     define DATAEND (ptr_t)ALIGNMENT
++      /* Register static data as roots, like the WASI port does.       */
++      /* Emscripten places the shadow stack below __global_base (since */
++      /* 3.1.25, stack-first layout), so [__global_base, __heap_base)  */
++      /* covers exactly the static data segment.                       */
++      extern char __global_base, __heap_base;
++#     define DATASTART ((ptr_t)(&__global_base))
++#     define DATAEND ((ptr_t)(&__heap_base))
+       /* Emscripten does emulate mmap and munmap, but those should  */
+       /* not be used in the collector, since WebAssembly lacks the  */
+       /* native support of memory mapping.  Use sbrk() instead.     */
