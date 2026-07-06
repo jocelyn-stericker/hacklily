@@ -270,9 +270,12 @@ log "running node tests"
 if [ "$BROWSER" = yes ]; then
   log "building browser bundle"
   mkdir -p "$TESTDIR/web"
-  # Fixed memory: with ALLOW_MEMORY_GROWTH the heap ArrayBuffer is resizable
-  # and Chromium's TextDecoder rejects it (emscripten 6.0.2).
-  emcc -O2 -g2 "$ROOT/eval-test.c" $GUILE_FLAGS $WASM_LINK -sINITIAL_MEMORY=1024MB \
+  # GROWABLE_ARRAYBUFFERS=0: with plain ALLOW_MEMORY_GROWTH, emscripten 6.0.2
+  # exposes the heap as a *resizable* ArrayBuffer (wasmMemory.toResizableBuffer)
+  # and Chromium's TextDecoder rejects views on it. =0 keeps the classic
+  # non-resizable buffer (views re-created on grow), which TextDecoder accepts.
+  emcc -O2 -g2 "$ROOT/eval-test.c" $GUILE_FLAGS $WASM_LINK \
+    -sALLOW_MEMORY_GROWTH=1 -sGROWABLE_ARRAYBUFFERS=0 \
     -sENVIRONMENT=web --pre-js "$TESTDIR/guile-env-pre.js" \
     $PRELOAD -o "$TESTDIR/web/eval-test.html"
   if "$NODE" -e "require.resolve('playwright')" >/dev/null 2>&1; then
@@ -628,8 +631,10 @@ else
   # --- 12. browser bundle ----------------------------------------------------
   # The node build leans on NODERAWFS; the browser build preloads a staged
   # payload into MEMFS (env plumbing + packager-mtime fix: lily-browser-pre.js)
-  # and relinks with fixed memory (ALLOW_MEMORY_GROWTH makes the heap's
-  # ArrayBuffer resizable, which Chromium's TextDecoder rejects).
+  # and relinks with GROWABLE_ARRAYBUFFERS=0 (plain ALLOW_MEMORY_GROWTH makes
+  # the heap's ArrayBuffer resizable, which Chromium's TextDecoder rejects;
+  # =0 keeps the classic non-resizable buffer, so memory can start small
+  # (~26 MB) and grow instead of a fixed 1 GB allocation).
   if [ "$BROWSER" = yes ] && [ -n "$FONTDIR" ] \
      && [ -f "$PREFIX/lib/lilypond/$LILYPOND_V/ccache/lily/lily.go" ]; then
     WEBLILY="$TESTDIR/web-lily"
@@ -686,7 +691,8 @@ EOF
        mv out/lilypond.wasm out/lilypond.node.wasm
        emmake make out/lilypond CONFIG_LDFLAGS="-g2 \
          -sBINARYEN_EXTRA_PASSES=--spill-pointers -sSTACK_SIZE=8388608 \
-         -sINITIAL_MEMORY=1024MB -sEXIT_RUNTIME=1 -sENVIRONMENT=web \
+         -sALLOW_MEMORY_GROWTH=1 -sGROWABLE_ARRAYBUFFERS=0 \
+         -sEXIT_RUNTIME=1 -sENVIRONMENT=web \
          -sMODULARIZE=1 -sEXPORT_NAME=createLilypond \
          -sEXPORTED_RUNTIME_METHODS=callMain,FS \
          --pre-js $ROOT/lily-browser-pre.js \

@@ -86,9 +86,16 @@ Both Guile fixes are semantics-preserving on native and upstreamable
   startup, plus `GUILE_AUTO_COMPILE=0`.
 - **Chromium + memory growth**: with `-sALLOW_MEMORY_GROWTH` the heap's
   ArrayBuffer is resizable and Chromium's `TextDecoder` refuses it
-  (Emscripten 6.0.2). Workaround for now: fixed `-sINITIAL_MEMORY=1024MB`
-  for browser builds; node is fine either way. Worth rechecking on emsdk
-  upgrades.
+  (Emscripten 6.0.2). ~~Workaround for now: fixed `-sINITIAL_MEMORY=1024MB`
+  for browser builds~~ **solved (2026-07-06)**: `-sGROWABLE_ARRAYBUFFERS=0`
+  keeps the classic non-resizable buffer (views re-created on grow — the
+  resizable-buffer path mainly helps pthreads builds, which this isn't), so
+  browser builds now use growth from a ~26 MB start instead of a fixed 1 GB.
+  Verified in headless Chromium: control relink with growth alone still
+  fails with the TextDecoder error; growth + `=0` passes both render tests
+  at identical speed (trivial 744 ms, 64 measures 1171 ms). Note
+  `-sTEXTDECODER=0` (the pure-JS decoder fallback) no longer exists in
+  emscripten 6.x. Node is fine either way.
 - libffi 3.5.2 has the wasm32/Emscripten port upstream (Pyodide's) — no
   fork needed. GMP needs `CC_FOR_BUILD=gcc --disable-assembly`;
   libunistring and bdwgc are routine.
@@ -370,7 +377,8 @@ a fonts.conf) and preloaded via emcc `--preload-file`; a relink of
 `lily/out/lilypond` (link-only, objects untouched) swaps the flags to
 
 ```
--sINITIAL_MEMORY=1024MB (fixed; the TextDecoder-vs-resizable-heap issue)
+-sALLOW_MEMORY_GROWTH=1 -sGROWABLE_ARRAYBUFFERS=0   (starts ~26 MB, grows;
+    =0 avoids the TextDecoder-vs-resizable-heap issue — see build findings)
 -sENVIRONMENT=web -sMODULARIZE=1 -sEXPORT_NAME=createLilypond
 -sEXPORTED_RUNTIME_METHODS=callMain,FS
 ```
@@ -518,8 +526,10 @@ mapped build engineering it predicted:
    36 → 12 MB.
 
 Known deferred items: `--spill-pointers` costs perf (unmeasured; can also
-try collect-only-at-quiescence later); re-check the memory-growth /
-TextDecoder workaround on emsdk upgrades; lazy-loading the `.data` payload
+try collect-only-at-quiescence later); ~~re-check the memory-growth /
+TextDecoder workaround on emsdk upgrades~~ solved via
+`-sGROWABLE_ARRAYBUFFERS=0` (2026-07-06, see build findings); lazy-loading
+the `.data` payload
 (currently one 32.5 MB preload, 7.8 MB gzipped) and re-using a warm
 instance for repeated renders (currently one render per instantiation,
 `EXIT_RUNTIME=1`) are the obvious next browser-side levers.
