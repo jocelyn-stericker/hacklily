@@ -8,8 +8,14 @@
 // The manifest enumerates every clip, so we fetch it first and download each
 // `clip.url` it lists. Existing files are skipped unless `--force` is passed.
 //
-//   npm run media:fetch            # incremental
-//   npm run media:fetch -- --force # re-download everything
+// `--filter <pattern>` restricts downloads to clips whose root-relative URL
+// contains the pattern as a substring — handy for pulling one passage/voice
+// without the full ~140 MB set. Repeatable; multiple flags combine as an AND.
+//
+//   npm run media:fetch                                       # incremental
+//   npm run media:fetch -- --force                            # re-download everything
+//   npm run media:fetch -- --filter rainbow/000               # only the first rainbow segment
+//   npm run media:fetch -- --filter rainbow --filter af_heart  # af_heart across rainbow
 
 import fs from 'node:fs/promises'
 import path from 'node:path'
@@ -21,6 +27,17 @@ const BASE = (process.env.MEDIA_BASE ?? 'https://media.braat.app').replace(
 )
 const CONCURRENCY = 12
 const force = process.argv.includes('--force')
+
+// Repeatable `--filter`; a clip downloads only if its URL matches every pattern.
+const filters: string[] = []
+for (let i = 0; i < process.argv.length; i++) {
+  if (process.argv[i] === '--filter') {
+    const pat = process.argv[i + 1]
+    if (!pat) throw new Error('--filter requires a non-empty pattern argument')
+    filters.push(pat)
+  }
+}
+const hasFilter = filters.length > 0
 
 // tools/fetch-media.ts -> repo/media
 const mediaRoot = fileURLToPath(new URL('../media', import.meta.url))
@@ -70,8 +87,19 @@ async function main(): Promise<void> {
     for (const segment of passage.segments)
       for (const clip of Object.values(segment.clips)) urls.add(clip.url)
 
-  const all = [...urls]
-  console.log(`${all.length} clips listed in manifest`)
+  let all = [...urls]
+  if (hasFilter) {
+    all = all.filter((u) => filters.every((f) => u.includes(f)))
+    console.log(
+      `Filtering to ${all.length}/${urls.size} clips matching ${
+        filters.length === 1
+          ? JSON.stringify(filters[0])
+          : filters.map((f) => JSON.stringify(f)).join(' AND ')
+      }`,
+    )
+  } else {
+    console.log(`${all.length} clips listed in manifest`)
+  }
 
   // 3. Download with a small worker pool; skip files already present.
   let downloaded = 0
