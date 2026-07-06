@@ -369,8 +369,18 @@ mapped build engineering it predicted:
 3. ~~The rendering stack below Guile~~ **DONE (2026-07-05, see "The
    rendering stack" section)**: every configure gate resolves from
    `wasm-install/lib/pkgconfig` and the pango→cairo SVG path runs under
-   node. One deliberate deviation remains: production Hacklily runs a
-   *patched* libcairo the wasm build should eventually match.
+   node. ~~One deliberate deviation remains: production Hacklily runs a
+   *patched* libcairo~~ **matched (2026-07-06)**: production's
+   `svg-links.patch` (hacklily repo, `server/renderer-unstable/`; adapted
+   from unmerged cairo MR !254) is now vendored as
+   `patches/cairo-1.18.4-svg-links.patch` and applied. It implements the
+   tag hook stock cairo's SVG surface lacks, which turned out to be the
+   answer to the "missing `textedit:` anchors" puzzle: LilyPond emits
+   point-and-click tags by default, and unpatched cairo silently drops
+   them — in *any* build, native included. With the patch, the wasm
+   render emits one `<a xlink:href="textedit://...">` overlay per note
+   (verified: 4 anchors with correct line:col spans on `trivial.ly`),
+   so the galley view's anchor-based design carries over unchanged.
 4. **Browser packaging is now the front of the queue**: the node build
    leans on NODERAWFS; a browser build must ship `share/lilypond`
    (9.1 MB), the Guile modules (36 MB, or much less after pruning to what
@@ -386,6 +396,4 @@ mapped build engineering it predicted:
 
 Known deferred items: `--spill-pointers` costs perf (unmeasured; can also
 try collect-only-at-quiescence later); browser memory-growth workaround
-above; point-and-click (`textedit:`) anchors absent from cairo SVG output
-in both native and wasm builds with this invocation — investigate the
-right flag when Hacklily integration starts.
+above.

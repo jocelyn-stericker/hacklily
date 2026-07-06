@@ -315,6 +315,12 @@ if need_stage extract-lily-deps; then
   # (1-arg versions trap wasm's typed call_indirect — same UB family as the
   # Guile hashtab patch).
   patch -p1 -d "$SRC/pango-$PANGO_V" < "$ROOT/patches/pango-$PANGO_V-wasm-single-thread-and-iface-casts.patch"
+  # cairo: production Hacklily's SVG point-and-click patch. Stock cairo's
+  # SVG surface never implemented the tag hook (only PDF did), so LilyPond's
+  # CAIRO_TAG_LINK textedit: anchors are silently dropped without it.
+  # Adapted from unmerged cairo MR !254; same patch the hacklily-renderer
+  # image applies (server/renderer-unstable/svg-links.patch).
+  patch -p1 -d "$SRC/cairo-$CAIRO_V" < "$ROOT/patches/cairo-$CAIRO_V-svg-links.patch"
   # pango's tests need GIOChannel, which the wasm-vips glib patch trims.
   sed -i "s/^subdir('tests')/# &  # wasm: needs GIOChannel/" "$SRC/pango-$PANGO_V/meson.build"
   # fontconfig's bundled config.sub predates the wasm32 triplet.
@@ -563,7 +569,8 @@ else
       "$NODE" "$PREFIX/bin/lilypond" -dbackend=cairo --svg \
       -o "$TESTDIR/lily-smoke" "$ROOT/smoke/trivial.ly"
     grep -q "<svg" "$TESTDIR/lily-smoke.svg" \
-      && log "LILYPOND WASM RENDER: PASS ($TESTDIR/lily-smoke.svg)"
+      && grep -q "textedit://" "$TESTDIR/lily-smoke.svg" \
+      && log "LILYPOND WASM RENDER: PASS, with point-and-click anchors ($TESTDIR/lily-smoke.svg)"
   fi
 fi
 
