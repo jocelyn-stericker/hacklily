@@ -1,0 +1,19 @@
+{
+  "name": "@jocelyn-stericker/lilypond-wasm",
+  "version": "0.0.0",
+  "description": "GNU LilyPond compiled to WebAssembly: engrave scores to SVG in the browser, with ~40 ms warm re-renders. Real LilyPond + Guile, not a reimplementation.",
+  "license": "GPL-3.0-or-later",
+  "homepage": "https://codeberg.org/jocelyn-stericker/lilypond-wasm",
+  "repository": {
+    "type": "git",
+    "url": "https://codeberg.org/jocelyn-stericker/lilypond-wasm.git"
+  },
+  "keywords": [
+    "lilypond",
+    "music-notation",
+    "engraving",
+    "wasm",
+    "webassembly",
+    "svg"
+  ]
+}

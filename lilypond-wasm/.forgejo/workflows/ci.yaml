@@ -1,0 +1,79 @@
+# Build lilypond.wasm from source and publish the browser bundle to the
+# Codeberg npm registry.  DRAFT — untested on the runner; expected rough
+# edges are flagged inline.
+#
+# The build is heavy (native Guile + ~14 wasm libraries + LilyPond itself,
+# fonts built with TeX/FontForge host tools): expect 1–2+ hours cold.
+# bootstrap.sh is idempotent and stamps stages under work/, so caching the
+# work/ directory across runs (minus work/src) would make reruns cheap —
+# left out of this draft to keep it simple.
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build-and-publish:
+    runs-on: faith
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            pkg-config \
+            curl \
+            git \
+            python3 \
+            python3-packaging \
+            gperf \
+            bison \
+            flex \
+            gettext \
+            libgc-dev \
+            libgmp-dev \
+            libffi-dev \
+            libunistring-dev \
+            meson \
+            ninja-build \
+            fontforge-nox \
+            t1utils \
+            texlive-binaries \
+            texlive-metapost \
+            texlive-latex-base \
+            libpango1.0-dev \
+            libcairo2-dev \
+            libglib2.0-dev \
+            nodejs \
+            npm
+          rm -rf /var/lib/apt/lists/*
+      - name: Install playwright (headless-Chromium render tests)
+        run: |
+          npm install playwright
+          # --with-deps needs sudo for system libs; if the runner image
+          # already has them, plain `install chromium` suffices.
+          npx playwright install --with-deps chromium
+      - name: Build and test
+        run: |
+          # Downloads all sources sha256-pinned (incl. emsdk), builds the
+          # whole stack, and runs the node + browser render tests —
+          # including the warm-instance test (lily-warm.html).  Fails if
+          # any render test fails.
+          ./bootstrap.sh --browser
+      - name: Publish to Codeberg npm registry
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          mkdir -p dist
+          cp work/test/web-lily/lilypond-web.js dist/
+          cp work/test/web-lily/lilypond.wasm dist/
+          cp work/test/web-lily/lilypond.data dist/
+          cp work/test/web-lily/lily-worker.js dist/
+          cp lily-browser.html lily-warm.html dist/
+          cp README.md package.json dist/
+          cd dist
+          # Version tracks the LilyPond release, disambiguated per run.
+          npm version "2.27.1-build.${{ github.run_number }}" --no-git-tag-version
+          npm config set @jocelyn-stericker:registry https://codeberg.org/api/packages/jocelyn-stericker/npm/
+          npm config set -- '//codeberg.org/api/packages/jocelyn-stericker/npm/:_authToken' "${NPM_TOKEN}"
+          npm publish
