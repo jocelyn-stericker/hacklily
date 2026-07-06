@@ -7,6 +7,11 @@ built and run in this workspace; nothing is from memory.*
 under Emscripten" below. `lilypond.wasm` engraves real scores through the
 cairo backend under node.*
 
+*2026-07-06, later session: **bytecode + browser** — scm/lily cross-compiles
+to wasm32 `.go` (startup 3.6 s → 0.97 s), the Guile module payload prunes
+36 → 12 MB, and the whole thing renders in headless Chromium from a ~12 MB
+(gzipped) bundle. See "Bytecode and the browser" below.*
+
 Guile 3.0.11, cross-compiled with Emscripten 6.0.2 (`--enable-jit=no`,
 `--without-threads`, static), **boots and evals Scheme in headless Chromium**
 and under node. Verified beyond `(+ 1 2)`:
@@ -287,6 +292,121 @@ install` misses), and ends with the cairo render smoke test. The
 exploratory equivalent used in this session ran against the top-level
 `lilypond-2.27.1/build-wasm/` tree.
 
+## Bytecode and the browser (2026-07-06, later session)
+
+The two items left open above — `.go` bytecode for scm/lily and browser
+packaging — are both done.
+
+### Cross-compiling scm/lily to `.go` (`cross-bytecode.ly`)
+
+LilyPond's own `make bytecode` target cannot cross-compile, for a
+structural reason: it runs the lilypond binary with `GUILE_AUTO_COMPILE=1`
+over `scm/compile.ly` and harvests Guile's fallback ccache — and
+auto-compile *loads* each `.go` right after writing it, which a native
+Guile cannot do with wasm32 bytecode (32-bit LE ELF). The scm/GNUmakefile
+accordingly hard-errors when `CROSS=yes`. Guile's compiler target is just
+a set of fluids, though (`with-target` from `(system base target)` — the
+same machinery `guild compile --target=` uses, and the same path Guile's
+own build used for its 1029 cross-compiled `.go` files). So
+`cross-bytecode.ly`, run by the **native** LilyPond binary, splits the two
+phases that auto-compile interleaves:
+
+1. load every module `compile.ly` loads (natively, so ly: primitives and
+   macros are all live), then
+2. `compile-file` each installed `.scm` with the target fluids pointed at
+   `wasm32-unknown-emscripten` — same `%auto-compilation-options` and
+   `#:env` as auto-compile, but never loading the output.
+
+The `#:env` per file mirrors how each file was loaded: `(lily)` for
+`lily.scm` and the ~50 files `ly:load` splices into it (the
+`init-scheme-files` list is read out of the live module), each `(lily
+FOO)` submodule for the module files, and one special case —
+`define-music-display-methods.scm` is `ly:load`ed into `(lily
+display-lily)`. Compiling post-hoc instead of at load time is a mild
+fidelity gamble (macro bindings could in principle differ), settled
+empirically: the output `.go` set matches a native `make bytecode` run
+file-for-file (72 files), and the rendered SVGs are **byte-identical**
+with and without bytecode. The whole compile takes ~2 s and produces
+7.0 MB, installed at `lib/lilypond/2.27.1/ccache/lily/` (the path
+`main.cc` prepends to `%load-compiled-path`).
+
+Verified it's really being used: an fs-trace of a render (node fs hooks —
+strace isn't available in the container) shows 65 lily `.go` + 80 Guile
+`.go` opened and **zero** `.scm` opened from either tree.
+
+### Numbers (node, same machine as the earlier table)
+
+| Measure | source-loaded | with `.go` |
+|---|---|---|
+| trivial.ly (4 notes) | 3.56 s | **0.97 s** |
+| medium.ly (64 measures) | 4.43 s | **1.38 s** |
+| 64-measure margin | 0.87 s | 0.41 s |
+
+Startup floor ≈ 3.7× better; the engraving margin halves too (engraver
+callbacks are Scheme). The remaining ~1 s is Guile boot + module loading
+plus the render itself; native trivial is 0.39 s, so the whole-program
+gap is now ~2.5×, inside the planning doc's 1.5–3× estimate.
+
+### Pruning the Guile payload: 36 MB → 12 MB
+
+With bytecode present, a render opens only 80 of Guile's 1029 `.go`
+files (12 MB) and no `.scm` at all. A pruned tree with just those 80
+files — no sources, `GUILE_LOAD_PATH` pointing at an empty dir — renders
+byte-identically: Guile happily loads compiled-only. (The trace is the
+union over trivial + medium; other scores could pull a few more modules,
+so a production bundle should either keep the trace step per release, as
+`bootstrap.sh` now does, or lazy-load stragglers.) The lily side is less
+prunable: `ly:load` does its own `%search-load-path` on the source and
+hard-errors if the `.scm` is missing (verified: `cannot find: color`), so
+`share/lilypond/scm` stays in the bundle even though it's never opened.
+`share/lilypond/python` and `vim` are dead weight at runtime and are
+dropped.
+
+### Browser packaging
+
+The node build's NODERAWFS is replaced by a MEMFS payload staged at
+`/lilypond` (share subset + lily ccache + pruned Guile ccache + DejaVu +
+a fonts.conf) and preloaded via emcc `--preload-file`; a relink of
+`lily/out/lilypond` (link-only, objects untouched) swaps the flags to
+
+```
+-sINITIAL_MEMORY=1024MB (fixed; the TextDecoder-vs-resizable-heap issue)
+-sENVIRONMENT=web -sMODULARIZE=1 -sEXPORT_NAME=createLilypond
+-sEXPORTED_RUNTIME_METHODS=callMain,FS
+```
+
+plus `lily-browser-pre.js`, which sets env (`LILYPOND_DATADIR`/
+`LILYPOND_LIBDIR` — relocate.cc's `set_up_directory` honors both, so no
+argv0-relative prefix guessing in MEMFS — `GUILE_LOAD_COMPILED_PATH`,
+`FONTCONFIG_FILE`, `GUILE_AUTO_COMPILE=0`) and bumps mtimes on both
+ccache trees (the packager-loses-mtimes trick from the Guile browser
+test, now needed twice). The page writes `/input.ly` with `FS.writeFile`,
+runs `callMain(['-dbackend=cairo', '--svg', ...])`, and reads the SVG
+back out of MEMFS — one render per instantiation (`EXIT_RUNTIME=1`),
+which matches the worker-per-render shape Hacklily's server uses anyway.
+Single-threaded build → no COOP/COEP needed.
+
+Headless Chromium (playwright, local http):
+
+| Measure | Value |
+|---|---|
+| module init (wasm compile + 32 MB data, local) | ~60–75 ms |
+| trivial.ly render | 0.70 s |
+| medium.ly render (512 textedit anchors intact) | 1.15 s |
+| bundle: lilypond.wasm stripped / gzipped | 14.6 MB / 4.4 MB |
+| bundle: lilypond.data / gzipped | 32.5 MB / 7.8 MB |
+| bundle: loader JS / gzipped | 234 KB / 52 KB |
+| **whole bundle over the wire (gzip)** | **~12.2 MB** |
+
+Slightly faster than node (MEMFS beats NODERAWFS's JS↔syscall chatter).
+`bootstrap.sh` carries all of it: stages `lilypond-native` (host tooling;
+gated on native pango/cairo/glib dev packages), `lily-bytecode`, and with
+`--browser` `lily-browser` + two headless-Chromium render tests
+(`browser-test.js` grew `PAGE`/`MATCH` env parameters;
+`lily-browser.html?measures=64` generates the medium score). On a fresh
+machine playwright's Chromium also needs system libs:
+`npx playwright install-deps` or the usual `libnspr4 libnss3 …` set.
+
 ## Layout
 
 ```
@@ -313,7 +433,12 @@ smoke/fonts.conf         fontconfig config for running tests by hand
 smoke/trivial.ly         4-note render smoke test score
 smoke/medium.ly          64-measure timing score
 guile-env-pre.js         MEMFS mtime + GUILE_AUTO_COMPILE pre-js
+cross-bytecode.ly        scm/lily -> wasm32 .go driver (run by native lilypond)
+fs-trace.js              node --require hook logging fs opens (payload pruning)
+lily-browser-pre.js      browser build pre-js: env plumbing + mtime fix
+lily-browser.html        browser harness page (?measures=N for timing scores)
 webtest/                 browser bundle (eval-test.html + 50 MB .data)
+webtest-lily/            lilypond browser bundle (stage/ payload + web/)
 ```
 
 ## Upstreaming (assessed 2026-07-05)
@@ -381,19 +506,20 @@ mapped build engineering it predicted:
    render emits one `<a xlink:href="textedit://...">` overlay per note
    (verified: 4 anchors with correct line:col spans on `trivial.ly`),
    so the galley view's anchor-based design carries over unchanged.
-4. **Browser packaging is now the front of the queue**: the node build
-   leans on NODERAWFS; a browser build must ship `share/lilypond`
-   (9.1 MB), the Guile modules (36 MB, or much less after pruning to what
-   LilyPond actually loads), fonts, and a fontconfig setup into
-   MEMFS/lazy-loaded storage, with the memory-growth-vs-TextDecoder
-   workaround from the Guile browser test. The 14 MB stripped binary
-   gzips to 4.6 MB.
-5. **`.go` bytecode for `scm/lily`**: the 3.5 s startup floor is Guile
-   interpreting LilyPond's Scheme from source. `make bytecode` +
-   `guild compile --target=wasm32-unknown-emscripten` (the native
-   2.27.1 build in this workspace supplies the host-side toolchain) is
-   the next measurable win.
+4. ~~Browser packaging~~ **DONE (2026-07-06, see "Bytecode and the
+   browser")**: renders in headless Chromium from a ~12 MB gzipped
+   bundle (MEMFS payload at `/lilypond`, fixed 1 GB memory, MODULARIZE +
+   callMain, playwright-tested).
+5. ~~`.go` bytecode for `scm/lily`~~ **DONE (2026-07-06, same section)**:
+   `make bytecode` can't cross-compile (auto-compile loads what it
+   writes), so `cross-bytecode.ly` does load-then-compile-file in the
+   native binary with the compiler's target fluids set. Startup
+   3.56 s → 0.97 s; output byte-identical; Guile payload prunes
+   36 → 12 MB.
 
 Known deferred items: `--spill-pointers` costs perf (unmeasured; can also
-try collect-only-at-quiescence later); browser memory-growth workaround
-above.
+try collect-only-at-quiescence later); re-check the memory-growth /
+TextDecoder workaround on emsdk upgrades; lazy-loading the `.data` payload
+(currently one 32.5 MB preload, 7.8 MB gzipped) and re-using a warm
+instance for repeated renders (currently one render per instantiation,
+`EXIT_RUNTIME=1`) are the obvious next browser-side levers.

@@ -1,5 +1,7 @@
-// Headless-Chromium check for the Guile.wasm browser bundle.
-// Usage: WEBDIR=/path/to/dir-with-eval-test.html node browser-test.js
+// Headless-Chromium check for a wasm browser bundle.
+// Usage: WEBDIR=/path/to/webdir node browser-test.js
+//   PAGE=eval-test.html   page to load (default: the Guile eval test)
+//   MATCH='guile version' console text that means PASS
 // Requires playwright (npm install playwright && npx playwright install chromium).
 const { chromium } = require('playwright');
 const { spawn } = require('child_process');
@@ -7,6 +9,8 @@ const { spawn } = require('child_process');
 const webdir = process.env.WEBDIR;
 if (!webdir) { console.error('set WEBDIR'); process.exit(2); }
 const port = process.env.PORT || 8643;
+const pageName = process.env.PAGE || 'eval-test.html';
+const match = process.env.MATCH || 'guile version';
 
 (async () => {
   const server = spawn('python3', ['-m', 'http.server', String(port)], { cwd: webdir });
@@ -20,11 +24,12 @@ const port = process.env.PORT || 8643;
 
   let ok = false;
   try {
-    await page.goto(`http://localhost:${port}/eval-test.html`);
-    await page.waitForEvent('console', {
-      predicate: (m) => m.text().includes('guile version'),
+    await page.goto(`http://localhost:${port}/${pageName}`);
+    const msg = await page.waitForEvent('console', {
+      predicate: (m) => m.text().includes(match),
       timeout: 120000,
     });
+    if (msg.text().includes('FAIL')) throw new Error(msg.text());
     ok = true;
     console.log('BROWSER TEST: PASS');
   } catch (e) {

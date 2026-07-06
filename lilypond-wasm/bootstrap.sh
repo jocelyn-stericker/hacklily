@@ -6,7 +6,7 @@
 #                     wasm build; Guile cross-builds need the same version)
 #   wasm-install/     libguile-3.0.a + deps + share/ccache trees, all
 #                     wasm32-unknown-emscripten
-#   test/             node test binaries (and web/ if --browser)
+#   test/             node test binaries (and web/ + web-lily/ if --browser)
 #
 # Usage:
 #   ./bootstrap.sh            run everything (idempotent; stamps in work/.stamps)
@@ -571,6 +571,147 @@ else
     grep -q "<svg" "$TESTDIR/lily-smoke.svg" \
       && grep -q "textedit://" "$TESTDIR/lily-smoke.svg" \
       && log "LILYPOND WASM RENDER: PASS, with point-and-click anchors ($TESTDIR/lily-smoke.svg)"
+  fi
+
+  # --- 11. Scheme .go bytecode ---------------------------------------------
+  # The ~3.5 s startup floor of the render above is Guile loading scm/lily
+  # from source.  LilyPond's own `make bytecode` can't cross-compile (Guile's
+  # auto-compile loads each .go right after writing it, and native Guile
+  # can't load wasm32 bytecode), so cross-bytecode.ly loads everything in a
+  # *native* LilyPond and then compile-files each .scm with the compiler's
+  # target fluids pointed at wasm32.  That needs a native LilyPond, which
+  # needs native dev packages of the rendering stack (Debian:
+  # libpango1.0-dev libcairo2-dev libfontconfig-dev libfreetype-dev
+  # libglib2.0-dev libpng-dev zlib1g-dev libgc-dev).
+  NATIVE_LILY_DEPS=yes
+  for p in pangoft2 cairo fontconfig freetype2 glib-2.0 gobject-2.0 libpng zlib bdw-gc; do
+    pkg-config --exists "$p" || NATIVE_LILY_DEPS=no
+  done
+
+  if [ "$NATIVE_LILY_DEPS" = no ]; then
+    log "skipping Scheme bytecode: native rendering-stack dev packages missing"
+  else
+    if need_stage lilypond-native; then
+      log "building LilyPond (native: host tooling for .go cross-compilation)"
+      mkdir -p "$SRC/lilypond-$LILYPOND_V/build-native"
+      (cd "$SRC/lilypond-$LILYPOND_V/build-native"
+       PKG_CONFIG_PATH="$NATIVE_PREFIX/lib/pkgconfig" ../configure \
+         --prefix="$WORK/native-lilypond" --disable-documentation \
+         > "$WORK/lilypond-native-configure.log" 2>&1
+       make -j"$JOBS" > "$WORK/lilypond-native-build.log" 2>&1)
+      done_stage lilypond-native
+    fi
+
+    if need_stage lily-bytecode; then
+      log "cross-compiling scm/lily to wasm32 .go bytecode"
+      LD_LIBRARY_PATH="$NATIVE_PREFIX/lib" \
+      GUILE_AUTO_COMPILE=0 \
+      CROSS_SCM_DIR="$PREFIX/share/lilypond/$LILYPOND_V/scm/lily" \
+      CROSS_GO_DIR="$PREFIX/lib/lilypond/$LILYPOND_V/ccache/lily" \
+        "$SRC/lilypond-$LILYPOND_V/build-native/out/bin/lilypond" \
+        "$ROOT/cross-bytecode.ly" > "$WORK/lily-bytecode.log" 2>&1
+      GO_N=$(ls "$PREFIX/lib/lilypond/$LILYPOND_V/ccache/lily"/*.go | wc -l)
+      log "compiled $GO_N .go files into lib/lilypond/$LILYPOND_V/ccache/lily"
+      done_stage lily-bytecode
+    fi
+
+    if [ -n "$FONTDIR" ]; then
+      log "timed render with bytecode (source-loading startup was ~3.5 s)"
+      time ( GUILE_LOAD_PATH="$PREFIX/share/guile/3.0" \
+             GUILE_LOAD_COMPILED_PATH="$PREFIX/lib/guile/3.0/ccache" \
+             GUILE_AUTO_COMPILE=0 FONTCONFIG_FILE="$TESTDIR/fonts.conf" \
+               "$NODE" "$PREFIX/bin/lilypond" -dbackend=cairo --svg \
+               -o "$TESTDIR/lily-smoke-go" "$ROOT/smoke/trivial.ly" )
+    fi
+  fi
+
+  # --- 12. browser bundle ----------------------------------------------------
+  # The node build leans on NODERAWFS; the browser build preloads a staged
+  # payload into MEMFS (env plumbing + packager-mtime fix: lily-browser-pre.js)
+  # and relinks with fixed memory (ALLOW_MEMORY_GROWTH makes the heap's
+  # ArrayBuffer resizable, which Chromium's TextDecoder rejects).
+  if [ "$BROWSER" = yes ] && [ -n "$FONTDIR" ] \
+     && [ -f "$PREFIX/lib/lilypond/$LILYPOND_V/ccache/lily/lily.go" ]; then
+    WEBLILY="$TESTDIR/web-lily"
+    if need_stage lily-browser; then
+      log "building lilypond.wasm browser bundle"
+      LSTAGE="$WORK/lily-web-stage"
+      rm -rf "$LSTAGE" "$WEBLILY"
+      mkdir -p "$LSTAGE/share/lilypond/$LILYPOND_V" \
+               "$LSTAGE/lib/lilypond/$LILYPOND_V" \
+               "$LSTAGE/fonts/text" "$WEBLILY"
+      # share subset: python/ and vim/ are not needed at runtime
+      for d in fonts ly ps scm; do
+        cp -a "$PREFIX/share/lilypond/$LILYPOND_V/$d" \
+              "$LSTAGE/share/lilypond/$LILYPOND_V/"
+      done
+      cp -a "$PREFIX/lib/lilypond/$LILYPOND_V/ccache" \
+            "$LSTAGE/lib/lilypond/$LILYPOND_V/"
+      # Trace which Guile modules renders actually open and ship only those
+      # (36 MB -> ~12 MB; all .go, sources never opened once bytecode exists).
+      for score in trivial medium; do
+        FS_TRACE_OUT="$WORK/fs-trace-$score.txt" \
+        NODE_OPTIONS="--require $ROOT/fs-trace.js" \
+        GUILE_LOAD_PATH="$PREFIX/share/guile/3.0" \
+        GUILE_LOAD_COMPILED_PATH="$PREFIX/lib/guile/3.0/ccache" \
+        GUILE_AUTO_COMPILE=0 FONTCONFIG_FILE="$TESTDIR/fonts.conf" \
+          "$NODE" "$PREFIX/bin/lilypond" -dbackend=cairo --svg \
+          -o "$TESTDIR/lily-trace-$score" "$ROOT/smoke/$score.ly" \
+          > /dev/null 2>&1
+      done
+      GUILE_CCACHE="$PREFIX/lib/guile/3.0/ccache"
+      cat "$WORK/fs-trace-trivial.txt" "$WORK/fs-trace-medium.txt" \
+        | sed -n "s|^OPEN $GUILE_CCACHE/||p" | sort -u \
+        | while read -r rel; do
+            mkdir -p "$LSTAGE/guile-ccache/$(dirname "$rel")"
+            cp -p "$GUILE_CCACHE/$rel" "$LSTAGE/guile-ccache/$rel"
+          done
+      # text fonts (music fonts ship in share/lilypond/fonts)
+      find "$FONTDIR" -name 'DejaVu*.ttf' | head -8 > "$WORK/lily-web-fonts.txt"
+      [ -s "$WORK/lily-web-fonts.txt" ] \
+        || find "$FONTDIR" -name '*.ttf' | head -8 > "$WORK/lily-web-fonts.txt"
+      xargs -a "$WORK/lily-web-fonts.txt" -I{} cp {} "$LSTAGE/fonts/text/"
+      cat > "$LSTAGE/fonts.conf" <<EOF
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+  <dir>/lilypond/fonts/text</dir>
+  <cachedir>/fccache</cachedir>
+</fontconfig>
+EOF
+      # Relink lily/out/lilypond with browser flags (the objects are all
+      # up to date, so this is link-only), then restore the node binary.
+      (cd "$SRC/lilypond-$LILYPOND_V/build-wasm/lily"
+       mv out/lilypond out/lilypond.node
+       mv out/lilypond.wasm out/lilypond.node.wasm
+       emmake make out/lilypond CONFIG_LDFLAGS="-g2 \
+         -sBINARYEN_EXTRA_PASSES=--spill-pointers -sSTACK_SIZE=8388608 \
+         -sINITIAL_MEMORY=1024MB -sEXIT_RUNTIME=1 -sENVIRONMENT=web \
+         -sMODULARIZE=1 -sEXPORT_NAME=createLilypond \
+         -sEXPORTED_RUNTIME_METHODS=callMain,FS \
+         --pre-js $ROOT/lily-browser-pre.js \
+         --preload-file $LSTAGE@/lilypond" \
+         > "$WORK/lily-browser-link.log" 2>&1
+       cp out/lilypond "$WEBLILY/lilypond-web.js"
+       cp out/lilypond.data "$WEBLILY/"
+       # the -g2 name section is only needed at link (--spill-pointers)
+       "$EMSDK/upstream/bin/llvm-strip" --strip-all \
+         out/lilypond.wasm -o "$WEBLILY/lilypond.wasm"
+       rm out/lilypond out/lilypond.wasm out/lilypond.data
+       mv out/lilypond.node out/lilypond
+       mv out/lilypond.node.wasm out/lilypond.wasm)
+      cp "$ROOT/lily-browser.html" "$WEBLILY/"
+      done_stage lily-browser
+    fi
+    if "$NODE" -e "require.resolve('playwright')" >/dev/null 2>&1; then
+      log "running headless-Chromium LilyPond render tests"
+      WEBDIR="$WEBLILY" PAGE=lily-browser.html MATCH="LILY BROWSER:" \
+        "$NODE" "$ROOT/browser-test.js"
+      WEBDIR="$WEBLILY" PAGE="lily-browser.html?measures=64" \
+        MATCH="LILY BROWSER:" "$NODE" "$ROOT/browser-test.js"
+    else
+      log "playwright not found; serve $WEBLILY/lily-browser.html and check the console"
+    fi
   fi
 fi
 

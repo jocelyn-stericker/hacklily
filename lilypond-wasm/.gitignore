@@ -46,6 +46,10 @@ run-scheme.js
 run-scheme-memfs.js
 lily-api-test.js
 webtest/
+webtest-lily/
+out-base/
+out-go/
+out-pruned/
 smoke/*.js
 smoke/out.svg
 emscripten-cross.meson
