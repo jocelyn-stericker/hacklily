@@ -77,7 +77,11 @@ export default class FileMenu extends React.PureComponent<Props> {
 
     const tutorial: React.ReactNode = (
       <MenuItem
-        href="http://lilypond.org/doc/v2.18/Documentation/learning/index"
+        href={`http://lilypond.org/doc/v${
+          process.env.REACT_APP_STABLE_LILYPOND_VERSION?.split(".")
+            .slice(0, 2)
+            .join(".") ?? "2.26"
+        }/Documentation/learning/index`}
         rel="noopener noreferrer"
         target="_blank"
         text="LilyPond manual&hellip;"

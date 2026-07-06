@@ -62,7 +62,11 @@ class ModalAbout extends React.PureComponent<Props> {
             </a>
             . New to LilyPond? Take a look at the{" "}
             <a
-              href="http://lilypond.org/doc/v2.18/Documentation/learning/index"
+              href={`http://lilypond.org/doc/v${
+                process.env.REACT_APP_STABLE_LILYPOND_VERSION?.split(".")
+                  .slice(0, 2)
+                  .join(".") ?? "2.26"
+              }/Documentation/learning/tutorial`}
               rel="noopener noreferrer"
               target="_blank"
             >
@@ -154,7 +158,11 @@ class ModalAbout extends React.PureComponent<Props> {
           <div className={Classes.DIALOG_FOOTER_ACTIONS}>
             <Button onClick={this.props.onHide}>Close</Button>
             <AnchorButton
-              href="http://lilypond.org/doc/v2.18/Documentation/learning/index"
+              href={`http://lilypond.org/doc/v${
+                process.env.REACT_APP_STABLE_LILYPOND_VERSION?.split(".")
+                  .slice(0, 2)
+                  .join(".") ?? "2.26"
+              }/Documentation/learning/tutorial`}
               intent={Intent.PRIMARY}
               rel="noopener noreferrer"
               target="_blank"
