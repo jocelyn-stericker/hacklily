@@ -833,3 +833,43 @@ diff -ru a/libguile/weak-vector.c b/libguile/weak-vector.c
                              NULL);
  }
  
+diff -ru a/libguile/modules.c b/libguile/modules.c
+--- a/libguile/modules.c	2019-08-26 08:41:29.000000000 +0000
++++ b/libguile/modules.c	2026-07-06 02:01:16.000000000 +0000
+@@ -196,6 +196,23 @@
+                      k_ensure, SCM_BOOL_F);
+ }
+ 
++struct c_define_module_data
++{
++  void (*init) (void *);
++  void *data;
++};
++
++/* Calling INIT through a (SCM (*)(void *)) cast is undefined behavior:
++   the return types differ, so wasm's typed call_indirect (and clang CFI)
++   trap.  Wrap it in a correctly-typed trampoline instead.  */
++static SCM
++c_define_module_init_trampoline (void *d)
++{
++  struct c_define_module_data *cd = d;
++  cd->init (cd->data);
++  return SCM_UNSPECIFIED;
++}
++
+ SCM
+ scm_c_define_module (const char *name,
+ 		     void (*init)(void *), void *data)
+@@ -203,7 +220,11 @@
+   SCM module = scm_call_1 (SCM_VARIABLE_REF (define_module_star_var),
+ 			   convert_module_name (name));
+   if (init)
+-    scm_c_call_with_current_module (module, (SCM (*)(void*))init, data);
++    {
++      struct c_define_module_data cd = { init, data };
++      scm_c_call_with_current_module (module, c_define_module_init_trampoline,
++                                      &cd);
++    }
+   return module;
+ }
+ 

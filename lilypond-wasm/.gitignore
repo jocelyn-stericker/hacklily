@@ -29,6 +29,7 @@ pango-1*/
 
 # build and install trees
 guile-wasm-build/
+host-headers/
 install/
 wasm-install/
 work/

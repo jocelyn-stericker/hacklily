@@ -56,6 +56,10 @@ PIXMAN_V=0.42.2
 CAIRO_V=1.18.4
 PANGO_V=1.52.2
 
+# LilyPond itself (built when the required host tools are present; see the
+# final stage)
+LILYPOND_V=2.27.1
+
 if [ "${1:-}" = clean ]; then rm -rf "$WORK"; exit 0; fi
 BROWSER=no
 [ "${1:-}" = --browser ] && BROWSER=yes
@@ -117,6 +121,8 @@ if need_stage download-lily-deps; then
         445ed8208a6e4823de1226a74ca319d3600e83f6369f99b14265006599c32ccb
   fetch "https://download.gnome.org/sources/pango/${PANGO_V%.*}/pango-$PANGO_V.tar.xz" \
         d0076afe01082814b853deec99f9349ece5f2ce83908b8e58ff736b41f78a96b
+  fetch "https://lilypond.org/download/sources/v${LILYPOND_V%.*}/lilypond-$LILYPOND_V.tar.gz" \
+        ab81ac451ee247db3af0980bef6d87834647fd90ad04e1d98730f1bfd285d393
   done_stage download-lily-deps
 fi
 
@@ -299,6 +305,10 @@ if need_stage extract-lily-deps; then
   # threads dependency (-pthread) out of a single-threaded build.
   patch -p1 -d "$SRC/glib-$GLIB_V" < "$ROOT/patches/glib-$GLIB_V-emscripten-wasm-vips.patch"
   patch -p1 -d "$SRC/glib-$GLIB_V" < "$ROOT/patches/glib-$GLIB_V-emscripten-no-pthread.patch"
+  # LilyPond needs GRegex (lily/glib-regex-scheme.cc); the wasm-vips series
+  # removes it along with its pcre2 dependency, so reverse that one commit
+  # (extracted verbatim from the series). pcre2 is already in the prefix.
+  patch -p1 -R -d "$SRC/glib-$GLIB_V" < "$ROOT/patches/glib-$GLIB_V-gregex-removal-to-reverse.patch"
   patch -p1 -d "$SRC/harfbuzz-$HARFBUZZ_V" < "$ROOT/patches/harfbuzz-$HARFBUZZ_V-emscripten-no-pthread.patch"
   # pango: run the deferred-FcInit/match/sort worker ops synchronously on
   # wasm (no threads) + give iface_init functions their true 2-arg signature
@@ -490,6 +500,71 @@ EOF
   (cd "$TESTDIR" && FONTCONFIG_FILE="$TESTDIR/fonts.conf" "$NODE" pango-smoke.js)
 else
   log "no host fonts found; skipping pango smoke test run"
+fi
+
+# --- 10. LilyPond itself -------------------------------------------------------
+# Requires host tools beyond the earlier stages: FontForge, Metafont/MetaPost
+# (texlive), t1asm, gettext, bison, flex — Debian: fontforge-nox t1utils
+# texlive-binaries texlive-metapost texlive-latex-base gettext bison flex.
+# The fonts and share/ tree are built by these *host* tools; only the C++
+# binary is cross-compiled.
+LILY_TOOLS_MISSING=""
+for t in fontforge mf-nowin mpost t1asm msgfmt bison flex; do
+  command -v "$t" >/dev/null || LILY_TOOLS_MISSING="$LILY_TOOLS_MISSING $t"
+done
+
+if [ -n "$LILY_TOOLS_MISSING" ]; then
+  log "skipping LilyPond build; missing host tools:$LILY_TOOLS_MISSING"
+else
+  if need_stage extract-lilypond; then
+    log "extracting LilyPond"
+    rm -rf "$SRC/lilypond-$LILYPOND_V"
+    tar -C "$SRC" -xf "$DL/lilypond-$LILYPOND_V.tar.gz"
+    done_stage extract-lilypond
+  fi
+
+  # FlexLexer.h is a compiler-agnostic C++ header, but em++ doesn't search
+  # /usr/include; stage it somewhere we can add with -I.
+  mkdir -p "$WORK/host-headers"
+  cp /usr/include/FlexLexer.h "$WORK/host-headers/"
+
+  if need_stage lilypond; then
+    log "building LilyPond (wasm)"
+    # - --build + --host puts configure in cross mode (same lesson as Guile
+    #   and freetype: without --build, conftests run under node).
+    # - PKG_CONFIG="pkg-config --static" so Requires.private chains (expat
+    #   behind fontconfig, gmp behind guile, pcre2 behind glib) reach the
+    #   final link line.
+    # - LDFLAGS: --spill-pointers keeps BDW-GC sound (needs the -g2 name
+    #   section); NODERAWFS gives the node binary the real filesystem, so
+    #   share/ and fonts need no packaging. Browser builds repackage later.
+    mkdir -p "$SRC/lilypond-$LILYPOND_V/build-wasm"
+    (cd "$SRC/lilypond-$LILYPOND_V/build-wasm"
+     EM_PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig" emconfigure ../configure \
+       --build="$(gcc -dumpmachine)" --host=wasm32-unknown-emscripten \
+       --prefix="$PREFIX" --disable-documentation \
+       CPPFLAGS="-I$WORK/host-headers" \
+       PKG_CONFIG="pkg-config --static" \
+       LDFLAGS="-g2 -sBINARYEN_EXTRA_PASSES=--spill-pointers -sSTACK_SIZE=8388608 -sALLOW_MEMORY_GROWTH=1 -sNODERAWFS=1 -sEXIT_RUNTIME=1" \
+       > "$WORK/lilypond-configure.log" 2>&1
+     emmake make -j"$JOBS" > "$WORK/lilypond-build.log" 2>&1
+     emmake make install > "$WORK/lilypond-install.log" 2>&1
+     # make install copies the JS loader but not its wasm sidecar.
+     cp lily/out/lilypond.wasm "$PREFIX/bin/")
+    done_stage lilypond
+  fi
+
+  if [ -n "$FONTDIR" ]; then
+    log "rendering smoke test score with wasm LilyPond (cairo -> SVG)"
+    GUILE_LOAD_PATH="$PREFIX/share/guile/3.0" \
+    GUILE_LOAD_COMPILED_PATH="$PREFIX/lib/guile/3.0/ccache" \
+    GUILE_AUTO_COMPILE=0 \
+    FONTCONFIG_FILE="$TESTDIR/fonts.conf" \
+      "$NODE" "$PREFIX/bin/lilypond" -dbackend=cairo --svg \
+      -o "$TESTDIR/lily-smoke" "$ROOT/smoke/trivial.ly"
+    grep -q "<svg" "$TESTDIR/lily-smoke.svg" \
+      && log "LILYPOND WASM RENDER: PASS ($TESTDIR/lily-smoke.svg)"
+  fi
 fi
 
 log "all done — wasm Guile + LilyPond rendering stack in $PREFIX"

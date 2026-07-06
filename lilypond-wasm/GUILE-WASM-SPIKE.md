@@ -3,6 +3,10 @@
 *2026-07-05. Follow-up to §2 of `~/HACKLILY_PLANNING.md`. Everything below was
 built and run in this workspace; nothing is from memory.*
 
+*2026-07-06: **LilyPond itself now builds and renders** — see "LilyPond
+under Emscripten" below. `lilypond.wasm` engraves real scores through the
+cairo backend under node.*
+
 Guile 3.0.11, cross-compiled with Emscripten 6.0.2 (`--enable-jit=no`,
 `--without-threads`, static), **boots and evals Scheme in headless Chromium**
 and under node. Verified beyond `(+ 1 2)`:
@@ -173,13 +177,125 @@ the two meson.build thread tweaks plus the pango sync-fontconfig fallback
 are wasm-build-only conditionals GNOME may or may not want — worth an
 issue upstream, not worth blocking on.
 
+## LilyPond under Emscripten (2026-07-06)
+
+LilyPond 2.27.1, cross-compiled with em++ against the wasm prefix, **renders
+scores to SVG through the cairo backend under node**:
+
+```
+GUILE_LOAD_PATH=$PREFIX/share/guile/3.0 \
+GUILE_LOAD_COMPILED_PATH=$PREFIX/lib/guile/3.0/ccache \
+GUILE_AUTO_COMPILE=0 FONTCONFIG_FILE=smoke/fonts.conf \
+node $PREFIX/bin/lilypond -dbackend=cairo --svg -o out smoke/trivial.ly
+# => Success: compilation successfully completed
+```
+
+Verified: `smoke/trivial.ly` (4 notes) and `smoke/medium.ly` (64 measures)
+produce well-formed SVG structurally identical to the native binary's output
+(same glyph-group counts; the trivial render was also eyeballed as a PNG —
+treble clef, common time, four ascending quarters). `make install` yields a
+self-contained prefix: the binary finds `share/lilypond/2.27.1` relative to
+its install path with no env var.
+
+### The predicted hard part was shallow
+
+The spike write-up expected "Guile-configure-class archaeology" from a
+configure.ac with zero cross-compilation handling. In fact **LilyPond's
+configure completed on the first full pass** given the lessons already
+learned: `--build`+`--host` (cross mode without running conftests),
+`EM_PKG_CONFIG_PATH`, and host tools on PATH. All fourteen PKG_CHECK gates
+resolved from the wasm prefix, and the mixed build/host tool discipline the
+doc worried about just worked — mf-nowin/mpost/fontforge/t1asm built the
+fonts and share tree on the host while em++ compiled the C++, inside one
+build tree. Three small pieces of grease:
+
+- `msgfmt` (gettext) and the TeX/FontForge tools must exist on the host —
+  Debian: `fontforge-nox t1utils texlive-binaries texlive-metapost
+  texlive-latex-base gettext` (plus bison/flex).
+- `FlexLexer.h` is a compiler-agnostic C++ header that em++ won't find in
+  /usr/include; stage a copy and pass `-I`.
+- `PKG_CONFIG="pkg-config --static"`, or the `Requires.private` chains
+  (expat behind fontconfig, gmp behind guile, pcre2 behind glib) fall off
+  the final link line — same lesson as meson's `--prefer-static`, now on
+  the autotools side.
+
+### The two real findings
+
+1. **The wasm-vips glib series removes GRegex** (and its pcre2 dependency)
+   — and LilyPond uses GRegex (`lily/glib-regex-scheme.cc`, its Scheme
+   regex layer). Fix: reverse that one commit of the series (extracted
+   verbatim as `patches/glib-2.80.3-gregex-removal-to-reverse.patch`,
+   applied with `patch -R`); our pcre2 was already in the prefix, and
+   glib's own pcre2 detection finds it via the meson cross file.
+2. **The function-pointer-cast UB struck a fourth time — in libguile
+   itself**: `modules.c` `scm_c_define_module` calls the user's
+   `void (*init)(void *)` through an `(SCM (*)(void *))` cast. Return-type
+   mismatch → `call_indirect` trap, hit at LilyPond's very first
+   `Scm_module::boot`. Our API test had covered gsubrs, foreign objects,
+   catch/throw — but never `scm_c_define_module` with a nonnull init.
+   Fixed with a typed trampoline, appended to
+   `patches/guile-3.0.11-wasm-function-pointer-casts.patch` (verified to
+   apply against the pristine tarball). Notably, **LilyPond's own C++ needed
+   zero patches**: its `lily-modules.cc` already routes every callback
+   through correctly-typed trampolines, with a comment citing exactly this
+   class of UB — consistent with the earlier `smobs.tcc` observation.
+
+C++ exceptions coexisting with Guile's setjmp/longjmp under the default
+`-sSUPPORT_LONGJMP=emscripten` produced no observed issues.
+
+### Numbers
+
+| Measure | Value |
+|---|---|
+| trivial.ly (4 notes), wasm under node | 3.6 s |
+| trivial.ly, native (same machine, aarch64) | 0.39 s |
+| medium.ly (64 measures), wasm | 4.3 s (+0.7 s over trivial) |
+| medium.ly, native | 0.38 s (marginal cost ≈ 0) |
+| `--version` under node | 0.11 s |
+| `lilypond.wasm` as linked (-g2 names) | 69 MB |
+| stripped (renders identically; names only needed at link for --spill-pointers) | 14 MB (4.6 MB gzipped) |
+| share/lilypond (ly+scm+fonts) | 9.1 MB |
+| Guile modules (scm + ccache .go) | 36 MB |
+
+The ~3.5 s floor is **Guile boot plus loading LilyPond's `scm/` tree as
+source** (the `.go` side target is still deferred; stripping the binary
+changes nothing, so it isn't wasm parse time). Engraving itself runs near
+native speed — 64 measures cost +0.7 s wasm vs ≈0 native, and most of that
+margin is likely also Scheme (engraver callbacks). Cross-compiling the
+`scm/` tree to `.go` bytecode (`make bytecode`, `guild compile
+--target=wasm32-unknown-emscripten`, exactly as done for Guile's own
+modules) is the obvious next lever on both the floor and the margin.
+
+### Build recipe
+
+`bootstrap.sh` now carries it end to end: stage `lilypond` (gated on the
+host tools above, skipped with a message otherwise) configures with
+
+```
+emconfigure ../configure --build=$(gcc -dumpmachine) \
+  --host=wasm32-unknown-emscripten --prefix=$PREFIX \
+  --disable-documentation CPPFLAGS=-I$WORK/host-headers \
+  PKG_CONFIG="pkg-config --static" \
+  LDFLAGS="-g2 -sBINARYEN_EXTRA_PASSES=--spill-pointers \
+    -sSTACK_SIZE=8388608 -sALLOW_MEMORY_GROWTH=1 -sNODERAWFS=1 \
+    -sEXIT_RUNTIME=1"
+```
+
+then `emmake make && emmake make install` (plus copying the
+`lilypond.wasm` sidecar next to the installed JS loader, which `make
+install` misses), and ends with the cairo render smoke test. The
+exploratory equivalent used in this session ran against the top-level
+`lilypond-2.27.1/build-wasm/` tree.
+
 ## Layout
 
 ```
 bootstrap.sh             canonical entry point: downloads (sha256-pinned),
                          patches, builds native Guile + deps + wasm Guile,
                          runs the node tests, then the LilyPond rendering
-                         stack (zlib..pango) + pango/cairo smoke test;
+                         stack (zlib..pango) + pango/cairo smoke test, then
+                         LilyPond itself + a cairo SVG render smoke test
+                         (skipped if FontForge/TeX host tools are absent);
                          --browser adds the Chromium test
 browser-test.js          headless-Chromium harness (playwright), WEBDIR env
 build-deps.sh            exploratory versions (operate on top-level dirs);
@@ -193,7 +309,9 @@ eval-test.c              kill-criterion test (node + browser variants)
 run-scheme.c             eval argv[1], with timing
 lily-api-test.c          LilyPond-API surface test
 pango-smoke.c            rendering-stack smoke test (pango -> cairo SVG)
-smoke/fonts.conf         fontconfig config for running it by hand
+smoke/fonts.conf         fontconfig config for running tests by hand
+smoke/trivial.ly         4-note render smoke test score
+smoke/medium.ly          64-measure timing score
 guile-env-pre.js         MEMFS mtime + GUILE_AUTO_COMPILE pre-js
 webtest/                 browser bundle (eval-test.html + 50 MB .data)
 ```
@@ -239,45 +357,35 @@ upstream's mood.
 The planning doc's "novel, risky component" is retired; the rest is the
 mapped build engineering it predicted:
 
-1. **The biggest slice is LilyPond's own configure**: `configure.ac` in
-   2.27.1 has zero cross-compilation handling (verified by grep) — unlike
-   Guile, whose official cross path we merely activated. Expect
-   Guile-configure-class archaeology with no precedent to lean on.
-   Two good tree facts, also verified: the smob layer registers callbacks
-   through properly-typed trampolines (`smobs.tcc` — no hashtab.c-style
-   cast UB visible at the C++/Guile boundary), and `.go` compilation of
-   `scm/` is an optional side target (`make bytecode`), so v0 can load
-   `.scm` source and defer `guild compile --target=wasm32` to later.
-2. C++: LilyPond is C++ calling libguile constantly — `em++` handles C++
-   fine, but LilyPond mixes C++ exceptions with Guile's longjmp; both map to
-   JS exceptions under default `-sSUPPORT_LONGJMP=emscripten`, which is the
-   right combination to start with.
+1. ~~LilyPond's own configure + build~~ **DONE (2026-07-06, see "LilyPond
+   under Emscripten")**: configure was shallow, not structural; the
+   binary links, installs, and renders. The predicted mixed build/host
+   hazard didn't materialize; the smob-layer cleanliness prediction held
+   (zero LilyPond patches); the "load `.scm` source, defer `make
+   bytecode`" plan worked and is now the main perf lever left.
+2. ~~C++ exceptions vs longjmp~~ **no issues observed** under the default
+   `-sSUPPORT_LONGJMP=emscripten` across two full renders (exceptions and
+   catch/throw both exercised by normal LilyPond startup).
 3. ~~The rendering stack below Guile~~ **DONE (2026-07-05, see "The
    rendering stack" section)**: every configure gate resolves from
    `wasm-install/lib/pkgconfig` and the pango→cairo SVG path runs under
-   node. (We built real zlib/libpng rather than the Emscripten ports —
-   LilyPond's configure wants their .pc files anyway.) One deliberate
-   deviation remains: production Hacklily runs a *patched* libcairo the
-   wasm build should eventually match. Ghostscript appears only under
-   documentation / classic-backend conditionals — the Cairo backend keeps
-   it out.
-   Separate hazard: the `REQUIRED` host tools (Python ≥ 3.10, bison, flex,
-   FontForge, TeX/Metafont) must be detected as *build*-machine tools
-   while CC/CXX are emcc — mixed build/host discipline this configure has
-   never exercised. Cheap first action next session: run `emconfigure`
-   over LilyPond's configure and let it die at the first `PKG_CHECK` —
-   everything before that line (compiler, host tools, Guile detection)
-   runs and shows whether the no-cross-support breakage is shallow or
-   structural.
-4. `share/` tree + Emmentaler fonts into the FS image, with lazy loading
-   and compression (the 40–80 MB estimate still looks right). Fonts and
-   the share tree can be lifted from the native build — no FontForge
-   under wasm.
-5. Native LilyPond 2.27.1 + native Guile already build in this workspace
-   (`lily-build.log`, prior session) — that pairing is the reference and
-   supplies the host-side tools for cross-compiling `.scm` → `.go`.
+   node. One deliberate deviation remains: production Hacklily runs a
+   *patched* libcairo the wasm build should eventually match.
+4. **Browser packaging is now the front of the queue**: the node build
+   leans on NODERAWFS; a browser build must ship `share/lilypond`
+   (9.1 MB), the Guile modules (36 MB, or much less after pruning to what
+   LilyPond actually loads), fonts, and a fontconfig setup into
+   MEMFS/lazy-loaded storage, with the memory-growth-vs-TextDecoder
+   workaround from the Guile browser test. The 14 MB stripped binary
+   gzips to 4.6 MB.
+5. **`.go` bytecode for `scm/lily`**: the 3.5 s startup floor is Guile
+   interpreting LilyPond's Scheme from source. `make bytecode` +
+   `guild compile --target=wasm32-unknown-emscripten` (the native
+   2.27.1 build in this workspace supplies the host-side toolchain) is
+   the next measurable win.
 
 Known deferred items: `--spill-pointers` costs perf (unmeasured; can also
 try collect-only-at-quiescence later); browser memory-growth workaround
-above; `-g2` name sections add binary size (strippable after the pass runs
-if it matters).
+above; point-and-click (`textedit:`) anchors absent from cairo SVG output
+in both native and wasm builds with this invocation — investigate the
+right flag when Hacklily integration starts.
