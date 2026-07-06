@@ -89,16 +89,23 @@ class FrameFormantRing {
   readonly #f1 = new NumberRing(FRAME_RING_CAP)
   readonly #f2 = new NumberRing(FRAME_RING_CAP)
   readonly #f3 = new NumberRing(FRAME_RING_CAP)
+  readonly #fresh = new NumberRing(FRAME_RING_CAP)
 
   /** Frames ever pushed; also the absolute index of the next frame. */
   get length(): number {
     return this.#f1.length
   }
 
-  push(f1: number | null, f2: number | null, f3: number | null): void {
+  push(
+    f1: number | null,
+    f2: number | null,
+    f3: number | null,
+    fresh: boolean,
+  ): void {
     this.#f1.push(f1 ?? NaN)
     this.#f2.push(f2 ?? NaN)
     this.#f3.push(f3 ?? NaN)
+    this.#fresh.push(fresh ? 1 : 0)
   }
 
   f1(i: number): number | null {
@@ -109,6 +116,9 @@ class FrameFormantRing {
   }
   f3(i: number): number | null {
     return nanToNull(this.#f3.get(i))
+  }
+  fresh(i: number): boolean {
+    return this.#fresh.get(i) === 1
   }
 }
 
@@ -181,6 +191,7 @@ export async function runAnalysis(
   let latestValidF1: number | null = null
   let latestValidF2: number | null = null
   let latestValidF3: number | null = null
+  let latestWasValid = false
 
   const frameFormants = new FrameFormantRing()
   const pendingFormants = new PendingFormantRing()
@@ -217,9 +228,9 @@ export async function runAnalysis(
         frameIndex: fi,
         pitchDetected,
         f0,
-        f1: pitchDetected ? f1 : null,
-        f2: pitchDetected ? f2 : null,
-        f3: pitchDetected ? f3 : null,
+        f1: pitchDetected && frameFormants.fresh(fi) ? f1 : null,
+        f2: pitchDetected && frameFormants.fresh(fi) ? f2 : null,
+        f3: pitchDetected && frameFormants.fresh(fi) ? f3 : null,
       } satisfies PatchFrameMessage)
     }
     lastEmittedFrame = safeFrame
@@ -255,10 +266,18 @@ export async function runAnalysis(
           latestValidF1 = f1
           latestValidF2 = f2
           latestValidF3 = f3 ?? latestValidF3
+          latestWasValid = true
+        } else {
+          latestWasValid = false
         }
         formantPtr++
       }
-      frameFormants.push(latestValidF1, latestValidF2, latestValidF3)
+      frameFormants.push(
+        latestValidF1,
+        latestValidF2,
+        latestValidF3,
+        latestWasValid,
+      )
       samplesPending -= timeStepSamples
     }
 

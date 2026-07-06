@@ -410,7 +410,7 @@ describe('FormantWorker', () => {
   })
 
   describe('formant persistence', () => {
-    it('carries forward the last valid formant values', async () => {
+    it('does not render invalid formants', async () => {
       const audio = generateSilence(0.2, SAMPLE_RATE)
       const chunks = chunkAudio(audio, 128)
 
@@ -451,11 +451,10 @@ describe('FormantWorker', () => {
         .filter((m) => m.type === 'patch')
         .filter((m) => m.pitchDetected)
 
-      // Later frames should have the same formants from earlier if they remain valid
       const lastVoiced = voicedMsgs[voicedMsgs.length - 1]
-      expect(lastVoiced?.f1).toBeCloseTo(700, 0)
-      expect(lastVoiced?.f2).toBeCloseTo(1200, 0)
-      expect(lastVoiced?.f3).toBeCloseTo(2500, 0)
+      expect(lastVoiced?.f1).toBe(null)
+      expect(lastVoiced?.f2).toBe(null)
+      expect(lastVoiced?.f3).toBe(null)
     })
   })
 

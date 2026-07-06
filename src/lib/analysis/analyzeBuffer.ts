@@ -179,6 +179,7 @@ export async function analyzeBuffer(
   let latestValidF1: number | null = null
   let latestValidF2: number | null = null
   let latestValidF3: number | null = null
+  let latestWasValid = false
 
   for (let x = 0; x < specResult.numFrames; x += 1) {
     const t0 = x * specResult.timeStepSec
@@ -198,6 +199,9 @@ export async function analyzeBuffer(
         latestValidF1 = f1
         latestValidF2 = f2
         latestValidF3 = f3 ?? latestValidF3
+        latestWasValid = true
+      } else {
+        latestWasValid = false
       }
       formantPtr++
     }
@@ -222,9 +226,9 @@ export async function analyzeBuffer(
       pitchDetected,
       speechDetected: speechDetectedArr[x] === 1,
       f0: pitchFrame?.frequencyHz ?? 0,
-      f1: pitchDetected ? latestValidF1 : null,
-      f2: pitchDetected ? latestValidF2 : null,
-      f3: pitchDetected ? latestValidF3 : null,
+      f1: pitchDetected && latestWasValid ? latestValidF1 : null,
+      f2: pitchDetected && latestWasValid ? latestValidF2 : null,
+      f3: pitchDetected && latestWasValid ? latestValidF3 : null,
       lunaBrightness: null,
       spectrum: quantizeSpectrum(specResult.data[x]!),
       rms,
