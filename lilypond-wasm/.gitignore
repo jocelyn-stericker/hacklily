@@ -54,3 +54,4 @@ smoke/*.js
 smoke/out.svg
 emscripten-cross.meson
 dep-hashes.txt
+.claude/settings.local.json*

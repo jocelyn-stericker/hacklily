@@ -137,7 +137,8 @@ What it took, in decreasing order of interest:
   callbacks as `void iface_init (FooIface *)` and registers them cast to the
   2-arg `GInterfaceInitFunc` — first `g_object_new` traps `call_indirect`.
   glib's own occurrences come fixed in the vendored wasm-vips patch (below);
-  pango's five needed `patches/pango-1.52.2-wasm-single-thread-and-iface-casts.patch`.
+  pango's five needed `patches/pango-1.52.2-wasm-single-thread-and-callback-casts.patch`
+  (renamed from `-iface-casts` when the fifth strike, below, extended it).
 - **glib is community-solved**: kleisauke/wasm-vips maintains a rebased
   Emscripten patch series per glib release
   (github.com/kleisauke/glib, branch `wasm-vips-2.80.3`, vendored as
@@ -390,9 +391,9 @@ argv0-relative prefix guessing in MEMFS — `GUILE_LOAD_COMPILED_PATH`,
 ccache trees (the packager-loses-mtimes trick from the Guile browser
 test, now needed twice). The page writes `/input.ly` with `FS.writeFile`,
 runs `callMain(['-dbackend=cairo', '--svg', ...])`, and reads the SVG
-back out of MEMFS — one render per instantiation (`EXIT_RUNTIME=1`),
-which matches the worker-per-render shape Hacklily's server uses anyway.
-Single-threaded build → no COOP/COEP needed.
+back out of MEMFS — ~~one render per instantiation (`EXIT_RUNTIME=1`)~~
+superseded by the warm instance (next section). Single-threaded build →
+no COOP/COEP needed.
 
 Headless Chromium (playwright, local http):
 
@@ -415,6 +416,73 @@ gated on native pango/cairo/glib dev packages), `lily-bytecode`, and with
 machine playwright's Chromium also needs system libs:
 `npx playwright install-deps` or the usual `libnspr4 libnss3 …` set.
 
+## Warm instance: 40 ms re-renders (2026-07-06, session 3)
+
+One render per instantiation is retired. The browser build now keeps one
+LilyPond instance alive and renders repeatedly into it, following the same
+split Hacklily's warm server uses — pay startup once, per-render state reset
+in-process — but with LilyPond's *own* no-fork reset instead of fork/COW:
+`lilypond-all` (scm/lily.scm) already runs `session-terminate` +
+`ly:reset-options` + `ly:reset-all-fonts` between the files of a multi-file
+invocation, and a warm render is just that loop body pointed at
+`/render/input.ly`.
+
+Mechanics (`lily-worker.js`, a Web Worker):
+
+- Build flags: `-sEXIT_RUNTIME=0 -sENVIRONMENT=web,worker
+  -sEXPORTED_FUNCTIONS=_main,_scm_c_eval_string` (+ `ccall` in runtime
+  methods). Warmup = a full `callMain` render: boots Guile, loads modules,
+  runs `ly:parse-init`, records the session snapshot. `ly:exit`'s `exit()`
+  unwinds out of `callMain` as `ExitStatus`, but with `EXIT_RUNTIME=0` the
+  runtime — and the booted Guile heap — stays live, and later
+  `ccall('scm_c_eval_string', ...)` calls re-enter Guile fine (the boot
+  thread is still registered).
+- Per render: `FS.writeFile('/render/input.ly')`, eval the lilypond-all
+  loop body (private bindings fetched via `module-ref`; result reported
+  through `/render/status`; everything wrapped in `catch #t` with cleanup
+  on both paths), `FS.readFile` the SVG. `-o` is a C++ global that
+  survives `ly:reset-options`, so the warmup pins it to `/render/input`.
+- Containment: single-threaded wasm cannot interrupt a runaway render, so
+  the page enforces deadlines with `worker.terminate()` + respawn — the
+  browser analog of renderer-server recycling a container. State hygiene
+  beyond what session reset covers (destructive mutation of session
+  structures, heap creep) has the same answer.
+
+**The function-pointer-cast UB struck a fifth time** proving this out:
+warm renders exercise object *destruction* paths that one-shot renders
+never reach (the process always exited first). `ly:reset-all-fonts` →
+`g_object_unref` → `pango_fc_font_finalize` calls
+`g_slist_foreach (..., (GFunc) free_metrics_info, ...)` — a 1-arg function
+through the 2-arg cast, `call_indirect` trap. Deferred by GC (fonts are
+finalized when Guile collects), so trivial scores survived two warm renders
+before trapping while 64-measure scores trapped immediately — it looked
+like a count-dependent hang until a `worker.onerror` handler surfaced the
+trap (lesson relearned: an uncaught worker exception is indistinguishable
+from a hang if you don't listen for it). Symbolizing against the un-stripped
+`-g2` binary named the frame instantly. Fixed all five 1-arg→`GFunc` casts
+in the files we compile (pangofc-font.c, pangocairo-font.c,
+pango-context.c, pango-item.c, pango-markup.c); the nearby
+`(GDestroyNotify)` casts are pointer-type-only (same wasm signature,
+harmless). The pango patch grew accordingly and was renamed
+`...-single-thread-and-callback-casts.patch`.
+
+### Numbers (headless Chromium, same machine)
+
+| Measure | cold (per-instantiation) | warm |
+|---|---|---|
+| trivial.ly (4 notes) | 0.70 s | **~40 ms** |
+| medium.ly (64 measures) | 1.15 s | **~0.4–0.5 s** |
+| warmup (boot + first render) | — | 0.70 s, once |
+
+Verified by `lily-warm.html` + `browser-test.js`: repeat renders of the
+same source are **byte-identical** (including after an intervening
+failed render — session reset holds), a broken score fails cleanly with
+its error in the logs, and the instance renders correctly afterwards.
+textedit anchors intact. This is keystroke-latency territory for small
+scores: live-update engraving on top of this needs only debounce, and
+`skipTypesetting` windowing remains available as the next lever for big
+scores.
+
 ## Layout
 
 ```
@@ -432,7 +500,7 @@ build-lily-deps.sh       exploratory build of the rendering stack, staged
                          (./build-lily-deps.sh [zlib|...|pango|all])
 patches/                 Guile/bdwgc patches (above) + rendering-stack
                          patches (vendored wasm-vips glib series, no-pthread
-                         meson tweaks, pango single-thread + iface casts)
+                         meson tweaks, pango single-thread + callback casts)
 eval-test.c              kill-criterion test (node + browser variants)
 run-scheme.c             eval argv[1], with timing
 lily-api-test.c          LilyPond-API surface test
@@ -445,6 +513,10 @@ cross-bytecode.ly        scm/lily -> wasm32 .go driver (run by native lilypond)
 fs-trace.js              node --require hook logging fs opens (payload pruning)
 lily-browser-pre.js      browser build pre-js: env plumbing + mtime fix
 lily-browser.html        browser harness page (?measures=N for timing scores)
+lily-worker.js           warm-instance Web Worker (render API; see "Warm
+                         instance" section)
+lily-warm.html           warm-instance test page (repeat renders, byte-
+                         stability, error recovery)
 webtest/                 browser bundle (eval-test.html + 50 MB .data)
 webtest-lily/            lilypond browser bundle (stage/ payload + web/)
 ```
@@ -528,8 +600,7 @@ mapped build engineering it predicted:
 Known deferred items: `--spill-pointers` costs perf (unmeasured; can also
 try collect-only-at-quiescence later); ~~re-check the memory-growth /
 TextDecoder workaround on emsdk upgrades~~ solved via
-`-sGROWABLE_ARRAYBUFFERS=0` (2026-07-06, see build findings); lazy-loading
-the `.data` payload
-(currently one 32.5 MB preload, 7.8 MB gzipped) and re-using a warm
-instance for repeated renders (currently one render per instantiation,
-`EXIT_RUNTIME=1`) are the obvious next browser-side levers.
+`-sGROWABLE_ARRAYBUFFERS=0` (2026-07-06, see build findings);
+~~re-using a warm instance~~ done (2026-07-06, see "Warm instance");
+lazy-loading the `.data` payload (currently one 32.5 MB preload, 7.8 MB
+gzipped) is the obvious next browser-side lever.

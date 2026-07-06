@@ -317,7 +317,7 @@ if need_stage extract-lily-deps; then
   # wasm (no threads) + give iface_init functions their true 2-arg signature
   # (1-arg versions trap wasm's typed call_indirect — same UB family as the
   # Guile hashtab patch).
-  patch -p1 -d "$SRC/pango-$PANGO_V" < "$ROOT/patches/pango-$PANGO_V-wasm-single-thread-and-iface-casts.patch"
+  patch -p1 -d "$SRC/pango-$PANGO_V" < "$ROOT/patches/pango-$PANGO_V-wasm-single-thread-and-callback-casts.patch"
   # cairo: production Hacklily's SVG point-and-click patch. Stock cairo's
   # SVG surface never implemented the tag hook (only PDF did), so LilyPond's
   # CAIRO_TAG_LINK textedit: anchors are silently dropped without it.
@@ -689,12 +689,18 @@ EOF
       (cd "$SRC/lilypond-$LILYPOND_V/build-wasm/lily"
        mv out/lilypond out/lilypond.node
        mv out/lilypond.wasm out/lilypond.node.wasm
+       # EXIT_RUNTIME=0 + _scm_c_eval_string enable the warm-instance mode
+       # (lily-worker.js): main's exit unwinds out of callMain but the
+       # runtime and the booted Guile heap stay live, and repeat renders go
+       # through scm_c_eval_string.  ENVIRONMENT includes worker so the
+       # bundle can run inside a Web Worker.
        emmake make out/lilypond CONFIG_LDFLAGS="-g2 \
          -sBINARYEN_EXTRA_PASSES=--spill-pointers -sSTACK_SIZE=8388608 \
          -sALLOW_MEMORY_GROWTH=1 -sGROWABLE_ARRAYBUFFERS=0 \
-         -sEXIT_RUNTIME=1 -sENVIRONMENT=web \
+         -sEXIT_RUNTIME=0 -sENVIRONMENT=web,worker \
          -sMODULARIZE=1 -sEXPORT_NAME=createLilypond \
-         -sEXPORTED_RUNTIME_METHODS=callMain,FS \
+         -sEXPORTED_FUNCTIONS=_main,_scm_c_eval_string \
+         -sEXPORTED_RUNTIME_METHODS=callMain,FS,ccall \
          --pre-js $ROOT/lily-browser-pre.js \
          --preload-file $LSTAGE@/lilypond" \
          > "$WORK/lily-browser-link.log" 2>&1
@@ -706,7 +712,8 @@ EOF
        rm out/lilypond out/lilypond.wasm out/lilypond.data
        mv out/lilypond.node out/lilypond
        mv out/lilypond.node.wasm out/lilypond.wasm)
-      cp "$ROOT/lily-browser.html" "$WEBLILY/"
+      cp "$ROOT/lily-browser.html" "$ROOT/lily-warm.html" \
+         "$ROOT/lily-worker.js" "$WEBLILY/"
       done_stage lily-browser
     fi
     if "$NODE" -e "require.resolve('playwright')" >/dev/null 2>&1; then
@@ -715,6 +722,9 @@ EOF
         "$NODE" "$ROOT/browser-test.js"
       WEBDIR="$WEBLILY" PAGE="lily-browser.html?measures=64" \
         MATCH="LILY BROWSER:" "$NODE" "$ROOT/browser-test.js"
+      log "running warm-instance render test"
+      WEBDIR="$WEBLILY" PAGE=lily-warm.html MATCH="LILY WARM:" \
+        "$NODE" "$ROOT/browser-test.js"
     else
       log "playwright not found; serve $WEBLILY/lily-browser.html and check the console"
     fi
