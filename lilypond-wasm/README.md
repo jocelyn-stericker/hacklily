@@ -1,8 +1,10 @@
 # lilypond-wasm
 
-[GNU LilyPond](https://lilypond.org) compiled to WebAssembly: engrave real
-scores to SVG **in the browser**, no server, with warm re-renders fast
-enough for live feedback while typing.
+This is an expirement, created by telling Fable to get Guile &
+[LilyPond](https://lilypond.org) running in wasm.
+
+It renders real scores to SVG in the browser, without a server, with
+fast re-renders.
 
 This is the real thing, not a reimplementation: LilyPond 2.27.1, the real
 libguile (Guile 3.0.11, bytecode VM, C API and all), and the full text
