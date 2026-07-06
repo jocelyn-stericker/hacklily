@@ -30,9 +30,10 @@ jobs:
             bison \
             flex \
             gettext \
+            libffi-dev \
+            libfl-dev \
             libgc-dev \
             libgmp-dev \
-            libffi-dev \
             libunistring-dev \
             meson \
             ninja-build \
