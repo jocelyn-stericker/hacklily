@@ -77,4 +77,4 @@ jobs:
           npm version "2.27.1-build.${{ github.run_number }}" --no-git-tag-version
           npm config set @jocelyn-stericker:registry https://codeberg.org/api/packages/jocelyn-stericker/npm/
           npm config set -- '//codeberg.org/api/packages/jocelyn-stericker/npm/:_authToken' "${NPM_TOKEN}"
-          npm publish
+          npm publish --tag=alpha
