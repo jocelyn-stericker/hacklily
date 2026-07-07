@@ -8,6 +8,7 @@
 import vadModelUrl from '@jocelyn-stericker/ort-silero-vad-wasm-minimal/silero_vad_v6_16k_op15.ort?url'
 import * as ort from 'onnxruntime-web/wasm'
 
+import { isNode } from '#/lib/browserFeatures'
 import { ortMjsUrl, ortWasmUrl } from '#/lib/ortWasmUrls'
 
 const VAD_SAMPLE_RATE = 16000
@@ -22,8 +23,18 @@ function getSession(): Promise<ort.InferenceSession> {
   if (_session) return Promise.resolve(_session)
   if (!_sessionPromise) {
     ort.env.wasm.numThreads = 1
-    ort.env.wasm.wasmPaths = { wasm: ortWasmUrl, mjs: ortMjsUrl }
-    _sessionPromise = ort.InferenceSession.create(vadModelUrl).then((sess) => {
+    _sessionPromise = (async () => {
+      if (isNode()) {
+        const { readFileSync } = await import('node:fs')
+        const { join, resolve } = await import('node:path')
+        const modelUrl = join(resolve(process.cwd()), vadModelUrl)
+        const model = new Uint8Array(readFileSync(modelUrl))
+        return await ort.InferenceSession.create(model)
+      }
+
+      ort.env.wasm.wasmPaths = { wasm: ortWasmUrl, mjs: ortMjsUrl }
+      return await ort.InferenceSession.create(vadModelUrl)
+    })().then((sess) => {
       _session = sess
       return sess
     })

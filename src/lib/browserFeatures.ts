@@ -255,3 +255,14 @@ export async function checkLocalTranscription(
     return false
   }
 }
+
+export function isNode() {
+  // It's not enough to just check `window`, because workers do not have a window.
+  return (
+    typeof globalThis.process !== 'undefined' &&
+    // Our types are too certain that versions is defined.
+    // oxlint-disable-next-line typescript/no-unnecessary-condition
+    !!globalThis.process.versions?.node &&
+    typeof window === 'undefined'
+  )
+}

@@ -22,8 +22,8 @@ import { fileURLToPath } from 'node:url'
 
 import { describe, it, expect } from 'vitest'
 
-import { loadWavMono } from './helpers'
 import { createCupeSession, PhonemeTimestampAligner } from './index'
+import { loadWavMono } from './testHelpers'
 
 const assetsDir = fileURLToPath(
   new URL('../../../test-assets', import.meta.url),

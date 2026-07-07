@@ -18,6 +18,7 @@ npm run check
 # Testing
 npm run test           # Run tests with Vitest
 npm run e2e            # Run slow end-to-end tests
+npm run test -- --silent=false --disable-console-intercept  # Show logs
 
 # Reference media
 npm run media:fetch    # Mirror reference clips into media/references/ (see below)
