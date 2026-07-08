@@ -219,3 +219,49 @@ function lerp(a: number, b: number, t: number): number {
 }
 export const VOICED_LIGHTER10 = `rgba(${lerp(TEAL.r, 255, 0.1)},${lerp(TEAL.g, 255, 0.1)},${lerp(TEAL.b, 255, 0.1)},1.0)`
 export const VOICED_DARKER10 = `rgba(${lerp(TEAL.r, 0, 0.1)},${lerp(TEAL.g, 0, 0.1)},${lerp(TEAL.b, 0, 0.1)},1.0)`
+
+// Dark brown
+const BRIGHTNESS_LOW = { h: 28, s: 0.55, l: 0.15 }
+
+// Bright yellow
+const BRIGHTNESS_HIGH = { h: 48, s: 0.92, l: 0.52 }
+const BRIGHTNESS_DISPLAY_MIN = 0.01
+
+function hslToRgb(h: number, s: number, l: number): [number, number, number] {
+  const c = (1 - Math.abs(2 * l - 1)) * s
+  const hp = h / 60
+  const x = c * (1 - Math.abs((hp % 2) - 1))
+  let r = 0
+  let g = 0
+  let b = 0
+  if (hp < 1) [r, g, b] = [c, x, 0]
+  else if (hp < 2) [r, g, b] = [x, c, 0]
+  else if (hp < 3) [r, g, b] = [0, c, x]
+  else if (hp < 4) [r, g, b] = [0, x, c]
+  else if (hp < 5) [r, g, b] = [x, 0, c]
+  else if (hp < 6) [r, g, b] = [c, 0, x]
+  const m = l - c / 2
+  return [
+    Math.round((r + m) * 255),
+    Math.round((g + m) * 255),
+    Math.round((b + m) * 255),
+  ]
+}
+
+export function phonemeBrightnessStyle(value: number): {
+  backgroundColor: string
+  color: string
+} {
+  const v = Math.min(1, Math.max(BRIGHTNESS_DISPLAY_MIN, value))
+  const t = (v - BRIGHTNESS_DISPLAY_MIN) / (1 - BRIGHTNESS_DISPLAY_MIN)
+  const h = BRIGHTNESS_LOW.h + (BRIGHTNESS_HIGH.h - BRIGHTNESS_LOW.h) * t
+  const s = BRIGHTNESS_LOW.s + (BRIGHTNESS_HIGH.s - BRIGHTNESS_LOW.s) * t
+  const l = BRIGHTNESS_LOW.l + (BRIGHTNESS_HIGH.l - BRIGHTNESS_LOW.l) * t
+  const [r, g, b] = hslToRgb(h, s, l)
+  // Rec. 601 perceived luminance; flip the label colour around mid.
+  const y = 0.299 * r + 0.587 * g + 0.114 * b
+  return {
+    backgroundColor: `rgb(${r},${g},${b})`,
+    color: y < 140 ? '#ffffff' : '#000000',
+  }
+}

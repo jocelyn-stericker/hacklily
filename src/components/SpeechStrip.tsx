@@ -20,6 +20,7 @@ import {
   UNVOICED_FILL,
   VOICED_DARKER10,
   VOICED_LIGHTER10,
+  phonemeBrightnessStyle,
 } from '#/lib/theme'
 import { bestResult, transcriptIndicator } from '#/lib/transcription'
 
@@ -265,7 +266,10 @@ function ChunkOverlay({
   const timeToXDom = useTimeToX(InCanvas.No)
 
   const transcript = useTranscript(store, chunk)
-  const { brightness, medianF0, weightDb } = useChunkDerived(store, chunk)
+  const { brightness, medianF0, phonemeBrightness, weightDb } = useChunkDerived(
+    store,
+    chunk,
+  )
   const result = transcript ? bestResult(transcript) : undefined
   const phonemes = result?.phonemes
   const indicator = transcriptIndicator(transcript)
@@ -469,6 +473,18 @@ function ChunkOverlay({
               timeToXDom(ph.endMs / 1000) - timeToXDom(ph.startMs / 1000)
             if (phWidth <= 0) return null
 
+            // Included vowels (used in the chunk brightness) are coloured by
+            // their per-phoneme median on the brown→yellow ramp; everything
+            // else keeps the zebra stripe. See docs/brightness.md.
+            const median = phonemeBrightness[i]
+            const included = median !== undefined && !Number.isNaN(median)
+            const fill: { backgroundColor: string; color?: string } = included
+              ? phonemeBrightnessStyle(median)
+              : {
+                  backgroundColor:
+                    i % 2 === 0 ? VOICED_DARKER10 : VOICED_LIGHTER10,
+                }
+
             return (
               <Tooltip key={i}>
                 <TooltipTrigger
@@ -480,8 +496,7 @@ function ChunkOverlay({
                         width: phWidth,
                         top: 0,
                         height: '100%',
-                        backgroundColor:
-                          i % 2 === 0 ? VOICED_DARKER10 : VOICED_LIGHTER10,
+                        ...fill,
                       }}
                     />
                   }

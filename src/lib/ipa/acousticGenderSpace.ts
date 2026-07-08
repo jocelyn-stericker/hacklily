@@ -2,6 +2,10 @@
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>.
 // Copyright (C) Luna McNulty
 
+import { phonemeGroupsIndex, phonemeGroupsMapper } from '../alignment/ph66Data'
+import type { PhonemeTimestamp } from '../alignment/types'
+import { median } from '../utils'
+
 // This is Luna McNulty's reference formant data, and resonance score
 // weights used in https://acousticgender.space. I'm not sure how the
 // corpus she used was generated, but there is this attribution on
@@ -1273,9 +1277,243 @@ export function getLunaBrightness(
     return null
   }
 
+  // Drop frames outside the corpus min/max
+  if (
+    f1 < ref[1].min ||
+    f1 > ref[1].max ||
+    f2 < ref[2].min ||
+    f2 > ref[2].max
+  ) {
+    return null
+  }
+
   // Note that f3 was zeroed out in https://acousticgender.space after corpus analysis.
   const z1 = (f1 - ref[1].mean) / ref[1].stdev
   const z2 = (f2 - ref[2].mean) / ref[2].stdev
 
   return (WEIGHTS[0] * z1 + WEIGHTS[1] * z2) / 3 + 0.5
+}
+
+export type BrightnessFrame = {
+  frameMs: number
+  /** Per-frame lunaBrightness, or null (null frames are ignored). */
+  brightness: number | null
+}
+
+export type BrightnessOptions = {
+  minConfidence?: number
+  interiorFraction?: number
+  minPhonemes?: number
+  detail?: boolean
+}
+
+export type PhonemeBrightnessRow = {
+  index: number
+  label: string
+  /** pg16 group name (e.g. "front_vowels", "rhotics"). */
+  group: string
+  conf: number
+  startMs: number
+  endMs: number
+  /** Scored interior frames that produced a brightness value. */
+  interiorFrames: number
+  /** Per-phoneme median (null if the phoneme produced no score). */
+  median: number | null
+  status: 'included' | 'excluded:class' | 'excluded:conf' | 'no-score'
+}
+
+export type BrightnessResult = {
+  brightnessScore: number | null
+  /** The per-vowel medians that scored. */
+  phonemeScores: number[]
+  usablePhonemes: number
+  vowelPhonemes: number
+  excludedClass: number
+  excludedConf: number
+  perPhoneme: PhonemeBrightnessRow[]
+}
+
+const PG_NAME: Record<number, string> = Object.fromEntries(
+  Object.entries(phonemeGroupsIndex).map(([name, num]) => [num, name]),
+)
+
+/** Drop phonemes below this alignment confidence. */
+export const BRIGHTNESS_MIN_CONFIDENCE = 0.02
+
+/** Score the middle fraction of each phoneme's span. */
+export const BRIGHTNESS_INTERIOR_FRACTION = 0.6
+
+const VOWEL_GROUPS = new Set([
+  phonemeGroupsIndex.front_vowels, // 1
+  phonemeGroupsIndex.central_vowels, // 2
+  phonemeGroupsIndex.back_vowels, // 3
+  phonemeGroupsIndex.low_vowels, // 4
+  phonemeGroupsIndex.diphthongs, // 5
+])
+
+/**
+ * Chunk brightness: mean of per-vowel medians over interior frames of vowels.
+ *
+ * `frames` must be sorted by `frameMs`, `phonemes` in time order
+ */
+export function brightness(
+  frames: readonly BrightnessFrame[],
+  phonemes: readonly PhonemeTimestamp[],
+  opts: BrightnessOptions = {},
+): BrightnessResult {
+  const minConfidence = opts.minConfidence ?? BRIGHTNESS_MIN_CONFIDENCE
+  const interiorFraction = opts.interiorFraction ?? BRIGHTNESS_INTERIOR_FRACTION
+  const detail = opts.detail ?? false
+  const edge = (1 - interiorFraction) / 2
+
+  const perPhoneme: PhonemeBrightnessRow[] = []
+  const scored: number[] = []
+  let vowels = 0
+  let excludedClass = 0
+  let excludedConf = 0
+
+  const nextGroup = new Array<number>(phonemes.length).fill(-1)
+  let nxt = -1
+  for (let i = phonemes.length - 1; i >= 0; i--) {
+    nextGroup[i] = nxt
+    const p = phonemes[i]!
+    if (p.phonemeId !== 0 && p.phonemeId !== 66) {
+      nxt = phonemeGroupsMapper[String(p.phonemeId)] ?? -1
+    }
+  }
+
+  let framePtr = 0
+
+  let index = -1
+  for (const p of phonemes) {
+    index += 1
+    if (p.phonemeId === 0 || p.phonemeId === 66) continue
+    const pg = phonemeGroupsMapper[String(p.phonemeId)] ?? -1
+    const row: PhonemeBrightnessRow | null = detail
+      ? {
+          index,
+          label: p.phonemeLabel,
+          group: PG_NAME[pg] ?? `pg${pg}`,
+          conf: p.confidence,
+          startMs: p.startMs,
+          endMs: p.endMs,
+          interiorFrames: 0,
+          median: null,
+          status: 'no-score',
+        }
+      : null
+
+    // Vowels only.
+    if (!VOWEL_GROUPS.has(pg)) {
+      excludedClass++
+      if (row) {
+        row.status = 'excluded:class'
+        perPhoneme.push(row)
+      }
+      continue
+    }
+
+    vowels++
+
+    if (p.confidence < minConfidence) {
+      excludedConf++
+      if (row) {
+        row.status = 'excluded:conf'
+        perPhoneme.push(row)
+      }
+      continue
+    }
+
+    const dur = p.endMs - p.startMs
+    if (dur <= 0) {
+      if (row) perPhoneme.push(row)
+      continue
+    }
+
+    // Interior window.
+    const lo = p.startMs + edge * dur
+    const hi = p.endMs - edge * dur
+    const vals: number[] = []
+    while (framePtr < frames.length) {
+      const f = frames[framePtr]!
+      if (f.frameMs >= p.endMs) break
+      if (
+        f.frameMs >= p.startMs &&
+        f.frameMs >= lo &&
+        f.frameMs < hi &&
+        f.brightness != null
+      ) {
+        vals.push(f.brightness)
+      }
+      framePtr++
+    }
+
+    // Interior window held no grid frame → use the frame nearest the midpoint.
+    if (vals.length === 0) {
+      const midMs = (p.startMs + p.endMs) / 2
+      const idx = nearestFrameIndex(frames, midMs)
+      const f = idx >= 0 ? frames[idx] : undefined
+      if (
+        f &&
+        f.brightness != null &&
+        f.frameMs >= p.startMs &&
+        f.frameMs < p.endMs
+      ) {
+        vals.push(f.brightness)
+      }
+    }
+
+    if (vals.length === 0) {
+      if (row) perPhoneme.push(row) // status stays 'no-score'
+      continue
+    }
+
+    const m = median(vals)
+    if (m) {
+      scored.push(m)
+
+      if (row) {
+        row.median = m
+        row.interiorFrames = vals.length
+        row.status = 'included'
+        perPhoneme.push(row)
+      }
+    }
+  }
+
+  const brightnessScore = scored.reduce((a, b) => a + b, 0) / scored.length
+
+  return {
+    brightnessScore,
+    phonemeScores: scored,
+    usablePhonemes: scored.length,
+    vowelPhonemes: vowels,
+    excludedClass,
+    excludedConf,
+    perPhoneme,
+  }
+}
+
+/** Index of the frame nearest `targetMs` (frames sorted ascending). */
+function nearestFrameIndex(
+  frames: readonly BrightnessFrame[],
+  targetMs: number,
+): number {
+  if (frames.length === 0) return -1
+  let lo = 0
+  let hi = frames.length - 1
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1
+    if (frames[mid]!.frameMs < targetMs) lo = mid + 1
+    else hi = mid
+  }
+  // lo is the first frame >= targetMs; the one below may be closer.
+  if (lo > 0) {
+    const a = frames[lo - 1]!
+    const b = frames[lo]!
+    return Math.abs(a.frameMs - targetMs) <= Math.abs(b.frameMs - targetMs)
+      ? lo - 1
+      : lo
+  }
+  return lo
 }

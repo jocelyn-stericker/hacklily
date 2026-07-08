@@ -3,7 +3,11 @@
 
 import { useCallback, useMemo, useRef, useSyncExternalStore } from 'react'
 
+import type { PhonemeTimestamp } from '#/lib/alignment/types'
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
+import type { BrightnessFrame } from '#/lib/ipa/acousticGenderSpace'
+import { brightness } from '#/lib/ipa/acousticGenderSpace'
+import { TRANSCRIPT_TIERS } from '#/lib/transcription'
 import type { ChunkTranscript } from '#/lib/transcription'
 import { median } from '#/lib/utils'
 
@@ -22,35 +26,93 @@ export type ChunkDerived = {
   medianF0: number
   /** Alpha ratio (1-5 kHz over 0.5-1kHz) aka vocal weight aka spectral rolloff */
   weightDb: number
+  phonemeBrightness: Float32Array
 }
 
-function computeDerived(chunk: AnalysisChunk): ChunkDerived {
-  let brightnessSum = 0
-  let brightnessCount = 0
+function phonemesFor(
+  transcript: ChunkTranscript | undefined,
+): PhonemeTimestamp[] | undefined {
+  if (!transcript) return undefined
+  for (let i = TRANSCRIPT_TIERS.length - 1; i >= 0; i -= 1) {
+    const ph = transcript[TRANSCRIPT_TIERS[i]!]?.phonemes
+    if (ph && ph.length > 0) return ph
+  }
+  return undefined
+}
+
+function phonemeBrightnessEqual(a: Float32Array, b: Float32Array): boolean {
+  if (a === b) return true
+  if (a.length !== b.length) return false
+  for (let i = 0; i < a.length; i++) {
+    const x = a[i]!
+    const y = b[i]!
+    if (x === y) continue
+    if (Number.isNaN(x) && Number.isNaN(y)) continue
+    return false
+  }
+  return true
+}
+
+function computeDerived(
+  chunk: AnalysisChunk,
+  transcript: ChunkTranscript | undefined,
+): ChunkDerived {
   const f0s: number[] = []
   const weights: number[] = []
-  for (const f of chunk.frames) {
-    if (f.lunaBrightness != null) {
-      brightnessSum += f.lunaBrightness
-      brightnessCount++
+  const timeStepSec = chunk.timeStepSamples / chunk.sampleRate
+  const brightFrames: BrightnessFrame[] = []
+  for (let i = 0; i < chunk.frames.length; i += 1) {
+    const f = chunk.frames[i]!
+    if (f.f0 > 0) {
+      f0s.push(f.f0)
+      if (f.lunaBrightness != null) {
+        brightFrames.push({
+          frameMs: (chunk.startTimeSec + (i + 0.5) * timeStepSec) * 1000,
+          brightness: f.lunaBrightness,
+        })
+      }
     }
     if (f.f0 > 0) f0s.push(f.f0)
     if (f.weight && f.f0 > 0) weights.push(f.weight)
   }
+
   f0s.sort((a, b) => a - b)
   weights.sort((a, b) => a - b)
 
+  const phonemes = phonemesFor(transcript)
+  const brightnessInfo = phonemes
+    ? brightness(brightFrames, phonemes, { detail: true })
+    : null
+  const raw = brightnessInfo?.brightnessScore ?? null
+  const brightnessScore = raw === null ? 0 : Math.min(1, Math.max(0.01, raw)) // Clamped
+  const phonemeBrightness = new Float32Array(
+    phonemes ? phonemes.length : 0,
+  ).fill(NaN)
+  if (brightnessInfo) {
+    for (const row of brightnessInfo.perPhoneme) {
+      if (row.status === 'included' && row.median != null) {
+        phonemeBrightness[row.index] = row.median
+      }
+    }
+  }
+
   return {
-    brightness: brightnessCount > 0 ? brightnessSum / brightnessCount : 0,
+    brightness: brightnessScore,
     medianF0: Math.round(median(f0s) ?? 0),
     weightDb: Math.round(median(weights) ?? 0),
+    phonemeBrightness,
   }
 }
 
 /** Stable zero value for chunks with no voiced frames / brightness yet, so
  *  useSyncExternalStore's Object.is snapshot check doesn't see a fresh object
  *  on every read of an uncomputed chunk. */
-const EMPTY_DERIVED: ChunkDerived = { brightness: 0, medianF0: 0, weightDb: 0 }
+const EMPTY_DERIVED: ChunkDerived = {
+  brightness: 0,
+  medianF0: 0,
+  weightDb: 0,
+  phonemeBrightness: new Float32Array(0),
+}
 
 /**
  * useSyncExternalStore source for SpeechStrip. Chunks are mutated in place,
@@ -170,23 +232,20 @@ export class TranscriptStore {
   #derived = new WeakMap<AnalysisChunk, ChunkDerived | null>()
   #dirty = new WeakSet<AnalysisChunk>()
 
-  /** Snapshot a chunk's derived values, recomputing if dirty. This is the
-   *  useSyncExternalStore read path: subscribers fire after a dirty mark,
-   *  React calls this, and we lazily recompute then. Keeps the old object
-   *  identity when values are unchanged so useSyncExternalStore skips the
-   *  re-render. */
+  /** Snapshot a chunk's derived values, recomputing if dirty. */
   getDerived = (chunk: AnalysisChunk): ChunkDerived => {
     const cached = this.#derived.get(chunk)
     if (!this.#dirty.has(chunk)) return cached ?? EMPTY_DERIVED
     // Lazy recompute: clear dirty, recompute, and keep the old identity if
     // the values didn't change (so useSyncExternalStore bails out of render).
     this.#dirty.delete(chunk)
-    const next = computeDerived(chunk)
+    const next = computeDerived(chunk, this.#transcripts.get(chunk))
     if (
       cached &&
       cached.brightness === next.brightness &&
       cached.medianF0 === next.medianF0 &&
-      cached.weightDb === next.weightDb
+      cached.weightDb === next.weightDb &&
+      phonemeBrightnessEqual(cached.phonemeBrightness, next.phonemeBrightness)
     ) {
       this.#derived.set(chunk, cached)
       return cached
@@ -214,10 +273,8 @@ export function useTranscript(store: TranscriptStore, chunk: AnalysisChunk) {
   return useTranscripts(store, chunks)[0]
 }
 
-/** Subscribe to a chunk's derived values (brightness, medianF0). Producers
- *  mark the chunk dirty on frame mutations; the recompute is deferred to the
- *  snapshot read here, so only rendered chunks pay and repeated marks within
- *  a tick coalesce. */
+/** Subscribe to a chunk's derived values (e.g., brightness, medianF0, weight).
+ * Values are recomputed lazily */
 export function useChunkDerived(
   store: TranscriptStore,
   chunk: AnalysisChunk,
