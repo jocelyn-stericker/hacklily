@@ -13,6 +13,7 @@ import { resample } from './ResampleProcessor'
 import { SpectrogramProcessor } from './SpectrogramProcessor'
 import type { VadParams } from './VadProcessor'
 import { SpeechGate, VadStreamProcessor } from './VadProcessor'
+import { weight } from './weight'
 
 // Quantize a linear-power f32 spectrum row to int8 dB (0.5 dB steps).
 function quantizeSpectrum(row: Float32Array): Int8Array {
@@ -180,6 +181,7 @@ export async function analyzeBuffer(
   let latestValidF2: number | null = null
   let latestValidF3: number | null = null
   let latestWasValid = false
+  let mostRecentWeight: number | null = null
 
   for (let x = 0; x < specResult.numFrames; x += 1) {
     const t0 = x * specResult.timeStepSec
@@ -222,6 +224,17 @@ export async function analyzeBuffer(
 
     // final results
     const pitchDetected = pitchFrame ? pitchFrame.frequencyHz > 0 : false
+
+    const spectrum = quantizeSpectrum(specResult.data[x]!)
+
+    if (x % 5 === 0) {
+      mostRecentWeight = weight(spectrum, {
+        sampleRate,
+        freqStepHz: specResult.freqStepHz,
+        firstBinHz: specResult.f1Hz,
+      })
+    }
+
     results.push({
       pitchDetected,
       speechDetected: speechDetectedArr[x] === 1,
@@ -230,9 +243,10 @@ export async function analyzeBuffer(
       f2: pitchDetected && latestWasValid ? latestValidF2 : null,
       f3: pitchDetected && latestWasValid ? latestValidF3 : null,
       lunaBrightness: null,
-      spectrum: quantizeSpectrum(specResult.data[x]!),
+      spectrum,
       rms,
       speechProbability: frameSpeechProb[x]!,
+      weight: mostRecentWeight,
     } satisfies AnalysisFrame)
   }
 

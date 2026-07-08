@@ -4,8 +4,8 @@
 import { useCallback, useMemo, useRef, useSyncExternalStore } from 'react'
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
-import { weight } from '#/lib/analysis/weight'
 import type { ChunkTranscript } from '#/lib/transcription'
+import { median } from '#/lib/utils'
 
 /**
  * Per-chunk derived values the overlay shows alongside the transcript.
@@ -28,19 +28,22 @@ function computeDerived(chunk: AnalysisChunk): ChunkDerived {
   let brightnessSum = 0
   let brightnessCount = 0
   const f0s: number[] = []
+  const weights: number[] = []
   for (const f of chunk.frames) {
     if (f.lunaBrightness != null) {
       brightnessSum += f.lunaBrightness
       brightnessCount++
     }
     if (f.f0 > 0) f0s.push(f.f0)
+    if (f.weight && f.f0 > 0) weights.push(f.weight)
   }
   f0s.sort((a, b) => a - b)
-  const tiltDb = weight(chunk.frames, chunk)
+  weights.sort((a, b) => a - b)
+
   return {
     brightness: brightnessCount > 0 ? brightnessSum / brightnessCount : 0,
-    medianF0: Math.round(f0s[Math.floor(f0s.length / 2)] ?? 0),
-    weightDb: tiltDb === null ? 0 : Math.round(tiltDb),
+    medianF0: Math.round(median(f0s) ?? 0),
+    weightDb: Math.round(median(weights) ?? 0),
   }
 }
 
@@ -182,7 +185,8 @@ export class TranscriptStore {
     if (
       cached &&
       cached.brightness === next.brightness &&
-      cached.medianF0 === next.medianF0
+      cached.medianF0 === next.medianF0 &&
+      cached.weightDb === next.weightDb
     ) {
       this.#derived.set(chunk, cached)
       return cached

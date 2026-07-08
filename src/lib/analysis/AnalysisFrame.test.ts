@@ -61,6 +61,7 @@ function makeFrame(
     rms: 0,
     speechProbability: 0,
     spectrum,
+    weight: 0,
     ...overrides,
   }
 }

@@ -56,23 +56,18 @@ function frameWithPower(
     f2: null,
     f3: null,
     lunaBrightness: null,
+    weight: null,
   }
 }
 
 describe('weight', () => {
-  it('returns nulls when no voiced frame carries a spectrum', () => {
-    const unvoiced = frameWithPower(() => 1e-4, false)
-    expect(weight([], PARAMS)).toEqual(null)
-    expect(weight([unvoiced], PARAMS)).toEqual(null)
-  })
-
   it('recovers the alpha ratio of a flat spectrum (de-emphasis undone)', () => {
     // Flat de-emphasized power → band energies proportional to bandwidth:
     // 10·log10(4000/950) ≈ +6.24 dB. Bin-centre discretization (20 Hz bins
     // offset 10 Hz from band edges) and ±0.25 dB quantization leave ~0.1 dB
     // of slack against the continuous-bandwidth expectation.
     const flat = frameWithPower(() => 1e-4)
-    const tiltDb = weight([flat], PARAMS)
+    const tiltDb = weight(flat.spectrum, PARAMS)
     const expected =
       10 *
       Math.log10(
@@ -84,23 +79,9 @@ describe('weight', () => {
 
   it('reads steep negative tilt when energy is low-band only', () => {
     const lowOnly = frameWithPower((f) => (f < 800 ? 1e-3 : 1e-9))
-    const tiltDb = weight([lowOnly], PARAMS)
+    const tiltDb = weight(lowOnly.spectrum, PARAMS)
     expect(tiltDb).not.toBeNull()
     expect(tiltDb!).toBeLessThan(-30)
-  })
-
-  it('takes the median across voiced frames', () => {
-    // Three frames with distinct flat levels *per band* → distinct tilts;
-    // upper median of [-10ish, -20ish, -30ish] is the middle frame's tilt.
-    const mk = (highScale: number) =>
-      frameWithPower((f) => (f < 1000 ? 1e-3 : 1e-3 * highScale))
-    const frames = [mk(0.1), mk(0.01), mk(0.001)]
-    // hop at 2 ms grid = 5 means only frame 0 sampled; repeat each frame 5 times so
-    // all three land on the hop.
-    const padded = frames.flatMap((f) => Array.from({ length: 5 }, () => f))
-    const tiltDb = weight(padded, PARAMS)
-    const mid = weight([mk(0.01)], PARAMS)!
-    expect(tiltDb!).toBeCloseTo(mid, 5)
   })
 
   it('handles frames with empty spectra (realtime placeholders)', () => {
@@ -108,6 +89,6 @@ describe('weight', () => {
       ...frameWithPower(() => 1e-4),
       spectrum: new Int8Array(0),
     }
-    expect(weight([empty], PARAMS)).toEqual(null)
+    expect(weight(empty.spectrum, PARAMS)).toEqual(null)
   })
 })

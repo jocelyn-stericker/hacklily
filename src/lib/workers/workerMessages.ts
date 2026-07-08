@@ -44,6 +44,7 @@ export type AnalysisPatch = Partial<
     | 'lunaBrightness'
     | 'spectrum'
     | 'rms'
+    | 'weight'
   >
 >
 

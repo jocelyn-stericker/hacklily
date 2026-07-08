@@ -134,7 +134,7 @@ describe('TranscriptStore weight (spectral tilt via computeSpectralWeight)', () 
   // low-band-heavy spectrum, stored the way the frame builders store it
   // (pre-emphasized, quantized dB), so the derived weight is a plausible
   // negative alpha ratio.
-  function weightChunk(pitchDetected: boolean): AnalysisChunk {
+  function weightChunk(pitchDetected: boolean, weight: number): AnalysisChunk {
     const sampleRate = 48000
     const a = Math.exp((-2 * Math.PI * 50) / sampleRate)
     const spectrum = new Int8Array(275)
@@ -161,6 +161,7 @@ describe('TranscriptStore weight (spectral tilt via computeSpectralWeight)', () 
         f3: 0,
         lunaBrightness: 0,
         speechProbability: 0,
+        weight,
       })),
       voiced: true,
     }
@@ -168,17 +169,15 @@ describe('TranscriptStore weight (spectral tilt via computeSpectralWeight)', () 
 
   it('derives a rounded negative weightDb from voiced frames', async () => {
     const store = new TranscriptStore()
-    const c = weightChunk(true)
+    const c = weightChunk(true, -14)
     store.publishChunkList([c])
     await nextFrame()
-    // Band energies: 200 bins * 1e-5 over 48 bins * 1e-3 is
-    // 10*log10(0.0417) ≈ -13.8, rounded to -14.
     expect(store.getDerived(c).weightDb).toBe(-14)
   })
 
   it('keeps the 0 sentinel when nothing is voiced', async () => {
     const store = new TranscriptStore()
-    const c = weightChunk(false)
+    const c = weightChunk(false, -14)
     store.publishChunkList([c])
     await nextFrame()
     expect(store.getDerived(c).weightDb).toBe(0)

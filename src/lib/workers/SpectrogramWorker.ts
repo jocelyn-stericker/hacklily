@@ -7,6 +7,7 @@ import { powerToInt8 } from '#/lib/analysis/AnalysisFrame'
 import { SpectrogramStreamProcessor } from '#/lib/analysis/SpectrogramProcessor'
 import { AudioRopeReader } from '#/lib/audio/AudioRopeReader'
 
+import { weight } from '../analysis/weight'
 import type {
   PatchFrameMessage,
   WorkerEndedMessage,
@@ -79,6 +80,7 @@ export async function runAnalysis(reader: AudioRopeReader, sampleRate: number) {
   const preEmphBuf = new Float32Array(QUANTUM)
 
   let frameIndex = 0
+  let mostRecentWeight: number | null = null
 
   for await (const inp of reader) {
     console.assert(inp.length === QUANTUM)
@@ -99,12 +101,23 @@ export async function runAnalysis(reader: AudioRopeReader, sampleRate: number) {
       const quantized = new Int8Array(sp.numFreqs)
       for (let i = 0; i < sp.numFreqs; i++)
         quantized[i] = powerToInt8(specBuf[i]!)
+
+      // Recompute every 5 frames
+      if (frameIndex % 5 === 0) {
+        mostRecentWeight = weight(quantized, {
+          sampleRate,
+          freqStepHz: 20,
+          firstBinHz: sp.f1Hz,
+        })
+      }
+
       postMessage({
         type: 'patch',
         frameIndex: frameIndex++,
         spectrum: quantized,
         rms,
         lunaBrightness: null,
+        weight: mostRecentWeight,
       } satisfies PatchFrameMessage)
     }
   }

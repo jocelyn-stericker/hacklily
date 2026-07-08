@@ -565,6 +565,7 @@ export class CapturePipeline extends TypedEventTarget<CapturePipelineEventMap> {
       frame.speechProbability = data.speechProbability
     if (data.lunaBrightness !== undefined)
       frame.lunaBrightness = data.lunaBrightness
+    if (data.weight !== undefined) frame.weight = data.weight
   }
 
   #ensureFrame(frameIndex: number): { frame: AnalysisFrame; isNew: boolean } {
@@ -582,6 +583,7 @@ export class CapturePipeline extends TypedEventTarget<CapturePipelineEventMap> {
         f2: null,
         f3: null,
         lunaBrightness: null,
+        weight: null,
       }
       frames.push(frame)
     }

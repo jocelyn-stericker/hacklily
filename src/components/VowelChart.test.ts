@@ -37,6 +37,7 @@ function makeFrame(overrides: Partial<AnalysisFrame> = {}): AnalysisFrame {
     rms: 0,
     speechProbability: 0,
     spectrum: new Int8Array(0),
+    weight: 0,
     ...overrides,
   }
 }

@@ -27,3 +27,7 @@ export function shuffleArray<T>(arr: readonly T[]): T[] {
 export function assertUnreachable(_: never): never {
   throw new Error('unreachable')
 }
+
+export function median<T>(sorted: ArrayLike<T>): T | null {
+  return sorted[Math.floor(sorted.length / 2)] ?? null
+}

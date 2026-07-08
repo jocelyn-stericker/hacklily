@@ -3,6 +3,7 @@
 
 import { describe, it, expect } from 'vitest'
 
+import { median } from '../utils'
 import { buildWindow, buildFormantGaussianWindow } from './windowFn'
 
 function computeSSQ(window: Float32Array): number {
@@ -151,7 +152,7 @@ describe('buildWindow', () => {
     buildWindow('gaussian', nsamp, 100, out2)
 
     // Narrower physical width concentrates more at center
-    expect(Math.abs(out[Math.floor(nsamp / 2)]!)).toBeLessThan(1.0)
+    expect(Math.abs(median(out)!)).toBeLessThan(1.0)
   })
 })
 

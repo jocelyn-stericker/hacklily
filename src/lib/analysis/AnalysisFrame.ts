@@ -59,6 +59,7 @@ export type AnalysisFrame = {
   f2: number | null
   f3: number | null
   lunaBrightness: number | null
+  weight: number | null
 }
 
 export type AnalysisChunk = AnalysisParams & {
