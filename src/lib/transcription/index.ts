@@ -156,7 +156,7 @@ async function transcribeWithWorkerChecked(
     if (isModelLoadFailure(err)) {
       clearModelDownloaded(model)
       throw new ModelUnavailableError(
-        `${label} couldn’t be loaded and needs to be downloaded again.`,
+        `${label} could not be loaded and needs to be downloaded again.`,
       )
     }
     throw err
@@ -194,7 +194,7 @@ async function resolveEngine(
     case 'large':
       if (!isModelDownloaded('whisper')) {
         throw new ModelUnavailableError(
-          'The large transcription model hasn’t been downloaded.',
+          'The large transcription model has not been downloaded.',
         )
       }
       return 'whisper'
@@ -203,14 +203,14 @@ async function resolveEngine(
       if (resolveSmallEngine(local) === 'browser') {
         if (local !== 'downloaded') {
           throw new ModelUnavailableError(
-            'The browser’s on-device speech model hasn’t been downloaded.',
+            "The browser's on-device speech model has not been downloaded.",
           )
         }
         return 'browser'
       }
       if (!isModelDownloaded('moonshine')) {
         throw new ModelUnavailableError(
-          'The small transcription model hasn’t been downloaded.',
+          'The small transcription model has not been downloaded.',
         )
       }
       return 'moonshine'

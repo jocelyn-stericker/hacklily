@@ -105,8 +105,7 @@ describe('AudioRopeReader memory', () => {
     expect(copy[0]).toBe(toF32(0))
 
     // Second quantum: samples 128..255. The borrowed view (same backing array)
-    // is now overwritten in place; the copy is unaffected — this is the
-    // retain-must-copy contract consumers rely on.
+    // is now overwritten in place; the copy is unaffected. Checks retain-must-copy contract.
     const second = await iter.next()
     expect(second.value).toBe(borrowed) // identity: same reused buffer
     expect(borrowed[0]).toBe(toF32(128)) // overwritten

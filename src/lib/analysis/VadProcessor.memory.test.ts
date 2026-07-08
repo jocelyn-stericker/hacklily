@@ -2,8 +2,7 @@
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 // Memory tests for VadProcessor's SpeechGate. These verify that the gate's
-// internal accumulators (preroll, redemption, segment) stay bounded — a
-// regression guard for docs/memory-improvements.md item #2.
+// internal accumulators (preroll, redemption, segment) stay bounded.
 //
 // The unbounded accumulators (vadProbs, frameHfEnergy) live in VadWorker,
 // not in SpeechGate itself, so they're tested via the Playwright harness
@@ -24,7 +23,7 @@ describe('SpeechGate memory bounds', () => {
       onsetBacktrackMs: backtrackMs,
     })
 
-    // Push 1000 unvoiced frames — preroll should never exceed backtrackFrames.
+    // Push 1000 unvoiced frames (preroll should never exceed backtrackFrames)
     for (let i = 0; i < 1000; i++) {
       gate.push(i, 0, NaN) // 0 = silence
     }
@@ -83,7 +82,7 @@ describe('SpeechGate memory bounds', () => {
     for (let i = 0; i < minSpeechFrames + 50; i++) {
       gate.push(i, 0.9, NaN)
     }
-    // End speech — should close the segment.
+    // End speech, closing the segment
     for (let i = 0; i < 100; i++) {
       gate.push(minSpeechFrames + 50 + i, 0, NaN)
     }
@@ -125,12 +124,7 @@ describe('SpeechGate memory bounds', () => {
     }
     gate.end()
 
-    // All spurts should be reverted to silence (too short). The decisions
-    // should reflect this — no speechDetected=true decisions should survive.
-    // (During redemption some frames are optimistically marked speech, but
-    // reverted on close.)
-    // The key assertion: the gate processed all 2000 frames without error
-    // and didn't accumulate unbounded state.
+    // All spurts should be reverted to silence (too short).
     expect(decisions.length).toBe(2000)
   })
 })

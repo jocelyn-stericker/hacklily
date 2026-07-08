@@ -389,7 +389,7 @@ describe('AudioManager', () => {
         expect(captureHistory.length).toBeGreaterThanOrEqual(5),
       )
 
-      // ACTIVATE: idle→warming→warm. START: warm→recording. STOP: recording→resetting→warm.
+      // ACTIVATE: idle -> warming -> warm. START: warm -> recording. STOP: recording -> resetting -> warm.
       expect(captureHistory).toEqual([
         'warming',
         'warm',
@@ -422,7 +422,7 @@ describe('AudioManager', () => {
   // -------------------------------------------------------------------------
 
   describe('capture sub-state machine', () => {
-    it('START_CAPTURE: idle → warming → warm', async () => {
+    it('START_CAPTURE: idle  ->  warming  ->  warm', async () => {
       const { snapshots, stop } = trackState(manager)
       manager.sendEvent({ type: 'START_CAPTURE' })
       await waitForState(manager, atCapture('warm'), 'warm')
@@ -437,7 +437,7 @@ describe('AudioManager', () => {
       expect(manager.getState().playback).toBe('idle')
     })
 
-    it('START_RECORDING: warm → recording', async () => {
+    it('START_RECORDING: warm  ->  recording', async () => {
       await toWarm(manager)
       manager.sendEvent({ type: 'START_RECORDING' })
       await waitForState(manager, atCapture('recording'), 'recording')
@@ -447,7 +447,7 @@ describe('AudioManager', () => {
       })
     })
 
-    it('START_RECORDING from idle: idle → warming → warm → recording', async () => {
+    it('START_RECORDING from idle: idle -> warming  ->  warm  ->  recording', async () => {
       const { snapshots, stop } = trackState(manager)
       manager.sendEvent({ type: 'START_RECORDING' })
       await waitForState(manager, atCapture('recording'), 'recording')
@@ -457,7 +457,7 @@ describe('AudioManager', () => {
       expect(snapshots.at(-1)?.capture).toBe('recording')
     })
 
-    it('STOP_RECORDING: recording → resetting → warm', async () => {
+    it('STOP_RECORDING: recording -> resetting  ->  warm', async () => {
       await toRecording(manager)
 
       const { snapshots, stop } = trackState(manager)
@@ -469,14 +469,14 @@ describe('AudioManager', () => {
       expect(snapshots.at(-1)?.capture).toBe('warm')
     })
 
-    it('STOP_CAPTURE from warm: warm → idle', async () => {
+    it('STOP_CAPTURE from warm: warm -> idle', async () => {
       await toWarm(manager)
       manager.sendEvent({ type: 'STOP_CAPTURE' })
       await waitForState(manager, atCapture('idle'), 'idle')
       expect(manager.getState()).toEqual({ capture: 'idle', playback: 'idle' })
     })
 
-    it('STOP_CAPTURE from recording: force → idle', async () => {
+    it('STOP_CAPTURE from recording: force -> idle', async () => {
       await toRecording(manager)
       manager.sendEvent({ type: 'STOP_CAPTURE' })
       await waitForState(manager, atCapture('idle'), 'idle')
@@ -491,7 +491,7 @@ describe('AudioManager', () => {
       expect(manager.getState().capture).toBe('idle')
     })
 
-    it('full cycle: idle → warm → recording → warm → idle', async () => {
+    it('full cycle: idle ->  warm -> recording -> warm -> idle', async () => {
       manager.sendEvent({ type: 'START_CAPTURE' })
       await waitForState(manager, atCapture('warm'), 'warm')
       manager.sendEvent({ type: 'START_RECORDING' })
@@ -533,9 +533,9 @@ describe('AudioManager', () => {
 
   describe('capture guard rejections', () => {
     it('START_RECORDING from warm when sent before ACTIVATE is processed: rejected', async () => {
-      // Queue both before either runs. ACTIVATE resolves warming→warm inside its
+      // Queue both before either runs. ACTIVATE resolves warming -> warm inside its
       // handler, so when START_RECORDING's handler runs, capture is already warm.
-      // START succeeds here — this documents that behavior.
+      // START succeeds here.
       manager.sendEvent({ type: 'START_CAPTURE' })
       manager.sendEvent({ type: 'START_RECORDING' })
       await waitForState(manager, atCapture('recording'), 'recording')
@@ -567,7 +567,7 @@ describe('AudioManager', () => {
       manager.sendEvent({ type: 'START_CAPTURE' })
       await flush()
       stop()
-      // idle→warming is the only valid transition from warm that ACTIVATE would
+      // idle -> warming is the only valid transition from warm that ACTIVATE would
       // try; the table rejects it and no stateChanged fires.
       expect(snapshots).toHaveLength(0)
       expect(manager.getState().capture).toBe('warm')
@@ -589,7 +589,7 @@ describe('AudioManager', () => {
   // -------------------------------------------------------------------------
 
   describe('playback sub-state machine', () => {
-    it('ENABLE_PLAYBACK: idle → playing', async () => {
+    it('ENABLE_PLAYBACK: idle -> playing', async () => {
       manager.sendEvent({ type: 'ENABLE_PLAYBACK' })
       await waitForState(manager, atPlayback('playing'), 'playing')
       expect(manager.getState()).toEqual({
@@ -603,7 +603,7 @@ describe('AudioManager', () => {
       expect(manager.getState().capture).toBe('idle')
     })
 
-    it('DISABLE_PLAYBACK: playing → idle', async () => {
+    it('DISABLE_PLAYBACK: playing -> idle', async () => {
       await toPlaying(manager)
       manager.sendEvent({ type: 'DISABLE_PLAYBACK' })
       await waitForState(manager, atPlayback('idle'), 'idle')
@@ -671,7 +671,7 @@ describe('AudioManager', () => {
 
     it('does not emit stop when disabled before the pipeline produces any audio', async () => {
       // Mirrors AudioPlaybackPipeline: aborting during module load does not
-      // fire the stop event — only natural end does. An ENABLE+DISABLE sequence
+      // fire the stop event, only natural end does. An ENABLE+DISABLE sequence
       // that resolves before positionChanged has ever fired (i.e. before the
       // worklet is ready) should abort cleanly and stay silent.
       const stops: Event[] = []
@@ -870,7 +870,7 @@ describe('AudioManager', () => {
 
     it('does NOT fire when a guard rejects a capture transition', async () => {
       const { snapshots, stop } = trackState(manager)
-      manager.sendEvent({ type: 'STOP_RECORDING' }) // idle → invalid
+      manager.sendEvent({ type: 'STOP_RECORDING' }) // idle -> invalid
       await flush()
       stop()
       expect(snapshots).toHaveLength(0)
@@ -878,7 +878,7 @@ describe('AudioManager', () => {
 
     it('does NOT fire when a guard rejects a playback transition', async () => {
       const { snapshots, stop } = trackState(manager)
-      manager.sendEvent({ type: 'DISABLE_PLAYBACK' }) // idle → invalid
+      manager.sendEvent({ type: 'DISABLE_PLAYBACK' }) // idle -> invalid
       await flush()
       stop()
       expect(snapshots).toHaveLength(0)
@@ -1388,7 +1388,7 @@ describe('AudioManager', () => {
       })
       await flush()
       stop()
-      // Soft reset (recording → resetting → recording) causes state transitions.
+      // Soft reset (recording -> resetting -> recording) causes state transitions.
       expect(snapshots.length).toBeGreaterThan(0)
     })
 
@@ -1420,7 +1420,7 @@ describe('AudioManager', () => {
   // -------------------------------------------------------------------------
 
   describe('MIC_CAPTURE_FEATURES while recording', () => {
-    it('follows recording → resetting → recording transition sequence', async () => {
+    it('follows recording -> resetting -> recording transition sequence', async () => {
       await toRecording(manager)
       const { snapshots, stop } = trackState(manager)
       manager.sendEvent({
@@ -1659,7 +1659,7 @@ describe('AudioManager', () => {
         stop()
 
         const states = snapshots.map((s) => s.capture)
-        // warm → warming → … → waitingForSettings
+        // warm -> warming -> … -> waitingForSettings
         expect(states).toContain('warming')
         expect(states.at(-1)).toBe('waitingForSettings')
       } finally {
@@ -1845,12 +1845,12 @@ describe('AudioManager', () => {
     })
 
     it('correctly serialises interleaved capture and playback events', async () => {
-      // Queue order: ACTIVATE → ENABLE → DISABLE → START
+      // Queue order: ACTIVATE -> ENABLE -> DISABLE -> START
       // Expected processing:
-      //   ACTIVATE:  idle→warming→warm
-      //   ENABLE:    idle→playing  (capture=warm, ok)
-      //   DISABLE:   playing→idle
-      //   START:     warm→recording  (playback=idle, ok)
+      //   ACTIVATE:  idle -> warming -> warm
+      //   ENABLE:    idle -> playing  (capture=warm, ok)
+      //   DISABLE:   playing -> idle
+      //   START:     warm -> recording  (playback=idle, ok)
       manager.sendEvent({ type: 'START_CAPTURE' })
       manager.sendEvent({ type: 'ENABLE_PLAYBACK' })
       manager.sendEvent({ type: 'DISABLE_PLAYBACK' })
@@ -1913,9 +1913,9 @@ describe('AudioManager', () => {
       manager.addEventListener('error', (e) => errors.push(e.detail.error))
 
       // Track how many times capture has reached 'warm':
-      //   pass 1 — first START_CAPTURE
-      //   ERROR  — forceIdles back to idle
-      //   pass 2 — second START_CAPTURE
+      //   pass 1: first START_CAPTURE
+      //   ERROR: forceIdles back to idle
+      //   pass 2: second START_CAPTURE
       let warmCount = 0
       const secondWarm = new Promise<void>((resolve) => {
         manager.addEventListener('stateChanged', (e) => {
@@ -1934,7 +1934,7 @@ describe('AudioManager', () => {
     })
 
     it('stateChanged events never overlap: each fires fully before the next', async () => {
-      // EventTarget.dispatchEvent is synchronous, so this is true by spec —
+      // EventTarget.dispatchEvent is synchronous, so this is true by spec --
       // but verify it holds through the Sink serialization.
       let inHandler = false
       let overlap = false
@@ -1961,7 +1961,7 @@ describe('AudioManager', () => {
 
   describe('outbound events (forwarding contract)', () => {
     // These tests verify that the manager has the correct event names and types
-    // in its OutboundEventMap — ensuring the hook wiring will compile.
+    // in its OutboundEventMap ensuring the hook wiring will compile.
 
     it('addEventListener accepts all expected capture event names', () => {
       expect(() => {

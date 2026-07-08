@@ -1,5 +1,5 @@
 // Repeated import/clear cycle to detect monotonic memory leaks.
-// Runs N cycles of: import short WAV → wait for analysis → clear.
+// Runs N cycles of: import short WAV -> wait for analysis -> clear.
 // If Chromium heap after clear grows each cycle, something isn't
 // being released.
 
@@ -73,7 +73,7 @@ export const repeatedImportClear: Scenario = async (
       snapshot: summarizeSnapshot(afterImport),
     })
 
-    // --- Clear ("New" → "Discard") ---
+    // --- Clear ("New" -> "Discard") ---
     await page.locator('[title="Application menu"]').click()
     await page.waitForTimeout(500)
     await page.getByText('New', { exact: true }).click()

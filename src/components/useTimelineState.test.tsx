@@ -367,8 +367,8 @@ describe('useTimelineState', () => {
   })
 
   it('handlePlaybackStop does not cancel recording', () => {
-    // The audio engine fires stop when playing is disabled during play→record.
-    // This must not transition recording → inactive.
+    // The audio engine fires stop when playing is disabled during play -> record.
+    // This must not transition recording -> inactive.
     const { result } = renderHook(() => useTimelineState(mockAnalysis))
 
     act(() => {

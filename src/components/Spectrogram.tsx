@@ -36,12 +36,11 @@ const SCRATCH_WIDTH = 256
 // tiles are evicted and re-rendered on demand from the retained level data
 // (spec) and analysis frames (formants), which together cost far less than the
 // rendered canvases. Sized to comfortably hold a couple of viewport-widths of
-// both layers so scrolling reuses cached tiles instead of thrashing. See
-// docs/memory-improvements.md item 1.
+// both layers so scrolling reuses cached tiles instead of thrashing.
 const MAX_TILE_CANVAS_BYTES = 48 * 1024 * 1024
 
 // Coarsest level of detail: each canvas column reduces 2^MAX_LOD source frames.
-// 6 → 64 frames/col, ample for the ~90 s fully-zoomed-out span. See item 1c.
+// 6 -> 64 frames/col, ample for the ~90 s fully-zoomed-out span.
 const MAX_LOD = 6
 
 // Formant arcs become connected lines once a column spans 2^FORMANT_LINE_LOD
@@ -57,14 +56,14 @@ const LOD_DXCOL_HI = 1.5
 
 // While the zoom is actively changing, we re-blit already-materialized tiles
 // rescaled (a "proxy", possibly soft) instead of materializing a new lod each
-// frame — that materialization churn is what spikes GC during a pinch. Once the
+// frame -- that materialization churn is what spikes GC during a pinch. Once the
 // zoom has been still this long, a refine draw materializes the target lod crisply.
 const ZOOM_REFINE_MS = 90
 
 const DB_MAX_DEFAULT = -16
 
 // Pick the level of detail for the current zoom: target one canvas column per
-// display pixel (dxPerCol ≈ 1). `lod` is the number of frame halvings; lod 0 is
+// display pixel (dxPerCol is about 1). `lod` is the number of frame halvings; lod 0 is
 // full resolution (zoomed in). Hysteresis keeps `prevLod` unless dxPerCol leaves
 // the band, avoiding rebuild thrash mid-pinch.
 function selectLod(dxPerFrame: number, prevLod: number): number {
@@ -92,12 +91,9 @@ export interface SpectrogramHandle {
   patch: (from: number, to: number) => void
 }
 
-// Per-tile dB-level data (0–255), the retained colour source. Transposed
-// layout: data[b * TILE_WIDTH + localF]. Uint8 (not RGBA) so it's 4× smaller
+// Per-tile dB-level data (0-255), the retained colour source. Transposed
+// layout: data[b * TILE_WIDTH + localF]. Uint8 (not RGBA) so it's 4x smaller
 // and reduces correctly by max in the level/dB domain when building coarse LOD
-// tiles; the colourmap lookup happens at paint time. This is item 11's "quantize
-// spectra → int8" applied to the display source. See docs/memory-improvements.md
-// items 1c and 11.
 interface LevelTile {
   data: Uint8Array // numBins * TILE_WIDTH
 }
@@ -136,22 +132,22 @@ interface PooledCanvas {
 // evicting an off-screen one and rebuilding it on scroll-back is a good trade.
 //
 // Evicted canvases are recycled into `free` (keyed by column width) rather than
-// dropped, so the heavy churn of pinch-zoom — which crosses LOD boundaries and
+// dropped, so the heavy churn of pinch-zoom -- which crosses LOD boundaries and
 // would otherwise allocate/GC a fresh OffscreenCanvas per visible tile each
-// transition — reuses backing buffers instead. `acquire`/`recycle` are the pool;
+// transition -- reuses backing buffers instead. `acquire`/`recycle` are the pool;
 // the free list is bounded by the same byte cap and cleared on height change.
 class TileLru {
   private order = new Set<Tile>()
   private byteOf = new Map<Tile, number>()
   private capBytes = 0
-  // Bytes of tiles touched since the last evict() — i.e. what the current
+  // Bytes of tiles touched since the last evict() -- i.e. what the current
   // frame is actually drawing. evict() never drops below this, so on-screen
   // tiles are never evicted out from under the draw (no thrash when the
   // visible set alone exceeds the cap, e.g. fully zoomed out).
   private touchedBytes = 0
   totalBytes = 0
 
-  // Recycled canvases keyed by column width (height is uniform — the pool is
+  // Recycled canvases keyed by column width (height is uniform -- the pool is
   // cleared whenever canvas height changes). Bounded by `freeBytes <= capBytes`.
   private free = new Map<number, PooledCanvas[]>()
   private freeBytes = 0
@@ -174,7 +170,7 @@ class TileLru {
     return this.freeBytes
   }
 
-  // Borrow a `cols × height` canvas from the pool, or allocate one. The caller
+  // Borrow a `cols x height` canvas from the pool, or allocate one. The caller
   // fully repaints it (paintTile clears with a bg fillRect), so no clear here.
   acquire(cols: number, height: number): PooledCanvas {
     const list = this.free.get(cols)
@@ -254,7 +250,7 @@ class TileLru {
 }
 
 interface OffscreenState {
-  // lod → tile array. Each array indexes tiles by tileIdx (= startFrame /
+  // lod -> tile array. Each array indexes tiles by tileIdx (= startFrame /
   // TILE_WIDTH); a tile covers the same frame range at every lod, just at a
   // different column resolution. Lazily populated as zoom levels are visited.
   tilesByLod: Map<number, Tile[]>
@@ -265,8 +261,8 @@ interface OffscreenState {
   // putImageData, never read back. Lives on OffscreenState to avoid reallocating.
   scratchData: ImageData
   scratchU32: Uint32Array
-  // Reused per-bin × per-column reduced levels for coarse (lod > 0) tiles
-  // (numBins × TILE_WIDTH, only the first numBins × cols used). Avoids a fresh
+  // Reused per-bin x per-column reduced levels for coarse (lod > 0) tiles
+  // (numBins x TILE_WIDTH, only the first numBins x cols used). Avoids a fresh
   // allocation per tile paint.
   reduceScratch: Uint8Array
 }
@@ -324,8 +320,8 @@ function buildBinForY(
   return binForY
 }
 
-// Quantize spectra to Uint8 dB-levels (0–255). The colourmap lookup is deferred
-// to paint time so coarse tiles can reduce levels by max first (item 1c).
+// Quantize spectra to Uint8 dB-levels (0-255). The colourmap lookup is deferred
+// to paint time so coarse tiles can reduce levels by max first.
 //
 // Spectrum bins are Int8Array of quantized dB: 0.5 dB steps with a -32 dB offset,
 // covering [-96, +31.5] dB over [-128, 127] (see AnalysisFrame.ts). Silence
@@ -401,8 +397,8 @@ function truncateAllLods(
 // tile's x-axis is in canvas columns, so a frame at `f` lands at (f - startFrame)
 // / step. At fine lods (step small) we draw dots, as before; at coarse lods the
 // dots would be sub-pixel and merge, so we switch to connected lines per track so
-// peaks survive (item 1c). Replaces the old separate transparent formant tile —
-// each chunk keeps a single canvas tile (item 1b).
+// peaks survive. Replaces the old separate transparent formant tile.
+// Each chunk keeps a single canvas tile.
 function drawFormants(
   ctx: OffscreenCanvasRenderingContext2D,
   startFrame: number,
@@ -598,7 +594,7 @@ function repaintTile(
 
 // Fill a tile's valid columns from the retained level data. For lod > 0 each
 // canvas column is the per-bin max over 2^lod source frames (reduced in the
-// level/dB domain — monotonic, so correct — then colourmapped), the Praat-style
+// monotonic level/dB domain, then colourmapped), the Praat-style
 // per-column reduction. lod 0 reads the level tile directly (one frame/col).
 function paintLevelColumns(
   off: OffscreenState,
@@ -624,7 +620,7 @@ function paintLevelColumns(
   const validCols = Math.ceil(framesInTile / step)
   const levelData = levels.levelTiles[t]!.data
 
-  // Reduce to per-bin × per-column levels. lod 0 needs no reduction, so read the
+  // Reduce to per-bin x per-column levels. lod 0 needs no reduction, so read the
   // level tile directly (stride TILE_WIDTH); coarser lods max into reduceScratch.
   let reduced: Uint8Array
   let stride: number
@@ -650,7 +646,7 @@ function paintLevelColumns(
     }
   }
 
-  // Expand bins → canvas rows via binForY, batched into putImageData.
+  // Expand bins -> canvas rows via binForY, batched into putImageData.
   const { colourmap, bgU32 } = theme
   for (
     let batchStart = 0;
@@ -715,7 +711,7 @@ interface BlitContext {
   // while zooming). Set by `draw`.
   lod: number
   // When false (active zoom), blit only already-materialized tiles of `lod`
-  // rescaled — no new materialization. When true, materialize as needed.
+  // rescaled. When true, materialize as needed.
   materialize: boolean
 }
 
@@ -922,7 +918,7 @@ function draw(
   }
 
   // While the zoom is actively crossing toward a *finer* lod, don't materialize
-  // the new (larger, expensive) tiles every frame — that's the pinch GC. Instead
+  // the new (larger, expensive) tiles every frame, since that generates garbage. Instead
   // blit the last settled coarser lod rescaled (a soft but gapless proxy, since a
   // coarser lod covers the shrinking viewport) and schedule a refine to
   // materialize the target once the zoom stops. Zooming *out* is materialized
@@ -1057,8 +1053,8 @@ export function Spectrogram({
 
   // Dev-only: report retained tile memory to the probe. levelTiles are the
   // retained source (one Uint8Array per tile, the quantized spectra); canvas
-  // tiles are an LRU-bounded cache of display-resolution LOD tiles (items 1, 1c).
-  // Each canvas tile carries both the spectrogram and its formants (item 1b), so
+  // tiles are an LRU-bounded cache of display-resolution LOD tiles.
+  // Each canvas tile carries both the spectrogram and its formants, so
   // `tiles` counts only the materialized canvases across all lods, not placeholders.
   useEffect(() => {
     return registerMemSource(
@@ -1437,7 +1433,7 @@ export function Spectrogram({
           needFullRedraw = true
         } else if (off) {
           // levelTiles (the spec source) were updated above by computeLevelsRange.
-          // Repaint the affected materialized tiles in full — each repaint reduces
+          // Repaint the affected materialized tiles in full. Each repaint reduces
           // + re-colours and redraws formants on top, so a merged opaque tile stays
           // correct without surgically editing one layer. A recolor (new dbMax)
           // repaints the whole chunk; otherwise just the changed range. Only the

@@ -41,19 +41,17 @@ Direct, line-by-line ports of upstream BFA code:
 
 ## Third-party runtime dependency
 
-- **onnxruntime-web** (Microsoft), MIT License — peer dependency, not vendored.
+- **onnxruntime-web** (Microsoft), MIT License
 - The CUPE **ONNX model weights** are **not** included in this package and carry
   their own upstream license terms; obtain them from the BFA project.
 
 ## License of this port
 
 Per the porting request, **bfa-ts** is distributed under the **GNU Affero
-General Public License, version 3 or later (AGPL-3.0-or-later)** — see
-[`LICENSE`](../../../LICENSE). AGPLv3 is compatible with and one-way upgradeable from
-the upstream GPLv3 (GPLv3 §13 / AGPLv3 §13 permit this combination). The
-copyright in the underlying algorithms and data tables remains with the original
-BFA author(s); this port adds a derivative-work copyright for the TypeScript
-translation.
+General Public License, version 3 or later (AGPL-3.0-or-later)**, see
+[`LICENSE`](../../../LICENSE). The copyright in the underlying algorithms
+and data tables remains with the original BFA author(s); this port adds
+a derivative-work copyright for the TypeScript translation.
 
 > If you convey this software or run a modified version over a network, the
 > AGPL requires you to offer the corresponding source to your users.

@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Alison Jenkins <alison.juliet.jenkins@gmail.com>
 
-// The sub-applications of Braat, as a single source of truth for the shared
-// NavBar (and anywhere else that lists the tools). Order here is the order
-// shown in the top bar. Keep it small — this is the cross-tool switcher.
+// Ordered sub-applications of Braat, for things like the NavBar and cross-tool switcher
 
 import type { LucideIcon } from 'lucide-react'
 import { BookOpen, Languages, Metronome, MicVocal } from 'lucide-react'

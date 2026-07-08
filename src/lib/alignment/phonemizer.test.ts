@@ -76,7 +76,7 @@ describe('phonemizeTranscript — golden cases', () => {
   })
 })
 
-describe('getCompoundPhonemeMapping — unit', () => {
+describe('getCompoundPhonemeMapping, unit', () => {
   it('direct single mapping returns a 1-element list', () => {
     expect(getCompoundPhonemeMapping('b')).toEqual(['b'])
   })

@@ -1,31 +1,18 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
-// Offline generator for per-sentence reference recordings of the practice
-// passages.
+// Offline generator for reference practice recordings.
 //
 // For every passage in `src/lib/passages.ts`, every sentence (segment) of that
 // passage, and every voice in `VOICES`, this synthesizes the sentence with
-// Kokoro (locally, on CPU — no Python, no cloud), encodes it to a small mono
-// MP3, and writes it to:
+// Kokoro on CPU to mono media/references/<passageId>/<segmentIndex>/<voiceId>.mp3
 //
-//   media/references/<passageId>/<segmentIndex>/<voiceId>.mp3
+// It also (re)writes `media/references/manifest.json`, used at runtime and to
+// fetch available clips.
 //
-// `<segmentIndex>` is the zero-padded position in the passage's flattened
-// sentence list (the same order the practice UI uses), so the app can line a
-// clip up with the sentence it's reading.
+// This is slow, see also `fetch-media` for downloading clips.
 //
-// It also (re)writes `media/references/manifest.json`, an index the app can
-// load at runtime to discover available clips. Each clip records its `engine`,
-// so adding recordings from another source later (a different TTS, or a human
-// take) is just a matter of writing files into the same layout and merging
-// manifest entries. Nothing here is Kokoro-specific past the `generate()` call.
-//
-// Idempotent: a clip is skipped if its file exists and the segment text hasn't
-// changed since it was made (tracked per segment via `textHash`); pass `--force`
-// to regenerate anyway. Stale files (from edited/removed sentences or voices)
-// are pruned. Pass `--only=<passageId>` and/or `--voice=<voiceId>` to scope a
-// run (useful for a quick smoke test before the full ~720-sentence Harvard run).
+// `--force` rewrites existing clips.
 //
 // Usage (from this directory):  npm run synth -- [--force] [--only=id] [--voice=id]
 
@@ -61,7 +48,7 @@ const OUT_DIR = join(REPO_ROOT, 'media', 'references')
 const VOICES_DIR = join(__dirname, 'node_modules/kokoro-js/voices')
 
 // ---------------------------------------------------------------------------
-// Config — tweak these freely.
+// Config
 // ---------------------------------------------------------------------------
 
 const MODEL_ID = 'onnx-community/Kokoro-82M-v1.0-ONNX'
@@ -76,21 +63,18 @@ type VoiceSpec = {
   blend?: { voice: string; weight: number }[]
 }
 
-// US-only set chosen for spread across pitch (F0) and resonance (F1), measured
-// with measure-voices.ts. en-gb coverage to be revisited later. F0/F1 are the
-// measured medians. NOTE on presentation: Nova reads decidedly femme and must
-// never be surfaced as enby; Kore is the femme-leaning enby; heart×onyx is the
-// masc-leaning enby. See `KokoroTTS.list_voices()` for the full native set.
+// US-only set chosen for interesting variance across F0, F1, and weight
+// en-gb and other languages later. `KokoroTTS.list_voices()` for the full native set.
 const VOICES: VoiceSpec[] = [
-  { id: 'am_onyx' }, //    F0 83  / F1 424 — masc, deep, dark
-  { id: 'am_michael' }, // F0 110 / F1 650 — masc, deep, bright
-  { id: 'am_fenrir' }, //  F0 137 / F1 444 — masc, low-mid, dark
-  { id: 'af_kore' }, //    F0 156 / F1 429 — femme-leaning enby
-  { id: 'af_nova' }, //    F0 156 / F1 628 — femme (NOT enby)
-  { id: 'af_sarah' }, //   F0 177 / F1 548 — femme, mid-high
-  { id: 'af_heart' }, //   F0 194 / F1 594 — femme, high, bright (A-grade)
+  { id: 'am_onyx' }, //    F0 83  / F1 424: masc, deep, dark
+  { id: 'am_michael' }, // F0 110 / F1 650: masc, deep, bright
+  { id: 'am_fenrir' }, //  F0 137 / F1 444: masc, low-mid, dark
+  { id: 'af_kore' }, //    F0 156 / F1 429: femme-leaning enby
+  { id: 'af_nova' }, //    F0 156 / F1 628: femme (NOT enby)
+  { id: 'af_sarah' }, //   F0 177 / F1 548: femme, mid-high
+  { id: 'af_heart' }, //   F0 194 / F1 594: femme, high, bright (A-grade)
   {
-    id: 'heart_onyx', //   F0 128 / F1 463 — masc-leaning enby (blend)
+    id: 'heart_onyx', //   F0 128 / F1 463: masc-leaning enby (blend)
     blend: [
       { voice: 'af_heart', weight: 0.5 },
       { voice: 'am_onyx', weight: 0.5 },
@@ -98,7 +82,7 @@ const VOICES: VoiceSpec[] = [
   },
 ]
 
-const MP3_BITRATE = '48k' // mono; ~7 KB/s. Decodes everywhere incl. iOS Safari.
+const MP3_BITRATE = '48k' // mono; ~7 KB/s.
 
 // ---------------------------------------------------------------------------
 
@@ -156,7 +140,7 @@ function readVoiceStyle(id: string): Float32Array {
   return new Float32Array(buf.buffer, buf.byteOffset, buf.length / 4)
 }
 
-// A Kokoro "voice" is a 510×256 style matrix; a blend is the (weight-
+// A Kokoro "voice" is a 510x256 style matrix; a blend is the (weight-
 // normalized) average of several. Writes the blended matrix to a temp .bin in
 // the voices dir under a language-prefixed id so the loader and phonemizer pick
 // it up, and returns that id. Caller is responsible for deleting the file.
@@ -170,7 +154,7 @@ function writeBlendStyle(spec: VoiceSpec & { blend: object }): string {
     const s = styles[k]!
     for (let i = 0; i < blend.length; i++) blend[i]! += w * s[i]!
   })
-  const lang = recipe[0]!.voice[0] // 'a' (US) / 'b' (GB) — drives phonemization
+  const lang = recipe[0]!.voice[0] // 'a' (US) / 'b' (GB) for espeak
   const tempId = `${lang}_blend_${spec.id}`
   writeFileSync(join(VOICES_DIR, `${tempId}.bin`), Buffer.from(blend.buffer))
   return tempId
@@ -269,7 +253,7 @@ async function main() {
     writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n')
   }
 
-  console.log(`Loading Kokoro model (${MODEL_ID})…`)
+  console.log(`Loading Kokoro model (${MODEL_ID})...`)
   const tts = await KokoroTTS.from_pretrained(MODEL_ID, {
     dtype: 'q8',
     device: 'cpu',
@@ -313,7 +297,7 @@ async function main() {
       const expected = new Set<string>()
 
       console.log(
-        `\n${passage.id}: ${segments.length} sentences × ${specs.length} voices`,
+        `\n${passage.id}: ${segments.length} sentences x ${specs.length} voices`,
       )
 
       for (let i = 0; i < segments.length; i++) {
@@ -359,7 +343,7 @@ async function main() {
         // Persist after each sentence so a long run can be resumed.
         persist()
         console.log(
-          `  [${idx}] ${made ? `synth ${made}` : 'skip'} — ${text.slice(0, 60)}`,
+          `  [${idx}] ${made ? `synth ${made}` : 'skip'}: ${text.slice(0, 60)}`,
         )
       }
 

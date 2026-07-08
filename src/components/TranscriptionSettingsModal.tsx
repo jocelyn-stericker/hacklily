@@ -209,7 +209,7 @@ function AccurateDownloadControls({
     : 'Whisper Turbo'
   const stageState = !draftReady ? draftState : whisperState
 
-  // Advance the sequence: draft → Whisper, each starting once the prior settles.
+  // Advance the sequence: draft -> Whisper, each starting once the prior settles.
   // A failed stage holds here until the user retries.
   useEffect(() => {
     if (!enabled || !started) return

@@ -67,7 +67,7 @@ export async function buildJournalZip(
       const srtFile = await (await handle.getFileHandle(srtName)).getFile()
       files[srtName] = new Uint8Array(await srtFile.arrayBuffer())
     } catch {
-      // No sidecar — fine.
+      // No sidecar, fine.
     }
   }
 

@@ -6,8 +6,8 @@
 // user's transcription settings, and write an SRT sidecar next to the audio.
 //
 // All heavy work (VAD, transcription) runs off the main thread. Decode happens
-// on the main thread via AudioContext.decodeAudioData (one-shot, not streaming)
-// — acceptable for a user-initiated batch op on typical journal entries.
+// on the main thread via AudioContext.decodeAudioData (one-shot, not streaming).
+// This is probably fine.
 
 import { autoTier } from '#/components/useChunkWorkQueue'
 import type { SpeechSegment } from '#/lib/analysis/vadSegments'
@@ -30,7 +30,7 @@ import { writeEntrySrt } from './journalFs'
 import { formatSrt } from './journalSrt'
 
 // A span over already-decoded audio has nothing to cancel, so it carries a
-// never-aborting signal — mirrored from AudioSpan.ts, which keeps this const
+// never-aborting signal like in AudioSpan.ts, which keeps this const
 // private. We only need it to satisfy the AudioSpan shape.
 const NEVER_ABORT = new AbortController().signal
 
@@ -129,8 +129,7 @@ function runVadOnWorker(
     }
     // Copy the buffer: the worker gets its own, and `mono` stays intact for the
     // AudioRope the segments are transcribed from. (Transferring would detach
-    // `mono` on this side, leaving it zero-filled — the transcription would
-    // then hallucinate on silence.)
+    // `mono` on this side, leaving it zero-filled)
     const copy = mono.slice()
     worker.postMessage({ mono: copy, sampleRate }, [
       copy.buffer as Transferable,
@@ -172,8 +171,7 @@ export async function transcribeEntry({
       report(idle)
       return idle
     }
-    // `autoTier` with `upgrade=false` only returns 'small', 'cloud', or null —
-    // never 'large' or 'manual' — so the cast to a TranscriptionMode is sound.
+    // `autoTier` with `upgrade=false` only returns 'small', 'cloud', or null
     const engine: TranscriptionEngine | null = await tryResolveEngine(
       tier as Exclude<TranscriptionMode, 'disabled'>,
     )

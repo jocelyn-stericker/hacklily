@@ -745,7 +745,7 @@ export class AudioManager extends TypedEventTarget<OutboundEventMap> {
         }
       }
 
-      // Start both module fetches immediately so they overlap the gesture→effect gap.
+      // Start both module fetches immediately so they overlap the gesture -> effect gap.
       this.#playbackModuleReady = ctx.audioWorklet
         .addModule(ropeSourceUrl)
         .catch((err: unknown) => {
@@ -1001,7 +1001,7 @@ export class AudioManager extends TypedEventTarget<OutboundEventMap> {
 
   async #handleActivateCapture(): Promise<void> {
     // Already-active is a no-op (the user asked to activate something that's
-    // already up). The state machine allows 'warm' → 'warming' for rebuilds
+    // already up). The state machine allows 'warm' -> 'warming' for rebuilds
     // (feature / settings changes), so this guard is in the handler, not the
     // transition table.
     if (this.#capture.state === 'warm' || this.#capture.state === 'recording')
@@ -1077,7 +1077,7 @@ export class AudioManager extends TypedEventTarget<OutboundEventMap> {
       'stop',
       async () => {
         // Natural end. Tear down our state and forward the stop event. The
-        // natural-end stop is the only time the pipeline fires `stop` — a
+        // natural-end stop is the only time the pipeline fires `stop`. A
         // DISABLE_PLAYBACK-aborted pipeline does NOT (see DISABLE_PLAYBACK handler).
         await this.#tearDownPlaybackPipeline()
         this.#playbackProducedAudio = false

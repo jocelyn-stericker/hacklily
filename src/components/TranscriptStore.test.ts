@@ -73,7 +73,7 @@ describe('TranscriptStore chunk list', () => {
 })
 
 describe('TranscriptStore per-chunk transcripts', () => {
-  it('stores a transcript and notifies only that chunk’s subscribers', () => {
+  it("stores a transcript and notifies only that chunk's subscribers", () => {
     const store = new TranscriptStore()
     const a = chunk()
     const b = chunk()

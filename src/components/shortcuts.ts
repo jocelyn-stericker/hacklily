@@ -228,9 +228,7 @@ function labelForToken(token: string, isMac: boolean): string {
 }
 
 /**
- * Format a react-hotkeys-hook key string for display. macOS uses concatenated
- * glyphs (`⌘O`, `⇧←`); other platforms use `+`-joined names (`Ctrl+O`,
- * `Shift+←`). This is the single platform-aware formatter for the whole app.
+ * Format a react-hotkeys-hook key string for display depending on platform.
  */
 export function formatKeys(
   keys: string,
@@ -250,10 +248,9 @@ export function formatKeys(
 }
 
 /**
- * A shortcut's registry label with its formatted keys appended, e.g.
- * `Record from microphone (R)`. The single source of truth for Toolbar button
- * tooltips and menu accelerators, so their wording can't drift from the help
- * modal.
+ * A shortcut's registry label e.g. `Record from microphone (R)`.
+ *
+ * Use this, don't hardcode strings in the UI.
  */
 export function shortcutTitle(id: ShortcutId): string {
   const s = SHORTCUTS[id]
@@ -261,9 +258,7 @@ export function shortcutTitle(id: ShortcutId): string {
 }
 
 /**
- * Activate a hotkey scope while the calling component is mounted (and disable it
- * on unmount). Routes call this so their scoped bindings only fire while the
- * route is on screen.
+ * Activate a hotkey scope while mounted.
  */
 export function useActiveScope(scope: ShortcutScope): void {
   const { enableScope, disableScope } = useHotkeysContext()

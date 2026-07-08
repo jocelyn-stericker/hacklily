@@ -26,10 +26,10 @@ import { VitePWA } from 'vite-plugin-pwa'
  * inside workers). This is a known WebKit bug:
  * https://bugs.webkit.org/show_bug.cgi?id=245346
  *
- * `no-store` prevents the 304 entirely — every request gets a fresh `200`
+ * `no-store` prevents the 304 entirely, as every request gets a fresh `200`
  * with all headers. The cost is re-sending modules on each load, which is
  * negligible in dev. Production is unaffected (Vite bundles everything,
- * so there are no per-module requests).
+ * so there are no per-module requests, and besides, there's a Service Worker).
  *
  * Applied to all JS/TS/MJS responses (not just `?worker_file`) because the
  * bug affects both worker entrypoints and their nested module imports.

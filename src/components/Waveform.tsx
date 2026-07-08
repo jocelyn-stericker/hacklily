@@ -5,13 +5,9 @@
 // scaling.
 //
 // The waveform is a full-track overview (always fully zoomed out, with a
-// viewport shade marking the spectrogram's window), so — unlike the
-// spectrogram — every part is always on-screen. Holding frame-resolution canvas
-// tiles only to draw them downscaled to ~viewport width wasted memory that grew
-// with recording length. Instead we render straight into the visible canvas at
-// display resolution: for each display column we take the peak RMS of the frames
-// that map to it. That bounds retained memory to a single viewport-sized canvas
-// regardless of recording length. See docs/memory-improvements.md item 1a.
+// viewport shade marking the spectrogram's window). Unlike with the spectrogram,
+// generally every part is always on-screen, so direct rendering is often better
+// here.
 
 import { useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { RefObject } from 'react'
@@ -127,7 +123,7 @@ export function Waveform({
   // "to the current end" (a pending append). null dirtyFrom means no pending work.
   const dirtyFromRef = useRef<number | null>(null)
   const dirtyToRef = useRef<number>(0)
-  // Forces a full repaint on the next render — set whenever the draw effect
+  // Forces a full repaint on the next render, set whenever the draw effect
   // re-runs (amp scale, theme, size, analysis identity all changed).
   const forceFullRef = useRef(true)
 

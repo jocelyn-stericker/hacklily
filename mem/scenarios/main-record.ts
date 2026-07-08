@@ -122,8 +122,8 @@ export const mainImport: Scenario = async (page, serverUrl, hooks) => {
   // --- Fully zoom out (whole 60s on screen at once) ---
   // In this app a plain wheel deltaY is a zoom (not a scroll): positive zooms
   // out, and handlePlotZoom caps the span at the full track (~90s for a 60s
-  // WAV). Fully zoomed out is the item 1c weak spot — eviction floors at the
-  // on-screen set (invariant 4), so every visible tile is held at full
+  // WAV). Fully zoomed out is a weak spot. Eviction floors at the
+  // on-screen set, so every visible tile is held at full
   // resolution. This snapshot makes that retained span measurable.
   //
   // Only the spectrogram plot wires onZoom to handlePlotZoom; the waveform plot
@@ -149,7 +149,7 @@ export const mainImport: Scenario = async (page, serverUrl, hooks) => {
       specBox.y + specBox.height / 2,
     )
   }
-  // Each wheel event is capped at exp(80 * 0.002) ≈ 1.17x; ~30 steps drives the
+  // Each wheel event is capped at exp(80 * 0.002) is about 1.17x; ~30 steps drives the
   // span from the import default to the ~90s cap with margin to spare.
   for (let i = 0; i < 30; i++) {
     await page.mouse.wheel(0, 80)
@@ -203,7 +203,7 @@ export const mainImport: Scenario = async (page, serverUrl, hooks) => {
   const afterIdle = await readSnapshot(page)
   await hooks?.afterPhase?.('afterIdle')
 
-  // --- Clear ("New") — should drop tiles, ropes, frames ---
+  // --- Clear ("New") should drop tiles, ropes, frames ---
   // "New" lives in the application menu dropdown (the hamburger/menu icon).
   await page.locator('[title="Application menu"]').click()
   await page.waitForTimeout(500)

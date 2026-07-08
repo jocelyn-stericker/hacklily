@@ -21,7 +21,7 @@ describe('nextPow2', () => {
     expect(nextPow2(1000000)).toBe(2 ** 20)
   })
 
-  it('returns the smallest power of 2 >= input for all values 1–1000', () => {
+  it('returns the smallest power of 2 >= input for all values 1-1000', () => {
     for (let i = 1; i <= 1000; i++) {
       const result = nextPow2(i)
       expect(result).toBeGreaterThanOrEqual(i)

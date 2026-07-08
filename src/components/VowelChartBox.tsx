@@ -36,7 +36,6 @@ export function VowelChartBox({
 }: {
   analysisMut: AnalysisChunk[]
   cursorSec: number
-  /** Whether the hovered frame is voiced — reveals the chart on hover. */
   speechDetected: boolean
   /** The chart is meaningless while recording; the box hides then. */
   recording: boolean

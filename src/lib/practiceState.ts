@@ -19,16 +19,7 @@ export type PracticeTake = {
 }
 
 /**
- * Reference clip playback state. At most one of `playingTakeId` (a recorded
- * take) and `referencePlayback` (a synthesised reference clip) is non-null at
- * any time — `START_PLAYBACK`/`START_RECORDING` null `referencePlayback`, and
- * `START_REFERENCE` nulls `playingTakeId`. The reducer is the single source of
- * truth for which clip is loaded; `useReferencePlayer` watches this field to
- * drive its `HTMLAudioElement` and reports status back via `REFERENCE_STATUS`.
- *
- * `voiceId` is carried so a reference can later be pinned as a take (decoded to
- * PCM and handed off to the analysis view) and still know which voice produced
- * it.
+ * Reference clip playback state, including voice.
  */
 export type ReferencePlayback = {
   passageId: string
@@ -38,15 +29,7 @@ export type ReferencePlayback = {
 }
 
 /**
- * Which phase the reference-before-take loop is in, so the reducer knows what
- * to do when a clip/take ends. `null` when the loop feature is off or no loop
- * is running — in that case PLAYBACK_ENDED/REFERENCE_ENDED behave as before.
- *
- *   'reference' — the loop is playing the reference for the current sentence
- *                (either a synth clip via referencePlayback, or a pinned take
- *                via playingTakeId). When it ends, the loop starts recording.
- *   'take'      — the loop is playing back the user's just-recorded take. When
- *                it ends, the loop advances/repeats and starts the reference.
+ * We have a reference-record-playback loop. This enum determines what to do when playback ends.
  */
 export type LoopPhase = 'reference' | 'take' | null
 
@@ -58,7 +41,7 @@ export type PracticeState = {
   playingTakeId: number | null
   playingSkipSilence: boolean
   referencePlayback: ReferencePlayback | null
-  /** Drives the reference→record→playback loop when practicePlayReferenceBeforeTake is on. */
+  /** Drives the reference-record-playback loop when practicePlayReferenceBeforeTake is on. */
   loopPhase: LoopPhase
   sessionPhase: 'idle' | 'recording' | 'playback'
   audioStartMs: number | null
@@ -269,14 +252,10 @@ export function practiceReducer(
         : state
 
     case 'STOP_REFERENCE':
-      // Explicitly stopping the reference ends any loop in progress: there is no
-      // longer a reference whose end could advance the loop. Clearing loopPhase
-      // (and the pending flags) is what lets the mic close — otherwise a manual
-      // stop after a Ctrl/Cmd-click leaves loopPhase='reference' pinning the
-      // capture pipeline open (and REFERENCE_ENDED could mis-fire a recording).
       return {
         ...state,
         referencePlayback: null,
+        // Closes the mic.
         loopPhase: null,
         pendingReferenceStart: false,
         pendingReferenceRestart: false,
@@ -284,10 +263,7 @@ export function practiceReducer(
       }
 
     case 'REFERENCE_ENDED': {
-      // Natural end of a reference clip. When the loop is active and we were
-      // in the reference phase, start recording next. Otherwise behave like
-      // STOP_REFERENCE (manual stop / feature off). No autoAdvance here:
-      // sentence advancing is owned by PLAYBACK_ENDED at the end of the take.
+      // Natural end of a reference clip.
       const base = { ...state, referencePlayback: null }
       if (state.loopPhase === 'reference') {
         return {
@@ -315,8 +291,8 @@ export function practiceReducer(
         }
       }
       // Loop active, take phase: the take just finished. Advance/repeat the
-      // sentence and start the reference phase next, unless a pinned take is
-      // the reference source — in that case no auto-advance.
+      // sentence and start the reference phase next if a pinned take isn't
+      // the reference source
       if (state.loopPhase === 'take') {
         const pinned = state.referenceTakeId !== null
         const drillIndex =

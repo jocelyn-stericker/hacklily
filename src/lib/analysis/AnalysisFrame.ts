@@ -44,7 +44,7 @@ export type AnalysisParams = {
 }
 
 export type AnalysisFrame = {
-  // Quantized dB in 0.5 dB steps, range [-128, 127] → [-64, 63.5] dB.
+  // Quantized dB in 0.5 dB steps, range [-128, 127] to [-64, 63.5] dB.
   // -128 (SILENCE_INT8) marks silence (linear power <= 0).
   spectrum: Int8Array
   rms: number

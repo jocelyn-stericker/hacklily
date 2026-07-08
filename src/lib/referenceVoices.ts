@@ -4,20 +4,16 @@
 // Catalog of synthetic reference voices available in the practice view.
 //
 // Each voice is a Kokoro TTS voice (or a blend of two) synthesized offline by
-// `tools/synth-references/synth.ts` into per-sentence MP3 clips. This module is
-// the single source of truth for which voices exist and how they are
-// *presented* in the UI — pitch/resonance characterization plus a short prose
-// description, and a presentation label (masc / femme / enby):
+// `tools/synth-references/synth.ts` into per-sentence MP3 clips, with some
+// pitch/resonance characterization plus a short prose description, and a
+// resentation label (masc / femme / enby):
 //
 //   - Nova reads decidedly femme and must never be surfaced as enby.
 //   - Kore is femme-leaning enby.
-//   - heart_onyx (the af_heart×am_onyx blend) is masc-leaning enby.
+//   - heart_onyx (the af_heart x am_onyx blend) is masc-leaning enby.
 //
-// Voices are ordered by overall gender impression (masc → enby → femme) so a
-// slider across the list moves along that axis. This is a holistic judgement,
-// not a strict sort on any single measurement — pitch (F0) and resonance (F1)
-// trend upward across the list but are not individually monotonic (e.g. fenrir
-// reads more masc than the heart_onyx blend despite a higher F0).
+// Voices are ordered by overall gender impression, by vibes. Individual measurements
+// are not monotonic.
 
 export type VoicePresentation = 'masc' | 'femme' | 'enby'
 
@@ -27,9 +23,9 @@ export type ReferenceVoice = {
   /** Display name. */
   name: string
   presentation: VoicePresentation
-  /** Measured F0 (Hz) median — see tools/synth-references/measure-voices.ts. */
+  /** F0 (Hz) median. */
   f0: number
-  /** Measured F1 (Hz) median. */
+  /** F1 (Hz) median. */
   f1: number
   /** One-line characterization shown in the UI. */
   description: string

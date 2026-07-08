@@ -142,8 +142,7 @@ function Journal() {
   const audioRef = useRef<HTMLAudioElement>(null)
   const objectUrlRef = useRef<string | null>(null)
 
-  // Aborted on unmount to stop the transcript backfill loop — transcription is
-  // heavy and must not keep running once the user leaves `/journal`.
+  // Aborted on unmount to stop the heavy transcript backfill loop.
   const transcribeAbortRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
@@ -187,10 +186,7 @@ function Journal() {
         }
         setTranscriptPreviews(previews)
 
-        // Backfill durations for entries that don't have one — e.g. files added
-        // externally to the journal folder, or imported before duration tracking.
-        // Decode each and persist; fire-and-forget, best-effort. Runs in the
-        // background so the list renders immediately with what we already know.
+        // Backfill durations for entries that don't have one (like in FSA, added by user)
         const missing = list.filter((e) => !durs.has(e.name))
         if (missing.length > 0) {
           void (async () => {
@@ -624,7 +620,7 @@ function Journal() {
         setSrtEditorText(srt)
       } else {
         // No sidecar: generate a VAD skeleton so the user has time ranges to
-        // edit. Best-effort — if VAD fails, open with an empty editor.
+        // edit. Best-effort: if VAD fails, open with an empty editor.
         try {
           const skeleton = await generateSrtSkeleton(entry.file)
           setSrtEditorText(skeleton)

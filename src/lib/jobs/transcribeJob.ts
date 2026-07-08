@@ -134,7 +134,7 @@ async function transcribeOne(
 
   try {
     // Reuse the pass engine when the tier matches; resolve an upgrade tier lazily
-    // (only for the chunk that requested it). 'manual' can’t arrive here via a
+    // (only for the chunk that requested it). 'manual' cannot arrive here via a
     // queued job, but guard the call so the types stay sound.
     let engine = auto.engine
     if (tier !== auto.tier) {

@@ -22,7 +22,7 @@ import {
 } from '../lib/probe.js'
 import type { Scenario, ScenarioResult } from './main-record.js'
 
-// Loads as a Buffer at module initialisation time — tiny file, no hot path.
+// Loads as a Buffer at module initialisation time -- tiny file, no hot path.
 const BUTTERFLY_WAV = readFileSync(
   new URL('../../test-assets/butterfly.wav', import.meta.url),
 )
@@ -82,10 +82,10 @@ async function ensureModelDownloaded(
   if (cached) return
 
   console.log(
-    '\n  [stt-alignment] Moonshine not in cache — downloading via UI...',
+    '\n  [stt-alignment] Moonshine not in cache -- downloading via UI...',
   )
 
-  // Open the application menu → Transcription settings.
+  // Open the application menu -> Transcription settings.
   await page.locator('[title="Application menu"]').click()
   await page.waitForTimeout(300)
   await page.getByText('Transcription settings').click()

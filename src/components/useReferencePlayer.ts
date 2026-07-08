@@ -28,22 +28,11 @@ function keyFor(p: ReferencePlayback): LoadedKey {
 }
 
 /**
- * Reducer-driven reference-clip player. The reducer (in `practiceState.ts`) is
- * the single source of truth for which clip is loaded (`state.referencePlayback`).
- * This hook watches `referencePlayback` and drives playback to match it, and
- * exposes `toggle(...)`, which dispatches `START_REFERENCE` for a new clip (or
- * `STOP_REFERENCE` to stop the one already loaded).
+ * Reducer-driven reference-clip player. The reducer (in `practiceState.ts`)
+ * determines which clip is loaded (`state.referencePlayback`).
  *
  * Playback goes through the shared `AudioManager`'s `AudioContext` (decode +
- * `AudioBufferSourceNode`), *not* a bare `<audio>` element. This matters for the
- * practice lifecycle, which requests the mic *before* the reference plays: the
- * context is unlocked synchronously by `unlockForGesture()` in the start gesture
- * and stays running across the `getUserMedia` await, so the clip plays reliably
- * even when it starts seconds later, after the permission prompt — with no
- * per-element autoplay gating to fight. It also means "clip finished" is the
- * buffer node's private `ended`, decoupled from any media-element error event
- * (a load failure can no longer masquerade as a finished clip and skip the loop
- * to recording).
+ * `AudioBufferSourceNode`), which need to go through the `unlockForGesture()` dance.
  */
 export function useReferencePlayer(
   dispatch: Dispatch,
@@ -85,10 +74,7 @@ export function useReferencePlayer(
     }
   }, [])
 
-  // Drive playback to match `referencePlayback`. Imperative (keyed by
-  // `loadedKeyRef`) rather than cleanup-based, because REFERENCE_STATUS
-  // dispatches below re-run this effect with a new `referencePlayback` identity
-  // while the same clip is still playing — the key check makes those no-ops.
+  // Imperatively drive playback to match `referencePlayback`.
   useEffect(() => {
     if (!referencePlayback) {
       requestIdRef.current++ // cancel any in-flight load
@@ -143,8 +129,7 @@ export function useReferencePlayer(
         if (naturalEnd) dispatch({ type: 'REFERENCE_ENDED' })
       } catch {
         if (requestId !== requestIdRef.current) return
-        // Fetch/decode failure — treat like the clip ending so a loop advances
-        // to recording instead of stalling in the reference phase.
+        // Fetch/decode failure, treated like clip ending.
         handleRef.current = null
         loadedKeyRef.current = null
         dispatch({ type: 'REFERENCE_ENDED' })
@@ -155,7 +140,7 @@ export function useReferencePlayer(
   const toggle = useCallback(
     (passageId: string, segmentIndex: number, voiceId: string) => {
       const current = referencePlayback
-      // Same clip currently loaded → stop (like take playback).
+      // Same clip currently loaded -> stop (like take playback).
       if (
         current &&
         current.passageId === passageId &&
@@ -165,7 +150,7 @@ export function useReferencePlayer(
         dispatch({ type: 'STOP_REFERENCE' })
         return
       }
-      // New clip → reducer is authoritative; the effect above loads it.
+      // New clip -> reducer is authoritative; the effect above loads it.
       dispatch({ type: 'START_REFERENCE', passageId, segmentIndex, voiceId })
     },
     [dispatch, referencePlayback],

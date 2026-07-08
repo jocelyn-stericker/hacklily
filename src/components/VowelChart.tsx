@@ -80,9 +80,7 @@ function strokeArrow(
 }
 
 // Fractional position of a formant within the plot area, independent of the
-// canvas size or DPR — so the marker lands in the same *relative* spot at every
-// zoom level. 0..1: F1 fraction is 0 at the top (low F1) → 1 at the bottom;
-// F2 fraction is 0 at the left (high F2, front vowels) → 1 at the right.
+// canvas size or DPR.
 export function f1ToFraction(f1: number): number {
   return (hzToBark(f1) - BARK_F1_MIN) / (BARK_F1_MAX - BARK_F1_MIN)
 }
@@ -91,10 +89,7 @@ export function f2ToFraction(f2: number): number {
   return 1 - (hzToBark(f2) - BARK_F2_MIN) / (BARK_F2_MAX - BARK_F2_MIN)
 }
 
-// Pixel Y for a formant, from the plot height alone — independent of width, so
-// squashing the chart's aspect ratio (e.g. a capped width on a narrow phone
-// while height grows) never moves a marker horizontally, only rescales it
-// within its own axis. Exported for testing.
+// Pixel Y for a formant, from the plot height alone, independent of width.
 export function f1ToY(f1: number, h: number, dpr: number): number {
   const pad = PAD * dpr
   return pad + f1ToFraction(f1) * (h - 2 * pad)
@@ -324,8 +319,7 @@ export function voicedTrailUpToCursor(
   trailOut.length = 0
 
   // Locate the chunk holding the cursor via each chunk's authoritative
-  // startTimeSec — one cheap pass over chunks, not frames. Defaults to the last
-  // chunk when the cursor is at/past the end.
+  // startTimeSec (chunk scan, a frame scan is too slow).
   let ci = analysis.length - 1
   for (let c = 0; c < analysis.length; c++) {
     const chunk = analysis[c]!

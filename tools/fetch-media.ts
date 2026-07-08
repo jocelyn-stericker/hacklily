@@ -1,16 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
-// Mirror the practice reference clips from media.braat.app into the local
-// (gitignored) `media/references` copy, so the app can be developed against
-// them by flipping `USE_LOCAL_MEDIA` in src/lib/mediaConfig.ts.
+// Mirror the reference clips from media.braat.app to .gitignored `media/references`
 //
-// The manifest enumerates every clip, so we fetch it first and download each
-// `clip.url` it lists. Existing files are skipped unless `--force` is passed.
+// Used in tests, and in the app when you select `USE_LOCAL_MEDIA`.
 //
-// `--filter <pattern>` restricts downloads to clips whose root-relative URL
-// contains the pattern as a substring — handy for pulling one passage/voice
-// without the full ~140 MB set. Repeatable; multiple flags combine as an AND.
+// `--force` overrides existing files.
+//
+// `--filter <pattern>` filters by path, repeatable
 //
 //   npm run media:fetch                                       # incremental
 //   npm run media:fetch -- --force                            # re-download everything
@@ -74,7 +71,7 @@ async function exists(p: string): Promise<boolean> {
 async function main(): Promise<void> {
   console.log(`Fetching media from ${BASE} into ${mediaRoot}`)
 
-  // 1. Manifest — always refreshed; it's the source of truth for what to pull.
+  // 1. Manifest (always refreshed)
   const manifestUrl = `${BASE}/references/manifest.json`
   await download(manifestUrl, localPathFor('/references/manifest.json'))
   const manifest = JSON.parse(
@@ -119,7 +116,7 @@ async function main(): Promise<void> {
         downloaded++
       } catch (err) {
         failed++
-        console.error(`  failed: ${refUrl} — ${(err as Error).message}`)
+        console.error(`  failed: ${refUrl} -- ${(err as Error).message}`)
       }
     }
   }

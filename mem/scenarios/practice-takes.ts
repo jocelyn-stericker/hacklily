@@ -1,6 +1,6 @@
 // Memory scenarios for the practice route. The practice route records from
 // the mic, so we mock getUserMedia to feed real speech audio (butterfly.wav,
-// looped). This exercises the full capture → VAD → analysis → playback
+// looped). This exercises the full capture -> VAD -> analysis -> playback
 // pipeline deterministically.
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
@@ -57,10 +57,10 @@ function getButterflyWavB64(): Promise<string> {
  *
  * 2. The audio must trigger Silero VAD. Synthesized tones don't. Real speech
  *    does. We decode butterfly.wav (via an OfflineAudioContext at the mock's
- *    sample rate) and loop it through a BufferSourceNode →
- *    MediaStreamDestination. The 1.3s clip has natural speech → silence
+ *    sample rate) and loop it through a BufferSourceNode ->
+ *    MediaStreamDestination. The 1.3s clip has natural speech -> silence
  *    transitions at the loop boundary, which echo-mode VAD detects as
- *    speech-end → auto-advance.
+ *    speech-end -> auto-advance.
  *
  * Implementation note — why we replace `navigator.mediaDevices` with a Proxy
  * instead of the obvious `navigator.mediaDevices.getUserMedia = fn`:
@@ -118,7 +118,7 @@ export async function mockMic(page: Page): Promise<void> {
         return ctx.decodeAudioData(wavBytes.buffer).then(function(audioBuffer) {
           // Build a loop buffer: speech clip + 3s of silence. The silence
           // gap must exceed echo mode's redemption window (1500ms) so VAD
-          // detects speech-end → auto-advance. Use 3s for margin.
+          // detects speech-end -> auto-advance. Use 3s for margin.
           var speechLen = audioBuffer.length;
           var silenceLen = ctx.sampleRate * 3; // 3s
           var loopLen = speechLen + silenceLen;
@@ -180,7 +180,7 @@ export async function mockMic(page: Page): Promise<void> {
 
 /**
  * Practice route: start a session, let echo mode auto-advance through 3
- * takes (speech → silence → take saved → playback → restart), then idle
+ * takes (speech -> silence -> take saved -> playback -> restart), then idle
  * and clear.
  *
  * Echo mode auto-fires handleNextTake when VAD detects speech-end, so we
@@ -204,8 +204,8 @@ export const practiceTakes: Scenario = async (page, serverUrl, hooks) => {
     .click()
 
   // --- Wait for 3 takes via echo-mode auto-advance ---
-  // Each take: ~1.3s speech → VAD detects silence → handleNextTake fires →
-  // take saved → playback (~1.3s) → PENDING_RESTART → next take starts.
+  // Each take: ~1.3s speech -> VAD detects silence -> handleNextTake fires ->
+  // take saved -> playback (~1.3s) -> PENDING_RESTART -> next take starts.
   // Allow up to 30s per take for VAD + playback + restart overhead.
   const pollStart = Date.now()
   const poll = setInterval(async () => {
@@ -266,8 +266,8 @@ export const practiceTakes: Scenario = async (page, serverUrl, hooks) => {
 
   // --- Clear session ---
   // On mobile viewport, takes are in a drawer. Open it, then click
-  // "Clear session" → "Discard".
-  // The drawer trigger shows "Takes (N)" — click it to expand.
+  // "Clear session" -> "Discard".
+  // The drawer trigger shows "Takes (N)" -- click it to expand.
   await page.locator('button:has-text("Takes")').first().click()
   await page.waitForTimeout(500)
   await page.getByRole('button', { name: 'Clear session' }).first().click()

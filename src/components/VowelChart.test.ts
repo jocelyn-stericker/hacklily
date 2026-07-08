@@ -56,7 +56,7 @@ describe('voicedTrailUpToCursor', () => {
   })
 
   it('does not crash when the cursor falls in a chunk with no frames yet', () => {
-    // Reproduces the play→record crash: existing analysis is present, then
+    // Reproduces the play -> record crash: existing analysis is present, then
     // handleChunkStart pushes a new recording chunk with frames:[] before any
     // frames arrive. voicedTrailUpToCursor must not access frames[0] when the
     // chunk is empty.
@@ -183,7 +183,7 @@ function median(values: number[]): number {
     : sorted[mid]!
 }
 
-const SAMPLE_RATE = 11000 // Nyquist 5500 Hz — the vowel-formant ceiling.
+const SAMPLE_RATE = 11000 // Nyquist 5500 Hz -- the vowel-formant ceiling.
 
 function detectFormants(signal: Float32Array): { f1: number; f2: number } {
   const proc = new FormantProcessor(
@@ -211,7 +211,7 @@ function detectFormants(signal: Float32Array): { f1: number; f2: number } {
 }
 
 // Reference vowels (adult-male-ish) spanning the chart, all within the F1
-// 200–1100 / F2 650–3300 Hz plotting box. Chosen for coverage of the corners,
+// 200-1100 / F2 650-3300 Hz plotting box. Chosen for coverage of the corners,
 // edges and centre so the marker is checked across the whole IPA space.
 const VOWELS = {
   i: { f1: 300, f2: 2300, f3: 3000 }, // close front: top-left
@@ -241,15 +241,15 @@ function detectVowel(v: { f1: number; f2: number; f3: number }) {
 }
 
 describe('vowel-chart placement geometry', () => {
-  it('maps F1 to a 0..1 top→bottom fraction, monotonic in F1', () => {
-    expect(f1ToFraction(200)).toBeCloseTo(0, 5) // lowest F1 → top
-    expect(f1ToFraction(1100)).toBeCloseTo(1, 5) // highest F1 → bottom
+  it('maps F1 to a 0..1 top -> bottom fraction, monotonic in F1', () => {
+    expect(f1ToFraction(200)).toBeCloseTo(0, 5) // lowest F1 -> top
+    expect(f1ToFraction(1100)).toBeCloseTo(1, 5) // highest F1 -> bottom
     expect(f1ToFraction(300)).toBeLessThan(f1ToFraction(750))
   })
 
-  it('maps F2 to a 0..1 left→right fraction, decreasing in F2', () => {
-    expect(f2ToFraction(3300)).toBeCloseTo(0, 5) // highest F2 → left (front)
-    expect(f2ToFraction(650)).toBeCloseTo(1, 5) // lowest F2 → right (back)
+  it('maps F2 to a 0..1 left -> right fraction, decreasing in F2', () => {
+    expect(f2ToFraction(3300)).toBeCloseTo(0, 5) // highest F2 -> left (front)
+    expect(f2ToFraction(650)).toBeCloseTo(1, 5) // lowest F2 -> right (back)
     expect(f2ToFraction(2300)).toBeLessThan(f2ToFraction(1150))
   })
 
@@ -280,7 +280,7 @@ describe('vowel-chart marker from synthesised audio', () => {
       // Detection accuracy against the synthesis targets. F2 is tracked tightly;
       // the LPC tracker biases low F1 slightly high, and because F1 sits near
       // the (bark-compressed) top of the chart a small Hz error is a larger
-      // vertical fraction shift — so F1 is held to "same region", F2 to "same
+      // vertical fraction shift -- so F1 is held to "same region", F2 to "same
       // spot".
       expect(Math.abs(f1 - v.f1)).toBeLessThan(150)
       expect(Math.abs(f2 - v.f2)).toBeLessThan(200)
@@ -289,7 +289,7 @@ describe('vowel-chart marker from synthesised audio', () => {
     })
   }
 
-  it('orders the vowels left→right and top→bottom by their formants', () => {
+  it('orders the vowels left -> right and top→bottom by their formants', () => {
     const i = detectVowel(VOWELS.i)
     const a = detectVowel(VOWELS.ɑ)
     const u = detectVowel(VOWELS.u)
@@ -305,7 +305,7 @@ describe('vowel-chart marker from synthesised audio', () => {
 // The chart container's width is capped (maxWidth: 90vw) while height grows with
 // zoom, so on a narrow phone a large scale squashes the box to a non-square
 // aspect ratio. f2ToX depends only on width and f1ToY only on height, so each
-// marker keeps its correct proportional position in each axis independently —
+// marker keeps its correct proportional position in each axis independently --
 // the plot stretches but nothing is mis-placed.
 describe('vowel-chart placement under non-square aspect ratios', () => {
   const PAD = 6 // matches PAD in VowelChart.tsx (dpr = 1 here)
@@ -315,7 +315,7 @@ describe('vowel-chart placement under non-square aspect ratios', () => {
     (f1ToY(f1, h, 1) - PAD) / (h - 2 * PAD)
 
   it('maps X from width alone — unaffected by how tall the box is', () => {
-    // Same width, wildly different heights → identical X pixel.
+    // Same width, wildly different heights -> identical X pixel.
     expect(f2ToX(2300, 300, 1)).toBeCloseTo(f2ToX(2300, 300, 1), 10)
     // Relative X equals the F2 fraction at any width (square, narrow, wide).
     for (const w of [240, 120, 600, 1000]) {
@@ -323,7 +323,7 @@ describe('vowel-chart placement under non-square aspect ratios', () => {
     }
   })
 
-  it('maps Y from height alone — unaffected by how wide the box is', () => {
+  it('maps Y from height alone -- unaffected by how wide the box is', () => {
     for (const h of [192, 100, 600, 1200]) {
       expect(relY(300, h)).toBeCloseTo(f1ToFraction(300), 10)
     }

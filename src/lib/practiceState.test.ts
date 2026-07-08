@@ -237,7 +237,7 @@ describe('segmentIndexToDrillIndex', () => {
     expect(segmentIndexToDrillIndex(p, sentences, 2, 0)).toBe(0) // 'c' at shuffled[0]
   })
 
-  it('round-trips: drillIndex → segmentIndex → drillIndex', () => {
+  it('round-trips: drillIndex -> segmentIndex -> drillIndex', () => {
     const p = sentenceLists([['a', 'b', 'c', 'd']])
     const sentences = ['d', 'b', 'a', 'c']
     for (let d = 0; d < 4; d++) {
@@ -257,7 +257,7 @@ describe('segmentIndexToDrillIndex', () => {
   it('returns fallback when sentence not in displayed array', () => {
     const p = sentenceLists([['a', 'b', 'c']])
     const sentences = ['x', 'y', 'z']
-    // 'a' is at flat[0] but not in sentences → fallback
+    // 'a' is at flat[0] but not in sentences -> fallback
     expect(segmentIndexToDrillIndex(p, sentences, 0, 7)).toBe(7)
   })
 
@@ -830,7 +830,7 @@ describe('practiceReducer', () => {
   })
 
   describe('echo state machine integration', () => {
-    it('full echo cycle: start → utter → playback → restart', () => {
+    it('full echo cycle: start -> utter -> playback -> restart', () => {
       let state = initialPracticeState()
 
       // Start session
@@ -861,7 +861,7 @@ describe('practiceReducer', () => {
       expect(state.pendingRestart).toBe(true)
       expect(state.playingTakeId).toBe(1)
 
-      // Playback ends → restart recording
+      // Playback ends -> restart recording
       state = practiceReducer(state, { type: 'STOP_PLAYBACK' })
       state = practiceReducer(state, {
         type: 'START_RECORDING',
@@ -894,7 +894,7 @@ describe('practiceReducer', () => {
       })
       expect(state.pendingRestart).toBe(false)
 
-      // Playback ends → stop session (no auto-restart)
+      // Playback ends -> stop session (no auto-restart)
       state = practiceReducer(state, { type: 'STOP_PLAYBACK' })
       state = practiceReducer(state, { type: 'STOP_SESSION' })
       expect(state.sessionPhase).toBe('idle')
@@ -910,7 +910,7 @@ describe('practiceReducer', () => {
       })
       state = practiceReducer(state, { type: 'UTTERANCE_START' })
 
-      // End session with speech detected → close pipeline, save take
+      // End session with speech detected -> close pipeline, save take
       state = practiceReducer(state, {
         type: 'SET_SESSION_PHASE',
         phase: 'playback',

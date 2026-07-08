@@ -104,7 +104,7 @@ describe('analytics', () => {
     initAnalytics()
     track('play')
 
-    // No script injected and no global created — fully inert.
+    // No script injected and no global created.
     expect(document.head.querySelector('script[data-goatcounter]')).toBeNull()
     expect((window as { goatcounter?: unknown }).goatcounter).toBeUndefined()
   })

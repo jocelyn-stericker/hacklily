@@ -8,8 +8,6 @@
 // In production builds, `import.meta.env.DEV` is `false` and every function
 // here is dead-code-eliminated to a no-op, so the probe costs nothing in
 // shipped code.
-//
-// See docs/memory-improvements.md for the feedback-loop design.
 
 export interface MemSourceSnapshot {
   description: string
@@ -35,7 +33,7 @@ const registrations = new Map<string, Registration>()
  * Register a named source of memory-relevant counts/bytes. Returns an
  * unregister function. No-op in production.
  *
- * The getter should be cheap (just reading ref lengths / array sizes) — it's
+ * The getter should be cheap (just reading ref lengths / array sizes). It's
  * called on every snapshot.
  */
 export function registerMemSource(
@@ -102,7 +100,7 @@ export function installMemProbe(): () => void {
     },
     /**
      * Total bytes used by all same-origin agents: main thread, workers, and
-     * worklets — including WASM linear memory (e.g. Moonshine model weights).
+     * worklets, including WASM linear memory (e.g. Moonshine model weights).
      *
      * Two separate requirements must both hold:
      *  - The page is cross-origin isolated (COOP + COEP, which the dev server
@@ -125,7 +123,7 @@ export function installMemProbe(): () => void {
         return Promise.reject(
           new Error(
             'measureUserAgentSpecificMemory requires cross-origin isolation ' +
-              '(crossOriginIsolated is false — COOP/COEP headers may not be ' +
+              '(crossOriginIsolated is false... COOP/COEP headers may not be ' +
               'taking effect in this context)',
           ),
         )

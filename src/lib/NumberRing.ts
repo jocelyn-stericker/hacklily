@@ -13,9 +13,7 @@
  * growth or object garbage.
  *
  * The retained window is `[length - capacity, length)`. Reading an index below
- * it throws rather than silently returning a since-overwritten value — that
- * surfaces a reader that has fallen further behind the write head than the
- * capacity allows (i.e. the capacity was sized too small for the real lag).
+ * it throws.
  *
  * Null-valued fields can be encoded as `NaN` by the caller (frequencies and
  * timestamps are always finite, so `NaN` is an unambiguous sentinel).

@@ -89,7 +89,7 @@ async function checkServerReachable(url: string): Promise<void> {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     console.error(
-      `Dev server not reachable at ${url} — run \`npm run dev\` first (${msg})`,
+      `Dev server not reachable at ${url} -- run \`npm run dev\` first (${msg})`,
     )
     process.exit(1)
   }
@@ -128,14 +128,14 @@ function attachPageLogging(page: Page): void {
 
 // Browser preferences per scenario:
 //
-// `main-import` and `practice-takes` run on webkit — mobile Safari is the
+// `main-import` and `practice-takes` run on webkit -- mobile Safari is the
 // primary target. `repeated-import-clear` also runs on webkit now that the
 // dev server sends `Cache-Control: no-store` on script responses (see
 // vite.config.ts), which works around a WebKit COEP caching bug that
 // previously made worker loads flaky under COEP `require-corp`.
 //
 // `stt-alignment` runs on chromium because Layer 2 needs CDP
-// `backingStorageSize` to see worker WASM weights in the heap breakdown —
+// `backingStorageSize` to see worker WASM weights in the heap breakdown --
 // webkit has no equivalent API.
 const SCENARIOS: Record<string, ScenarioDef> = {
   'main-import': { run: mainImport, preferredBrowser: 'webkit', route: '/' },

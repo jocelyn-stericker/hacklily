@@ -130,7 +130,7 @@ describe('chunkAudioFromRopes', () => {
     expect(chunkAudioFromRopes(stray, [c0], [rampRope(100)])).toBeNull()
   })
 
-  it('returns null when the chunk’s rope is missing', () => {
+  it("returns null when the chunk's rope is missing", () => {
     const s0 = chunk({ frames: 4, recordingStart: true })
     const s1 = chunk({ frames: 2, recordingStart: true })
     // Only rope 0 exists; session 1's rope hasn't been shared yet.

@@ -11,7 +11,7 @@ const SEG = 65536
 
 // The rope stores int16 natively (f32 on the API, int16 internally). To test
 // exact round-trips we use a sawtooth: each integer maps to a unique f32 value
-// in [-1, 1) that survives the f32→int16→f32 conversion bit-for-bit. The
+// in [-1, 1) that survives the f32 -> int16 -> f32 conversion bit-for-bit. The
 // pattern repeats every 65536 samples (the full int16 range), which is enough
 // to detect misplacement within any segment-sized window.
 const PCM_SCALE = 32768

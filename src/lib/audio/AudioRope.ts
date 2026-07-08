@@ -16,11 +16,9 @@ const CTRL_LENGTH = 0
 const CTRL_SEALED = 1
 const CTRL_SLOTS = 2
 
-// Audio is stored natively as int16 (see docs/memory-improvements.md item 11):
-// half the memory of f32, with a ~96 dB noise floor that sits below the
-// ~60-70 dB SNR of phone mics. The API stays f32 on both sides — the producer
-// converts on write, consumers convert on read — so int16→f32 folds into the
-// copy every consumer already makes at the read boundary.
+// Audio is stored natively as int16 (gives a ~96 dB noise floor, which is Good Enough).
+// The producer converts from f32 on write, consumers convert on read.
+// boundary.
 const PCM_SCALE = 32768
 
 function f32ToInt16(s: number): number {
@@ -39,11 +37,7 @@ export type AudioRopeGrow = {
 
 /**
  * Tells a consumer the rope has been sealed so it can drop its own spare
- * buffer. Carries no data: the `sealed` flag and final length already live in
- * the shared control block, so a consumer that holds this rope sees them the
- * instant the producer sets them. This message exists only to trigger the
- * local `seal()` that releases the now-useless spare `SharedArrayBuffer`
- * reference in that copy. Ships over the same channel as `AudioRopeGrow`.
+ * buffer.
  */
 export type AudioRopeSeal = {
   type: 'audio-rope-seal'
@@ -64,14 +58,11 @@ export type AudioRopeShare = {
  * length pointing into a buffer it doesn't have yet -- the `length` getter
  * clamps to locally-held segments, so it just under-reads until `grow` lands.
  *
- * CONTRACT: post `shareGrowth` after every `append`. The one spare buffer per
- * append gives the host ~1 segment (~1.5s @ 44.1kHz) to deliver it; miss that
- * and consumers silently stall at the boundary.
+ * `shareGrowth` is used after `append`. The one spare buffer per append gives
+ * the host ~1 segment (~1.5s @ 44.1kHz) to deliver it.
  *
- * Once a recording is done growing, `seal()` it: that drops the spare buffer
- * and forbids further appends. Sealing sets a shared flag (visible to every
- * copy at once) but the spare reference is per-copy, so each consumer must run
- * its own `seal()` -- driven by the `AudioRopeSeal` message -- to actually free it.
+ * `seal()` is used after recording is done: that drops the spare buffer
+ * and forbids further appends. This is communicated by a shared flag.
  */
 export class AudioRope {
   #sampleRate: number

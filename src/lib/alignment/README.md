@@ -33,7 +33,7 @@ the Python pipeline (`bfaonnx.py`). See [`ATTRIBUTION.md`](./ATTRIBUTION.md).
 The transcript is espeak-ng IPA. **Feed phoneme-separated, stress-free tokens.**
 
 - **Phonemes within a word** must be separated by `phoneSeparator` (default
-  `"|"`) — exactly one espeak phoneme per token, e.g. `b|ʌ|ɾ|ɚ|f|l|aɪ`. This is
+  `"|"`), exactly one espeak phoneme per token, e.g. `b|ʌ|ɾ|ɚ|f|l|aɪ`. This is
   the only path that reproduces the Python/BFA output, because each token is
   looked up in the ph66 mapper individually.
 - **Words** are separated by whitespace, e.g. `b|ʌ|ɾ|ɚ|f|l|aɪ f|l|aɪ`.
@@ -63,7 +63,7 @@ IPA segmentation. This is best-effort and **lossy**: some clusters collapse to
 `noise` (e.g. `bʌɾɚflaɪ` loses `l`+`aɪ`, because the upstream table maps the
 substring `laɪ` to noise). Do not rely on it — always supply separators.
 
-## Usage — main thread (library)
+## Usage: main thread (library)
 
 ```ts
 import {
@@ -133,10 +133,10 @@ interface PhonemeTimestamp {
 
 ## Tests
 
-- `phonemizer.test.ts` — IPA->ph66 golden cases (values cross-checked against
+- `phonemizer.test.ts`: IPA->ph66 golden cases (values cross-checked against
   the Python mapper).
-- `decoder.test.ts` — pure DSP + Viterbi unit fixtures.
-- `bfa-e2e.test.ts` — runs the real `models/variants/int8dyn.onnx` over the
+- `decoder.test.ts`: pure DSP + Viterbi unit fixtures.
+- `bfa-e2e.test.ts`: runs the real `models/variants/int8dyn.onnx` over the
   butterfly sample via onnxruntime-web (wasm, under Node) and asserts a
   **frame-for-frame, millisecond match** with the upstream Python output. It
   auto-skips if the model/sample aren't present.

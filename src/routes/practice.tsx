@@ -2,18 +2,14 @@
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
 // A route for voice practice sessions: read a passage, record takes,
-// hear them back — either automatically when you stop talking (echo mode) or on
-// demand — and load any take into the main analysis view in one click. Mobile is
+// hear them back -- either automatically when you stop talking (echo mode) or on
+// demand -- and load any take into the main analysis view in one click. Mobile is
 // the primary target.
 //
 // Future directions (not implemented):
-//  - Persistence of takes across reloads (take model is already serialization-
-//    friendly; needs OPFS/IndexedDB + quota + privacy copy).
-//  - Reference-clip import (an external file as the ★ reference).
+//  - Reference-clip import (an external file as the pinned reference).
 //  - Segment-event adoption in the index route (replacing its run-derivation
 //    with `UtteranceTracker`).
-//  - Rope segmentation for unbounded sessions (§5 option (a)).
-//  - A single VAD "sensitivity" knob (item 3 of the `TODO(vad)` list).
 
 import { createFileRoute, useBlocker } from '@tanstack/react-router'
 import { Keyboard } from 'lucide-react'
@@ -114,7 +110,7 @@ function Practice() {
     withResolver: true,
   })
 
-  // Refs — mutable state that shouldn't trigger re-renders
+  // Refs -- mutable state that shouldn't trigger re-renders
   const sessionRopeRef = useRef<AudioRope | null>(null)
   const analysisRef = useRef<AnalysisFrame[]>([])
   const paramsRef = useRef<AnalysisParams | null>(null)
@@ -147,7 +143,7 @@ function Practice() {
 
   // Drive the record-restart that PLAYBACK_ENDED signals via pendingRecordRestart.
   // useLayoutEffect so the ref resets and START_RECORDING dispatch are committed
-  // before paint — same as the original synchronous call sequence.
+  // before paint -- same as the original synchronous call sequence.
   useLayoutEffect(() => {
     if (!state.pendingRecordRestart) return
     startPipelineAndRecord()
@@ -219,7 +215,7 @@ function Practice() {
     })
   }, [state.takes, state.sessionPhase])
 
-  // Elapsed timer during recording — only starts once the first voiced frame is detected
+  // Elapsed timer during recording -- only starts once the first voiced frame is detected
   useEffect(() => {
     if (state.sessionPhase !== 'recording' || state.voicedStartMs === null)
       return
@@ -373,17 +369,10 @@ function Practice() {
     toast(message)
   }, [])
 
-  // The mic stays open for the whole loop (reference → record → playback) so
-  // the capture pipeline isn't torn down and rebuilt between phases. The loop
-  // is considered active whenever we're recording, playing back a take, or in
-  // any loopPhase — including 'reference' (which may be pending a start).
-  //
-  // The pending-* flags also keep the loop "active" during the one-render
-  // windows where the reducer has nulled `loopPhase` between phases but armed
-  // a flag whose layout effect will fire the next phase on the following
-  // commit. Without them `active` would briefly drop to `false` (when
-  // `persistentMic` is off), causing useAudioManager to send STOP_CAPTURE and
-  // tear the capture pipeline down mid-handoff. See CLAUDE.md.
+  // The mic stays open for the whole loop. The loop is considered active
+  // whenever we're recording, playing back a take, in any loopPhase,
+  // including 'reference' (which may be pending a start), or about to do so
+  // (via `pending` flags).
   const loopActive =
     state.loopPhase !== null ||
     state.pendingRecordRestart ||
@@ -431,27 +420,20 @@ function Practice() {
   }, [passage, randomize])
 
   // Reference clips are indexed by position in the passage's flattened
-  // sentence list as the synth script wrote it — for passages that's just
-  // `passage.segments` (unshuffled), for drills it's `lists.flat()` (which
-  // shuffling reorders). Map the currently displayed sentence back to that
-  // original index so the right clip plays.
+  // sentence list. Map the currently displayed sentence back to that
+  // original index (different if shuffled).
   const referenceSegmentIndex = useMemo(
     () => drillIndexToSegmentIndex(passage, sentences, state.drillIndex),
     [passage, sentences, state.drillIndex],
   )
 
-  // Inverse of referenceSegmentIndex: map an original (synth-script) segment
-  // index (e.g. from tapping a passage sentence) back to the drillIndex into
-  // the displayed (possibly shuffled) `sentences` array.
+  // Inverse of referenceSegmentIndex.
   const segmentIndexToDrillIndex = useCallback(
     (segIdx: number) =>
       segmentToDrill(passage, sentences, segIdx, state.drillIndex),
     [passage, sentences, state.drillIndex],
   )
 
-  // Reference clip player. The reducer is the single source of truth for
-  // which clip is loaded (`state.referencePlayback`); the hook drives the
-  // HTMLAudioElement to match it and reports status back via dispatch.
   const referenceVoiceId = settings.practiceReferenceVoice
   const refPlayback = state.referencePlayback
   const { toggle: refToggle, manifest: referenceManifest } = useReferencePlayer(
@@ -459,39 +441,24 @@ function Practice() {
     refPlayback,
     audioManager,
   )
-  // True when a reference is audibly playing: either a synth clip for the
-  // current passage, or — when a take is pinned as the reference source — that
-  // take playing during the loop's reference phase.
   const referencePlaying =
     (refPlayback !== null &&
       refPlayback.status === 'playing' &&
       refPlayback.passageId === passageId) ||
     (state.playingTakeId !== null && state.loopPhase === 'reference')
 
-  // The session toolbar only leaves its neutral state for playback that leads
-  // into recording: an active recording/playback session, or the loop's
-  // reference phase. A standalone preview (tap a sentence, or play a take) keeps
-  // the toolbar neutral — its stop control lives on the inline play/stop button.
   const sessionToolbarActive =
     state.sessionPhase !== 'idle' || state.loopPhase !== null
 
-  // Begin the reference phase of the loop. We dispatch PREPARE_REFERENCE_PHASE
-  // rather than starting the clip right away: this arms `pendingReferenceStart`
-  // so the route can fire the actual reference dispatch (START_REFERENCE or a
-  // pinned-take START_PLAYBACK) only once the mic pipeline reports it's warm.
-  // Two effects follow from that ordering:
+  // Begin the reference phase of the loop. Note:
   //   - the mic permission prompt surfaces before any reference audio plays;
   //   - the capture pipeline is held open across all three phases of the take
-  //     (reference → record → playback) instead of being torn down and rebuilt.
+  //     instead of being torn down and rebuilt.
   const prepareReferencePhase = useCallback(() => {
     dispatch({ type: 'PREPARE_REFERENCE_PHASE' })
   }, [])
 
-  // Actually start the reference source for the current sentence: a synth clip
-  // via START_REFERENCE, or — if a take is pinned — that take's rope audio via
-  // START_PLAYBACK. Called by the pendingReferenceStart watcher once the mic
-  // pipeline is warm (or immediately if the loop feature is off and the user
-  // tapped a sentence, which bypasses the prepare/begin split).
+  // Actually start the reference source for the current sentence.
   const beginReferencePlayback = useCallback(() => {
     if (pinnedTake) {
       track('practice-reference-play/custom')
@@ -550,10 +517,7 @@ function Practice() {
   )
 
   // Ctrl/Cmd+click on a sentence: select it, play its reference, then start
-  // recording a take — a one-gesture "reference then take". Reuses the same
-  // reference-phase machinery as handleStartSession (loopPhase='reference' →
-  // REFERENCE_ENDED arms pendingRecordRestart), so it works from any phase; an
-  // in-progress take is saved first, never dropped.
+  // recording a take
   const handleReferenceThenTake = useCallback(
     async (_pId: string, segIdx: number, _voiceId: string) => {
       void audioManager?.unlockForGesture()
@@ -574,20 +538,14 @@ function Practice() {
   )
 
   // Drive the reference-restart that PLAYBACK_ENDED signals via
-  // pendingReferenceRestart when the loop is active. This goes through
-  // prepareReferencePhase so the mic stays open and the permission prompt
-  // (if any) is surfaced before the next reference clip plays.
+  // pendingReferenceRestart when the loop is active.
   useLayoutEffect(() => {
     if (!state.pendingReferenceRestart) return
     prepareReferencePhase()
   }, [state.pendingReferenceRestart, prepareReferencePhase])
 
   // Fire the actual reference source once the capture pipeline is warm and a
-  // start is pending. useAudioManager keeps the mic open for the whole loop
-  // (see `active` below), so this usually resolves on the first stateChanged
-  // after PREPARE_REFERENCE_PHASE. On a cold start — the very first take of a
-  // session — the AudioContext is created and the mic is opened here, which is
-  // what surfaces the permission prompt before the reference plays.
+  // start is pending.
   useEffect(() => {
     if (!state.pendingReferenceStart) return
     if (!audioManager) return
@@ -618,7 +576,7 @@ function Practice() {
     dispatch({ type: 'STOP_REFERENCE' })
   }, [passageId])
 
-  // Start session — when the loop setting is on, begin with the reference
+  // Start session. When the loop setting is on, begin with the reference
   // phase; otherwise go straight to recording as before.
   const handleStartSession = useCallback(() => {
     track('practice-session-start')
@@ -626,7 +584,7 @@ function Practice() {
     // Unlock the AudioContext synchronously in the gesture. It stays running
     // across the getUserMedia await, so the reference clip (played through the
     // context once the mic is warm) sounds even though it starts after the
-    // permission prompt — no per-element autoplay gating to fight.
+    // permission prompt.
     void audioManager?.unlockForGesture()
     if (playRefBeforeTake) {
       prepareReferencePhase()
@@ -640,7 +598,7 @@ function Practice() {
     prepareReferencePhase,
   ])
 
-  // End session — stop mic and playback, but keep takes
+  // End session (stop mic and playback, but keep takes)
   const handleEndSession = useCallback(async () => {
     if (state.shuttingDown) return
     dispatch({ type: 'SET_SHUTTING_DOWN', value: true })
@@ -677,7 +635,7 @@ function Practice() {
   }, [])
 
   // Analyze the reference clip for the current sentence: fetch the MP3, decode
-  // to PCM, and hand off to the analysis view — same path as handleAnalyzeTake.
+  // to PCM, and hand off to the analysis view. Same path as handleAnalyzeTake.
   const handleAnalyzeReference = useCallback(
     async (segmentIndex: number, voiceId: string) => {
       const clip =
@@ -934,7 +892,7 @@ function Practice() {
               variant="ghost"
               size="icon"
               // Touch-only devices can't use keyboard shortcuts and have the
-              // least header space, so hide this there (fine pointer ≈ keyboard).
+              // least header space, so hide this there (fine pointer likely means keyboard).
               className="shrink-0 no-fine-pointer:hidden"
               onClick={openShortcutsHelp}
             >

@@ -1,14 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
 
-// A single-take recorder for the voice journal. Deliberately simpler than
-// practice: manual start/stop, no echo/loop/reference machinery and no live
-// visuals — just an elapsed timer that mirrors the practice footer's look.
-//
-// VAD gates the *start* of the take: the timer only begins counting once
-// speech is detected, and leading silence before the first voiced frame is
-// trimmed from the saved file. VAD never ends a recording — only the user
-// (or a too-short take) does.
+// A simple single-take recorder for the voice journal. VAD gates the start.
 
 import { Loader2, Mic, Square } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -79,7 +72,7 @@ export function JournalRecorder({
   const [phase, setPhase] = useState<Phase>('idle')
   const [elapsedMs, setElapsedMs] = useState(0)
   // `audioActive` flips true when the first analysis frame lands (mic is warm).
-  // `voicedStartMs` flips when VAD first reports speech — the timer starts here.
+  // `voicedStartMs` flips when VAD first reports speech. The timer starts here.
   const [audioActive, setAudioActive] = useState(false)
   const [voicedStartMs, setVoicedStartMs] = useState<number | null>(null)
 
@@ -92,8 +85,7 @@ export function JournalRecorder({
   const doneResolveRef = useRef<(() => void) | null>(null)
 
   // Transcript store + chunk queue, mirroring the analysis route. The queue
-  // transcribes voiced chunks live (for Chrome local/cloud) so the transcript
-  // is ready — or close to ready — by the time recording stops.
+  // transcribes voiced chunks live (for Chrome local/cloud).
   const [transcriptStore] = useState(() => new TranscriptStore())
   const ropesRef = useRef<AudioRope[]>([])
   const getViewport = useCallback((): Viewport | null => null, [])
@@ -206,7 +198,7 @@ export function JournalRecorder({
     onPlaybackPositionChanged: noop,
   })
 
-  // Elapsed timer — only runs once VAD has marked the start of speech.
+  // Elapsed timer -- only runs once VAD has marked the start of speech.
   useEffect(() => {
     if (phase !== 'recording' || voicedStartMs === null) return
     const tick = () => setElapsedMs(Date.now() - voicedStartMs)

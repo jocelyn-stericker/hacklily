@@ -23,7 +23,7 @@ export interface MemSnapshot {
  * Also captures `performance.measureUserAgentSpecificMemory()` and injects it
  * as the `agentMemory` source. That API covers all same-origin agents (main
  * thread, workers, worklets, WASM linear memory) and is rate-limited by the
- * browser to ~20 s intervals — calls made sooner than that simply block until
+ * browser to ~20 s intervals -- calls made sooner than that simply block until
  * the interval expires.
  */
 export async function readSnapshot(page: Page): Promise<MemSnapshot> {
@@ -72,7 +72,7 @@ export async function waitForProbe(
   timeoutMs = 10_000,
 ): Promise<void> {
   // page.waitForFunction runs the predicate inside the browser process and
-  // polls natively, avoiding N Node↔browser round-trips at 200ms intervals.
+  // polls natively, avoiding N Node <> browser round-trips at 200ms intervals.
   await page.waitForFunction(
     () => {
       const api = (
@@ -86,7 +86,7 @@ export async function waitForProbe(
 }
 
 /**
- * Get a flat numeric summary from a snapshot — the sum of all numeric values
+ * Get a flat numeric summary from a snapshot: the sum of all numeric values
  * per source, plus a grand total. Used for before/after delta comparisons.
  */
 export function summarizeSnapshot(snap: MemSnapshot): Record<string, number> {

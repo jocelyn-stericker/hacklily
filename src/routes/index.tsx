@@ -392,12 +392,9 @@ function App() {
   }, [journalFlagOn])
 
   const handleViewJournal = useCallback(() => {
-    // Open synchronously so the popup isn't blocked — we must NOT await a
-    // permission prompt first (that burns the click's activation). We don't
-    // need to: setup and Save already grant access, and Chromium remembers the
-    // grant for the session, so the journal tab almost always opens straight to
-    // its entries. If it isn't granted, the tab falls back to its one-click
-    // "Reconnect folder" gate.
+    // Open synchronously so the popup isn't blocked. (We can't check for
+    // storage permission here -- it's either open the window or ask for
+    // permission)
     window.open('/journal', '_blank')
   }, [])
 

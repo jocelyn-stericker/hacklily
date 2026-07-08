@@ -230,7 +230,7 @@ export class CapturePipeline extends TypedEventTarget<CapturePipelineEventMap> {
       this.#recordingBegun = false
       await this.#workersDone
     } else {
-      // No recording was in flight to drain — workers (if any were created
+      // No recording was in flight to drain. Workers (if any were created
       // by #start) still need to be terminated before we replace them below.
       this.#teardownWorkers()
     }

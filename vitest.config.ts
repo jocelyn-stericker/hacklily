@@ -21,7 +21,7 @@ export default defineConfig({
     globals: true,
     silent: 'passed-only',
     // .direnv holds a Nix-store copy of the repo source (no node_modules), so
-    // its duplicated *.test.ts files fail to resolve imports — skip them.
+    // its duplicated *.test.ts files fail to resolve imports. Skip them.
     exclude: [...configDefaults.exclude, '.direnv/**'],
     execArgv,
     coverage: {

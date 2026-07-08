@@ -121,7 +121,7 @@ export function renderTable(result: ScenarioResult): string {
     }
   }
 
-  // Pre-compute formatted cell strings once — reused for width measurement and rendering.
+  // Pre-compute formatted cell strings once
   const cellStrs: string[][] = rows.map((r) =>
     r.values.map((v) => formatValue(`${r.source}.${r.key}`, v)),
   )
@@ -224,7 +224,7 @@ export function renderTable(result: ScenarioResult): string {
     lines.push('  Chromium heap'.padEnd(labelWidth) + chromiumStrs.join(''))
   }
 
-  // Agent memory: performance.measureUserAgentSpecificMemory() — covers the
+  // Agent memory: performance.measureUserAgentSpecificMemory() -- covers the
   // main thread, all workers, and worklets including WASM linear memory (e.g.
   // Moonshine model weights). The most complete cross-thread measurement.
   const agentRow = rows.find(
@@ -240,20 +240,6 @@ export function renderTable(result: ScenarioResult): string {
   return lines.join('\n')
 }
 
-/**
- * Render a compact one-line summary of the peak vs baseline for a scenario.
- * Excludes chromium.* and agentMemory.* metrics — both overlap with
- * app-tracked ArrayBuffer bytes and are reported separately in the table
- * (as "Chromium heap" and "Agent memory" subtotals). Without this exclusion,
- * agentMemory.totalBytes (which already contains the app-tracked bytes plus
- * browser/worker/WASM overhead) gets summed on top of them, double-counting
- * and making the improvement look marginal — the bug that made layer 2 appear
- * less substantial than layer 1.
- *
- * When agentMemory is present (layer 2 / chromium), it's appended as a
- * separate annotation so the OOM-relevant full-process number is still
- * visible in the headline without polluting the app-bytes total.
- */
 export function renderSummaryLine(result: ScenarioResult): string {
   const steps = result.steps
   if (steps.length < 2) return ''
@@ -271,7 +257,7 @@ export function renderSummaryLine(result: ScenarioResult): string {
   let baselineBytes = 0
   let finalBytes = 0
 
-  // Agent memory (performance.measureUserAgentSpecificMemory) — the
+  // Agent memory (performance.measureUserAgentSpecificMemory) -- the
   // cross-thread total including workers, worklets, and WASM. Tracked
   // separately so it doesn't double-count app bytes.
   let agentPeak = 0

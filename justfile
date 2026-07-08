@@ -2,7 +2,7 @@
 default:
     @just --list
 
-# Install dependencies (clean, lockfile-exact — mirrors CI)
+# Install dependencies (use `npm install` when changing dependencies)
 install:
     npm ci
 
@@ -22,7 +22,7 @@ preview:
 check:
     npm run check
 
-# Lint only (no writes) — matches CI
+# Lint only
 lint:
     npm run lint
 

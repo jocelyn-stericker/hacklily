@@ -28,25 +28,10 @@ const TIME_STEP_SEC = 0.002
 const ONSET_HP_HZ = 300
 
 /**
- * Per-frame high-pass energy (the gate's onset feature), computed on demand
- * from the rope rather than buffered.
+ * Per-frame high-pass energy, which we use to extend the VAD so it doesn't
+ * miss fricatives and such.
  *
- * The old design accumulated `frameHfEnergy[frameIndex]` into an unbounded array
- * in the read loop because the gate consumes it much later — it lags behind the
- * reader, waiting on async VAD inference. That array grew for the whole
- * recording. But the rope retains all audio, so instead of buffering the derived
- * feature we re-derive it lazily on the gate's clock: a forward cursor that lags
- * the VAD reader, advanced one frame per request.
- *
- * It is a *continuous* pass from sample 0 (the one-pole high-pass is recursive,
- * O(1) state), so the values are bit-identical to the old in-loop computation —
- * this is a restructuring of *when* the work happens, not *what* it computes. No
- * retained buffer, and no backpressure needed on the reader (it may run ahead
- * for VAD freely; the cursor reads committed samples behind it).
- *
- * Frames must be requested in strictly increasing order, each exactly once — the
- * gate consumes `nextFrame` monotonically. Requested frames must already be
- * committed to the rope (true whenever `frame < frameIndex`).
+ * Frames must be requested in strictly increasing order, each exactly once.
  */
 export class HfEnergyCursor {
   readonly #reader: AudioRopeReader
@@ -196,9 +181,8 @@ export async function runAnalysis(
   // — only a small live window is ever needed. Bounded by a ring (cap is a
   // generous ~66 s of slack at ~31 chunks/s; NumberRing throws if a read ever
   // falls outside the retained window). NOTE: `frameHfEnergy` below is still
-  // unbounded — it's written ahead synchronously while the gate waits on async
-  // inference, so bounding it needs read-loop backpressure (see
-  // docs/memory-improvements.md item 2).
+  // unbounded: it's written ahead synchronously while the gate waits on async
+  // inference, so bounding it needs read-loop backpressure.
   const vadProbs = new NumberRing(2048)
 
   let samplesPending = 0

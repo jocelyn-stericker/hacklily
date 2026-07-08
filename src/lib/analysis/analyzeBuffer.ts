@@ -85,7 +85,7 @@ export async function analyzeBuffer(
   const formantSamples = resample(input, sampleRate, formantRate, 50)
   console.log(`Formant analysis: ${formantSamples.length} samples`)
 
-  console.log('Running formant analysis…')
+  console.log('Running formant analysis...')
   const formantProc = new FormantProcessor(
     {
       maxFormants: opts.maxFormants,

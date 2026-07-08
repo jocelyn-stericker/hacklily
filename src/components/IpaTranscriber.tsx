@@ -289,7 +289,7 @@ function Output({
       </p>
     )
   } else if (engineLoading) {
-    body = <p className="text-muted-foreground">Loading phonemiser…</p>
+    body = <p className="text-muted-foreground">Loading phonemiser...</p>
   } else if (!ipa) {
     body = <p className="text-muted-foreground">Enter some text above.</p>
   } else {

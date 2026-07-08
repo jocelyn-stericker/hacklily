@@ -1,6 +1,6 @@
 // Generate in-memory WAV files with realistic audio for memory testing.
 // We want audio that exercises the full analysis pipeline (VAD, formants,
-// spectrogram) — a mix of voiced-like content (harmonics) and silence.
+// spectrogram) -- a mix of voiced-like content (harmonics) and silence.
 
 export function generateWav(durationSec: number, sampleRate = 44100): Buffer {
   const numSamples = Math.floor(durationSec * sampleRate)
