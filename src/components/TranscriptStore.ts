@@ -4,6 +4,7 @@
 import { useCallback, useMemo, useRef, useSyncExternalStore } from 'react'
 
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
+import { weight } from '#/lib/analysis/weight'
 import type { ChunkTranscript } from '#/lib/transcription'
 
 /**
@@ -19,6 +20,8 @@ export type ChunkDerived = {
   brightness: number
   /** Median f0 over voiced frames (f0 > 0), rounded to Hz, or 0 if none. */
   medianF0: number
+  /** Alpha ratio (1-5 kHz over 0.5-1kHz) aka vocal weight aka spectral rolloff */
+  weightDb: number
 }
 
 function computeDerived(chunk: AnalysisChunk): ChunkDerived {
@@ -33,25 +36,25 @@ function computeDerived(chunk: AnalysisChunk): ChunkDerived {
     if (f.f0 > 0) f0s.push(f.f0)
   }
   f0s.sort((a, b) => a - b)
+  const tiltDb = weight(chunk.frames, chunk)
   return {
     brightness: brightnessCount > 0 ? brightnessSum / brightnessCount : 0,
     medianF0: Math.round(f0s[Math.floor(f0s.length / 2)] ?? 0),
+    weightDb: tiltDb === null ? 0 : Math.round(tiltDb),
   }
 }
 
 /** Stable zero value for chunks with no voiced frames / brightness yet, so
  *  useSyncExternalStore's Object.is snapshot check doesn't see a fresh object
  *  on every read of an uncomputed chunk. */
-const EMPTY_DERIVED: ChunkDerived = { brightness: 0, medianF0: 0 }
+const EMPTY_DERIVED: ChunkDerived = { brightness: 0, medianF0: 0, weightDb: 0 }
 
 /**
- * useSyncExternalStore source for SpeechStrip. Chunks are mutated in place
- * (see project_react_compiler_inplace_mutation), so this converts mutations
- * to render signals at three granularities:
+ * useSyncExternalStore source for SpeechStrip. Chunks are mutated in place,
+ * so this converts mutations to render signals at three granularities:
  *  - **list** -- structural changes (append/split/merge).
  *  - **per-chunk transcript** -- one row re-renders when its transcript lands.
- *  - **per-chunk derived** -- brightness / medianF0, marked dirty on frame
- *    mutations (patches, appends, alignment) and recomputed lazily on read.
+ *  - **per-chunk derived** -- recomputed lazily on read.
  */
 export class TranscriptStore {
   // -- chunk list (structural) --
@@ -159,10 +162,8 @@ export class TranscriptStore {
   // Frames are mutated in place by the analysis pipeline (f0 via patches,
   // lunaBrightness by the align job), so the React compiler can't observe
   // those mutations. Producers mark a chunk dirty (cheap) and notify
-  // subscribers; the actual recompute is deferred to getDerived -- the
-  // useSyncExternalStore snapshot read -- so only rendered chunks recompute,
-  // and repeated dirty marks within a tick coalesce into one computation.
-  // A null entry means "never computed"; a present entry is the last value.
+  // subscribers. These values are then recomputed in getDerived via
+  // useSyncExternalStore.
   #derived = new WeakMap<AnalysisChunk, ChunkDerived | null>()
   #dirty = new WeakSet<AnalysisChunk>()
 

@@ -265,7 +265,7 @@ function ChunkOverlay({
   const timeToXDom = useTimeToX(InCanvas.No)
 
   const transcript = useTranscript(store, chunk)
-  const { brightness, medianF0 } = useChunkDerived(store, chunk)
+  const { brightness, medianF0, weightDb } = useChunkDerived(store, chunk)
   const result = transcript ? bestResult(transcript) : undefined
   const phonemes = result?.phonemes
   const indicator = transcriptIndicator(transcript)
@@ -396,9 +396,10 @@ function ChunkOverlay({
               {topText}
             </PopoverTrigger>
             <PopoverContent className="w-70">
-              {medianF0 > 0 || brightness > 0 ? (
+              {medianF0 > 0 || weightDb !== 0 || brightness > 0 ? (
                 <div className="flex flex-row gap-3 text-sm">
                   {medianF0 > 0 ? <div>{medianF0} Hz</div> : null}
+                  {weightDb !== 0 ? <div>{weightDb} dB weight</div> : null}
                   {brightness > 0 ? (
                     <div>{`${toPercent(brightness)} bright`}</div>
                   ) : null}

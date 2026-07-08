@@ -5,6 +5,7 @@
 
 import { describe, it, expect, vi } from 'vitest'
 
+import { powerToInt8 } from '#/lib/analysis/AnalysisFrame'
 import type { AnalysisChunk } from '#/lib/analysis/AnalysisFrame'
 
 import { TranscriptStore } from './TranscriptStore'
@@ -125,5 +126,61 @@ describe('TranscriptStore per-chunk transcripts', () => {
 
     expect(one).toHaveBeenCalledTimes(1)
     expect(two).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('TranscriptStore weight (spectral tilt via computeSpectralWeight)', () => {
+  // A chunk on the shipping 2 ms / 20 Hz grid whose frames carry a
+  // low-band-heavy spectrum, stored the way the frame builders store it
+  // (pre-emphasized, quantized dB), so the derived weight is a plausible
+  // negative alpha ratio.
+  function weightChunk(pitchDetected: boolean): AnalysisChunk {
+    const sampleRate = 48000
+    const a = Math.exp((-2 * Math.PI * 50) / sampleRate)
+    const spectrum = new Int8Array(275)
+    for (let k = 0; k < 275; k++) {
+      const freq = 10 + k * 20
+      const gain =
+        1 + a * a - 2 * a * Math.cos((2 * Math.PI * freq) / sampleRate)
+      spectrum[k] = powerToInt8((freq < 1000 ? 1e-3 : 1e-5) * gain)
+    }
+    return {
+      timeStepSamples: 96,
+      sampleRate,
+      freqStepHz: 20,
+      firstBinHz: 10,
+      startTimeSec: 0,
+      frames: Array.from({ length: 10 }, () => ({
+        pitchDetected,
+        f0: pitchDetected ? 150 : 0,
+        spectrum,
+        rms: 0.0,
+        speechDetected: false,
+        f1: 0,
+        f2: 0,
+        f3: 0,
+        lunaBrightness: 0,
+        speechProbability: 0,
+      })),
+      voiced: true,
+    }
+  }
+
+  it('derives a rounded negative weightDb from voiced frames', async () => {
+    const store = new TranscriptStore()
+    const c = weightChunk(true)
+    store.publishChunkList([c])
+    await nextFrame()
+    // Band energies: 200 bins * 1e-5 over 48 bins * 1e-3 is
+    // 10*log10(0.0417) ≈ -13.8, rounded to -14.
+    expect(store.getDerived(c).weightDb).toBe(-14)
+  })
+
+  it('keeps the 0 sentinel when nothing is voiced', async () => {
+    const store = new TranscriptStore()
+    const c = weightChunk(false)
+    store.publishChunkList([c])
+    await nextFrame()
+    expect(store.getDerived(c).weightDb).toBe(0)
   })
 })
