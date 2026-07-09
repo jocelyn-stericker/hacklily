@@ -22,7 +22,6 @@
 
 import Factory from "../engine_factory";
 
-import { expect } from "chai";
 
 import { Type } from "../document";
 
@@ -44,35 +43,35 @@ describe("[factory.ts]", function () {
     const factory = new Factory(types);
 
     it("can create multiple types", function () {
-      expect(factory.create(Type.Attributes)).to.be.an.instanceof(TestClass1);
-      expect(factory.create(Type.Chord)).to.be.an.instanceof(TestClass2);
+      expect(factory.create(Type.Attributes)).toBeInstanceOf(TestClass1);
+      expect(factory.create(Type.Chord)).toBeInstanceOf(TestClass2);
     });
 
     it("can discern multiple types", function () {
       expect(
         factory.modelHasType(<any>new TestClass1(), Type.Attributes),
-      ).to.equal(true);
-      expect(factory.modelHasType(<any>new TestClass1(), Type.Chord)).to.equal(
+      ).toEqual(true);
+      expect(factory.modelHasType(<any>new TestClass1(), Type.Chord)).toEqual(
         false,
       );
-      expect(factory.modelHasType(<any>new TestClass2(), Type.Chord)).to.equal(
+      expect(factory.modelHasType(<any>new TestClass2(), Type.Chord)).toEqual(
         true,
       );
       expect(
         factory.modelHasType(<any>new TestClass2(), Type.Attributes),
-      ).to.equal(false);
+      ).toEqual(false);
     });
 
     it("throws on creating invalid type", function () {
       expect(function () {
         factory.create(Type.Print);
-      }).to.throw();
+      }).toThrow();
     });
 
     it("throws on discerning invalid type", function () {
       expect(function () {
         factory.modelHasType(<any>new TestClass1(), Type.Print);
-      }).to.throw();
+      }).toThrow();
     });
   });
 });

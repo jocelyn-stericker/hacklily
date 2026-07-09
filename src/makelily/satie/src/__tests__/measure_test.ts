@@ -22,7 +22,6 @@
 
 import { normalizeDivisionsInPlace } from "../engine_divisions";
 
-import { expect } from "chai";
 
 import {
   createFakeStaffSegment,
@@ -39,12 +38,12 @@ describe("[document/segment.ts]", function () {
         createFakeVoiceSegment(4, 12, 2),
       ];
       normalizeDivisionsInPlace(fakeFactory, segments);
-      expect(segments[0].divisions).to.equal(16);
-      expect(segments[1].divisions).to.equal(16);
-      expect(segments[2].divisions).to.equal(16);
-      expect(segments[0][1].divCount).to.equal(8);
-      expect(segments[1][0].divCount).to.equal(4);
-      expect(segments[2][1].divCount).to.equal(12);
+      expect(segments[0].divisions).toEqual(16);
+      expect(segments[1].divisions).toEqual(16);
+      expect(segments[2].divisions).toEqual(16);
+      expect(segments[0][1].divCount).toEqual(8);
+      expect(segments[1][0].divCount).toEqual(4);
+      expect(segments[2][1].divCount).toEqual(12);
     });
   });
 });

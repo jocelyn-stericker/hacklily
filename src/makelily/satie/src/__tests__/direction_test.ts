@@ -22,7 +22,6 @@
 
 import Direction from "../implDirection_directionModel";
 
-import { expect } from "chai";
 
 import { IModel, Type } from "../document";
 
@@ -34,7 +33,7 @@ describe("[direction.ts]", function () {
     let direction: IModel;
     it("can be created", function () {
       direction = factory.create(Type.Direction);
-      expect(!!direction).to.be.true;
+      expect(!!direction).toBe(true);
     });
   });
 });

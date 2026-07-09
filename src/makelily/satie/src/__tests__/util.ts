@@ -22,43 +22,42 @@
 
 import { gcd, lcm } from "../private_util";
 
-import { expect } from "chai";
 
 describe("[engine/util.ts]", function () {
   describe("gcd", function () {
     it("handles powers of 2", function () {
-      expect(gcd(4, 8)).to.eq(4);
-      expect(gcd(8, 16)).to.eq(8);
+      expect(gcd(4, 8)).toEqual(4);
+      expect(gcd(8, 16)).toEqual(8);
     });
     it("handles zero", function () {
-      expect(gcd(4, 0)).to.eq(4);
-      expect(gcd(0, 0)).to.eq(0);
+      expect(gcd(4, 0)).toEqual(4);
+      expect(gcd(0, 0)).toEqual(0);
     });
     it("handles negatives", function () {
-      expect(gcd(4, -8)).to.eq(4);
-      expect(gcd(-8, 4)).to.eq(4);
-      expect(gcd(-8, -4)).to.eq(4);
+      expect(gcd(4, -8)).toEqual(4);
+      expect(gcd(-8, 4)).toEqual(4);
+      expect(gcd(-8, -4)).toEqual(4);
     });
     it("handles primes", function () {
-      expect(gcd(7, 101)).to.eq(1);
+      expect(gcd(7, 101)).toEqual(1);
     });
   });
   describe("lcm", function () {
     it("handles powers of 2", function () {
-      expect(lcm(4, 8)).to.eq(8);
-      expect(lcm(8, 16)).to.eq(16);
+      expect(lcm(4, 8)).toEqual(8);
+      expect(lcm(8, 16)).toEqual(16);
     });
     it("handles zero", function () {
-      expect(lcm(4, 0)).to.eq(4);
-      expect(lcm(0, 0)).to.eq(0);
+      expect(lcm(4, 0)).toEqual(4);
+      expect(lcm(0, 0)).toEqual(0);
     });
     it("handles negatives", function () {
-      expect(lcm(4, -8)).to.eq(8);
-      expect(lcm(-8, 4)).to.eq(8);
-      expect(lcm(-8, -4)).to.eq(8);
+      expect(lcm(4, -8)).toEqual(8);
+      expect(lcm(-8, 4)).toEqual(8);
+      expect(lcm(-8, -4)).toEqual(8);
     });
     it("handles primes", function () {
-      expect(lcm(7, 101)).to.eq(707);
+      expect(lcm(7, 101)).toEqual(707);
     });
   });
 });

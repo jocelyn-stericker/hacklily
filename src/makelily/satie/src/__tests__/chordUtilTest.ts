@@ -36,7 +36,6 @@ import {
   buildNote,
   INoteBuilder,
 } from "#/musicxml-interfaces/builders";
-import { expect } from "chai";
 
 import { makeCursor } from "./attributes_test";
 
@@ -49,7 +48,7 @@ describe("[engine/ichord.ts]", function () {
         },
       ];
       const cursor = makeCursor(null, <any>[notes]);
-      expect(hasAccidental(notes, cursor)).to.eq(false);
+      expect(hasAccidental(notes, cursor)).toEqual(false);
     });
   });
 
@@ -73,17 +72,17 @@ describe("[engine/ichord.ts]", function () {
 
   describe("lineForClef", function () {
     it("handles a null note", function () {
-      expect(lineForClef(null, treble)).to.equal(3);
+      expect(lineForClef(null, treble)).toEqual(3);
     });
     it("throws on a null clef", function () {
-      expect(() => lineForClef(noteC, null)).to.throw();
-      expect(() => lineForClef(null, null)).to.throw();
+      expect(() => lineForClef(noteC, null)).toThrow();
+      expect(() => lineForClef(null, null)).toThrow();
     });
     it("calculates middle C", function () {
       const bass = buildClef((clef) => clef.sign("F").line(4));
 
-      expect(lineForClef(noteC, treble)).to.equal(0);
-      expect(lineForClef(noteC, bass)).to.equal(6);
+      expect(lineForClef(noteC, treble)).toEqual(0);
+      expect(lineForClef(noteC, bass)).toEqual(6);
     });
     it("calculates whole rest", function () {
       const note = buildNote((note) =>
@@ -92,32 +91,32 @@ describe("[engine/ichord.ts]", function () {
 
       const clef2 = buildClef((clef) => clef.sign("C").line(2));
 
-      expect(lineForClef(note, treble)).to.equal(4);
-      expect(lineForClef(note, clef2)).to.equal(4);
+      expect(lineForClef(note, treble)).toEqual(4);
+      expect(lineForClef(note, clef2)).toEqual(4);
     });
     it("calculates half rest", function () {
       const clef = buildClef((clef) => clef.sign("G").line(2));
 
-      expect(lineForClef(noteR, clef)).to.equal(3);
+      expect(lineForClef(noteR, clef)).toEqual(3);
     });
   });
   describe("linesForClef", function () {
     it("doesn't choke on empty chord", function () {
-      expect(linesForClef([], treble)).to.deep.equal([]);
+      expect(linesForClef([], treble)).toEqual([]);
     });
     it("throws on null clef", function () {
       const note1 = buildNote((note) =>
         note.rest({}).noteType((noteType) => noteType.duration(Count.Half)),
       );
-      expect(() => linesForClef([], null)).to.throw();
-      expect(() => linesForClef([note1], null)).to.throw();
+      expect(() => linesForClef([], null)).toThrow();
+      expect(() => linesForClef([note1], null)).toThrow();
     });
     it("seems to work", function () {
       const note1 = buildNote((note) =>
         note.rest({}).noteType((noteType) => noteType.duration(Count.Half)),
       );
 
-      expect(linesForClef([note1, noteC], treble)).to.deep.equal([3, 0]);
+      expect(linesForClef([note1, noteC], treble)).toEqual([3, 0]);
     });
   });
   describe("heightDeterminingLine", function () {
@@ -125,8 +124,8 @@ describe("[engine/ichord.ts]", function () {
       const note1 = buildNote((note) =>
         note.rest({}).noteType((noteType) => noteType.duration(Count.Half)),
       );
-      expect(heightDeterminingLine([note1], 1, treble)).to.deep.equal(3);
-      expect(heightDeterminingLine([note1], -1, treble)).to.deep.equal(3);
+      expect(heightDeterminingLine([note1], 1, treble)).toEqual(3);
+      expect(heightDeterminingLine([note1], -1, treble)).toEqual(3);
     });
     it("calculates inner line", function () {
       const note2 = buildNote((note) =>
@@ -138,23 +137,23 @@ describe("[engine/ichord.ts]", function () {
 
       expect(
         heightDeterminingLine([noteC, note2], 1 /* Up */, treble),
-      ).to.equal(3.5);
+      ).toEqual(3.5);
       expect(
         heightDeterminingLine([note2, noteC], 1 /* Up */, treble),
-      ).to.equal(3.5);
+      ).toEqual(3.5);
 
       expect(
         heightDeterminingLine([noteC, note2], -1 /* Down */, treble),
-      ).to.equal(0);
+      ).toEqual(0);
       expect(
         heightDeterminingLine([note2, noteC], -1 /* Down */, treble),
-      ).to.equal(0);
+      ).toEqual(0);
     });
     it("throws on invalid direction", function () {
-      expect(() => heightDeterminingLine([noteC], <any>"1", treble)).to.throw();
-      expect(() => heightDeterminingLine([noteC], NaN, treble)).to.throw();
-      expect(() => heightDeterminingLine([noteC], 0.5, treble)).to.throw();
-      expect(() => heightDeterminingLine([noteC], 0, treble)).to.throw();
+      expect(() => heightDeterminingLine([noteC], <any>"1", treble)).toThrow();
+      expect(() => heightDeterminingLine([noteC], NaN, treble)).toThrow();
+      expect(() => heightDeterminingLine([noteC], 0.5, treble)).toThrow();
+      expect(() => heightDeterminingLine([noteC], 0, treble)).toThrow();
     });
   });
   describe("startingLine", function () {
@@ -175,54 +174,54 @@ describe("[engine/ichord.ts]", function () {
 
       expect(
         startingLine([noteC, note2, note3], -1 /* Down */, treble),
-      ).to.equal(3.5);
+      ).toEqual(3.5);
       expect(
         startingLine([note2, noteC, note3], -1 /* Down */, treble),
-      ).to.equal(3.5);
+      ).toEqual(3.5);
 
-      expect(startingLine([noteC, note3, note2], 1 /* Up */, treble)).to.equal(
+      expect(startingLine([noteC, note3, note2], 1 /* Up */, treble)).toEqual(
         0,
       );
-      expect(startingLine([noteC, note3, note2], 1 /* Up */, treble)).to.equal(
+      expect(startingLine([noteC, note3, note2], 1 /* Up */, treble)).toEqual(
         0,
       );
     });
   });
   describe("onLedger", function () {
     it("determines middle C to have a ledger", function () {
-      expect(onLedger(noteC, treble)).to.be.true;
+      expect(onLedger(noteC, treble)).toBe(true);
     });
     it("determines middle D to not have a ledger", function () {
-      expect(onLedger(noteD, treble)).to.be.false;
+      expect(onLedger(noteD, treble)).toBe(false);
     });
     it("determines high G to not have a ledger", function () {
-      expect(onLedger(noteG, treble)).to.be.false;
+      expect(onLedger(noteG, treble)).toBe(false);
     });
     it("determines high A to have a ledger", function () {
-      expect(onLedger(noteA, treble)).to.be.true;
+      expect(onLedger(noteA, treble)).toBe(true);
     });
     it("determintes rests to not have ledgers", function () {
-      expect(onLedger(noteR, treble)).to.be.false;
+      expect(onLedger(noteR, treble)).toBe(false);
       const noteROdd = buildNote((note) =>
         note
           .rest((rest) => rest.displayStep("A").displayOctave(5))
           .noteType((type) => type.duration(Count.Half)),
       );
-      expect(onLedger(noteROdd, treble)).to.be.false;
+      expect(onLedger(noteROdd, treble)).toBe(false);
     });
   });
   describe("ledgerLines", function () {
     it("throws if clef is missing", function () {
-      expect(() => ledgerLines([noteC], null)).to.throw();
+      expect(() => ledgerLines([noteC], null)).toThrow();
     });
     it("calculates valid answers for single notes", function () {
-      expect(ledgerLines([noteC], treble)).to.deep.equal([0]);
-      expect(ledgerLines([noteD], treble)).to.deep.equal([]);
-      expect(ledgerLines([noteG], treble)).to.deep.equal([]);
-      expect(ledgerLines([noteA], treble)).to.deep.equal([6]);
+      expect(ledgerLines([noteC], treble)).toEqual([0]);
+      expect(ledgerLines([noteD], treble)).toEqual([]);
+      expect(ledgerLines([noteG], treble)).toEqual([]);
+      expect(ledgerLines([noteA], treble)).toEqual([6]);
     });
     it("does not double count", function () {
-      expect(ledgerLines([noteA, noteCHigher], treble)).to.deep.equal([6, 7]);
+      expect(ledgerLines([noteA, noteCHigher], treble)).toEqual([6, 7]);
     });
   });
 });

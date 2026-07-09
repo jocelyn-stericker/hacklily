@@ -1,5 +1,4 @@
 import { Count, Note } from "#/musicxml-interfaces";
-import { expect } from "chai";
 
 import { Type } from "../document";
 import SongImpl from "../engine_songImpl";
@@ -52,7 +51,7 @@ const songTemplate = `<?xml version="1.0" encoding="UTF-8"?>
 
 function getDivisionBreakdown(song: SongImpl, patches: { isPatches: boolean }) {
   const doc = song.getDocument(patches);
-  expect(doc.measures.length).to.equal(1, "there should only be one measure");
+  expect(doc.measures.length).toBe(1); // there should only be one measure;
 
   return doc.measures[0].parts["P1"].voices[1]
     .filter((n) => doc.modelHasType(n, Type.Chord))
@@ -103,26 +102,26 @@ describe("patch metre", function () {
 
   it("4/4, whole note", function () {
     const patch = insertNote(song, null, 0, Count.Whole);
-    expect(getDivisionBreakdown(song, patch)).to.deep.equal(["4N"]);
+    expect(getDivisionBreakdown(song, patch)).toEqual(["4N"]);
   });
 
   it("4/4, half notes", function () {
     let patch = insertNote(song, null, 0, Count.Half);
-    expect(getDivisionBreakdown(song, patch)).to.deep.equal(["2N", "2R"]);
+    expect(getDivisionBreakdown(song, patch)).toEqual(["2N", "2R"]);
 
     patch = insertNote(song, patch, 0, Count.Half);
-    expect(getDivisionBreakdown(song, patch)).to.deep.equal(["2N", "2N"]);
+    expect(getDivisionBreakdown(song, patch)).toEqual(["2N", "2N"]);
   });
 
   it("4/4, quarter notes", function () {
     let patch = insertNote(song, null, 0, Count.Quarter);
-    expect(getDivisionBreakdown(song, patch)).to.deep.equal(["1N", "1R", "2R"]);
+    expect(getDivisionBreakdown(song, patch)).toEqual(["1N", "1R", "2R"]);
 
     patch = insertNote(song, patch, 1, Count.Quarter);
-    expect(getDivisionBreakdown(song, patch)).to.deep.equal(["1N", "1N", "2R"]);
+    expect(getDivisionBreakdown(song, patch)).toEqual(["1N", "1N", "2R"]);
 
     patch = insertNote(song, patch, 2, Count.Quarter);
-    expect(getDivisionBreakdown(song, patch)).to.deep.equal([
+    expect(getDivisionBreakdown(song, patch)).toEqual([
       "1N",
       "1N",
       "1N",
@@ -130,7 +129,7 @@ describe("patch metre", function () {
     ]);
 
     patch = insertNote(song, patch, 3, Count.Quarter);
-    expect(getDivisionBreakdown(song, patch)).to.deep.equal([
+    expect(getDivisionBreakdown(song, patch)).toEqual([
       "1N",
       "1N",
       "1N",
@@ -140,7 +139,7 @@ describe("patch metre", function () {
 
   it("4/4, eighth notes", function () {
     let patch = insertNote(song, null, 0, Count.Eighth);
-    expect(getDivisionBreakdown(song, patch)).to.deep.equal([
+    expect(getDivisionBreakdown(song, patch)).toEqual([
       "0.5N",
       "0.5R",
       "1R",
@@ -148,7 +147,7 @@ describe("patch metre", function () {
     ]);
 
     patch = insertNote(song, patch, 1, Count.Eighth);
-    expect(getDivisionBreakdown(song, patch)).to.deep.equal([
+    expect(getDivisionBreakdown(song, patch)).toEqual([
       "0.5N",
       "0.5N",
       "1R",
@@ -156,7 +155,7 @@ describe("patch metre", function () {
     ]);
 
     patch = insertNote(song, patch, 2, Count.Eighth);
-    expect(getDivisionBreakdown(song, patch)).to.deep.equal([
+    expect(getDivisionBreakdown(song, patch)).toEqual([
       "0.5N",
       "0.5N",
       "0.5N",
@@ -165,7 +164,7 @@ describe("patch metre", function () {
     ]);
 
     patch = insertNote(song, patch, 3, Count.Eighth);
-    expect(getDivisionBreakdown(song, patch)).to.deep.equal([
+    expect(getDivisionBreakdown(song, patch)).toEqual([
       "0.5N",
       "0.5N",
       "0.5N",
@@ -174,7 +173,7 @@ describe("patch metre", function () {
     ]);
 
     patch = insertNote(song, patch, 4, Count.Eighth);
-    expect(getDivisionBreakdown(song, patch)).to.deep.equal([
+    expect(getDivisionBreakdown(song, patch)).toEqual([
       "0.5N",
       "0.5N",
       "0.5N",
@@ -185,7 +184,7 @@ describe("patch metre", function () {
     ]);
 
     patch = insertNote(song, patch, 5, Count.Eighth);
-    expect(getDivisionBreakdown(song, patch)).to.deep.equal([
+    expect(getDivisionBreakdown(song, patch)).toEqual([
       "0.5N",
       "0.5N",
       "0.5N",
@@ -196,7 +195,7 @@ describe("patch metre", function () {
     ]);
 
     patch = insertNote(song, patch, 6, Count.Eighth);
-    expect(getDivisionBreakdown(song, patch)).to.deep.equal([
+    expect(getDivisionBreakdown(song, patch)).toEqual([
       "0.5N",
       "0.5N",
       "0.5N",
@@ -208,7 +207,7 @@ describe("patch metre", function () {
     ]);
 
     patch = insertNote(song, patch, 6, Count.Eighth);
-    expect(getDivisionBreakdown(song, patch)).to.deep.equal([
+    expect(getDivisionBreakdown(song, patch)).toEqual([
       "0.5N",
       "0.5N",
       "0.5N",

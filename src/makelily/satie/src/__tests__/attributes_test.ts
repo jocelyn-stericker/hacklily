@@ -24,7 +24,6 @@ import { Attributes } from "#/musicxml-interfaces";
 
 import AttributesModel from "../implAttributes_attributesModel";
 
-import { expect } from "chai";
 
 import { ISegment, IModel, Type } from "../document";
 
@@ -111,7 +110,7 @@ describe("[attributes.ts]", function () {
     let segment: ISegment;
     it("can be created", function () {
       attributes = factory.create(Type.Attributes);
-      expect(!!attributes).to.be.true;
+      expect(!!attributes).toBe(true);
       // Divisions is usually set by the engine
       attributes.divisions = 100;
       segment = [attributes] as any;
@@ -138,17 +137,17 @@ describe("[attributes.ts]", function () {
       const layout = attributes.getLayout(
         lCursor,
       ) as AttributesModel.IAttributesLayout;
-      expect(!!layout.keySignature).to.be.true;
-      expect(!!layout.time).to.be.true;
-      expect(!!layout.clef).to.be.true;
-      expect(layout.tsSpacing).to.be.gt(0);
-      expect(layout.clefSpacing).to.be.gt(0);
-      expect(layout.ksSpacing).to.be.gt(0);
+      expect(!!layout.keySignature).toBe(true);
+      expect(!!layout.time).toBe(true);
+      expect(!!layout.clef).toBe(true);
+      expect(layout.tsSpacing).toBeGreaterThan(0);
+      expect(layout.clefSpacing).toBeGreaterThan(0);
+      expect(layout.ksSpacing).toBeGreaterThan(0);
 
-      expect(layout.x).to.be.lt(lCursor.segmentX);
+      expect(layout.x).toBeLessThan(lCursor.segmentX);
       const expectedChange =
         layout.clefSpacing + layout.tsSpacing + layout.ksSpacing;
-      expect(lCursor.segmentX - layout.x).to.equal(expectedChange);
+      expect(lCursor.segmentX - layout.x).toEqual(expectedChange);
     });
   });
 });

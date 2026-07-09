@@ -22,7 +22,6 @@
 
 import Print from "../implPrint_printModel";
 
-import { expect } from "chai";
 
 import { IModel, Type } from "../document";
 
@@ -34,7 +33,7 @@ describe("[print.ts]", function () {
     let print: IModel;
     it("can be created", function () {
       print = factory.create(Type.Print);
-      expect(!!print).to.be.true;
+      expect(!!print).toBe(true);
     });
   });
 });

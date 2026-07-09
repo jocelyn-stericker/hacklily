@@ -22,7 +22,6 @@
 
 import BarlineModel from "../implBarline_barlineModel";
 
-import { expect } from "chai";
 
 import { IModel, Type } from "../document";
 
@@ -34,7 +33,7 @@ describe("[barline.ts]", function () {
     let barline: IModel;
     it("can be created", function () {
       barline = factory.create(Type.Barline);
-      expect(!!barline).to.be.true;
+      expect(!!barline).toBe(true);
     });
   });
 });

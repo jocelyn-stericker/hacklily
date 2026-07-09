@@ -21,7 +21,6 @@
  */
 
 import { times, reduce } from "lodash";
-import { expect } from "chai";
 
 import {
   ICombinedLayout,
@@ -51,7 +50,7 @@ describe("[private/combinedLayout.ts]", function () {
         combinedLayout,
       );
 
-      expect(combinedLayout).to.deep.equal([
+      expect(combinedLayout).toEqual([
         {
           renderClass: Type.Attributes,
           x: 0,
@@ -98,9 +97,9 @@ describe("[private/combinedLayout.ts]", function () {
           division: 18,
         },
       ]);
-      expect(layout1).to.have.length(9);
-      expect(layout2).to.have.length(9);
-      expect(layout1.slice(0, 3)).to.be.deep.equal([
+      expect(layout1).toHaveLength(9);
+      expect(layout2).toHaveLength(9);
+      expect(layout1.slice(0, 3)).toEqual([
         {
           boundingBoxes: [],
           division: 0,

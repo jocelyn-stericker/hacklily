@@ -30,7 +30,6 @@ import {
   parseScore,
 } from "#/musicxml-interfaces";
 import { forEach, some } from "lodash";
-import { expect } from "chai";
 
 import Factory from "../engine_factory";
 import {
@@ -527,12 +526,12 @@ describe("[musicxml/import.ts]", function () {
       const mxmljson = parseScore(helloWorldXML);
       const header = _extractMXMLHeader(mxmljson);
 
-      expect(header).to.be.an.instanceof(ScoreHeader);
+      expect(header).toBeInstanceOf(ScoreHeader);
 
-      expect(header.credits.length).to.eq(5);
-      expect(header.credits[4].page).to.eq(2);
-      expect(header.credits[0].creditTypes).to.deep.equal(["title"]);
-      expect(header.credits[1].creditWords).to.deep.equal([
+      expect(header.credits.length).toEqual(5);
+      expect(header.credits[4].page).toEqual(2);
+      expect(header.credits[0].creditTypes).toEqual(["title"]);
+      expect(header.credits[1].creditWords).toEqual([
         {
           color: "#000000",
           defaultX: 1124,
@@ -558,18 +557,18 @@ describe("[musicxml/import.ts]", function () {
         },
       ]);
       // Check that halign still follows justify
-      expect(header.credits[0].creditWords[0].halign).to.eq(
+      expect(header.credits[0].creditWords[0].halign).toEqual(
         LeftCenterRight.Center,
       );
 
-      expect(header.identification.creators.length).to.eq(3);
-      expect(header.identification.creators[0].type).to.eq("composer");
-      expect(header.identification.creators[0].creator).to.eq("Song Composer");
-      expect(header.identification.creators[1].type).to.eq("lyricist");
-      expect(header.identification.creators[1].creator).to.eq("Song Lyricist");
-      expect(header.identification.creators[2].type).to.eq("arranger");
-      expect(header.identification.creators[2].creator).to.eq("Song Arranger");
-      expect(header.identification.encoding).to.deep.equal({
+      expect(header.identification.creators.length).toEqual(3);
+      expect(header.identification.creators[0].type).toEqual("composer");
+      expect(header.identification.creators[0].creator).toEqual("Song Composer");
+      expect(header.identification.creators[1].type).toEqual("lyricist");
+      expect(header.identification.creators[1].creator).toEqual("Song Lyricist");
+      expect(header.identification.creators[2].type).toEqual("arranger");
+      expect(header.identification.creators[2].creator).toEqual("Song Arranger");
+      expect(header.identification.encoding).toEqual({
         encoders: [],
         encodingDate: {
           day: 10,
@@ -598,8 +597,8 @@ describe("[musicxml/import.ts]", function () {
         },
       });
 
-      expect(header.movementTitle).to.eq("Song Title");
-      expect(header.partList).to.deep.equal([
+      expect(header.movementTitle).toEqual("Song Title");
+      expect(header.partList).toEqual([
         {
           _class: "ScorePart",
           groups: [],
@@ -650,11 +649,11 @@ describe("[musicxml/import.ts]", function () {
         },
       ]);
 
-      expect(!("parts" in header), "Check _extractHeader");
+      expect("parts" in header).toBe(false);
 
       // Extensions
-      expect(header.composer).to.eq("Song Composer");
-      expect(header.title).to.eq("Song Title");
+      expect(header.composer).toEqual("Song Composer");
+      expect(header.title).toEqual("Song Title");
     });
   });
   describe("_extractMXMLPartsAndMeasures", function () {
@@ -670,23 +669,23 @@ describe("[musicxml/import.ts]", function () {
 
       const mxmljson = parseScore(helloWorldXML);
       const partsAndMeasures = _extractMXMLPartsAndMeasures(mxmljson, factory);
-      expect(partsAndMeasures.measures.length).to.eq(1);
-      expect(partsAndMeasures.measures[0].parts["P1"].staves[1].length).to.eq(
+      expect(partsAndMeasures.measures.length).toEqual(1);
+      expect(partsAndMeasures.measures[0].parts["P1"].staves[1].length).toEqual(
         4,
       );
       expect(
         partsAndMeasures.measures[0].parts["P1"].staves[1][0].divCount,
-      ).to.eq(0);
+      ).toEqual(0);
       expect(
         partsAndMeasures.measures[0].parts["P1"].staves[1][1].divCount,
-      ).to.eq(0);
+      ).toEqual(0);
       expect(
         partsAndMeasures.measures[0].parts["P1"].staves[1][2].divCount,
-      ).to.eq(8);
+      ).toEqual(8);
       expect(
         partsAndMeasures.measures[0].parts["P1"].staves[1][3].divCount,
-      ).to.eq(0);
-      expect(partsAndMeasures.measures[0].parts["P1"].voices[1].length).to.eq(
+      ).toEqual(0);
+      expect(partsAndMeasures.measures[0].parts["P1"].voices[1].length).toEqual(
         1,
       );
     });
@@ -703,22 +702,22 @@ describe("[musicxml/import.ts]", function () {
 
       const mxmljson = parseScore(lily43eXML);
       const partsAndMeasures = _extractMXMLPartsAndMeasures(mxmljson, factory);
-      expect(partsAndMeasures.measures.length).to.eq(4);
-      expect(partsAndMeasures.parts).to.eql(["P1"]);
+      expect(partsAndMeasures.measures.length).toEqual(4);
+      expect(partsAndMeasures.parts).toEqual(["P1"]);
 
       const voices = partsAndMeasures.measures[0].parts["P1"].voices;
       const staves = partsAndMeasures.measures[0].parts["P1"].staves;
-      expect(!voices[0]).to.eq(true, "voices are 1-indexed");
-      expect(!staves[0]).to.eq(true, "staves are 1-indexed");
-      expect(voices.length).to.eq(3);
-      expect(staves.length).to.eq(3);
-      expect(voices[2].owner).to.eq(2);
-      expect(voices[2].divisions).to.eq(8);
-      expect(voices[1].divisions).to.eq(8);
-      expect(staves[2].divisions).to.eq(8);
-      expect(staves[1].divisions).to.eq(8);
-      expect(staves[1].length).to.eq(3);
-      expect(staves[2].length).to.eq(3);
+      expect(voices[0]).toBeFalsy(); // voices are 1-indexed;
+      expect(staves[0]).toBeFalsy(); // staves are 1-indexed;
+      expect(voices.length).toEqual(3);
+      expect(staves.length).toEqual(3);
+      expect(voices[2].owner).toEqual(2);
+      expect(voices[2].divisions).toEqual(8);
+      expect(voices[1].divisions).toEqual(8);
+      expect(staves[2].divisions).toEqual(8);
+      expect(staves[1].divisions).toEqual(8);
+      expect(staves[1].length).toEqual(3);
+      expect(staves[2].length).toEqual(3);
       forEach(staves[1], (model) => {
         expect(!some(staves[2], (m2) => model === m2));
       });

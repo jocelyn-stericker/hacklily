@@ -26,7 +26,6 @@
 import Chord from "../implChord_chordModel";
 
 import { Note, Count } from "#/musicxml-interfaces";
-import { expect } from "chai";
 
 import { IModel, Type } from "../document";
 
@@ -101,8 +100,8 @@ describe("[chord.ts]", function () {
     const factory = new Factory([AttributesExports, Chord]);
     it("can be created from scratch", function () {
       const chord = factory.create(Type.Chord);
-      expect(!!chord).to.be.true;
-      expect(chord.length).to.eq(0);
+      expect(!!chord).toBe(true);
+      expect(chord.length).toEqual(0);
     });
     it("can be correctly created from a simple spec", function () {
       const chord = factory.fromSpec({
@@ -125,7 +124,7 @@ describe("[chord.ts]", function () {
       chord.refresh(cursor);
 
       cursor = getCursor(factory, chord);
-      expect(cursor.segmentDivision).to.eq(0);
+      expect(cursor.segmentDivision).toEqual(0);
       const lCursor: LayoutCursor = {
         ...cursor,
         measureX: 100,
@@ -139,19 +138,17 @@ describe("[chord.ts]", function () {
         lineMaxPaddingBottomByStaff: [],
       };
       chord.getLayout(lCursor);
-      expect(cursor.segmentDivision).to.eq(
+      expect(cursor.segmentDivision).toEqual(
         0,
-        "layout must not affect cursor division",
-      );
+      ); // layout must not affect cursor division
       const xml = (<any>chord).inspect();
-      expect(xml).to.contain("<step>C</step>");
-      expect(xml).to.contain("<alter>1</alter>");
-      expect(xml).to.contain("<octave>4</octave>");
-      expect(xml).to.not.contain("<chord");
-      expect(xml).to.contain(
+      expect(xml).toContain("<step>C</step>");
+      expect(xml).toContain("<alter>1</alter>");
+      expect(xml).toContain("<octave>4</octave>");
+      expect(xml).not.toContain("<chord");
+      expect(xml).toContain(
         "<duration>600</duration>",
-        "Maintains playback data",
-      );
+      ); // Maintains playback data
     });
     it("can be a chord generated from specs", function () {
       const chord = factory.fromSpec({
@@ -200,7 +197,7 @@ describe("[chord.ts]", function () {
       };
       chord.getLayout(lCursor);
       // let chordDuration = chordFromModel(chord)[0].duration;
-      // expect(chordDuration).to.eq(2, "Duration wasn't specified so should be set here.");
+      // expect(chordDuration).toEqual(2, "Duration wasn't specified so should be set here.");
       // XXX: implement a proper patcher for tests
     });
   });

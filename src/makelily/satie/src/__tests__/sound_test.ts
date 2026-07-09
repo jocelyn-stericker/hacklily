@@ -22,7 +22,6 @@
 
 import Sound from "../implSound_soundModel";
 
-import { expect } from "chai";
 
 import { IModel, Type } from "../document";
 
@@ -34,7 +33,7 @@ describe("[sound.ts]", function () {
     let sound: IModel;
     it("can be created", function () {
       sound = factory.create(Type.Sound);
-      expect(!!sound).to.be.true;
+      expect(!!sound).toBe(true);
     });
   });
 });

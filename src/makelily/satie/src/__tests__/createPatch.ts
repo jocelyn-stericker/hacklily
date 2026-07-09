@@ -1,5 +1,4 @@
 import { BarStyleType, Count, MxmlAccidental } from "#/musicxml-interfaces";
-import { expect } from "chai";
 import { find } from "lodash";
 
 import { Type } from "../document";
@@ -101,12 +100,12 @@ describe("patches (1)", function () {
     const thirdMeasureUUID = song.getDocument(null).measures[2].uuid;
 
     // new measure
-    expect(patch[0].p).to.deep.equal(["measures", 3]);
+    expect(patch[0].p).toEqual(["measures", 3]);
     const newMeasureUUID = patch[0].li.uuid;
-    expect(newMeasureUUID).to.be.a("number");
+    expect(newMeasureUUID).toEqual(expect.any(Number));
 
     // new note
-    expect(patch[1].p).to.deep.equal([
+    expect(patch[1].p).toEqual([
       newMeasureUUID,
       "parts",
       "P1",
@@ -114,11 +113,11 @@ describe("patches (1)", function () {
       1,
       0,
     ]);
-    expect(patch[1].li[0]._class).to.equal("Note");
-    expect(patch[1].ld).to.equal(undefined);
+    expect(patch[1].li[0]._class).toEqual("Note");
+    expect(patch[1].ld).toEqual(undefined);
 
     // previously final barline
-    expect(patch[2].p).to.deep.equal([
+    expect(patch[2].p).toEqual([
       thirdMeasureUUID,
       "parts",
       "P1",
@@ -128,35 +127,35 @@ describe("patches (1)", function () {
       "barStyle",
       "data",
     ]);
-    expect(patch[2].oi).to.equal(BarStyleType.Regular);
-    expect(patch[2].od).to.equal(BarStyleType.LightHeavy);
+    expect(patch[2].oi).toEqual(BarStyleType.Regular);
+    expect(patch[2].od).toEqual(BarStyleType.LightHeavy);
 
     // No other patches
-    expect(patch.length).to.equal(3);
+    expect(patch.length).toEqual(3);
 
     const expandedPatch = song.createCanonicalPatch({ raw: patch });
 
     // check state of document
     const patchedDocument = song.getDocument(expandedPatch);
-    expect(patchedDocument.measures.length).to.equal(4);
+    expect(patchedDocument.measures.length).toEqual(4);
     expect(
       patchedDocument.measures[3].parts["P1"].voices[1][0].divCount,
-    ).to.equal(4);
+    ).toEqual(4);
     expect(
       patchedDocument.modelHasType(
         patchedDocument.measures[3].parts["P1"].staves[1][3],
         Type.Barline,
       ),
-    ).to.be.true;
+    ).toBe(true);
 
     // Does not change previous patch.
-    expect(patch.length).to.equal(3);
+    expect(patch.length).toEqual(3);
 
     const barStylePatch = find(
       (expandedPatch as any).content,
       (p: any) => p.li && p.li._class === "Barline",
     );
-    expect(barStylePatch).to.deep.equal({
+    expect(barStylePatch).toEqual({
       p: [newMeasureUUID, "parts", "P1", "staves", 1, 2], // May eventually be 3?
       li: {
         _class: "Barline",
@@ -169,11 +168,11 @@ describe("patches (1)", function () {
 
     // Try undoing everything
     const newPatch = song.createCanonicalPatch(null);
-    expect((newPatch as any).content.length).to.equal(0);
-    expect(song.getDocument(newPatch).measures.length).to.equal(3);
+    expect((newPatch as any).content.length).toEqual(0);
+    expect(song.getDocument(newPatch).measures.length).toEqual(3);
     const barline =
       song.getDocument(newPatch).measures[2].parts["P1"].staves[1][3];
-    expect((barline as any)._class).to.equal("Barline");
+    expect((barline as any)._class).toEqual("Barline");
     expect((barline as any).barStyle.data === BarStyleType.LightHeavy);
 
     // changed barline
@@ -211,7 +210,7 @@ describe("patches (1)", function () {
         song.getDocument(newPatch).measures[0].parts["P1"]
           .voices[1][0] as any as IChord
       )[0].rest,
-    ).to.deep.equal({
+    ).toEqual({
       displayOctave: undefined,
       displayStep: undefined,
       measure: true,

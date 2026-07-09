@@ -22,7 +22,6 @@
 
 import ScoreHeader from "../engine_scoreHeader";
 
-import { expect } from "chai";
 
 import { parseScore, LeftCenterRight } from "#/musicxml-interfaces";
 
@@ -148,45 +147,45 @@ describe("[engine/scoreHeader.ts]", function () {
   it("can correctly modify metadata", function () {
     const mxmljson = parseScore(headerTest);
     const scoreHeader = new ScoreHeader(mxmljson);
-    expect(scoreHeader.credits.length).eq(5);
-    expect(scoreHeader.identification.creators.length).eq(3);
+    expect(scoreHeader.credits.length).toEqual(5);
+    expect(scoreHeader.identification.creators.length).toEqual(3);
 
     // Changing the composer should change the credit words and identification
     scoreHeader.composer = "New Composer";
-    expect(scoreHeader.credits.length).eq(5);
-    expect(scoreHeader.identification.creators.length).eq(3);
-    expect(scoreHeader.composer).to.eq("New Composer"); // Since get is not directly tied to set
-    expect(scoreHeader.identification.creators[0].creator).to.eq(
+    expect(scoreHeader.credits.length).toEqual(5);
+    expect(scoreHeader.identification.creators.length).toEqual(3);
+    expect(scoreHeader.composer).toEqual("New Composer"); // Since get is not directly tied to set
+    expect(scoreHeader.identification.creators[0].creator).toEqual(
       "New Composer",
     );
-    expect(scoreHeader.identification.creators[1].creator).to.not.eq(
+    expect(scoreHeader.identification.creators[1].creator).not.toEqual(
       "New Composer",
     );
-    expect(scoreHeader.identification.creators[2].creator).to.not.eq(
+    expect(scoreHeader.identification.creators[2].creator).not.toEqual(
       "New Composer",
     );
-    expect(scoreHeader.credits[1].creditWords[0].words).to.eq("New Composer");
+    expect(scoreHeader.credits[1].creditWords[0].words).toEqual("New Composer");
 
     // Changing the title should change credit words and movementTitle
     scoreHeader.title = "New Title";
-    expect(scoreHeader.credits.length).eq(5);
-    expect(scoreHeader.identification.creators.length).eq(3);
-    expect(scoreHeader.title).to.eq("New Title"); // Since get is not directly tied to set
-    expect(scoreHeader.movementTitle).to.eq("New Title");
-    expect(scoreHeader.credits[0].creditWords[0].words).to.eq("New Title");
+    expect(scoreHeader.credits.length).toEqual(5);
+    expect(scoreHeader.identification.creators.length).toEqual(3);
+    expect(scoreHeader.title).toEqual("New Title"); // Since get is not directly tied to set
+    expect(scoreHeader.movementTitle).toEqual("New Title");
+    expect(scoreHeader.credits[0].creditWords[0].words).toEqual("New Title");
   });
   it("can correctly add metadata", function () {
     const mxmljson = parseScore(minimalTest);
     const scoreHeader = new ScoreHeader(mxmljson);
-    expect(scoreHeader.credits.length).eq(0);
-    expect(scoreHeader.identification.creators.length).eq(0);
+    expect(scoreHeader.credits.length).toEqual(0);
+    expect(scoreHeader.identification.creators.length).toEqual(0);
 
     scoreHeader.title = "Orig Title";
     scoreHeader.composer = "Orig Composer";
     scoreHeader.arranger = "Orig Arranger";
     scoreHeader.lyricist = "Orig Lyricist";
 
-    expect(scoreHeader.credits).to.deep.equal([
+    expect(scoreHeader.credits).toEqual([
       {
         creditImage: null,
         creditTypes: ["title"],
