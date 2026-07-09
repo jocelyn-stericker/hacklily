@@ -1,4 +1,5 @@
 // Based on https://github.com/SitePen/dts-generator
+/* eslint-disable */
 
 import * as fs from "fs";
 import * as mkdirp from "mkdirp";
@@ -56,12 +57,12 @@ function getMembers(members: ts.NodeArray<ts.Node>) {
   return members.map((member) => {
     switch (member.kind) {
       case ts.SyntaxKind.PropertySignature:
-        let pdNode = member as ts.PropertyDeclaration;
-        let type = getTypeSpec(pdNode);
+        const pdNode = member as ts.PropertyDeclaration;
+        const type = getTypeSpec(pdNode);
         type.required = !pdNode.questionToken;
         return type;
       case ts.SyntaxKind.IndexSignature:
-        let sigNode = member as ts.IndexSignatureDeclaration;
+        const sigNode = member as ts.IndexSignatureDeclaration;
         return {
           kind: "IndexSignature",
           required: false,
@@ -83,7 +84,7 @@ function getEnumMembers(members: ts.NodeArray<ts.Node>) {
   return members.map((member) => {
     switch (member.kind) {
       case ts.SyntaxKind.EnumMember:
-        let enNode = member as ts.EnumMember;
+        const enNode = member as ts.EnumMember;
         return {
           kind: "EnumMember",
           name: (enNode.name as ts.Identifier).text,
@@ -117,7 +118,7 @@ function getExpression(node: ts.Expression): any {
 function getType(node: ts.Node): any {
   switch (node.kind) {
     case ts.SyntaxKind.TypeReference:
-      let trNode = node as ts.TypeReferenceNode;
+      const trNode = node as ts.TypeReferenceNode;
       if ("right" in trNode.typeName) {
         return (trNode.typeName as ts.QualifiedName).right.text;
       } else {
@@ -132,10 +133,10 @@ function getType(node: ts.Node): any {
     case ts.SyntaxKind.AnyKeyword:
       return "boolean";
     case ts.SyntaxKind.ArrayType:
-      let arNode = node as ts.ArrayTypeNode;
+      const arNode = node as ts.ArrayTypeNode;
       return `${getType(arNode.elementType)}[]`;
     case ts.SyntaxKind.TypeLiteral: {
-      let litNode = node as ts.TypeLiteralNode;
+      const litNode = node as ts.TypeLiteralNode;
       return {
         kind: "typeLiteral",
         members: getMembers(litNode.members),
@@ -154,7 +155,7 @@ function getTypeSpec(
   decl: ts.VariableDeclaration | ts.PropertyDeclaration,
 ): any {
   if (decl.type.kind === ts.SyntaxKind.FunctionType) {
-    let fnNode = decl.type as ts.FunctionOrConstructorTypeNode;
+    const fnNode = decl.type as ts.FunctionOrConstructorTypeNode;
     return {
       name: (decl.name as ts.Identifier).text,
       kind: "FunctionDeclaration", // Lies!
@@ -207,7 +208,7 @@ function processTree(sourceFile: ts.SourceFile): any {
       case ts.SyntaxKind.FunctionDeclaration: {
         const fdNode = node as ts.FunctionDeclaration;
         // ast.children = children.map(child => visit(child)).filter(node => Boolean(node));
-        let ast = {
+        const ast = {
           kind: SyntaxKind[node.kind],
           name: fdNode.name.text,
           in: fdNode.parameters.map((param) => getType(param.type)),
@@ -225,7 +226,7 @@ function processTree(sourceFile: ts.SourceFile): any {
       }
       case ts.SyntaxKind.InterfaceDeclaration: {
         const icNode = node as ts.InterfaceDeclaration;
-        let ast = {
+        const ast = {
           kind: SyntaxKind[node.kind],
           name: icNode.name.text,
           members: getMembers(icNode.members),
@@ -241,8 +242,8 @@ function processTree(sourceFile: ts.SourceFile): any {
         break;
       }
       case ts.SyntaxKind.ModuleDeclaration: {
-        let modDec = node as ts.ModuleDeclaration;
-        let ast: any = {
+        const modDec = node as ts.ModuleDeclaration;
+        const ast: any = {
           name: modDec.name.text,
           symbols: flatten(
             flatten(
@@ -261,8 +262,8 @@ function processTree(sourceFile: ts.SourceFile): any {
         break;
       }
       case ts.SyntaxKind.EnumDeclaration: {
-        let enDec = node as ts.EnumDeclaration;
-        let ast: any = {
+        const enDec = node as ts.EnumDeclaration;
+        const ast: any = {
           kind: SyntaxKind[node.kind],
           name: enDec.name.text,
           members: getEnumMembers(enDec.members),
@@ -271,7 +272,7 @@ function processTree(sourceFile: ts.SourceFile): any {
         break;
       }
       default: {
-        let ast: any = {
+        const ast: any = {
           kind: SyntaxKind[node.kind],
         };
         ast.error =
@@ -307,7 +308,7 @@ function processTree(sourceFile: ts.SourceFile): any {
           .map((child) => visit(child))
           .filter((node) => Boolean(node));
       case ts.SyntaxKind.ModuleDeclaration:
-        let modDec = node as ts.ModuleDeclaration;
+        const modDec = node as ts.ModuleDeclaration;
         ast.name = modDec.name.text;
         ast.symbols = flatten(
           flatten(

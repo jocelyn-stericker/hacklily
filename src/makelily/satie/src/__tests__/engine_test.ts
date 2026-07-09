@@ -23,7 +23,7 @@
  * @file part of Satie test suite
  */
 
-import { Print, OddEvenBoth } from "#/musicxml-interfaces";
+import { Print, OddEvenBoth, PartSymbolType } from "#/musicxml-interfaces";
 
 import { map } from "lodash";
 
@@ -36,6 +36,7 @@ import { ValidationCursor, LayoutCursor } from "../private_cursor";
 
 import { createFakeStaffSegment, createFakeVoiceSegment } from "./etestutil";
 import validate from "../engine_processors_validate";
+import { IAttributesSnapshot } from "../private_attributesSnapshot";
 
 describe("[engine.ts]", function () {
   describe("Options.ILineBounds.calculate", function () {
@@ -116,7 +117,9 @@ describe("[engine.ts]", function () {
       let calledCount = 0;
 
       const createAttributesChordFactory: IFactory = {
-        create: (_modelType: Type): IModel => {
+        create: (
+          _modelType: Type,
+        ): IModel & { _snapshot: IAttributesSnapshot } => {
           ++calledCount;
           return {
             divCount: 0,
@@ -134,6 +137,10 @@ describe("[engine.ts]", function () {
               staffDetails: [],
               directives: [],
               measureStyle: {},
+              partSymbol: { type: PartSymbolType.None },
+              transpose: { chromatic: "" },
+              staves: 5,
+              instruments: "",
             },
 
             refresh: (_cursor: ValidationCursor) => {

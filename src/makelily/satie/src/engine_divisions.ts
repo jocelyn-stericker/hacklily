@@ -73,7 +73,7 @@ export function normalizeDivisionsInPlace(
         }
         try {
           model.divisions = divisions;
-        } catch (err) {
+        } catch (_err) {
           console.warn("Could not set divisions");
         }
       }

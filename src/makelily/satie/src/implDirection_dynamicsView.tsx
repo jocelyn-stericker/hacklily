@@ -19,7 +19,6 @@
 import { Dynamics, Direction } from "#/musicxml-interfaces";
 import React, { ReactElement, Component } from "react";
 import * as PropTypes from "prop-types";
-import { filter } from "lodash";
 import invariant from "invariant";
 
 import Glyph from "./private_views_glyph";

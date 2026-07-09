@@ -322,7 +322,7 @@ export function _extractMXMLPartsAndMeasures(
                   time: target.times[0],
                   divisions,
                 });
-              } catch (err) {
+              } catch (_err) {
                 console.warn("Guessing count from duration");
                 divs = input.duration;
               }

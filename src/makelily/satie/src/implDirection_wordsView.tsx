@@ -26,7 +26,7 @@ import {
 } from "#/musicxml-interfaces";
 import { Component } from "react";
 import * as PropTypes from "prop-types";
-import { filter, map, extend } from "lodash";
+import { map, extend } from "lodash";
 import invariant from "invariant";
 
 import { cssSizeToTenths } from "./private_renderUtil";

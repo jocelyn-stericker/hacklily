@@ -228,11 +228,11 @@ export interface IAny {
   o?: any;
 }
 
-let subtypes: any[] = [];
+const subtypes: any[] = [];
 
-function invertComponent<T>(cm: IAny): IAny {
-  let c = cm as any;
-  let c_ = { p: c.p } as any;
+function invertComponent(cm: IAny): IAny {
+  const c = cm as any;
+  const c_ = { p: c.p } as any;
 
   // handle subtype ops
   if (c.t && subtypes[c.t]) {

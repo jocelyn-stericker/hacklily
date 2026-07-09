@@ -29,6 +29,7 @@
  * http://www.musicxml.org/dtds/license.html
  * This file contains multiple DTDs.
  */
+/* eslint-disable */
 
 "use strict";
 
@@ -42,7 +43,7 @@
  * structure similar to parttime.
  */
 export function parseScore(score: string): ScoreTimewise {
-  let dom: Document = xmlToParttimeDoc(score);
+  const dom: Document = xmlToParttimeDoc(score);
   return xmlToScoreTimewise(dom.documentElement);
 }
 
@@ -174,7 +175,7 @@ export function serializeScore(
   score: ScoreTimewise,
   parttime: boolean = false,
 ): string {
-  let timewise = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+  const timewise = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE score-timewise
   PUBLIC "-//Recordare//DTD MusicXML 3.0 Timewise//EN" "http://www.musicxml.org/dtds/timewise.dtd">
 <score-timewise version="3.0">
@@ -199,30 +200,30 @@ ${score.measures
 export function serializeScoreHeader(scoreHeader: ScoreHeader) {
   return scoreHeaderToXML(scoreHeader).join("\n");
 }
-export let serializeMeasure = <(measure: Measure) => string>measureToXML;
-export let serializeNote = <(note: Note) => string>noteToXML;
-export let serializeClef = <(clef: Clef) => string>clefToXML;
-export let serializeTime = <(time: Time) => string>timeToXML;
-export let serializeKey = <(key: Key) => string>keyToXML;
-export let serializePartSymbol = <(partSymbol: PartSymbol) => string>(
+export const serializeMeasure = <(measure: Measure) => string>measureToXML;
+export const serializeNote = <(note: Note) => string>noteToXML;
+export const serializeClef = <(clef: Clef) => string>clefToXML;
+export const serializeTime = <(time: Time) => string>timeToXML;
+export const serializeKey = <(key: Key) => string>keyToXML;
+export const serializePartSymbol = <(partSymbol: PartSymbol) => string>(
   partSymbolToXML
 );
-export let serializeBackup = <(backup: Backup) => string>backupToXML;
-export let serializeHarmony = <(harmony: Harmony) => string>harmonyToXML;
-export let serializeForward = <(forward: Forward) => string>forwardToXML;
-export let serializePrint = <(print: Print) => string>printToXML;
-export let serializeFiguredBass = <(figuredBass: FiguredBass) => string>(
+export const serializeBackup = <(backup: Backup) => string>backupToXML;
+export const serializeHarmony = <(harmony: Harmony) => string>harmonyToXML;
+export const serializeForward = <(forward: Forward) => string>forwardToXML;
+export const serializePrint = <(print: Print) => string>printToXML;
+export const serializeFiguredBass = <(figuredBass: FiguredBass) => string>(
   figuredBassToXML
 );
-export let serializeDirection = <(direction: Direction) => string>(
+export const serializeDirection = <(direction: Direction) => string>(
   directionToXML
 );
-export let serializeAttributes = <(attributes: Attributes) => string>(
+export const serializeAttributes = <(attributes: Attributes) => string>(
   attributesToXML
 );
-export let serializeSound = <(sound: Sound) => string>soundToXML;
-export let serializeBarline = <(barline: Barline) => string>barlineToXML;
-export let serializeGrouping = <(grouping: Grouping) => string>groupingToXML;
+export const serializeSound = <(sound: Sound) => string>soundToXML;
+export const serializeBarline = <(barline: Barline) => string>barlineToXML;
+export const serializeGrouping = <(grouping: Grouping) => string>groupingToXML;
 
 /*---- Initialization and Utility ---------------------------------------------------------------*/
 
@@ -249,27 +250,27 @@ declare class XSLTProcessor {
   transformToDocument(xml: Node): Document;
 }
 
-let isNode = typeof window === "undefined" || !!process.versions?.node;
+const isNode = typeof window === "undefined" || !!process.versions?.node;
 
-var xmlToParttimeDoc: (str: string) => Document;
-var timewiseToPartwise: (str: string) => string;
-var xmlToDoc: (str: string) => Document;
+let xmlToParttimeDoc: (str: string) => Document;
+let timewiseToPartwise: (str: string) => string;
+let xmlToDoc: (str: string) => Document;
 
 (function init() {
-  let parttimeXSLBuffer =
+  const parttimeXSLBuffer =
     '<?xml version="1.0" encoding="UTF-8"?> <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"> <xsl:output method="xml" indent="yes" encoding="UTF-8" omit-xml-declaration="no" standalone="no" doctype-system="http://www.musicxml.org/dtds/timewise.dtd" doctype-public="-//Recordare//DTD MusicXML 3.0 Timewise//EN" /> <xsl:template match="/"> <xsl:apply-templates select="./score-partwise"/> <xsl:apply-templates select="./score-timewise"/> </xsl:template> <xsl:template match="score-timewise"> <xsl:copy-of select="." /> </xsl:template> <xsl:template match="text()"> <xsl:value-of select="." /> </xsl:template> <xsl:template match="*|@*|comment()|processing-instruction()"> <xsl:copy><xsl:apply-templates select="*|@*|comment()|processing-instruction()|text()" /></xsl:copy> </xsl:template> <xsl:template match="score-partwise"> <xsl:element name="score-timewise"> <xsl:apply-templates select="@version[.!=\'1.0\']"/> <xsl:apply-templates select="work"/> <xsl:apply-templates select="movement-number"/> <xsl:apply-templates select="movement-title"/> <xsl:apply-templates select="identification"/> <xsl:apply-templates select="defaults"/> <xsl:apply-templates select="credit"/> <xsl:apply-templates select="part-list"/> <xsl:for-each select="part[1]/measure"> <xsl:variable name="measure-number"> <xsl:value-of select="@number"/> </xsl:variable> <xsl:element name="measure"> <xsl:attribute name="number"> <xsl:value-of select="$measure-number"/> </xsl:attribute> <xsl:if test="@implicit[. = \'yes\']"> <xsl:attribute name="implicit"> <xsl:value-of select="@implicit"/> </xsl:attribute> </xsl:if> <xsl:if test="@non-controlling[. = \'yes\']"> <xsl:attribute name="non-controlling"> <xsl:value-of select="@non-controlling"/> </xsl:attribute> </xsl:if> <xsl:if test="@width"> <xsl:attribute name="width"> <xsl:value-of select="@width"/> </xsl:attribute> </xsl:if> <xsl:for-each select="../../part/measure"> <xsl:if test="@number=$measure-number"> <xsl:element name="part"> <xsl:attribute name="id"> <xsl:value-of select="parent::part/@id"/> </xsl:attribute> <xsl:apply-templates /> </xsl:element> </xsl:if> </xsl:for-each> </xsl:element> </xsl:for-each> </xsl:element> </xsl:template> </xsl:stylesheet>';
-  let timepartXSLBuffer =
+  const timepartXSLBuffer =
     '<?xml version="1.0" encoding="UTF-8"?> <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"> <xsl:output method="xml" indent="yes" encoding="UTF-8" omit-xml-declaration="no" standalone="no" doctype-system="http://www.musicxml.org/dtds/partwise.dtd" doctype-public="-//Recordare//DTD MusicXML 3.0 Partwise//EN" /> <xsl:template match="/"> <xsl:apply-templates select="./score-partwise"/> <xsl:apply-templates select="./score-timewise"/> </xsl:template> <xsl:template match="score-partwise"> <xsl:copy-of select="." /> </xsl:template> <xsl:template match="text()"> <xsl:value-of select="." /> </xsl:template> <xsl:template match="*|@*|comment()|processing-instruction()"> <xsl:copy><xsl:apply-templates select="*|@*|comment()|processing-instruction()|text()" /></xsl:copy> </xsl:template> <xsl:template match="score-timewise"> <xsl:element name="score-partwise"> <xsl:apply-templates select="@version[.!=\'1.0\']"/> <xsl:apply-templates select="work"/> <xsl:apply-templates select="movement-number"/> <xsl:apply-templates select="movement-title"/> <xsl:apply-templates select="identification"/> <xsl:apply-templates select="defaults"/> <xsl:apply-templates select="credit"/> <xsl:apply-templates select="part-list"/> <xsl:for-each select="measure[1]/part"> <xsl:variable name="part-id"> <xsl:value-of select="@id"/> </xsl:variable> <xsl:element name="part"> <xsl:copy-of select="@id" /> <xsl:for-each select="../../measure/part"> <xsl:if test="@id=$part-id"> <xsl:element name="measure"> <xsl:attribute name="number"> <xsl:value-of select="parent::measure/@number"/> </xsl:attribute> <xsl:if test="parent::measure/@implicit[. = \'yes\']"> <xsl:attribute name="implicit"> <xsl:value-of select="parent::measure/@implicit"/> </xsl:attribute> </xsl:if> <xsl:if test="parent::measure/@non-controlling[. = \'yes\']"> <xsl:attribute name="non-controlling"> <xsl:value-of select="parent::measure/@non-controlling"/> </xsl:attribute> </xsl:if> <xsl:if test="parent::measure/@width"> <xsl:attribute name="width"> <xsl:value-of select="parent::measure/@width"/> </xsl:attribute> </xsl:if> <xsl:apply-templates /> </xsl:element> </xsl:if> </xsl:for-each> </xsl:element> </xsl:for-each> </xsl:element> </xsl:template> </xsl:stylesheet>';
 
   if (isNode) {
     const DOMParser = require("@xmldom/xmldom").DOMParser;
-    let spawnSync = (<any>require("child_process")).spawnSync;
-    let path = <any>require("path");
+    const spawnSync = (<any>require("child_process")).spawnSync;
+    const path = <any>require("path");
     xmlToDoc = function (str: string) {
       return new DOMParser().parseFromString(str, "text/xml");
     };
     xmlToParttimeDoc = function (str: string) {
-      let res = spawnSync(
+      const res = spawnSync(
         "xsltproc",
         [
           "--nonet",
@@ -308,7 +309,7 @@ var xmlToDoc: (str: string) => Document;
       return xmlToDoc(res.stdout.toString());
     };
     timewiseToPartwise = function (str: string) {
-      let res = spawnSync(
+      const res = spawnSync(
         "xsltproc",
         [
           "--nonet",
@@ -334,18 +335,18 @@ var xmlToDoc: (str: string) => Document;
       return res.stdout.toString();
     };
   } else {
-    let parttimeXSLDoc = new DOMParser().parseFromString(
+    const parttimeXSLDoc = new DOMParser().parseFromString(
       parttimeXSLBuffer,
       "text/xml",
     );
-    let timepartXSLDoc = new DOMParser().parseFromString(
+    const timepartXSLDoc = new DOMParser().parseFromString(
       timepartXSLBuffer,
       "text/xml",
     );
 
-    let parttimeXSLProcessor: XSLTProcessor = new XSLTProcessor();
+    const parttimeXSLProcessor: XSLTProcessor = new XSLTProcessor();
     parttimeXSLProcessor.importStylesheet(parttimeXSLDoc);
-    let timepartXSLProcessor: XSLTProcessor = new XSLTProcessor();
+    const timepartXSLProcessor: XSLTProcessor = new XSLTProcessor();
     timepartXSLProcessor.importStylesheet(timepartXSLDoc);
 
     xmlToDoc = function (str: string) {
@@ -353,11 +354,11 @@ var xmlToDoc: (str: string) => Document;
     };
 
     xmlToParttimeDoc = function (str: string) {
-      let dom: Document = new DOMParser().parseFromString(str, "text/xml");
+      const dom: Document = new DOMParser().parseFromString(str, "text/xml");
       return parttimeXSLProcessor.transformToDocument(dom);
     };
     timewiseToPartwise = function (str: string) {
-      let dom: Document = new DOMParser().parseFromString(str, "text/xml");
+      const dom: Document = new DOMParser().parseFromString(str, "text/xml");
       return new XMLSerializer().serializeToString(
         timepartXSLProcessor.transformToDocument(dom).documentElement,
       );
@@ -376,7 +377,7 @@ function getString(ch: Node, required: boolean) {
 }
 
 function getNumber(ch: Node, required: boolean) {
-  let s = getString(ch, required);
+  const s = getString(ch, required);
   if (s.toLowerCase().indexOf("0x") === 0) {
     return parseInt(s, 16);
   } else {
@@ -943,7 +944,7 @@ export interface LetterSpacing {
 }
 
 function xmlToEncodingDate(node: Node): CalendarDate {
-  let text: string = getString(node, true);
+  const text: string = getString(node, true);
   if (text.length < 10) {
     return null;
   }
@@ -955,38 +956,38 @@ function xmlToEncodingDate(node: Node): CalendarDate {
 }
 
 function xmlToMeasure(node: Element) {
-  let ret: Measure = <any>{};
+  const ret: Measure = <any>{};
   let foundImplicit = false;
   let foundNonControlling = false;
   let foundNumber = false;
   let foundWidth = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "part") {
-      let dataPart = xmlToPart(ch);
+      const dataPart = xmlToPart(ch);
       ret.parts = ret.parts || {};
       ret.parts[(<any>ch).getAttribute("id")] = dataPart;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "number") {
-      let dataNumber = getString(ch2, true);
+      const dataNumber = getString(ch2, true);
       ret.number = dataNumber;
       foundNumber = true;
     }
     if (ch2.name === "implicit") {
-      let dataImplicit = xmlToYesNo(ch2, true);
+      const dataImplicit = xmlToYesNo(ch2, true);
       ret.implicit = dataImplicit;
       foundImplicit = true;
     }
     if (ch2.name === "width") {
-      let dataWidth = getNumber(ch2, true);
+      const dataWidth = getNumber(ch2, true);
       ret.width = dataWidth;
       foundWidth = true;
     }
     if (ch2.name === "non-controlling") {
-      let dataNonControlling = xmlToYesNo(ch2, true);
+      const dataNonControlling = xmlToYesNo(ch2, true);
       ret.nonControlling = dataNonControlling;
       foundNonControlling = true;
     }
@@ -1007,7 +1008,7 @@ function xmlToMeasure(node: Element) {
 }
 
 function xmlToYesNo(p: Node, required?: boolean): boolean {
-  let s = getString(p, true);
+  const s = getString(p, true);
   if (s == "no") {
     return false;
   }
@@ -1043,7 +1044,7 @@ function xmlToGroupAbbreviationDisplay(p: Node): GroupAbbreviationDisplay {
 }
 
 function xmlToLyric(node: Element) {
-  let ret: Lyric = <any>{};
+  const ret: Lyric = <any>{};
   let foundNumber_ = false;
   let foundJustify = false;
   let foundDefaultX = false;
@@ -1055,65 +1056,65 @@ function xmlToLyric(node: Element) {
   let foundPrintObject = false;
   let foundName = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "footnote") {
-      let dataFootnote = xmlToFootnote(ch);
+      const dataFootnote = xmlToFootnote(ch);
       ret.footnote = dataFootnote;
     }
     if (ch.nodeName === "level") {
-      let dataLevel = xmlToLevel(ch);
+      const dataLevel = xmlToLevel(ch);
       ret.level = dataLevel;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "number") {
-      let dataNumber_ = getNumber(ch2, true);
+      const dataNumber_ = getNumber(ch2, true);
       ret.number = dataNumber_;
       foundNumber_ = true;
     }
     if (ch2.name === "justify") {
-      let dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
+      const dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
       ret.justify = dataJustify;
       foundJustify = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
       foundDefaultX = true;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
       foundRelativeY = true;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
       foundDefaultY = true;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
       foundRelativeX = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "print-object") {
-      let dataPrintObject = xmlToYesNo(ch2);
+      const dataPrintObject = xmlToYesNo(ch2);
       ret.printObject = dataPrintObject;
       foundPrintObject = true;
     }
     if (ch2.name === "name") {
-      let dataName = getString(ch2, true);
+      const dataName = getString(ch2, true);
       ret.name = dataName;
       foundName = true;
     }
@@ -1154,7 +1155,7 @@ function xmlToLyric(node: Element) {
 
 function getStartStop(node: Node, fallbackVal?: StartStop) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -1173,7 +1174,7 @@ function getStartStop(node: Node, fallbackVal?: StartStop) {
 
 function getStartStopContinue(node: Node, fallbackVal?: StartStopContinue) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -1195,7 +1196,7 @@ function getStartStopContinue(node: Node, fallbackVal?: StartStopContinue) {
 
 function getStartStopSingle(node: Node, fallbackVal?: StartStopSingle) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -1217,7 +1218,7 @@ function getStartStopSingle(node: Node, fallbackVal?: StartStopSingle) {
 
 function getSymbolSize(node: Node, fallbackVal?: SymbolSize) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -1242,7 +1243,7 @@ function getSymbolSize(node: Node, fallbackVal?: SymbolSize) {
 
 function getAboveBelow(node: Node, fallbackVal?: AboveBelow) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -1264,7 +1265,7 @@ function getAboveBelow(node: Node, fallbackVal?: AboveBelow) {
 
 function getUpDown(node: Node, fallbackVal?: UpDown) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -1283,7 +1284,7 @@ function getUpDown(node: Node, fallbackVal?: UpDown) {
 
 function getOverUnder(node: Node, fallbackVal?: OverUnder) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -1305,7 +1306,7 @@ function getOverUnder(node: Node, fallbackVal?: OverUnder) {
 
 function getTopBottom(node: Node, fallbackVal?: TopBottom) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -1324,7 +1325,7 @@ function getTopBottom(node: Node, fallbackVal?: TopBottom) {
 
 function getLeftRight(node: Node, fallbackVal?: LeftRight) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -1350,8 +1351,8 @@ function verifyNumberOfLines(m: number) {
 }
 
 function xmlToNumberOfLines(node: Node) {
-  let str = node.textContent;
-  let num =
+  const str = node.textContent;
+  const num =
     str.toLowerCase().indexOf("0x") === 0 ? parseInt(str, 16) : parseFloat(str);
   return num;
 }
@@ -1361,15 +1362,15 @@ function verifyRotation(m: number) {
 }
 
 function xmlToRotation(node: Node) {
-  let str = node.textContent;
-  let num =
+  const str = node.textContent;
+  const num =
     str.toLowerCase().indexOf("0x") === 0 ? parseInt(str, 16) : parseFloat(str);
   return num;
 }
 
 function getEnclosureShape(node: Node, fallbackVal?: EnclosureShape) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -1406,7 +1407,7 @@ function getEnclosureShape(node: Node, fallbackVal?: EnclosureShape) {
 
 function getNormalItalic(node: Node, fallbackVal?: NormalItalic) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -1425,7 +1426,7 @@ function getNormalItalic(node: Node, fallbackVal?: NormalItalic) {
 
 function getNormalBold(node: Node, fallbackVal?: NormalBold) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -1458,8 +1459,8 @@ function verifyNumberLevel(m: number) {
 }
 
 function xmlToNumberLevel(node: Node) {
-  let str = node.textContent;
-  let num =
+  const str = node.textContent;
+  const num =
     str.toLowerCase().indexOf("0x") === 0 ? parseInt(str, 16) : parseFloat(str);
   return num;
 }
@@ -1477,33 +1478,33 @@ function verifyBeamLevel(m: number) {
 }
 
 function xmlToBeamLevel(node: Node) {
-  let str = node.textContent;
-  let num =
+  const str = node.textContent;
+  const num =
     str.toLowerCase().indexOf("0x") === 0 ? parseInt(str, 16) : parseFloat(str);
   return num;
 }
 
 function xmlToPosition(node: Element) {
-  let ret: Position = <any>{};
+  const ret: Position = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
   }
@@ -1511,15 +1512,15 @@ function xmlToPosition(node: Element) {
 }
 
 function xmlToPlacement(node: Element) {
-  let ret: Placement = <any>{};
+  const ret: Placement = <any>{};
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -1531,14 +1532,14 @@ function xmlToPlacement(node: Element) {
 }
 
 function xmlToDirectiveEntity(node: Element) {
-  let ret: DirectiveEntity = <any>{};
+  const ret: DirectiveEntity = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "directive") {
-      let dataDirective = xmlToYesNo(ch2);
+      const dataDirective = xmlToYesNo(ch2);
       ret.directive = dataDirective;
     }
   }
@@ -1546,34 +1547,34 @@ function xmlToDirectiveEntity(node: Element) {
 }
 
 function xmlToBezier(node: Element) {
-  let ret: Bezier = <any>{};
+  const ret: Bezier = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "bezier-x2") {
-      let dataBezierX2 = getNumber(ch2, true);
+      const dataBezierX2 = getNumber(ch2, true);
       ret.bezierX2 = dataBezierX2;
     }
     if (ch2.name === "bezier-offset") {
-      let dataBezierOffset = getNumber(ch2, true);
+      const dataBezierOffset = getNumber(ch2, true);
       ret.bezierOffset = dataBezierOffset;
     }
     if (ch2.name === "bezier-offset2") {
-      let dataBezierOffset2 = getNumber(ch2, true);
+      const dataBezierOffset2 = getNumber(ch2, true);
       ret.bezierOffset2 = dataBezierOffset2;
     }
     if (ch2.name === "bezier-x") {
-      let dataBezierX = getNumber(ch2, true);
+      const dataBezierX = getNumber(ch2, true);
       ret.bezierX = dataBezierX;
     }
     if (ch2.name === "bezier-y") {
-      let dataBezierY = getNumber(ch2, true);
+      const dataBezierY = getNumber(ch2, true);
       ret.bezierY = dataBezierY;
     }
     if (ch2.name === "bezier-y2") {
-      let dataBezierY2 = getNumber(ch2, true);
+      const dataBezierY2 = getNumber(ch2, true);
       ret.bezierY2 = dataBezierY2;
     }
   }
@@ -1581,15 +1582,15 @@ function xmlToBezier(node: Element) {
 }
 
 function xmlToOrientation(node: Element) {
-  let ret: Orientation = <any>{};
+  const ret: Orientation = <any>{};
   let foundOrientation = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "orientation") {
-      let dataOrientation = getOverUnder(ch2, OverUnder.Unspecified);
+      const dataOrientation = getOverUnder(ch2, OverUnder.Unspecified);
       ret.orientation = dataOrientation;
       foundOrientation = true;
     }
@@ -1601,30 +1602,30 @@ function xmlToOrientation(node: Element) {
 }
 
 function xmlToFont(node: Element) {
-  let ret: Font = <any>{};
+  const ret: Font = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
   }
@@ -1639,7 +1640,7 @@ function xmlToFont(node: Element) {
 
 function getLeftCenterRight(node: Node, fallbackVal?: LeftCenterRight) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -1664,7 +1665,7 @@ function getTopMiddleBottomBaseline(
   fallbackVal?: TopMiddleBottomBaseline,
 ) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -1689,7 +1690,7 @@ function getTopMiddleBottomBaseline(
 
 function getDirectionMode(node: Node, fallbackVal?: DirectionMode) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -1714,7 +1715,7 @@ function getDirectionMode(node: Node, fallbackVal?: DirectionMode) {
 
 function getStraightCurved(node: Node, fallbackVal?: StraightCurved) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -1736,7 +1737,7 @@ function getSolidDashedDottedWavy(
   fallbackVal?: SolidDashedDottedWavy,
 ) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -1761,7 +1762,7 @@ function getSolidDashedDottedWavy(
 
 function getNormalAngledSquare(node: Node, fallbackVal?: NormalAngledSquare) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -1783,7 +1784,7 @@ function getNormalAngledSquare(node: Node, fallbackVal?: NormalAngledSquare) {
 
 function getUprightInverted(node: Node, fallbackVal?: UprightInverted) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -1802,7 +1803,7 @@ function getUprightInverted(node: Node, fallbackVal?: UprightInverted) {
 
 function getUpperMainBelow(node: Node, fallbackVal?: UpperMainBelow) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -1824,7 +1825,7 @@ function getUpperMainBelow(node: Node, fallbackVal?: UpperMainBelow) {
 
 function getWholeHalfUnison(node: Node, fallbackVal?: WholeHalfUnison) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -1846,7 +1847,7 @@ function getWholeHalfUnison(node: Node, fallbackVal?: WholeHalfUnison) {
 
 function getWholeHalfNone(node: Node, fallbackVal?: WholeHalfNone) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -1867,15 +1868,15 @@ function getWholeHalfNone(node: Node, fallbackVal?: WholeHalfNone) {
 }
 
 function xmlToColor(node: Element) {
-  let ret: Color = <any>{};
+  const ret: Color = <any>{};
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
@@ -1887,27 +1888,27 @@ function xmlToColor(node: Element) {
 }
 
 function xmlToTextDecoration(node: Element) {
-  let ret: TextDecoration = <any>{};
+  const ret: TextDecoration = <any>{};
   let foundUnderline = false;
   let foundOverline = false;
   let foundLineThrough = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "underline") {
-      let dataUnderline = getNumber(ch2, true);
+      const dataUnderline = getNumber(ch2, true);
       ret.underline = dataUnderline;
       foundUnderline = true;
     }
     if (ch2.name === "overline") {
-      let dataOverline = getNumber(ch2, true);
+      const dataOverline = getNumber(ch2, true);
       ret.overline = dataOverline;
       foundOverline = true;
     }
     if (ch2.name === "line-through") {
-      let dataLineThrough = getNumber(ch2, true);
+      const dataLineThrough = getNumber(ch2, true);
       ret.lineThrough = dataLineThrough;
       foundLineThrough = true;
     }
@@ -1925,15 +1926,15 @@ function xmlToTextDecoration(node: Element) {
 }
 
 function xmlToJustify(node: Element) {
-  let ret: Justify = <any>{};
+  const ret: Justify = <any>{};
   let foundJustify = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "justify") {
-      let dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
+      const dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
       ret.justify = dataJustify;
       foundJustify = true;
     }
@@ -1945,15 +1946,15 @@ function xmlToJustify(node: Element) {
 }
 
 function xmlToHalign(node: Element) {
-  let ret: Halign = <any>{};
+  const ret: Halign = <any>{};
   let foundHalign = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -1968,15 +1969,15 @@ function xmlToHalign(node: Element) {
 }
 
 function xmlToValign(node: Element) {
-  let ret: Valign = <any>{};
+  const ret: Valign = <any>{};
   let foundValign = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -1991,15 +1992,15 @@ function xmlToValign(node: Element) {
 }
 
 function xmlToValignImage(node: Element) {
-  let ret: ValignImage = <any>{};
+  const ret: ValignImage = <any>{};
   let foundValignImage = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "valign") {
-      let dataValignImage = getTopMiddleBottomBaseline(
+      const dataValignImage = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -2014,15 +2015,15 @@ function xmlToValignImage(node: Element) {
 }
 
 function xmlToLetterSpacing(node: Element) {
-  let ret: LetterSpacing = <any>{};
+  const ret: LetterSpacing = <any>{};
   let foundLetterSpacing = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "letter-spacing") {
-      let dataLetterSpacing = getString(ch2, true);
+      const dataLetterSpacing = getString(ch2, true);
       ret.letterSpacing = dataLetterSpacing;
       foundLetterSpacing = true;
     }
@@ -2047,15 +2048,15 @@ export interface LineHeight {
 }
 
 function xmlToLineHeight(node: Element) {
-  let ret: LineHeight = <any>{};
+  const ret: LineHeight = <any>{};
   let foundLineHeight = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "line-height") {
-      let dataLineHeight = getString(ch2, true);
+      const dataLineHeight = getString(ch2, true);
       ret.lineHeight = dataLineHeight;
       foundLineHeight = true;
     }
@@ -2085,15 +2086,15 @@ export interface TextDirection {
 }
 
 function xmlToTextDirection(node: Element) {
-  let ret: TextDirection = <any>{};
+  const ret: TextDirection = <any>{};
   let foundDir = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "dir") {
-      let dataDir = getDirectionMode(ch2, DirectionMode.Ltr);
+      const dataDir = getDirectionMode(ch2, DirectionMode.Ltr);
       ret.dir = dataDir;
       foundDir = true;
     }
@@ -2118,15 +2119,15 @@ export interface TextRotation {
 }
 
 function xmlToTextRotation(node: Element) {
-  let ret: TextRotation = <any>{};
+  const ret: TextRotation = <any>{};
   let foundRotation = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "rotation") {
-      let dataRotation = getNumber(ch2, true);
+      const dataRotation = getNumber(ch2, true);
       ret.rotation = dataRotation;
       foundRotation = true;
     }
@@ -2147,15 +2148,15 @@ export interface Enclosure {
 }
 
 function xmlToEnclosure(node: Element) {
-  let ret: Enclosure = <any>{};
+  const ret: Enclosure = <any>{};
   let foundEnclosure = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "enclosure") {
-      let dataEnclosure = getEnclosureShape(ch2, EnclosureShape.None);
+      const dataEnclosure = getEnclosureShape(ch2, EnclosureShape.None);
       ret.enclosure = dataEnclosure;
       foundEnclosure = true;
     }
@@ -2176,51 +2177,51 @@ export interface PrintStyle extends Position, Font, Color {
 }
 
 function xmlToPrintStyle(node: Element) {
-  let ret: PrintStyle = <any>{};
+  const ret: PrintStyle = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
@@ -2246,58 +2247,58 @@ export interface PrintStyleAlign extends PrintStyle, Halign, Valign {
 }
 
 function xmlToPrintStyleAlign(node: Element) {
-  let ret: PrintStyleAlign = <any>{};
+  const ret: PrintStyleAlign = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundHalign = false;
   let foundValign = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -2305,7 +2306,7 @@ function xmlToPrintStyleAlign(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -2343,15 +2344,15 @@ export interface LineShape {
 }
 
 function xmlToLineShape(node: Element) {
-  let ret: LineShape = <any>{};
+  const ret: LineShape = <any>{};
   let foundLineShape = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "line-shape") {
-      let dataLineShape = getStraightCurved(ch2, StraightCurved.Straight);
+      const dataLineShape = getStraightCurved(ch2, StraightCurved.Straight);
       ret.lineShape = dataLineShape;
       foundLineShape = true;
     }
@@ -2387,21 +2388,21 @@ export interface DashedFormatting {
 }
 
 function xmlToDashedFormatting(node: Element) {
-  let ret: DashedFormatting = <any>{};
+  const ret: DashedFormatting = <any>{};
   let foundDashLength = false;
   let foundSpaceLength = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "dash-length") {
-      let dataDashLength = getNumber(ch2, true);
+      const dataDashLength = getNumber(ch2, true);
       ret.dashLength = dataDashLength;
       foundDashLength = true;
     }
     if (ch2.name === "space-length") {
-      let dataSpaceLength = getNumber(ch2, true);
+      const dataSpaceLength = getNumber(ch2, true);
       ret.spaceLength = dataSpaceLength;
       foundSpaceLength = true;
     }
@@ -2436,15 +2437,15 @@ export interface PrintObject {
 }
 
 function xmlToPrintObject(node: Element) {
-  let ret: PrintObject = <any>{};
+  const ret: PrintObject = <any>{};
   let foundPrintObject = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "print-object") {
-      let dataPrintObject = xmlToYesNo(ch2);
+      const dataPrintObject = xmlToYesNo(ch2);
       ret.printObject = dataPrintObject;
       foundPrintObject = true;
     }
@@ -2476,15 +2477,15 @@ export interface PrintSpacing {
 }
 
 function xmlToPrintSpacing(node: Element) {
-  let ret: PrintSpacing = <any>{};
+  const ret: PrintSpacing = <any>{};
   let foundPrintSpacing = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "print-spacing") {
-      let dataPrintSpacing = xmlToYesNo(ch2);
+      const dataPrintSpacing = xmlToYesNo(ch2);
       ret.printSpacing = dataPrintSpacing;
       foundPrintSpacing = true;
     }
@@ -2535,7 +2536,7 @@ export interface TextFormatting
 }
 
 function xmlToTextFormatting(node: Element) {
-  let ret: TextFormatting = <any>{};
+  const ret: TextFormatting = <any>{};
   let foundJustify = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
@@ -2551,56 +2552,56 @@ function xmlToTextFormatting(node: Element) {
   let foundDir = false;
   let foundEnclosure = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "justify") {
-      let dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
+      const dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
       ret.justify = dataJustify;
       foundJustify = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -2608,7 +2609,7 @@ function xmlToTextFormatting(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -2616,42 +2617,42 @@ function xmlToTextFormatting(node: Element) {
       foundValign = true;
     }
     if (ch2.name === "underline") {
-      let dataUnderline = getNumber(ch2, true);
+      const dataUnderline = getNumber(ch2, true);
       ret.underline = dataUnderline;
       foundUnderline = true;
     }
     if (ch2.name === "overline") {
-      let dataOverline = getNumber(ch2, true);
+      const dataOverline = getNumber(ch2, true);
       ret.overline = dataOverline;
       foundOverline = true;
     }
     if (ch2.name === "line-through") {
-      let dataLineThrough = getNumber(ch2, true);
+      const dataLineThrough = getNumber(ch2, true);
       ret.lineThrough = dataLineThrough;
       foundLineThrough = true;
     }
     if (ch2.name === "rotation") {
-      let dataRotation = getNumber(ch2, true);
+      const dataRotation = getNumber(ch2, true);
       ret.rotation = dataRotation;
       foundRotation = true;
     }
     if (ch2.name === "letter-spacing") {
-      let dataLetterSpacing = getString(ch2, true);
+      const dataLetterSpacing = getString(ch2, true);
       ret.letterSpacing = dataLetterSpacing;
       foundLetterSpacing = true;
     }
     if (ch2.name === "line-height") {
-      let dataLineHeight = getString(ch2, true);
+      const dataLineHeight = getString(ch2, true);
       ret.lineHeight = dataLineHeight;
       foundLineHeight = true;
     }
     if (ch2.name === "dir") {
-      let dataDir = getDirectionMode(ch2, DirectionMode.Ltr);
+      const dataDir = getDirectionMode(ch2, DirectionMode.Ltr);
       ret.dir = dataDir;
       foundDir = true;
     }
     if (ch2.name === "enclosure") {
-      let dataEnclosure = getEnclosureShape(ch2, EnclosureShape.None);
+      const dataEnclosure = getEnclosureShape(ch2, EnclosureShape.None);
       ret.enclosure = dataEnclosure;
       foundEnclosure = true;
     }
@@ -2717,27 +2718,27 @@ export interface LevelDisplay {
 }
 
 function xmlToLevelDisplay(node: Element) {
-  let ret: LevelDisplay = <any>{};
+  const ret: LevelDisplay = <any>{};
   let foundBracket = false;
   let foundSize = false;
   let foundParentheses = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "bracket") {
-      let dataBracket = xmlToYesNo(ch2);
+      const dataBracket = xmlToYesNo(ch2);
       ret.bracket = dataBracket;
       foundBracket = true;
     }
     if (ch2.name === "size") {
-      let dataSize = getSymbolSize(ch2, SymbolSize.Unspecified);
+      const dataSize = getSymbolSize(ch2, SymbolSize.Unspecified);
       ret.size = dataSize;
       foundSize = true;
     }
     if (ch2.name === "parentheses") {
-      let dataParentheses = xmlToYesNo(ch2);
+      const dataParentheses = xmlToYesNo(ch2);
       ret.parentheses = dataParentheses;
       foundParentheses = true;
     }
@@ -2789,7 +2790,7 @@ export interface TrillSound {
 }
 
 function xmlToTrillSound(node: Element) {
-  let ret: TrillSound = <any>{};
+  const ret: TrillSound = <any>{};
   let foundStartNote = false;
   let foundAccelerate = false;
   let foundBeats = false;
@@ -2798,42 +2799,42 @@ function xmlToTrillSound(node: Element) {
   let foundTwoNoteTurn = false;
   let foundSecondBeat = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "start-note") {
-      let dataStartNote = getUpperMainBelow(ch2, UpperMainBelow.Upper);
+      const dataStartNote = getUpperMainBelow(ch2, UpperMainBelow.Upper);
       ret.startNote = dataStartNote;
       foundStartNote = true;
     }
     if (ch2.name === "accelerate") {
-      let dataAccelerate = xmlToYesNo(ch2);
+      const dataAccelerate = xmlToYesNo(ch2);
       ret.accelerate = dataAccelerate;
       foundAccelerate = true;
     }
     if (ch2.name === "beats") {
-      let dataBeats = getNumber(ch2, true);
+      const dataBeats = getNumber(ch2, true);
       ret.beats = dataBeats;
       foundBeats = true;
     }
     if (ch2.name === "last-beat") {
-      let dataLastBeat = getNumber(ch2, true);
+      const dataLastBeat = getNumber(ch2, true);
       ret.lastBeat = dataLastBeat;
       foundLastBeat = true;
     }
     if (ch2.name === "trill-step") {
-      let dataTrillStep = getWholeHalfUnison(ch2, WholeHalfUnison.Whole);
+      const dataTrillStep = getWholeHalfUnison(ch2, WholeHalfUnison.Whole);
       ret.trillStep = dataTrillStep;
       foundTrillStep = true;
     }
     if (ch2.name === "two-note-turn") {
-      let dataTwoNoteTurn = getWholeHalfNone(ch2, WholeHalfNone.None);
+      const dataTwoNoteTurn = getWholeHalfNone(ch2, WholeHalfNone.None);
       ret.twoNoteTurn = dataTwoNoteTurn;
       foundTwoNoteTurn = true;
     }
     if (ch2.name === "second-beat") {
-      let dataSecondBeat = getNumber(ch2, true);
+      const dataSecondBeat = getNumber(ch2, true);
       ret.secondBeat = dataSecondBeat;
       foundSecondBeat = true;
     }
@@ -2887,33 +2888,33 @@ export interface BendSound {
 }
 
 function xmlToBendSound(node: Element) {
-  let ret: BendSound = <any>{};
+  const ret: BendSound = <any>{};
   let foundAccelerate = false;
   let foundBeats = false;
   let foundLastBeat = false;
   let foundSecondBeat = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "accelerate") {
-      let dataAccelerate = xmlToYesNo(ch2);
+      const dataAccelerate = xmlToYesNo(ch2);
       ret.accelerate = dataAccelerate;
       foundAccelerate = true;
     }
     if (ch2.name === "beats") {
-      let dataBeats = getNumber(ch2, true);
+      const dataBeats = getNumber(ch2, true);
       ret.beats = dataBeats;
       foundBeats = true;
     }
     if (ch2.name === "last-beat") {
-      let dataLastBeat = getNumber(ch2, true);
+      const dataLastBeat = getNumber(ch2, true);
       ret.lastBeat = dataLastBeat;
       foundLastBeat = true;
     }
     if (ch2.name === "first-beat") {
-      let dataSecondBeat = getNumber(ch2, true);
+      const dataSecondBeat = getNumber(ch2, true);
       ret.firstBeat = dataSecondBeat;
       foundSecondBeat = true;
     }
@@ -2944,14 +2945,14 @@ export interface TimeOnly {
 }
 
 function xmlToTimeOnly(node: Element) {
-  let ret: TimeOnly = <any>{};
+  const ret: TimeOnly = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "time-only") {
-      let dataTimeOnly = getString(ch2, true);
+      const dataTimeOnly = getString(ch2, true);
       ret.timeOnly = dataTimeOnly;
     }
   }
@@ -2969,15 +2970,15 @@ export interface DocumentAttributes {
 }
 
 function xmlToDocumentAttributes(node: Element) {
-  let ret: DocumentAttributes = <any>{};
+  const ret: DocumentAttributes = <any>{};
   let foundVersion_ = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "version") {
-      let dataVersion = getString(ch2, true);
+      const dataVersion = getString(ch2, true);
       ret.version = dataVersion;
       foundVersion_ = true;
     }
@@ -3001,20 +3002,20 @@ export interface Editorial {
 }
 
 function xmlToEditorial(node: Element) {
-  let ret: Editorial = <any>{};
+  const ret: Editorial = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "footnote") {
-      let dataFootnote = xmlToFootnote(ch);
+      const dataFootnote = xmlToFootnote(ch);
       ret.footnote = dataFootnote;
     }
     if (ch.nodeName === "level") {
-      let dataLevel = xmlToLevel(ch);
+      const dataLevel = xmlToLevel(ch);
       ret.level = dataLevel;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -3033,24 +3034,24 @@ export interface EditorialVoice {
 }
 
 function xmlToEditorialVoice(node: Element) {
-  let ret: EditorialVoice = <any>{};
+  const ret: EditorialVoice = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "voice") {
-      let dataVoice = getNumber(ch, true);
+      const dataVoice = getNumber(ch, true);
       ret.voice = dataVoice;
     }
     if (ch.nodeName === "footnote") {
-      let dataFootnote = xmlToFootnote(ch);
+      const dataFootnote = xmlToFootnote(ch);
       ret.footnote = dataFootnote;
     }
     if (ch.nodeName === "level") {
-      let dataLevel = xmlToLevel(ch);
+      const dataLevel = xmlToLevel(ch);
       ret.level = dataLevel;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -3073,7 +3074,7 @@ export interface Footnote extends TextFormatting {
 }
 
 function xmlToFootnote(node: Element) {
-  let ret: Footnote = <any>{};
+  const ret: Footnote = <any>{};
   let foundJustify = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
@@ -3089,56 +3090,56 @@ function xmlToFootnote(node: Element) {
   let foundDir = false;
   let foundEnclosure = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "justify") {
-      let dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
+      const dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
       ret.justify = dataJustify;
       foundJustify = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -3146,7 +3147,7 @@ function xmlToFootnote(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -3154,48 +3155,48 @@ function xmlToFootnote(node: Element) {
       foundValign = true;
     }
     if (ch2.name === "underline") {
-      let dataUnderline = getNumber(ch2, true);
+      const dataUnderline = getNumber(ch2, true);
       ret.underline = dataUnderline;
       foundUnderline = true;
     }
     if (ch2.name === "overline") {
-      let dataOverline = getNumber(ch2, true);
+      const dataOverline = getNumber(ch2, true);
       ret.overline = dataOverline;
       foundOverline = true;
     }
     if (ch2.name === "line-through") {
-      let dataLineThrough = getNumber(ch2, true);
+      const dataLineThrough = getNumber(ch2, true);
       ret.lineThrough = dataLineThrough;
       foundLineThrough = true;
     }
     if (ch2.name === "rotation") {
-      let dataRotation = getNumber(ch2, true);
+      const dataRotation = getNumber(ch2, true);
       ret.rotation = dataRotation;
       foundRotation = true;
     }
     if (ch2.name === "letter-spacing") {
-      let dataLetterSpacing = getString(ch2, true);
+      const dataLetterSpacing = getString(ch2, true);
       ret.letterSpacing = dataLetterSpacing;
       foundLetterSpacing = true;
     }
     if (ch2.name === "line-height") {
-      let dataLineHeight = getString(ch2, true);
+      const dataLineHeight = getString(ch2, true);
       ret.lineHeight = dataLineHeight;
       foundLineHeight = true;
     }
     if (ch2.name === "dir") {
-      let dataDir = getDirectionMode(ch2, DirectionMode.Ltr);
+      const dataDir = getDirectionMode(ch2, DirectionMode.Ltr);
       ret.dir = dataDir;
       foundDir = true;
     }
     if (ch2.name === "enclosure") {
-      let dataEnclosure = getEnclosureShape(ch2, EnclosureShape.None);
+      const dataEnclosure = getEnclosureShape(ch2, EnclosureShape.None);
       ret.enclosure = dataEnclosure;
       foundEnclosure = true;
     }
   }
-  let ch3 = node;
-  let dataText = getString(ch3, true);
+  const ch3 = node;
+  const dataText = getString(ch3, true);
   ret.text = dataText;
   if (!foundJustify) {
     ret.justify = LeftCenterRight.Left;
@@ -3261,39 +3262,39 @@ export interface Level extends LevelDisplay {
 }
 
 function xmlToLevel(node: Element) {
-  let ret: Level = <any>{};
+  const ret: Level = <any>{};
   let foundBracket = false;
   let foundSize = false;
   let foundParentheses = false;
   let foundReference = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "bracket") {
-      let dataBracket = xmlToYesNo(ch2);
+      const dataBracket = xmlToYesNo(ch2);
       ret.bracket = dataBracket;
       foundBracket = true;
     }
     if (ch2.name === "size") {
-      let dataSize = getSymbolSize(ch2, SymbolSize.Unspecified);
+      const dataSize = getSymbolSize(ch2, SymbolSize.Unspecified);
       ret.size = dataSize;
       foundSize = true;
     }
     if (ch2.name === "parentheses") {
-      let dataParentheses = xmlToYesNo(ch2);
+      const dataParentheses = xmlToYesNo(ch2);
       ret.parentheses = dataParentheses;
       foundParentheses = true;
     }
     if (ch2.name === "reference") {
-      let dataReference = xmlToYesNo(ch2);
+      const dataReference = xmlToYesNo(ch2);
       ret.reference = dataReference;
       foundReference = true;
     }
   }
-  let ch3 = node;
-  let dataText = getString(ch3, true);
+  const ch3 = node;
+  const dataText = getString(ch3, true);
   ret.text = dataText;
   if (!foundBracket) {
     ret.bracket = false;
@@ -3328,64 +3329,64 @@ export interface Fermata extends PrintStyle {
 }
 
 function xmlToFermata(node: Element) {
-  let ret: Fermata = <any>{};
-  let foundShape = false;
+  const ret: Fermata = <any>{};
+  const foundShape = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundType = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "type") {
-      let dataType = getUprightInverted(ch2, UprightInverted.Upright);
+      const dataType = getUprightInverted(ch2, UprightInverted.Upright);
       ret.type = dataType;
       foundType = true;
     }
   }
-  let ch3 = node;
-  let dataShape = getNormalAngledSquare(ch3, NormalAngledSquare.Normal);
+  const ch3 = node;
+  const dataShape = getNormalAngledSquare(ch3, NormalAngledSquare.Normal);
   ret.shape = dataShape;
   if (!foundShape) {
     ret.shape = NormalAngledSquare.Normal;
@@ -3423,7 +3424,7 @@ export interface WavyLine extends Position, Placement, Color, TrillSound {
 }
 
 function xmlToWavyLine(node: Element) {
-  let ret: WavyLine = <any>{};
+  const ret: WavyLine = <any>{};
   let foundNumber_ = false;
   let foundPlacement = false;
   let foundColor = false;
@@ -3435,78 +3436,78 @@ function xmlToWavyLine(node: Element) {
   let foundTwoNoteTurn = false;
   let foundSecondBeat = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
       foundNumber_ = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "start-note") {
-      let dataStartNote = getUpperMainBelow(ch2, UpperMainBelow.Upper);
+      const dataStartNote = getUpperMainBelow(ch2, UpperMainBelow.Upper);
       ret.startNote = dataStartNote;
       foundStartNote = true;
     }
     if (ch2.name === "accelerate") {
-      let dataAccelerate = xmlToYesNo(ch2);
+      const dataAccelerate = xmlToYesNo(ch2);
       ret.accelerate = dataAccelerate;
       foundAccelerate = true;
     }
     if (ch2.name === "beats") {
-      let dataBeats = getNumber(ch2, true);
+      const dataBeats = getNumber(ch2, true);
       ret.beats = dataBeats;
       foundBeats = true;
     }
     if (ch2.name === "last-beat") {
-      let dataLastBeat = getNumber(ch2, true);
+      const dataLastBeat = getNumber(ch2, true);
       ret.lastBeat = dataLastBeat;
       foundLastBeat = true;
     }
     if (ch2.name === "trill-step") {
-      let dataTrillStep = getWholeHalfUnison(ch2, WholeHalfUnison.Whole);
+      const dataTrillStep = getWholeHalfUnison(ch2, WholeHalfUnison.Whole);
       ret.trillStep = dataTrillStep;
       foundTrillStep = true;
     }
     if (ch2.name === "two-note-turn") {
-      let dataTwoNoteTurn = getWholeHalfNone(ch2, WholeHalfNone.None);
+      const dataTwoNoteTurn = getWholeHalfNone(ch2, WholeHalfNone.None);
       ret.twoNoteTurn = dataTwoNoteTurn;
       foundTwoNoteTurn = true;
     }
     if (ch2.name === "second-beat") {
-      let dataSecondBeat = getNumber(ch2, true);
+      const dataSecondBeat = getNumber(ch2, true);
       ret.secondBeat = dataSecondBeat;
       foundSecondBeat = true;
     }
     if (ch2.name === "type") {
-      let dataType = getStartStopContinue(ch2, null);
+      const dataType = getStartStopContinue(ch2, null);
       ret.type = dataType;
     }
   }
@@ -3554,58 +3555,58 @@ export interface Segno extends PrintStyleAlign {
 }
 
 function xmlToSegno(node: Element) {
-  let ret: Segno = <any>{};
+  const ret: Segno = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundHalign = false;
   let foundValign = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -3613,7 +3614,7 @@ function xmlToSegno(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -3650,58 +3651,58 @@ export interface Coda extends PrintStyleAlign {
 }
 
 function xmlToCoda(node: Element) {
-  let ret: Coda = <any>{};
+  const ret: Coda = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundHalign = false;
   let foundValign = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -3709,7 +3710,7 @@ function xmlToCoda(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -3752,12 +3753,12 @@ export interface NormalDot {
 }
 
 function xmlToNormalDot(node: Element) {
-  let ret: NormalDot = <any>{};
+  const ret: NormalDot = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -3814,7 +3815,7 @@ export interface Dynamics
 }
 
 function xmlToDynamics(node: Element) {
-  let ret: Dynamics = <any>{};
+  const ret: Dynamics = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
@@ -3826,147 +3827,147 @@ function xmlToDynamics(node: Element) {
   let foundLineThrough = false;
   let foundEnclosure = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "fp") {
-      let dataFp = true;
+      const dataFp = true;
       ret.fp = dataFp;
     }
     if (ch.nodeName === "pp") {
-      let dataPp = true;
+      const dataPp = true;
       ret.pp = dataPp;
     }
     if (ch.nodeName === "ppp") {
-      let dataPpp = true;
+      const dataPpp = true;
       ret.ppp = dataPpp;
     }
     if (ch.nodeName === "fff") {
-      let dataFff = true;
+      const dataFff = true;
       ret.fff = dataFff;
     }
     if (ch.nodeName === "sf") {
-      let dataSf = true;
+      const dataSf = true;
       ret.sf = dataSf;
     }
     if (ch.nodeName === "rf") {
-      let dataRf = true;
+      const dataRf = true;
       ret.rf = dataRf;
     }
     if (ch.nodeName === "mp") {
-      let dataMp = true;
+      const dataMp = true;
       ret.mp = dataMp;
     }
     if (ch.nodeName === "sfpp") {
-      let dataSfpp = true;
+      const dataSfpp = true;
       ret.sfpp = dataSfpp;
     }
     if (ch.nodeName === "f") {
-      let dataF = true;
+      const dataF = true;
       ret.f = dataF;
     }
     if (ch.nodeName === "ffffff") {
-      let dataFfffff = true;
+      const dataFfffff = true;
       ret.ffffff = dataFfffff;
     }
     if (ch.nodeName === "sfz") {
-      let dataSfz = true;
+      const dataSfz = true;
       ret.sfz = dataSfz;
     }
     if (ch.nodeName === "ff") {
-      let dataFf = true;
+      const dataFf = true;
       ret.ff = dataFf;
     }
     if (ch.nodeName === "pppppp") {
-      let dataPppppp = true;
+      const dataPppppp = true;
       ret.pppppp = dataPppppp;
     }
     if (ch.nodeName === "rfz") {
-      let dataRfz = true;
+      const dataRfz = true;
       ret.rfz = dataRfz;
     }
     if (ch.nodeName === "other-dynamics") {
-      let dataOtherDynamics = getString(ch, true);
+      const dataOtherDynamics = getString(ch, true);
       ret.otherDynamics = dataOtherDynamics;
     }
     if (ch.nodeName === "fz") {
-      let dataFz = true;
+      const dataFz = true;
       ret.fz = dataFz;
     }
     if (ch.nodeName === "ppppp") {
-      let dataPpppp = true;
+      const dataPpppp = true;
       ret.ppppp = dataPpppp;
     }
     if (ch.nodeName === "mf") {
-      let dataMf = true;
+      const dataMf = true;
       ret.mf = dataMf;
     }
     if (ch.nodeName === "pppp") {
-      let dataPppp = true;
+      const dataPppp = true;
       ret.pppp = dataPppp;
     }
     if (ch.nodeName === "fffff") {
-      let dataFffff = true;
+      const dataFffff = true;
       ret.fffff = dataFffff;
     }
     if (ch.nodeName === "sffz") {
-      let dataSffz = true;
+      const dataSffz = true;
       ret.sffz = dataSffz;
     }
     if (ch.nodeName === "sfp") {
-      let dataSfp = true;
+      const dataSfp = true;
       ret.sfp = dataSfp;
     }
     if (ch.nodeName === "p") {
-      let dataP = true;
+      const dataP = true;
       ret.p = dataP;
     }
     if (ch.nodeName === "ffff") {
-      let dataFfff = true;
+      const dataFfff = true;
       ret.ffff = dataFfff;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -3974,7 +3975,7 @@ function xmlToDynamics(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -3982,27 +3983,27 @@ function xmlToDynamics(node: Element) {
       foundValign = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "underline") {
-      let dataUnderline = getNumber(ch2, true);
+      const dataUnderline = getNumber(ch2, true);
       ret.underline = dataUnderline;
       foundUnderline = true;
     }
     if (ch2.name === "overline") {
-      let dataOverline = getNumber(ch2, true);
+      const dataOverline = getNumber(ch2, true);
       ret.overline = dataOverline;
       foundOverline = true;
     }
     if (ch2.name === "line-through") {
-      let dataLineThrough = getNumber(ch2, true);
+      const dataLineThrough = getNumber(ch2, true);
       ret.lineThrough = dataLineThrough;
       foundLineThrough = true;
     }
     if (ch2.name === "enclosure") {
-      let dataEnclosure = getEnclosureShape(ch2, EnclosureShape.None);
+      const dataEnclosure = getEnclosureShape(ch2, EnclosureShape.None);
       ret.enclosure = dataEnclosure;
       foundEnclosure = true;
     }
@@ -4057,7 +4058,7 @@ export interface Fingering extends PrintStyle, Placement {
 }
 
 function xmlToFingering(node: Element) {
-  let ret: Fingering = <any>{};
+  const ret: Fingering = <any>{};
   let foundSubstitution = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
@@ -4065,67 +4066,67 @@ function xmlToFingering(node: Element) {
   let foundPlacement = false;
   let foundAlternate = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "substitution") {
-      let dataSubstitution = xmlToYesNo(ch2);
+      const dataSubstitution = xmlToYesNo(ch2);
       ret.substitution = dataSubstitution;
       foundSubstitution = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "alternate") {
-      let dataAlternate = xmlToYesNo(ch2);
+      const dataAlternate = xmlToYesNo(ch2);
       ret.alternate = dataAlternate;
       foundAlternate = true;
     }
   }
-  let ch3 = node;
-  let dataFinger = getNumber(ch3, false);
+  const ch3 = node;
+  const dataFinger = getNumber(ch3, false);
   ret.finger = dataFinger;
   if (isNaN(ret.finger)) {
     ret.finger = -1;
@@ -4164,41 +4165,41 @@ export interface Fret extends Font, Color {
 }
 
 function xmlToFret(node: Element) {
-  let ret: Fret = <any>{};
+  const ret: Fret = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
   }
-  let ch3 = node;
-  let dataFret = getNumber(ch3, true);
+  const ch3 = node;
+  const dataFret = getNumber(ch3, true);
   ret.fret = dataFret;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -4225,63 +4226,63 @@ export interface String extends PrintStyle, Placement {
 }
 
 function xmlToString(node: Element) {
-  let ret: String = <any>{};
+  const ret: String = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
   }
-  let ch3 = node;
-  let dataStringNum = getNumber(ch3, true);
+  const ch3 = node;
+  const dataStringNum = getNumber(ch3, true);
   ret.stringNum = dataStringNum;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -4310,7 +4311,7 @@ export interface DisplayText extends TextFormatting {
 }
 
 function xmlToDisplayText(node: Element) {
-  let ret: DisplayText = <any>{};
+  const ret: DisplayText = <any>{};
   let foundJustify = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
@@ -4326,56 +4327,56 @@ function xmlToDisplayText(node: Element) {
   let foundDir = false;
   let foundEnclosure = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "justify") {
-      let dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
+      const dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
       ret.justify = dataJustify;
       foundJustify = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -4383,7 +4384,7 @@ function xmlToDisplayText(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -4391,48 +4392,48 @@ function xmlToDisplayText(node: Element) {
       foundValign = true;
     }
     if (ch2.name === "underline") {
-      let dataUnderline = getNumber(ch2, true);
+      const dataUnderline = getNumber(ch2, true);
       ret.underline = dataUnderline;
       foundUnderline = true;
     }
     if (ch2.name === "overline") {
-      let dataOverline = getNumber(ch2, true);
+      const dataOverline = getNumber(ch2, true);
       ret.overline = dataOverline;
       foundOverline = true;
     }
     if (ch2.name === "line-through") {
-      let dataLineThrough = getNumber(ch2, true);
+      const dataLineThrough = getNumber(ch2, true);
       ret.lineThrough = dataLineThrough;
       foundLineThrough = true;
     }
     if (ch2.name === "rotation") {
-      let dataRotation = getNumber(ch2, true);
+      const dataRotation = getNumber(ch2, true);
       ret.rotation = dataRotation;
       foundRotation = true;
     }
     if (ch2.name === "letter-spacing") {
-      let dataLetterSpacing = getString(ch2, true);
+      const dataLetterSpacing = getString(ch2, true);
       ret.letterSpacing = dataLetterSpacing;
       foundLetterSpacing = true;
     }
     if (ch2.name === "line-height") {
-      let dataLineHeight = getString(ch2, true);
+      const dataLineHeight = getString(ch2, true);
       ret.lineHeight = dataLineHeight;
       foundLineHeight = true;
     }
     if (ch2.name === "dir") {
-      let dataDir = getDirectionMode(ch2, DirectionMode.Ltr);
+      const dataDir = getDirectionMode(ch2, DirectionMode.Ltr);
       ret.dir = dataDir;
       foundDir = true;
     }
     if (ch2.name === "enclosure") {
-      let dataEnclosure = getEnclosureShape(ch2, EnclosureShape.None);
+      const dataEnclosure = getEnclosureShape(ch2, EnclosureShape.None);
       ret.enclosure = dataEnclosure;
       foundEnclosure = true;
     }
   }
-  let ch3 = node;
-  let dataText = getString(ch3, true);
+  const ch3 = node;
+  const dataText = getString(ch3, true);
   ret.text = dataText;
   if (!foundJustify) {
     ret.justify = LeftCenterRight.Left;
@@ -4491,7 +4492,7 @@ export interface AccidentalText extends TextFormatting {
 }
 
 function xmlToAccidentalText(node: Element) {
-  let ret: AccidentalText = <any>{};
+  const ret: AccidentalText = <any>{};
   let foundJustify = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
@@ -4507,56 +4508,56 @@ function xmlToAccidentalText(node: Element) {
   let foundDir = false;
   let foundEnclosure = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "justify") {
-      let dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
+      const dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
       ret.justify = dataJustify;
       foundJustify = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -4564,7 +4565,7 @@ function xmlToAccidentalText(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -4572,48 +4573,48 @@ function xmlToAccidentalText(node: Element) {
       foundValign = true;
     }
     if (ch2.name === "underline") {
-      let dataUnderline = getNumber(ch2, true);
+      const dataUnderline = getNumber(ch2, true);
       ret.underline = dataUnderline;
       foundUnderline = true;
     }
     if (ch2.name === "overline") {
-      let dataOverline = getNumber(ch2, true);
+      const dataOverline = getNumber(ch2, true);
       ret.overline = dataOverline;
       foundOverline = true;
     }
     if (ch2.name === "line-through") {
-      let dataLineThrough = getNumber(ch2, true);
+      const dataLineThrough = getNumber(ch2, true);
       ret.lineThrough = dataLineThrough;
       foundLineThrough = true;
     }
     if (ch2.name === "rotation") {
-      let dataRotation = getNumber(ch2, true);
+      const dataRotation = getNumber(ch2, true);
       ret.rotation = dataRotation;
       foundRotation = true;
     }
     if (ch2.name === "letter-spacing") {
-      let dataLetterSpacing = getString(ch2, true);
+      const dataLetterSpacing = getString(ch2, true);
       ret.letterSpacing = dataLetterSpacing;
       foundLetterSpacing = true;
     }
     if (ch2.name === "line-height") {
-      let dataLineHeight = getString(ch2, true);
+      const dataLineHeight = getString(ch2, true);
       ret.lineHeight = dataLineHeight;
       foundLineHeight = true;
     }
     if (ch2.name === "dir") {
-      let dataDir = getDirectionMode(ch2, DirectionMode.Ltr);
+      const dataDir = getDirectionMode(ch2, DirectionMode.Ltr);
       ret.dir = dataDir;
       foundDir = true;
     }
     if (ch2.name === "enclosure") {
-      let dataEnclosure = getEnclosureShape(ch2, EnclosureShape.None);
+      const dataEnclosure = getEnclosureShape(ch2, EnclosureShape.None);
       ret.enclosure = dataEnclosure;
       foundEnclosure = true;
     }
   }
-  let ch3 = node;
-  let dataText = getString(ch3, true);
+  const ch3 = node;
+  const dataText = getString(ch3, true);
   ret.text = dataText;
   if (!foundJustify) {
     ret.justify = LeftCenterRight.Left;
@@ -4714,28 +4715,28 @@ export interface MidiDevice {
 }
 
 function xmlToMidiDevice(node: Element) {
-  let ret: MidiDevice = <any>{};
-  let foundDeviceName = false;
+  const ret: MidiDevice = <any>{};
+  const foundDeviceName = false;
   let foundPort = false;
   let foundId = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "port") {
-      let dataPort = getNumber(ch2, true);
+      const dataPort = getNumber(ch2, true);
       ret.port = dataPort;
       foundPort = true;
     }
     if (ch2.name === "id") {
-      let dataId = getNumber(ch2, true);
+      const dataId = getNumber(ch2, true);
       ret.id = dataId;
       foundId = true;
     }
   }
-  let ch3 = node;
-  let dataDeviceName = getString(ch3, true);
+  const ch3 = node;
+  const dataDeviceName = getString(ch3, true);
   ret.deviceName = dataDeviceName;
   if (!foundDeviceName) {
     ret.deviceName = "";
@@ -4757,8 +4758,8 @@ function verifyMidiChannel(m: number) {
 }
 
 function xmlToMidiChannel(node: Node) {
-  let str = node.textContent;
-  let num =
+  const str = node.textContent;
+  const num =
     str.toLowerCase().indexOf("0x") === 0 ? parseInt(str, 16) : parseFloat(str);
   return num;
 }
@@ -4771,8 +4772,8 @@ function verifyMidiBank(m: number) {
 }
 
 function xmlToMidiBank(node: Node) {
-  let str = node.textContent;
-  let num =
+  const str = node.textContent;
+  const num =
     str.toLowerCase().indexOf("0x") === 0 ? parseInt(str, 16) : parseFloat(str);
   return num;
 }
@@ -4785,8 +4786,8 @@ function verifyMidiProgram(m: number) {
 }
 
 function xmlToMidiProgram(node: Node) {
-  let str = node.textContent;
-  let num =
+  const str = node.textContent;
+  const num =
     str.toLowerCase().indexOf("0x") === 0 ? parseInt(str, 16) : parseFloat(str);
   return num;
 }
@@ -4803,8 +4804,8 @@ function verifyMidiUnpitched(m: number) {
 }
 
 function xmlToMidiUnpitched(node: Node) {
-  let str = node.textContent;
-  let num =
+  const str = node.textContent;
+  const num =
     str.toLowerCase().indexOf("0x") === 0 ? parseInt(str, 16) : parseFloat(str);
   return num;
 }
@@ -4820,8 +4821,8 @@ function verifyVolume(m: number) {
 }
 
 function xmlToVolume(node: Node) {
-  let str = node.textContent;
-  let num =
+  const str = node.textContent;
+  const num =
     str.toLowerCase().indexOf("0x") === 0 ? parseInt(str, 16) : parseFloat(str);
   return num;
 }
@@ -4840,8 +4841,8 @@ function verifyPan(m: number) {
 }
 
 function xmlToPan(node: Node) {
-  let str = node.textContent;
-  let num =
+  const str = node.textContent;
+  const num =
     str.toLowerCase().indexOf("0x") === 0 ? parseInt(str, 16) : parseFloat(str);
   return num;
 }
@@ -4860,8 +4861,8 @@ function verifyElevation(m: number) {
 }
 
 function xmlToElevation(node: Node) {
-  let str = node.textContent;
-  let num =
+  const str = node.textContent;
+  const num =
     str.toLowerCase().indexOf("0x") === 0 ? parseInt(str, 16) : parseFloat(str);
   return num;
 }
@@ -4886,7 +4887,7 @@ export interface MidiInstrument {
 }
 
 function xmlToMidiInstrument(node: Element) {
-  let ret: MidiInstrument = {
+  const ret: MidiInstrument = {
     midiUnpitched: null,
     volume: null,
     pan: null,
@@ -4898,44 +4899,44 @@ function xmlToMidiInstrument(node: Element) {
     midiName: "",
   };
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "midi-unpitched") {
-      let dataMidiUnpitched = getNumber(ch, true);
+      const dataMidiUnpitched = getNumber(ch, true);
       ret.midiUnpitched = dataMidiUnpitched;
     }
     if (ch.nodeName === "volume") {
-      let dataVolume = getNumber(ch, true);
+      const dataVolume = getNumber(ch, true);
       ret.volume = dataVolume;
     }
     if (ch.nodeName === "pan") {
-      let dataPan = getNumber(ch, true);
+      const dataPan = getNumber(ch, true);
       ret.pan = dataPan;
     }
     if (ch.nodeName === "elevation") {
-      let dataElevation = getNumber(ch, true);
+      const dataElevation = getNumber(ch, true);
       ret.elevation = dataElevation;
     }
     if (ch.nodeName === "midi-bank") {
-      let dataMidiBank = getNumber(ch, true);
+      const dataMidiBank = getNumber(ch, true);
       ret.midiBank = dataMidiBank;
     }
     if (ch.nodeName === "midi-program") {
-      let dataMidiProgram = getNumber(ch, true);
+      const dataMidiProgram = getNumber(ch, true);
       ret.midiProgram = dataMidiProgram;
     }
     if (ch.nodeName === "midi-channel") {
-      let dataMidiChannel = getNumber(ch, true);
+      const dataMidiChannel = getNumber(ch, true);
       ret.midiChannel = dataMidiChannel;
     }
     if (ch.nodeName === "midi-name") {
-      let dataMidiName = getString(ch, true);
+      const dataMidiName = getString(ch, true);
       ret.midiName = dataMidiName;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "id") {
-      let dataId = getString(ch2, true);
+      const dataId = getString(ch2, true);
       ret.id = dataId;
     }
   }
@@ -4961,7 +4962,7 @@ export interface Play {
 }
 
 function xmlToPlay(node: Element) {
-  let ret: Play = {
+  const ret: Play = {
     ipa: "",
     mute: "",
     otherPlay: null,
@@ -4969,28 +4970,28 @@ function xmlToPlay(node: Element) {
     id: "",
   };
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "ipa") {
-      let dataIpa = getString(ch, true);
+      const dataIpa = getString(ch, true);
       ret.ipa = dataIpa;
     }
     if (ch.nodeName === "mute") {
-      let dataMute = getString(ch, true);
+      const dataMute = getString(ch, true);
       ret.mute = dataMute;
     }
     if (ch.nodeName === "other-play") {
-      let dataOtherPlay = xmlToOtherPlay(ch);
+      const dataOtherPlay = xmlToOtherPlay(ch);
       ret.otherPlay = dataOtherPlay;
     }
     if (ch.nodeName === "semi-pitched") {
-      let dataSemiPitched = getString(ch, true);
+      const dataSemiPitched = getString(ch, true);
       ret.semiPitched = dataSemiPitched;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "id") {
-      let dataId = getString(ch2, true);
+      const dataId = getString(ch2, true);
       ret.id = dataId;
     }
   }
@@ -5004,22 +5005,22 @@ export interface OtherPlay {
 }
 
 function xmlToOtherPlay(node: Element) {
-  let ret: OtherPlay = {
+  const ret: OtherPlay = {
     data: "",
     type: "",
   };
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "type") {
-      let dataType = getString(ch2, true);
+      const dataType = getString(ch2, true);
       ret.type = dataType;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   return ret;
 }
@@ -5042,23 +5043,23 @@ export interface Scaling {
 }
 
 function xmlToScaling(node: Element) {
-  let ret: Scaling = {
+  const ret: Scaling = {
     tenths: null,
     millimeters: null,
   };
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "tenths") {
-      let dataTenths = getNumber(ch, true);
+      const dataTenths = getNumber(ch, true);
       ret.tenths = dataTenths;
     }
     if (ch.nodeName === "millimeters") {
-      let dataMillimeters = getNumber(ch, true);
+      const dataMillimeters = getNumber(ch, true);
       ret.millimeters = dataMillimeters;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -5071,7 +5072,7 @@ export enum OddEvenBoth {
 
 function getOddEvenBoth(node: Node, fallbackVal?: OddEvenBoth) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -5107,31 +5108,31 @@ export interface PageMargins {
 }
 
 function xmlToPageMargins(node: Element) {
-  let ret: PageMargins = <any>{};
+  const ret: PageMargins = <any>{};
   let foundType = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "top-margin") {
-      let dataTopMargin = getNumber(ch, true);
+      const dataTopMargin = getNumber(ch, true);
       ret.topMargin = dataTopMargin;
     }
     if (ch.nodeName === "left-margin") {
-      let dataLeftMargin = getNumber(ch, true);
+      const dataLeftMargin = getNumber(ch, true);
       ret.leftMargin = dataLeftMargin;
     }
     if (ch.nodeName === "bottom-margin") {
-      let dataBottomMargin = getNumber(ch, true);
+      const dataBottomMargin = getNumber(ch, true);
       ret.bottomMargin = dataBottomMargin;
     }
     if (ch.nodeName === "right-margin") {
-      let dataRightMargin = getNumber(ch, true);
+      const dataRightMargin = getNumber(ch, true);
       ret.rightMargin = dataRightMargin;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "type") {
-      let dataType = getOddEvenBoth(ch2, OddEvenBoth.Both);
+      const dataType = getOddEvenBoth(ch2, OddEvenBoth.Both);
       ret.type = dataType;
       foundType = true;
     }
@@ -5158,24 +5159,24 @@ export interface PageLayout {
 }
 
 function xmlToPageLayout(node: Element) {
-  let ret: PageLayout = <any>{};
+  const ret: PageLayout = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "page-height") {
-      let dataPageHeight = getNumber(ch, true);
+      const dataPageHeight = getNumber(ch, true);
       ret.pageHeight = dataPageHeight;
     }
     if (ch.nodeName === "page-width") {
-      let dataPageWidth = getNumber(ch, true);
+      const dataPageWidth = getNumber(ch, true);
       ret.pageWidth = dataPageWidth;
     }
     if (ch.nodeName === "page-margins") {
-      let dataPageMargins = xmlToPageMargins(ch);
+      const dataPageMargins = xmlToPageMargins(ch);
       ret.pageMargins = (ret.pageMargins || []).concat(dataPageMargins);
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -5221,28 +5222,28 @@ export interface SystemLayout {
 }
 
 function xmlToSystemLayout(node: Element) {
-  let ret: SystemLayout = <any>{};
+  const ret: SystemLayout = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "system-dividers") {
-      let dataSystemDividers = xmlToSystemDividers(ch);
+      const dataSystemDividers = xmlToSystemDividers(ch);
       ret.systemDividers = dataSystemDividers;
     }
     if (ch.nodeName === "system-margins") {
-      let dataSystemMargins = xmlToSystemMargins(ch);
+      const dataSystemMargins = xmlToSystemMargins(ch);
       ret.systemMargins = dataSystemMargins;
     }
     if (ch.nodeName === "system-distance") {
-      let dataSystemDistance = getNumber(ch, true);
+      const dataSystemDistance = getNumber(ch, true);
       ret.systemDistance = dataSystemDistance;
     }
     if (ch.nodeName === "top-system-distance") {
-      let dataTopSystemDistance = getNumber(ch, true);
+      const dataTopSystemDistance = getNumber(ch, true);
       ret.topSystemDistance = dataTopSystemDistance;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -5286,20 +5287,20 @@ export interface SystemMargins {
 }
 
 function xmlToSystemMargins(node: Element) {
-  let ret: SystemMargins = <any>{};
+  const ret: SystemMargins = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "left-margin") {
-      let dataLeftMargin = getNumber(ch, true);
+      const dataLeftMargin = getNumber(ch, true);
       ret.leftMargin = dataLeftMargin;
     }
     if (ch.nodeName === "right-margin") {
-      let dataRightMargin = getNumber(ch, true);
+      const dataRightMargin = getNumber(ch, true);
       ret.rightMargin = dataRightMargin;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -5326,20 +5327,20 @@ export interface SystemDividers {
 }
 
 function xmlToSystemDividers(node: Element) {
-  let ret: SystemDividers = <any>{};
+  const ret: SystemDividers = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "right-divider") {
-      let dataRightDivider = xmlToRightDivider(ch);
+      const dataRightDivider = xmlToRightDivider(ch);
       ret.rightDivider = dataRightDivider;
     }
     if (ch.nodeName === "left-divider") {
-      let dataLeftDivider = xmlToLeftDivider(ch);
+      const dataLeftDivider = xmlToLeftDivider(ch);
       ret.leftDivider = dataLeftDivider;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -5364,7 +5365,7 @@ export interface LeftDivider extends PrintObject, PrintStyleAlign {
 }
 
 function xmlToLeftDivider(node: Element) {
-  let ret: LeftDivider = <any>{};
+  const ret: LeftDivider = <any>{};
   let foundPrintObject = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
@@ -5372,56 +5373,56 @@ function xmlToLeftDivider(node: Element) {
   let foundHalign = false;
   let foundValign = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "print-object") {
-      let dataPrintObject = xmlToYesNo(ch2);
+      const dataPrintObject = xmlToYesNo(ch2);
       ret.printObject = dataPrintObject;
       foundPrintObject = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -5429,7 +5430,7 @@ function xmlToLeftDivider(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -5478,7 +5479,7 @@ export interface RightDivider extends PrintObject, PrintStyleAlign {
 }
 
 function xmlToRightDivider(node: Element) {
-  let ret: RightDivider = <any>{};
+  const ret: RightDivider = <any>{};
   let foundPrintObject = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
@@ -5486,56 +5487,56 @@ function xmlToRightDivider(node: Element) {
   let foundHalign = false;
   let foundValign = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "print-object") {
-      let dataPrintObject = xmlToYesNo(ch2);
+      const dataPrintObject = xmlToYesNo(ch2);
       ret.printObject = dataPrintObject;
       foundPrintObject = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -5543,7 +5544,7 @@ function xmlToRightDivider(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -5589,19 +5590,19 @@ export interface StaffLayout {
 }
 
 function xmlToStaffLayout(node: Element) {
-  let ret: StaffLayout = <any>{};
+  const ret: StaffLayout = <any>{};
   let foundNum = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "staff-distance") {
-      let dataStaffDistance = getNumber(ch, true);
+      const dataStaffDistance = getNumber(ch, true);
       ret.staffDistance = dataStaffDistance;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "number") {
-      let dataNum = getNumber(ch2, true);
+      const dataNum = getNumber(ch2, true);
       ret.number = dataNum;
       foundNum = true;
     }
@@ -5625,16 +5626,16 @@ export interface MeasureLayout {
 }
 
 function xmlToMeasureLayout(node: Element) {
-  let ret: MeasureLayout = <any>{};
+  const ret: MeasureLayout = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "measure-distance") {
-      let dataMeasureDistance = getNumber(ch, true);
+      const dataMeasureDistance = getNumber(ch, true);
       ret.measureDistance = dataMeasureDistance;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -5683,19 +5684,19 @@ export interface LineWidth {
 }
 
 function xmlToLineWidth(node: Element) {
-  let ret: LineWidth = <any>{};
+  const ret: LineWidth = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "type") {
-      let dataType = getString(ch2, true);
+      const dataType = getString(ch2, true);
       ret.type = dataType;
     }
   }
-  let ch3 = node;
-  let dataTenths = getNumber(ch3, true);
+  const ch3 = node;
+  const dataTenths = getNumber(ch3, true);
   ret.tenths = dataTenths;
   return ret;
 }
@@ -5708,7 +5709,7 @@ export enum CueGraceLarge {
 
 function getCueGraceLarge(node: Node, fallbackVal?: CueGraceLarge) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -5772,19 +5773,19 @@ export interface NoteSize {
 }
 
 function xmlToNoteSize(node: Element) {
-  let ret: NoteSize = <any>{};
+  const ret: NoteSize = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "type") {
-      let dataType = getCueGraceLarge(ch2, null);
+      const dataType = getCueGraceLarge(ch2, null);
       ret.type = dataType;
     }
   }
-  let ch3 = node;
-  let dataSize = getNumber(ch3, true);
+  const ch3 = node;
+  const dataSize = getNumber(ch3, true);
   ret.size = dataSize;
   return ret;
 }
@@ -5833,19 +5834,19 @@ export interface Distance {
 }
 
 function xmlToDistance(node: Element) {
-  let ret: Distance = <any>{};
+  const ret: Distance = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "type") {
-      let dataType = getString(ch2, true);
+      const dataType = getString(ch2, true);
       ret.type = dataType;
     }
   }
-  let ch3 = node;
-  let dataTenths = getNumber(ch3, true);
+  const ch3 = node;
+  const dataTenths = getNumber(ch3, true);
   ret.tenths = dataTenths;
   return ret;
 }
@@ -5896,11 +5897,11 @@ export interface Appearance {
 }
 
 function xmlToAppearance(node: Element) {
-  let ret: Appearance = <any>{};
+  const ret: Appearance = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "line-width") {
-      let dataLineWidths = xmlToLineWidth(ch);
+      const dataLineWidths = xmlToLineWidth(ch);
       ret.lineWidths = ret.lineWidths || {};
       ret.lineWidths[
         popFront(
@@ -5911,7 +5912,7 @@ function xmlToAppearance(node: Element) {
       ] = dataLineWidths;
     }
     if (ch.nodeName === "distance") {
-      let dataDistances = xmlToDistance(ch);
+      const dataDistances = xmlToDistance(ch);
       ret.distances = ret.distances || {};
       ret.distances[
         popFront(
@@ -5922,19 +5923,19 @@ function xmlToAppearance(node: Element) {
       ] = dataDistances;
     }
     if (ch.nodeName === "other-appearance") {
-      let dataOtherAppearances = getString(ch, true);
+      const dataOtherAppearances = getString(ch, true);
       ret.otherAppearances = (ret.otherAppearances || []).concat(
         dataOtherAppearances,
       );
     }
     if (ch.nodeName === "note-size") {
-      let dataNoteSizes = xmlToNoteSize(ch);
+      const dataNoteSizes = xmlToNoteSize(ch);
       ret.noteSizes = ret.noteSizes || {};
       ret.noteSizes[dataNoteSizes.type] = dataNoteSizes;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -5952,19 +5953,19 @@ export interface Creator {
 }
 
 function xmlToCreator(node: Element) {
-  let ret: Creator = <any>{};
+  const ret: Creator = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "type") {
-      let dataType = getString(ch2, true);
+      const dataType = getString(ch2, true);
       ret.type = dataType;
     }
   }
-  let ch3 = node;
-  let dataCreator = getString(ch3, true);
+  const ch3 = node;
+  const dataCreator = getString(ch3, true);
   ret.creator = dataCreator;
   return ret;
 }
@@ -5983,19 +5984,19 @@ export interface Rights {
 }
 
 function xmlToRights(node: Element) {
-  let ret: Rights = <any>{};
+  const ret: Rights = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "type") {
-      let dataType = getString(ch2, true);
+      const dataType = getString(ch2, true);
       ret.type = dataType;
     }
   }
-  let ch3 = node;
-  let dataRights = getString(ch3, true);
+  const ch3 = node;
+  const dataRights = getString(ch3, true);
   ret.rights = dataRights;
   return ret;
 }
@@ -6010,19 +6011,19 @@ export interface Encoder {
 }
 
 function xmlToEncoder(node: Element) {
-  let ret: Encoder = <any>{};
+  const ret: Encoder = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "type") {
-      let dataType = getString(ch2, true);
+      const dataType = getString(ch2, true);
       ret.type = dataType;
     }
   }
-  let ch3 = node;
-  let dataEncoder = getString(ch3, true);
+  const ch3 = node;
+  const dataEncoder = getString(ch3, true);
   ret.encoder = dataEncoder;
   return ret;
 }
@@ -6038,19 +6039,19 @@ export interface Relation {
 }
 
 function xmlToRelation(node: Element) {
-  let ret: Relation = <any>{};
+  const ret: Relation = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "type") {
-      let dataType = getString(ch2, true);
+      const dataType = getString(ch2, true);
       ret.type = dataType;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   return ret;
 }
@@ -6066,19 +6067,19 @@ export interface MiscellaneousField {
 }
 
 function xmlToMiscellaneousField(node: Element) {
-  let ret: MiscellaneousField = <any>{};
+  const ret: MiscellaneousField = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "name") {
-      let dataName = getString(ch2, true);
+      const dataName = getString(ch2, true);
       ret.name = dataName;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   return ret;
 }
@@ -6094,18 +6095,18 @@ export interface Miscellaneous {
 }
 
 function xmlToMiscellaneous(node: Element) {
-  let ret: Miscellaneous = <any>{};
+  const ret: Miscellaneous = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "miscellaneous-field") {
-      let dataMiscellaneousFields = xmlToMiscellaneousField(ch);
+      const dataMiscellaneousFields = xmlToMiscellaneousField(ch);
       ret.miscellaneousFields = (ret.miscellaneousFields || []).concat(
         dataMiscellaneousFields,
       );
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -6129,36 +6130,36 @@ export interface Identification {
 }
 
 function xmlToIdentification(node: Element) {
-  let ret: Identification = <any>{};
+  const ret: Identification = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "miscellaneous") {
-      let dataMiscellaneous = xmlToMiscellaneous(ch);
+      const dataMiscellaneous = xmlToMiscellaneous(ch);
       ret.miscellaneous = dataMiscellaneous;
     }
     if (ch.nodeName === "creator") {
-      let dataCreators = xmlToCreator(ch);
+      const dataCreators = xmlToCreator(ch);
       ret.creators = (ret.creators || []).concat(dataCreators);
     }
     if (ch.nodeName === "relation") {
-      let dataRelations = xmlToRelation(ch);
+      const dataRelations = xmlToRelation(ch);
       ret.relations = (ret.relations || []).concat(dataRelations);
     }
     if (ch.nodeName === "rights") {
-      let dataRights = xmlToRights(ch);
+      const dataRights = xmlToRights(ch);
       ret.rights = (ret.rights || []).concat(dataRights);
     }
     if (ch.nodeName === "encoding") {
-      let dataEncoding = xmlToEncoding(ch);
+      const dataEncoding = xmlToEncoding(ch);
       ret.encoding = dataEncoding;
     }
     if (ch.nodeName === "source") {
-      let dataSource = getString(ch, true);
+      const dataSource = getString(ch, true);
       ret.source = dataSource;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -6184,26 +6185,26 @@ export interface Supports {
 }
 
 function xmlToSupports(node: Element) {
-  let ret: Supports = <any>{};
+  const ret: Supports = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "element") {
-      let dataElement = getString(ch2, true);
+      const dataElement = getString(ch2, true);
       ret.element = dataElement;
     }
     if (ch2.name === "attribute") {
-      let dataAttribute = getString(ch2, true);
+      const dataAttribute = getString(ch2, true);
       ret.attribute = dataAttribute;
     }
     if (ch2.name === "value") {
-      let dataValue = getString(ch2, true);
+      const dataValue = getString(ch2, true);
       ret.value = dataValue;
     }
     if (ch2.name === "type") {
-      let dataType = xmlToYesNo(ch2);
+      const dataType = xmlToYesNo(ch2);
       ret.type = dataType;
     }
   }
@@ -6228,7 +6229,7 @@ export interface Encoding {
 }
 
 function xmlToEncoding(node: Element) {
-  let ret: Encoding = <any>{
+  const ret: Encoding = <any>{
     encodingDescriptions: [],
     encodingDate: null,
     supports: {},
@@ -6236,19 +6237,19 @@ function xmlToEncoding(node: Element) {
     softwares: [],
   };
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "encoding-description") {
-      let dataEncodingDescriptions = getString(ch, true);
+      const dataEncodingDescriptions = getString(ch, true);
       ret.encodingDescriptions = (ret.encodingDescriptions || []).concat(
         dataEncodingDescriptions,
       );
     }
     if (ch.nodeName === "encoding-date") {
-      let dataEncodingDate = xmlToEncodingDate(ch);
+      const dataEncodingDate = xmlToEncodingDate(ch);
       ret.encodingDate = dataEncodingDate;
     }
     if (ch.nodeName === "supports") {
-      let dataSupports = xmlToSupports(ch);
+      const dataSupports = xmlToSupports(ch);
       ret.supports = ret.supports || {};
       ret.supports[
         popFront(
@@ -6261,16 +6262,16 @@ function xmlToEncoding(node: Element) {
       ] = dataSupports;
     }
     if (ch.nodeName === "encoder") {
-      let dataEncoders = xmlToEncoder(ch);
+      const dataEncoders = xmlToEncoder(ch);
       ret.encoders = (ret.encoders || []).concat(dataEncoders);
     }
     if (ch.nodeName === "software") {
-      let dataSoftwares = getString(ch, true);
+      const dataSoftwares = getString(ch, true);
       ret.softwares = (ret.softwares || []).concat(dataSoftwares);
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -6285,7 +6286,7 @@ export enum SeparatorType {
 
 function getSeparatorType(node: Node, fallbackVal?: SeparatorType) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -6329,15 +6330,15 @@ export interface TimeSeparator {
 }
 
 function xmlToTimeSeparator(node: Element) {
-  let ret: TimeSeparator = <any>{};
+  const ret: TimeSeparator = <any>{};
   let foundSeparator = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "separator") {
-      let dataSeparator = getSeparatorType(ch2, SeparatorType.None);
+      const dataSeparator = getSeparatorType(ch2, SeparatorType.None);
       ret.separator = dataSeparator;
       foundSeparator = true;
     }
@@ -6359,7 +6360,7 @@ export enum TimeSymbolType {
 
 function getTimeSymbolType(node: Node, fallbackVal?: TimeSymbolType) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -6407,15 +6408,15 @@ export interface TimeSymbol {
 }
 
 function xmlToTimeSymbol(node: Element) {
-  let ret: TimeSymbol = <any>{};
+  const ret: TimeSymbol = <any>{};
   let foundSymbol = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "symbol") {
-      let dataSymbol = getTimeSymbolType(ch2, TimeSymbolType.Normal);
+      const dataSymbol = getTimeSymbolType(ch2, TimeSymbolType.Normal);
       ret.symbol = dataSymbol;
       foundSymbol = true;
     }
@@ -6434,7 +6435,7 @@ export enum CancelLocation {
 
 function getCancelLocation(node: Node, fallbackVal?: CancelLocation) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -6510,21 +6511,21 @@ export interface Cancel {
 }
 
 function xmlToCancel(node: Element) {
-  let ret: Cancel = <any>{};
+  const ret: Cancel = <any>{};
   let foundLocation = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "location") {
-      let dataLocation = getCancelLocation(ch2, CancelLocation.Left);
+      const dataLocation = getCancelLocation(ch2, CancelLocation.Left);
       ret.location = dataLocation;
       foundLocation = true;
     }
   }
-  let ch3 = node;
-  let dataFifths = getNumber(ch3, true);
+  const ch3 = node;
+  const dataFifths = getNumber(ch3, true);
   ret.fifths = dataFifths;
   if (!foundLocation) {
     ret.location = CancelLocation.Left;
@@ -6589,25 +6590,25 @@ export interface KeyOctave {
 }
 
 function xmlToKeyOctave(node: Element) {
-  let ret: KeyOctave = <any>{};
+  const ret: KeyOctave = <any>{};
   let foundCancel = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
     }
     if (ch2.name === "cancel") {
-      let dataCancel = xmlToYesNo(ch2);
+      const dataCancel = xmlToYesNo(ch2);
       ret.cancel = dataCancel;
       foundCancel = true;
     }
   }
-  let ch3 = node;
-  let dataOctave = getNumber(ch3, true);
+  const ch3 = node;
+  const dataOctave = getNumber(ch3, true);
   ret.octave = dataOctave;
   if (!foundCancel) {
     ret.cancel = false;
@@ -6678,35 +6679,35 @@ export interface Key extends PrintStyle, PrintObject {
 }
 
 function xmlToKey(node: Element) {
-  let ret: Key = <any>{};
+  const ret: Key = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPrintObject = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "cancel") {
-      let dataCancel = xmlToCancel(ch);
+      const dataCancel = xmlToCancel(ch);
       ret.cancel = dataCancel;
     }
     if (ch.nodeName === "key-step") {
-      let dataKeySteps = getString(ch, true);
+      const dataKeySteps = getString(ch, true);
       ret.keySteps = (ret.keySteps || []).concat(dataKeySteps);
     }
     if (ch.nodeName === "key-octave") {
-      let dataKeyOctaves = xmlToKeyOctave(ch);
+      const dataKeyOctaves = xmlToKeyOctave(ch);
       ret.keyOctaves = (ret.keyOctaves || []).concat(dataKeyOctaves);
     }
     if (ch.nodeName === "fifths") {
-      let dataFifths = getNumber(ch, true);
+      const dataFifths = getNumber(ch, true);
       ret.fifths = dataFifths;
     }
     if (ch.nodeName === "key-alter") {
-      let dataKeyAlters = getString(ch, true);
+      const dataKeyAlters = getString(ch, true);
       ret.keyAlters = (ret.keyAlters || []).concat(dataKeyAlters);
     }
     if (ch.nodeName === "key-accidental") {
-      let dataKeyAccidentals = getString(ch, true);
+      const dataKeyAccidentals = getString(ch, true);
       ret.keyAccidentals = ret.keyAccidentals || [];
       ret.keyAccidentals.length = Math.max(
         ret.keyAccidentals.length,
@@ -6715,57 +6716,57 @@ function xmlToKey(node: Element) {
       ret.keyAccidentals[ret.keySteps.length - 1] = dataKeyAccidentals;
     }
     if (ch.nodeName === "mode") {
-      let dataMode = getString(ch, true);
+      const dataMode = getString(ch, true);
       ret.mode = dataMode;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "print-object") {
-      let dataPrintObject = xmlToYesNo(ch2);
+      const dataPrintObject = xmlToYesNo(ch2);
       ret.printObject = dataPrintObject;
       foundPrintObject = true;
     }
@@ -6837,7 +6838,7 @@ export interface Time
 }
 
 function xmlToTime(node: Element) {
-  let ret: Time = <any>{};
+  const ret: Time = <any>{};
   let foundSymbol = false;
   let foundSeparator = false;
   let foundFontWeight = false;
@@ -6848,77 +6849,77 @@ function xmlToTime(node: Element) {
   let foundPrintObject = false;
   let foundNumber = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "interchangeable") {
-      let dataInterchangeable = xmlToInterchangeable(ch);
+      const dataInterchangeable = xmlToInterchangeable(ch);
       ret.interchangeable = dataInterchangeable;
     }
     if (ch.nodeName === "beats") {
-      let dataBeats = getString(ch, true);
+      const dataBeats = getString(ch, true);
       ret.beats = (ret.beats || []).concat(dataBeats);
     }
     if (ch.nodeName === "beat-type") {
-      let dataBeatTypes = getNumber(ch, true);
+      const dataBeatTypes = getNumber(ch, true);
       ret.beatTypes = (ret.beatTypes || []).concat(dataBeatTypes);
     }
     if (ch.nodeName === "senza-misura") {
-      let dataSenzaMisura = getString(ch, true);
+      const dataSenzaMisura = getString(ch, true);
       ret.senzaMisura = dataSenzaMisura;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "symbol") {
-      let dataSymbol = getTimeSymbolType(ch2, TimeSymbolType.Normal);
+      const dataSymbol = getTimeSymbolType(ch2, TimeSymbolType.Normal);
       ret.symbol = dataSymbol;
       foundSymbol = true;
     }
     if (ch2.name === "separator") {
-      let dataSeparator = getSeparatorType(ch2, SeparatorType.None);
+      const dataSeparator = getSeparatorType(ch2, SeparatorType.None);
       ret.separator = dataSeparator;
       foundSeparator = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -6926,7 +6927,7 @@ function xmlToTime(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -6934,12 +6935,12 @@ function xmlToTime(node: Element) {
       foundValign = true;
     }
     if (ch2.name === "print-object") {
-      let dataPrintObject = xmlToYesNo(ch2);
+      const dataPrintObject = xmlToYesNo(ch2);
       ret.printObject = dataPrintObject;
       foundPrintObject = true;
     }
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
       foundNumber = true;
     }
@@ -7019,33 +7020,33 @@ export interface Interchangeable extends TimeSymbol, TimeSeparator {
 }
 
 function xmlToInterchangeable(node: Element) {
-  let ret: Interchangeable = <any>{};
+  const ret: Interchangeable = <any>{};
   let foundSymbol = false;
   let foundSeparator = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "beats") {
-      let dataBeats = getString(ch, true);
+      const dataBeats = getString(ch, true);
       ret.beats = (ret.beats || []).concat(dataBeats);
     }
     if (ch.nodeName === "beat-type") {
-      let dataBeatTypes = getNumber(ch, true);
+      const dataBeatTypes = getNumber(ch, true);
       ret.beatTypes = (ret.beatTypes || []).concat(dataBeatTypes);
     }
     if (ch.nodeName === "time-relation") {
-      let dataTimeRelation = getString(ch, true);
+      const dataTimeRelation = getString(ch, true);
       ret.timeRelation = dataTimeRelation;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "symbol") {
-      let dataSymbol = getTimeSymbolType(ch2, TimeSymbolType.Normal);
+      const dataSymbol = getTimeSymbolType(ch2, TimeSymbolType.Normal);
       ret.symbol = dataSymbol;
       foundSymbol = true;
     }
     if (ch2.name === "separator") {
-      let dataSeparator = getSeparatorType(ch2, SeparatorType.None);
+      const dataSeparator = getSeparatorType(ch2, SeparatorType.None);
       ret.separator = dataSeparator;
       foundSeparator = true;
     }
@@ -7069,7 +7070,7 @@ export enum PartSymbolType {
 
 function getPartSymbolType(node: Node, fallbackVal?: PartSymbolType) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -7117,49 +7118,49 @@ export interface PartSymbol extends Position, Color {
 }
 
 function xmlToPartSymbol(node: Element) {
-  let ret: PartSymbol = <any>{};
+  const ret: PartSymbol = <any>{};
   let foundTopStaff = false;
   let foundColor = false;
   let foundBottomStaff = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "top-staff") {
-      let dataTopStaff = getNumber(ch2, true);
+      const dataTopStaff = getNumber(ch2, true);
       ret.topStaff = dataTopStaff;
       foundTopStaff = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "bottom-staff") {
-      let dataBottomStaff = getNumber(ch2, true);
+      const dataBottomStaff = getNumber(ch2, true);
       ret.bottomStaff = dataBottomStaff;
       foundBottomStaff = true;
     }
   }
-  let ch3 = node;
-  let dataType = getPartSymbolType(ch3, null);
+  const ch3 = node;
+  const dataType = getPartSymbolType(ch3, null);
   ret.type = dataType;
   if (!foundTopStaff) {
     ret.topStaff = -1;
@@ -7224,7 +7225,7 @@ export interface Clef extends PrintStyle, PrintObject {
 }
 
 function xmlToClef(node: Element) {
-  let ret: Clef = <any>{};
+  const ret: Clef = <any>{};
   let foundNumber_ = false;
   let foundSize = false;
   let foundFontWeight = false;
@@ -7234,83 +7235,83 @@ function xmlToClef(node: Element) {
   let foundAfterBarline = false;
   let foundAdditional = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "clef-octave-change") {
-      let dataClefOctaveChange = getString(ch, true);
+      const dataClefOctaveChange = getString(ch, true);
       ret.clefOctaveChange = dataClefOctaveChange;
     }
     if (ch.nodeName === "sign") {
-      let dataSign = getString(ch, true);
+      const dataSign = getString(ch, true);
       ret.sign = dataSign;
     }
     if (ch.nodeName === "line") {
-      let dataLine = getNumber(ch, true);
+      const dataLine = getNumber(ch, true);
       ret.line = dataLine;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
       foundNumber_ = true;
     }
     if (ch2.name === "size") {
-      let dataSize = getSymbolSize(ch2, SymbolSize.Full);
+      const dataSize = getSymbolSize(ch2, SymbolSize.Full);
       ret.size = dataSize;
       foundSize = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "print-object") {
-      let dataPrintObject = xmlToYesNo(ch2);
+      const dataPrintObject = xmlToYesNo(ch2);
       ret.printObject = dataPrintObject;
       foundPrintObject = true;
     }
     if (ch2.name === "after-barline") {
-      let dataAfterBarline = xmlToYesNo(ch2);
+      const dataAfterBarline = xmlToYesNo(ch2);
       ret.afterBarline = dataAfterBarline;
       foundAfterBarline = true;
     }
     if (ch2.name === "additional") {
-      let dataAdditional = xmlToYesNo(ch2);
+      const dataAdditional = xmlToYesNo(ch2);
       ret.additional = dataAdditional;
       foundAdditional = true;
     }
@@ -7356,26 +7357,26 @@ export interface StaffTuning {
 }
 
 function xmlToStaffTuning(node: Element) {
-  let ret: StaffTuning = <any>{};
+  const ret: StaffTuning = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "tuning-alter") {
-      let dataTuningAlter = getString(ch, true);
+      const dataTuningAlter = getString(ch, true);
       ret.tuningAlter = dataTuningAlter;
     }
     if (ch.nodeName === "tuning-step") {
-      let dataTuningStep = getString(ch, true);
+      const dataTuningStep = getString(ch, true);
       ret.tuningStep = dataTuningStep;
     }
     if (ch.nodeName === "tuning-octave") {
-      let dataTuningOctave = getString(ch, true);
+      const dataTuningOctave = getString(ch, true);
       ret.tuningOctave = dataTuningOctave;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "line") {
-      let dataLine = getString(ch2, true);
+      const dataLine = getString(ch2, true);
       ret.line = dataLine;
     }
   }
@@ -7389,7 +7390,7 @@ export enum ShowFretsType {
 
 function getShowFretsType(node: Node, fallbackVal?: ShowFretsType) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -7439,53 +7440,53 @@ export interface StaffDetails extends PrintObject, PrintSpacing {
 }
 
 function xmlToStaffDetails(node: Element) {
-  let ret: StaffDetails = <any>{};
+  const ret: StaffDetails = <any>{};
   let foundShowFrets = false;
   let foundNumber_ = false;
   let foundPrintObject = false;
   let foundPrintSpacing = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "staff-lines") {
-      let dataStaffLines = getNumber(ch, true);
+      const dataStaffLines = getNumber(ch, true);
       ret.staffLines = dataStaffLines;
     }
     if (ch.nodeName === "staff-tuning") {
-      let dataStaffTunings = xmlToStaffTuning(ch);
+      const dataStaffTunings = xmlToStaffTuning(ch);
       ret.staffTunings = (ret.staffTunings || []).concat(dataStaffTunings);
     }
     if (ch.nodeName === "staff-size") {
-      let dataStaffSize = getNumber(ch, true);
+      const dataStaffSize = getNumber(ch, true);
       ret.staffSize = dataStaffSize;
     }
     if (ch.nodeName === "capo") {
-      let dataCapo = getString(ch, true);
+      const dataCapo = getString(ch, true);
       ret.capo = dataCapo;
     }
     if (ch.nodeName === "staff-type") {
-      let dataStaffType = getString(ch, true);
+      const dataStaffType = getString(ch, true);
       ret.staffType = dataStaffType;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "show-frets") {
-      let dataShowFrets = getShowFretsType(ch2, ShowFretsType.Numbers);
+      const dataShowFrets = getShowFretsType(ch2, ShowFretsType.Numbers);
       ret.showFrets = dataShowFrets;
       foundShowFrets = true;
     }
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
       foundNumber_ = true;
     }
     if (ch2.name === "print-object") {
-      let dataPrintObject = xmlToYesNo(ch2);
+      const dataPrintObject = xmlToYesNo(ch2);
       ret.printObject = dataPrintObject;
       foundPrintObject = true;
     }
     if (ch2.name === "print-spacing") {
-      let dataPrintSpacing = xmlToYesNo(ch2);
+      const dataPrintSpacing = xmlToYesNo(ch2);
       ret.printSpacing = dataPrintSpacing;
       foundPrintSpacing = true;
     }
@@ -7531,12 +7532,12 @@ export interface Double {
 }
 
 function xmlToDouble(node: Element) {
-  let ret: Double = <any>{};
+  const ret: Double = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -7572,31 +7573,31 @@ export interface Transpose {
 }
 
 function xmlToTranspose(node: Element) {
-  let ret: Transpose = <any>{};
+  const ret: Transpose = <any>{};
   let foundNumber_ = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "diatonic") {
-      let dataDiatonic = getString(ch, true);
+      const dataDiatonic = getString(ch, true);
       ret.diatonic = dataDiatonic;
     }
     if (ch.nodeName === "octave-change") {
-      let dataOctaveChange = getString(ch, true);
+      const dataOctaveChange = getString(ch, true);
       ret.octaveChange = dataOctaveChange;
     }
     if (ch.nodeName === "double") {
-      let dataDouble = xmlToDouble(ch);
+      const dataDouble = xmlToDouble(ch);
       ret.double = dataDouble;
     }
     if (ch.nodeName === "chromatic") {
-      let dataChromatic = getString(ch, true);
+      const dataChromatic = getString(ch, true);
       ret.chromatic = dataChromatic;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
       foundNumber_ = true;
     }
@@ -7622,57 +7623,57 @@ export interface Directive extends PrintStyle {
 }
 
 function xmlToDirective(node: Element) {
-  let ret: Directive = <any>{};
+  const ret: Directive = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -7698,12 +7699,12 @@ export interface SlashDot {
 }
 
 function xmlToSlashDot(node: Element) {
-  let ret: SlashDot = <any>{};
+  const ret: SlashDot = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -7722,21 +7723,21 @@ export interface MultipleRest {
 }
 
 function xmlToMultipleRest(node: Element) {
-  let ret: MultipleRest = <any>{};
+  const ret: MultipleRest = <any>{};
   let foundUseSymbols = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "use-symbols") {
-      let dataUseSymbols = xmlToYesNo(ch2);
+      const dataUseSymbols = xmlToYesNo(ch2);
       ret.useSymbols = dataUseSymbols;
       foundUseSymbols = true;
     }
   }
-  let ch3 = node;
-  let dataCount = getNumber(ch3, true);
+  const ch3 = node;
+  const dataCount = getNumber(ch3, true);
   ret.count = dataCount;
   if (!foundUseSymbols) {
     ret.useSymbols = false;
@@ -7766,25 +7767,25 @@ export interface MeasureRepeat {
 }
 
 function xmlToMeasureRepeat(node: Element) {
-  let ret: MeasureRepeat = <any>{};
+  const ret: MeasureRepeat = <any>{};
   let foundSlashes = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "type") {
-      let dataType = getStartStop(ch2, null);
+      const dataType = getStartStop(ch2, null);
       ret.type = dataType;
     }
     if (ch2.name === "slashes") {
-      let dataSlashes = getNumber(ch2, true);
+      const dataSlashes = getNumber(ch2, true);
       ret.slashes = dataSlashes;
       foundSlashes = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, false);
+  const ch3 = node;
+  const dataData = getString(ch3, false);
   ret.data = dataData;
   if (!foundSlashes) {
     ret.slashes = 1;
@@ -7818,34 +7819,34 @@ export interface BeatRepeat {
 }
 
 function xmlToBeatRepeat(node: Element) {
-  let ret: BeatRepeat = <any>{};
+  const ret: BeatRepeat = <any>{};
   let foundUseDots = false;
   let foundSlases = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "slash-type") {
-      let dataSlashType = getString(ch, true);
+      const dataSlashType = getString(ch, true);
       ret.slashType = dataSlashType;
     }
     if (ch.nodeName === "slash-dot") {
-      let dataSlashDots = xmlToSlashDot(ch);
+      const dataSlashDots = xmlToSlashDot(ch);
       ret.slashDots = (ret.slashDots || []).concat(dataSlashDots);
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "use-dots") {
-      let dataUseDots = xmlToYesNo(ch2);
+      const dataUseDots = xmlToYesNo(ch2);
       ret.useDots = dataUseDots;
       foundUseDots = true;
     }
     if (ch2.name === "slases") {
-      let dataSlases = getNumber(ch2, true);
+      const dataSlases = getNumber(ch2, true);
       ret.slases = dataSlases;
       foundSlases = true;
     }
     if (ch2.name === "type") {
-      let dataType = getStartStop(ch2, null);
+      const dataType = getStartStop(ch2, null);
       ret.type = dataType;
     }
   }
@@ -7877,34 +7878,34 @@ export interface Slash {
 }
 
 function xmlToSlash(node: Element) {
-  let ret: Slash = <any>{};
+  const ret: Slash = <any>{};
   let foundUseDots = false;
   let foundUseStems = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "slash-type") {
-      let dataSlashType = getString(ch, true);
+      const dataSlashType = getString(ch, true);
       ret.slashType = dataSlashType;
     }
     if (ch.nodeName === "slash-dot") {
-      let dataSlashDots = xmlToSlashDot(ch);
+      const dataSlashDots = xmlToSlashDot(ch);
       ret.slashDots = (ret.slashDots || []).concat(dataSlashDots);
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "use-dots") {
-      let dataUseDots = xmlToYesNo(ch2);
+      const dataUseDots = xmlToYesNo(ch2);
       ret.useDots = dataUseDots;
       foundUseDots = true;
     }
     if (ch2.name === "use-stems") {
-      let dataUseStems = xmlToYesNo(ch2);
+      const dataUseStems = xmlToYesNo(ch2);
       ret.useStems = dataUseStems;
       foundUseStems = true;
     }
     if (ch2.name === "type") {
-      let dataType = getStartStop(ch2, null);
+      const dataType = getStartStop(ch2, null);
       ret.type = dataType;
     }
   }
@@ -7941,57 +7942,57 @@ export interface MeasureStyle extends Font, Color {
 }
 
 function xmlToMeasureStyle(node: Element) {
-  let ret: MeasureStyle = <any>{};
+  const ret: MeasureStyle = <any>{};
   let foundNumber_ = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "measure-repeat") {
-      let dataMeasureRepeat = xmlToMeasureRepeat(ch);
+      const dataMeasureRepeat = xmlToMeasureRepeat(ch);
       ret.measureRepeat = dataMeasureRepeat;
     }
     if (ch.nodeName === "beat-repeat") {
-      let dataBeatRepeat = xmlToBeatRepeat(ch);
+      const dataBeatRepeat = xmlToBeatRepeat(ch);
       ret.beatRepeat = dataBeatRepeat;
     }
     if (ch.nodeName === "multiple-rest") {
-      let dataMultipleRest = xmlToMultipleRest(ch);
+      const dataMultipleRest = xmlToMultipleRest(ch);
       ret.multipleRest = dataMultipleRest;
     }
     if (ch.nodeName === "slash") {
-      let dataSlash = xmlToSlash(ch);
+      const dataSlash = xmlToSlash(ch);
       ret.slash = dataSlash;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
       foundNumber_ = true;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
@@ -8034,64 +8035,64 @@ export interface Attributes extends Editorial {
 }
 
 function xmlToAttributes(node: Element) {
-  let ret: Attributes = <any>{};
+  const ret: Attributes = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "divisions") {
-      let dataDivisions = getNumber(ch, true);
+      const dataDivisions = getNumber(ch, true);
       ret.divisions = dataDivisions;
     }
     if (ch.nodeName === "part-symbol") {
-      let dataPartSymbol = xmlToPartSymbol(ch);
+      const dataPartSymbol = xmlToPartSymbol(ch);
       ret.partSymbol = dataPartSymbol;
     }
     if (ch.nodeName === "clef") {
-      let dataClefs = xmlToClef(ch);
+      const dataClefs = xmlToClef(ch);
       ret.clefs = (ret.clefs || []).concat(dataClefs);
     }
     if (ch.nodeName === "measure-style") {
-      let dataMeasureStyle = xmlToMeasureStyle(ch);
+      const dataMeasureStyle = xmlToMeasureStyle(ch);
       ret.measureStyles = (ret.measureStyles || []).concat(dataMeasureStyle);
     }
     if (ch.nodeName === "time") {
-      let dataTimes = xmlToTime(ch);
+      const dataTimes = xmlToTime(ch);
       ret.times = (ret.times || []).concat(dataTimes);
     }
     if (ch.nodeName === "staff-details") {
-      let dataStaffDetails = xmlToStaffDetails(ch);
+      const dataStaffDetails = xmlToStaffDetails(ch);
       ret.staffDetails = (ret.staffDetails || []).concat(dataStaffDetails);
     }
     if (ch.nodeName === "transpose") {
-      let dataTransposes = xmlToTranspose(ch);
+      const dataTransposes = xmlToTranspose(ch);
       ret.transposes = (ret.transposes || []).concat(dataTransposes);
     }
     if (ch.nodeName === "footnote") {
-      let dataFootnote = xmlToFootnote(ch);
+      const dataFootnote = xmlToFootnote(ch);
       ret.footnote = dataFootnote;
     }
     if (ch.nodeName === "level") {
-      let dataLevel = xmlToLevel(ch);
+      const dataLevel = xmlToLevel(ch);
       ret.level = dataLevel;
     }
     if (ch.nodeName === "staves") {
-      let dataStaves = getNumber(ch, true);
+      const dataStaves = getNumber(ch, true);
       ret.staves = dataStaves;
     }
     if (ch.nodeName === "instruments") {
-      let dataInstruments = getString(ch, true);
+      const dataInstruments = getString(ch, true);
       ret.instruments = dataInstruments;
     }
     if (ch.nodeName === "key") {
-      let dataKeySignatures = xmlToKey(ch);
+      const dataKeySignatures = xmlToKey(ch);
       ret.keySignatures = (ret.keySignatures || []).concat(dataKeySignatures);
     }
     if (ch.nodeName === "directive") {
-      let dataDirectives = xmlToDirective(ch);
+      const dataDirectives = xmlToDirective(ch);
       ret.directives = (ret.directives || []).concat(dataDirectives);
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   ret._class = "Attributes";
   return ret;
@@ -8114,12 +8115,12 @@ export interface Cue {
 }
 
 function xmlToCue(node: Element) {
-  let ret: Cue = <any>{};
+  const ret: Cue = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -8145,28 +8146,28 @@ export interface Grace {
 }
 
 function xmlToGrace(node: Element) {
-  let ret: Grace = <any>{};
+  const ret: Grace = <any>{};
   let foundSlash = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "make-time") {
-      let dataMakeTime = getString(ch2, true);
+      const dataMakeTime = getString(ch2, true);
       ret.makeTime = dataMakeTime;
     }
     if (ch2.name === "steal-time-previous") {
-      let dataStealTimePrevious = getString(ch2, true);
+      const dataStealTimePrevious = getString(ch2, true);
       ret.stealTimePrevious = dataStealTimePrevious;
     }
     if (ch2.name === "slash") {
-      let dataSlash = xmlToYesNo(ch2);
+      const dataSlash = xmlToYesNo(ch2);
       ret.slash = dataSlash;
       foundSlash = true;
     }
     if (ch2.name === "steal-time-following") {
-      let dataStealTimeFollowing = getString(ch2, true);
+      const dataStealTimeFollowing = getString(ch2, true);
       ret.stealTimeFollowing = dataStealTimeFollowing;
     }
   }
@@ -8189,12 +8190,12 @@ export interface Chord {
 }
 
 function xmlToChord(node: Element) {
-  let ret: Chord = <any>{};
+  const ret: Chord = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -8217,20 +8218,20 @@ export interface Unpitched {
 }
 
 function xmlToUnpitched(node: Element) {
-  let ret: Unpitched = <any>{};
+  const ret: Unpitched = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "display-step") {
-      let dataDisplayStep = getString(ch, true);
+      const dataDisplayStep = getString(ch, true);
       ret.displayStep = dataDisplayStep;
     }
     if (ch.nodeName === "display-octave") {
-      let dataDisplayOctave = getNumber(ch, true);
+      const dataDisplayOctave = getNumber(ch, true);
       ret.displayOctave = dataDisplayOctave;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -8254,24 +8255,24 @@ export interface Pitch {
 }
 
 function xmlToPitch(node: Element) {
-  let ret: Pitch = <any>{};
+  const ret: Pitch = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "alter") {
-      let dataAlter = getNumber(ch, true);
+      const dataAlter = getNumber(ch, true);
       ret.alter = dataAlter;
     }
     if (ch.nodeName === "step") {
-      let dataStep = getString(ch, true);
+      const dataStep = getString(ch, true);
       ret.step = dataStep.toLowerCase();
     }
     if (ch.nodeName === "octave") {
-      let dataOctave = getNumber(ch, true);
+      const dataOctave = getNumber(ch, true);
       ret.octave = dataOctave;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -8293,28 +8294,28 @@ export interface FullNote {
 }
 
 function xmlToFullNote(node: Element) {
-  let ret: FullNote = <any>{};
+  const ret: FullNote = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "unpitched") {
-      let dataUnpitched = xmlToUnpitched(ch);
+      const dataUnpitched = xmlToUnpitched(ch);
       ret.unpitched = dataUnpitched;
     }
     if (ch.nodeName === "chord") {
-      let dataChord = xmlToChord(ch);
+      const dataChord = xmlToChord(ch);
       ret.chord = dataChord;
     }
     if (ch.nodeName === "pitch") {
-      let dataPitch = xmlToPitch(ch);
+      const dataPitch = xmlToPitch(ch);
       ret.pitch = dataPitch;
     }
     if (ch.nodeName === "rest") {
-      let dataRest = xmlToRest(ch);
+      const dataRest = xmlToRest(ch);
       ret.rest = dataRest;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -8334,23 +8335,23 @@ export interface Rest {
 }
 
 function xmlToRest(node: Element) {
-  let ret: Rest = <any>{};
+  const ret: Rest = <any>{};
   let foundMeasure = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "display-step") {
-      let dataDisplayStep = getString(ch, true);
+      const dataDisplayStep = getString(ch, true);
       ret.displayStep = dataDisplayStep;
     }
     if (ch.nodeName === "display-octave") {
-      let dataDisplayOctave = getNumber(ch, true);
+      const dataDisplayOctave = getNumber(ch, true);
       ret.displayOctave = dataDisplayOctave;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "measure") {
-      let dataMeasure = xmlToYesNo(ch2);
+      const dataMeasure = xmlToYesNo(ch2);
       ret.measure = dataMeasure;
       foundMeasure = true;
     }
@@ -8382,18 +8383,18 @@ export interface Tie extends TimeOnly {
 }
 
 function xmlToTie(node: Element) {
-  let ret: Tie = <any>{};
+  const ret: Tie = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "time-only") {
-      let dataTimeOnly = getString(ch2, true);
+      const dataTimeOnly = getString(ch2, true);
       ret.timeOnly = dataTimeOnly;
     }
     if (ch2.name === "type") {
-      let dataType = getStartStop(ch2, null);
+      const dataType = getStartStop(ch2, null);
       ret.type = dataType;
     }
   }
@@ -8412,14 +8413,14 @@ export interface Instrument {
 }
 
 function xmlToInstrument(node: Element) {
-  let ret: Instrument = <any>{};
+  const ret: Instrument = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "id") {
-      let dataId = getString(ch2, true);
+      const dataId = getString(ch2, true);
       ret.id = dataId;
     }
   }
@@ -8466,7 +8467,7 @@ export interface Note
 }
 
 function xmlToNote(node: Element) {
-  let ret: Note = <any>{};
+  const ret: Note = <any>{};
   let foundAttack = false;
   let foundEndDynamics = false;
   let foundPizzicato = false;
@@ -8478,190 +8479,190 @@ function xmlToNote(node: Element) {
   let foundPrintObject = false;
   let foundPrintSpacing = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "notehead-text") {
-      let dataNoteheadText = xmlToNoteheadText(ch);
+      const dataNoteheadText = xmlToNoteheadText(ch);
       ret.noteheadText = dataNoteheadText;
     }
     if (ch.nodeName === "time-modification") {
-      let dataTimeModification = xmlToTimeModification(ch);
+      const dataTimeModification = xmlToTimeModification(ch);
       ret.timeModification = dataTimeModification;
     }
     if (ch.nodeName === "accidental") {
-      let dataAccidental = xmlToAccidental(ch);
+      const dataAccidental = xmlToAccidental(ch);
       ret.accidental = dataAccidental;
     }
     if (ch.nodeName === "instrument") {
-      let dataInstrument = xmlToInstrument(ch);
+      const dataInstrument = xmlToInstrument(ch);
       ret.instrument = dataInstrument;
     }
     if (ch.nodeName === "lyric") {
-      let dataLyrics = xmlToLyric(ch);
+      const dataLyrics = xmlToLyric(ch);
       ret.lyrics = (ret.lyrics || []).concat(dataLyrics);
     }
     if (ch.nodeName === "dot") {
-      let dataDots = xmlToDot(ch);
+      const dataDots = xmlToDot(ch);
       ret.dots = (ret.dots || []).concat(dataDots);
     }
     if (ch.nodeName === "notations") {
-      let dataNotations = xmlToNotations(ch);
+      const dataNotations = xmlToNotations(ch);
       ret.notations = (ret.notations || []).concat(dataNotations);
     }
     if (ch.nodeName === "stem") {
-      let dataStem = xmlToStem(ch);
+      const dataStem = xmlToStem(ch);
       ret.stem = dataStem;
     }
     if (ch.nodeName === "type") {
-      let dataNoteType = xmlToType(ch);
+      const dataNoteType = xmlToType(ch);
       ret.noteType = dataNoteType;
     }
     if (ch.nodeName === "cue") {
-      let dataCue = xmlToCue(ch);
+      const dataCue = xmlToCue(ch);
       ret.cue = dataCue;
     }
     if (ch.nodeName === "duration") {
-      let dataDuration = getNumber(ch, true);
+      const dataDuration = getNumber(ch, true);
       ret.duration = dataDuration;
     }
     if (ch.nodeName === "tie") {
-      let dataTies = xmlToTie(ch);
+      const dataTies = xmlToTie(ch);
       ret.ties = (ret.ties || []).concat(dataTies);
     }
     if (ch.nodeName === "play") {
-      let dataPlay = xmlToPlay(ch);
+      const dataPlay = xmlToPlay(ch);
       ret.play = dataPlay;
     }
     if (ch.nodeName === "staff") {
-      let dataStaff = getNumber(ch, true);
+      const dataStaff = getNumber(ch, true);
       ret.staff = dataStaff;
     }
     if (ch.nodeName === "grace") {
-      let dataGrace = xmlToGrace(ch);
+      const dataGrace = xmlToGrace(ch);
       ret.grace = dataGrace;
     }
     if (ch.nodeName === "notehead") {
-      let dataNotehead = xmlToNotehead(ch);
+      const dataNotehead = xmlToNotehead(ch);
       ret.notehead = dataNotehead;
     }
     if (ch.nodeName === "voice") {
-      let dataVoice = getNumber(ch, true);
+      const dataVoice = getNumber(ch, true);
       ret.voice = dataVoice;
     }
     if (ch.nodeName === "footnote") {
-      let dataFootnote = xmlToFootnote(ch);
+      const dataFootnote = xmlToFootnote(ch);
       ret.footnote = dataFootnote;
     }
     if (ch.nodeName === "level") {
-      let dataLevel = xmlToLevel(ch);
+      const dataLevel = xmlToLevel(ch);
       ret.level = dataLevel;
     }
     if (ch.nodeName === "unpitched") {
-      let dataUnpitched = xmlToUnpitched(ch);
+      const dataUnpitched = xmlToUnpitched(ch);
       ret.unpitched = dataUnpitched;
     }
     if (ch.nodeName === "chord") {
-      let dataChord = xmlToChord(ch);
+      const dataChord = xmlToChord(ch);
       ret.chord = dataChord;
     }
     if (ch.nodeName === "pitch") {
-      let dataPitch = xmlToPitch(ch);
+      const dataPitch = xmlToPitch(ch);
       ret.pitch = dataPitch;
     }
     if (ch.nodeName === "rest") {
-      let dataRest = xmlToRest(ch);
+      const dataRest = xmlToRest(ch);
       ret.rest = dataRest;
     }
     if (ch.nodeName === "beam") {
-      let dataBeams = xmlToBeam(ch);
+      const dataBeams = xmlToBeam(ch);
       ret.beams = (ret.beams || []).concat(dataBeams);
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "attack") {
-      let dataAttack = getNumber(ch2, true);
+      const dataAttack = getNumber(ch2, true);
       ret.attack = dataAttack;
       foundAttack = true;
     }
     if (ch2.name === "end-dynamics") {
-      let dataEndDynamics = getNumber(ch2, true);
+      const dataEndDynamics = getNumber(ch2, true);
       ret.endDynamics = dataEndDynamics;
       foundEndDynamics = true;
     }
     if (ch2.name === "pizzicato") {
-      let dataPizzicato = xmlToYesNo(ch2);
+      const dataPizzicato = xmlToYesNo(ch2);
       ret.pizzicato = dataPizzicato;
       foundPizzicato = true;
     }
     if (ch2.name === "dynamics") {
-      let dataDynamics = getNumber(ch2, true);
+      const dataDynamics = getNumber(ch2, true);
       ret.dynamics = dataDynamics;
       foundDynamics = true;
     }
     if (ch2.name === "release") {
-      let dataRelease = getNumber(ch2, true);
+      const dataRelease = getNumber(ch2, true);
       ret.release = dataRelease;
       foundRelease = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "print-dot") {
-      let dataPrintDot = xmlToYesNo(ch2);
+      const dataPrintDot = xmlToYesNo(ch2);
       ret.printDot = dataPrintDot;
     }
     if (ch2.name === "print-object") {
-      let dataPrintObject = xmlToYesNo(ch2);
+      const dataPrintObject = xmlToYesNo(ch2);
       ret.printObject = dataPrintObject;
       foundPrintObject = true;
     }
     if (ch2.name === "print-spacing") {
-      let dataPrintSpacing = xmlToYesNo(ch2);
+      const dataPrintSpacing = xmlToYesNo(ch2);
       ret.printSpacing = dataPrintSpacing;
       foundPrintSpacing = true;
     }
     if (ch2.name === "print-lyric") {
-      let dataPrintLyric = xmlToYesNo(ch2);
+      const dataPrintLyric = xmlToYesNo(ch2);
       ret.printLyric = dataPrintLyric;
     }
     if (ch2.name === "time-only") {
-      let dataTimeOnly = getString(ch2, true);
+      const dataTimeOnly = getString(ch2, true);
       ret.timeOnly = dataTimeOnly;
     }
   }
@@ -8718,7 +8719,7 @@ export enum Count {
 
 function getCount(node: Node, fallbackVal?: Count) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -8786,21 +8787,21 @@ export interface Type {
 }
 
 function xmlToType(node: Element) {
-  let ret: Type = <any>{};
+  const ret: Type = <any>{};
   let foundSize = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "size") {
-      let dataSize = getSymbolSize(ch2, SymbolSize.Unspecified);
+      const dataSize = getSymbolSize(ch2, SymbolSize.Unspecified);
       ret.size = dataSize;
       foundSize = true;
     }
   }
-  let ch3 = node;
-  let dataDuration = getCount(ch3, null);
+  const ch3 = node;
+  const dataDuration = getCount(ch3, null);
   ret.duration = dataDuration;
   if (!foundSize) {
     ret.size = SymbolSize.Unspecified;
@@ -8819,57 +8820,57 @@ export interface Dot extends PrintStyle, Placement {
 }
 
 function xmlToDot(node: Element) {
-  let ret: Dot = <any>{};
+  const ret: Dot = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -8931,7 +8932,7 @@ export enum MxmlAccidental {
 
 function getMxmlAccidental(node: Node, fallbackVal?: MxmlAccidental) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -9088,7 +9089,7 @@ export interface Accidental extends LevelDisplay, PrintStyle {
 }
 
 function xmlToAccidental(node: Element) {
-  let ret: Accidental = <any>{};
+  const ret: Accidental = <any>{};
   let foundCautionary = false;
   let foundBracket = false;
   let foundSize = false;
@@ -9098,77 +9099,77 @@ function xmlToAccidental(node: Element) {
   let foundColor = false;
   let foundEditorial = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "cautionary") {
-      let dataCautionary = xmlToYesNo(ch2);
+      const dataCautionary = xmlToYesNo(ch2);
       ret.cautionary = dataCautionary;
       foundCautionary = true;
     }
     if (ch2.name === "bracket") {
-      let dataBracket = xmlToYesNo(ch2);
+      const dataBracket = xmlToYesNo(ch2);
       ret.bracket = dataBracket;
       foundBracket = true;
     }
     if (ch2.name === "size") {
-      let dataSize = getSymbolSize(ch2, SymbolSize.Unspecified);
+      const dataSize = getSymbolSize(ch2, SymbolSize.Unspecified);
       ret.size = dataSize;
       foundSize = true;
     }
     if (ch2.name === "parentheses") {
-      let dataParentheses = xmlToYesNo(ch2);
+      const dataParentheses = xmlToYesNo(ch2);
       ret.parentheses = dataParentheses;
       foundParentheses = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "editorial") {
-      let dataEditorial = xmlToYesNo(ch2);
+      const dataEditorial = xmlToYesNo(ch2);
       ret.editorial = dataEditorial;
       foundEditorial = true;
     }
   }
-  let ch3 = node;
-  let dataAccidental = getMxmlAccidental(ch3, null);
+  const ch3 = node;
+  const dataAccidental = getMxmlAccidental(ch3, null);
   ret.accidental = dataAccidental;
   if (!foundCautionary) {
     ret.cautionary = false;
@@ -9217,28 +9218,28 @@ export interface TimeModification {
 }
 
 function xmlToTimeModification(node: Element) {
-  let ret: TimeModification = <any>{};
+  const ret: TimeModification = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "actual-notes") {
-      let dataActualNotes = getNumber(ch, true);
+      const dataActualNotes = getNumber(ch, true);
       ret.actualNotes = dataActualNotes;
     }
     if (ch.nodeName === "normal-type") {
-      let dataNormalType = getString(ch, true);
+      const dataNormalType = getString(ch, true);
       ret.normalType = dataNormalType;
     }
     if (ch.nodeName === "normal-notes") {
-      let dataNormalNotes = getNumber(ch, true);
+      const dataNormalNotes = getNumber(ch, true);
       ret.normalNotes = dataNormalNotes;
     }
     if (ch.nodeName === "normal-dot") {
-      let dataNormalDots = xmlToNormalDot(ch);
+      const dataNormalDots = xmlToNormalDot(ch);
       ret.normalDots = (ret.normalDots || []).concat(dataNormalDots);
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -9252,7 +9253,7 @@ export enum StemType {
 
 function getStemType(node: Node, fallbackVal?: StemType) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -9291,37 +9292,37 @@ export interface Stem extends Position, Color {
 }
 
 function xmlToStem(node: Element) {
-  let ret: Stem = <any>{};
+  const ret: Stem = <any>{};
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
   }
-  let ch3 = node;
-  let dataType = getStemType(ch3, null);
+  const ch3 = node;
+  const dataType = getStemType(ch3, null);
   ret.type = dataType;
   if (!foundColor) {
     ret.color = "#000000";
@@ -9360,7 +9361,7 @@ export enum NoteheadType {
 
 function getNoteheadType(node: Node, fallbackVal?: NoteheadType) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -9492,49 +9493,49 @@ export interface Notehead extends Font, Color {
 }
 
 function xmlToNotehead(node: Element) {
-  let ret: Notehead = <any>{};
+  const ret: Notehead = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "filled") {
-      let dataFilled = xmlToYesNo(ch2);
+      const dataFilled = xmlToYesNo(ch2);
       ret.filled = dataFilled;
     }
     if (ch2.name === "parentheses") {
-      let dataParentheses = xmlToYesNo(ch2);
+      const dataParentheses = xmlToYesNo(ch2);
       ret.parentheses = dataParentheses;
     }
   }
-  let ch3 = node;
-  let dataType = getNoteheadType(ch3, null);
+  const ch3 = node;
+  const dataType = getNoteheadType(ch3, null);
   ret.type = dataType;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -9598,7 +9599,7 @@ export enum BeamType {
 
 function getBeamType(node: Node, fallbackVal?: BeamType) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -9632,7 +9633,7 @@ export enum AccelRitNone {
 
 function getAccelRitNone(node: Node, fallbackVal?: AccelRitNone) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -9684,33 +9685,33 @@ export interface Beam {
 }
 
 function xmlToBeam(node: Element) {
-  let ret: Beam = <any>{};
+  const ret: Beam = <any>{};
   let foundRepeater = false;
   let foundNumber_ = false;
   let foundFan = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "repeater") {
-      let dataRepeater = xmlToYesNo(ch2);
+      const dataRepeater = xmlToYesNo(ch2);
       ret.repeater = dataRepeater;
       foundRepeater = true;
     }
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
       foundNumber_ = true;
     }
     if (ch2.name === "fan") {
-      let dataFan = getAccelRitNone(ch2, AccelRitNone.None);
+      const dataFan = getAccelRitNone(ch2, AccelRitNone.None);
       ret.fan = dataFan;
       foundFan = true;
     }
   }
-  let ch3 = node;
-  let dataType = getBeamType(ch3, null);
+  const ch3 = node;
+  const dataType = getBeamType(ch3, null);
   ret.type = dataType;
   if (!foundRepeater) {
     ret.repeater = false;
@@ -9750,85 +9751,85 @@ export interface Notations extends Editorial, PrintObject {
 }
 
 function xmlToNotations(node: Element) {
-  let ret: Notations = <any>{};
+  const ret: Notations = <any>{};
   let foundPrintObject = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "slur") {
-      let dataSlurs = xmlToSlur(ch);
+      const dataSlurs = xmlToSlur(ch);
       ret.slurs = (ret.slurs || []).concat(dataSlurs);
     }
     if (ch.nodeName === "articulations") {
-      let dataArticulations = xmlToArticulations(ch);
+      const dataArticulations = xmlToArticulations(ch);
       ret.articulations = (ret.articulations || []).concat(dataArticulations);
     }
     if (ch.nodeName === "slide") {
-      let dataSlides = xmlToSlide(ch);
+      const dataSlides = xmlToSlide(ch);
       ret.slides = (ret.slides || []).concat(dataSlides);
     }
     if (ch.nodeName === "technical") {
-      let dataTechnicals = xmlToTechnical(ch);
+      const dataTechnicals = xmlToTechnical(ch);
       ret.technicals = (ret.technicals || []).concat(dataTechnicals);
     }
     if (ch.nodeName === "footnote") {
-      let dataFootnote = xmlToFootnote(ch);
+      const dataFootnote = xmlToFootnote(ch);
       ret.footnote = dataFootnote;
     }
     if (ch.nodeName === "level") {
-      let dataLevel = xmlToLevel(ch);
+      const dataLevel = xmlToLevel(ch);
       ret.level = dataLevel;
     }
     if (ch.nodeName === "tied") {
-      let dataTieds = xmlToTied(ch);
+      const dataTieds = xmlToTied(ch);
       ret.tieds = (ret.tieds || []).concat(dataTieds);
     }
     if (ch.nodeName === "tuplet") {
-      let dataTuplets = xmlToTuplet(ch);
+      const dataTuplets = xmlToTuplet(ch);
       ret.tuplets = (ret.tuplets || []).concat(dataTuplets);
     }
     if (ch.nodeName === "glissando") {
-      let dataGlissandos = xmlToGlissando(ch);
+      const dataGlissandos = xmlToGlissando(ch);
       ret.glissandos = (ret.glissandos || []).concat(dataGlissandos);
     }
     if (ch.nodeName === "dynamics") {
-      let dataDynamics = xmlToDynamics(ch);
+      const dataDynamics = xmlToDynamics(ch);
       ret.dynamics = (ret.dynamics || []).concat(dataDynamics);
     }
     if (ch.nodeName === "fermata") {
-      let dataFermatas = xmlToFermata(ch);
+      const dataFermatas = xmlToFermata(ch);
       ret.fermatas = (ret.fermatas || []).concat(dataFermatas);
     }
     if (ch.nodeName === "accidental-mark") {
-      let dataAccidentalMarks = xmlToAccidentalMark(ch);
+      const dataAccidentalMarks = xmlToAccidentalMark(ch);
       ret.accidentalMarks = (ret.accidentalMarks || []).concat(
         dataAccidentalMarks,
       );
     }
     if (ch.nodeName === "ornaments") {
-      let dataOrnaments = xmlToOrnaments(ch);
+      const dataOrnaments = xmlToOrnaments(ch);
       ret.ornaments = (ret.ornaments || []).concat(dataOrnaments);
     }
     if (ch.nodeName === "arpeggiate") {
-      let dataArpeggiates = xmlToArpeggiate(ch);
+      const dataArpeggiates = xmlToArpeggiate(ch);
       ret.arpeggiates = (ret.arpeggiates || []).concat(dataArpeggiates);
     }
     if (ch.nodeName === "non-arpeggiate") {
-      let dataNonArpeggiates = xmlToNonArpeggiate(ch);
+      const dataNonArpeggiates = xmlToNonArpeggiate(ch);
       ret.nonArpeggiates = (ret.nonArpeggiates || []).concat(
         dataNonArpeggiates,
       );
     }
     if (ch.nodeName === "other-notation") {
-      let dataOtherNotations = xmlToOtherNotation(ch);
+      const dataOtherNotations = xmlToOtherNotation(ch);
       ret.otherNotations = (ret.otherNotations || []).concat(
         dataOtherNotations,
       );
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "print-object") {
-      let dataPrintObject = xmlToYesNo(ch2);
+      const dataPrintObject = xmlToYesNo(ch2);
       ret.printObject = dataPrintObject;
       foundPrintObject = true;
     }
@@ -9864,7 +9865,7 @@ export interface Tied
 }
 
 function xmlToTied(node: Element) {
-  let ret: Tied = <any>{};
+  const ret: Tied = <any>{};
   let foundLineType = false;
   let foundDashLength = false;
   let foundSpaceLength = false;
@@ -9872,16 +9873,16 @@ function xmlToTied(node: Element) {
   let foundOrientation = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
     }
     if (ch2.name === "line-type") {
-      let dataLineType = getSolidDashedDottedWavy(
+      const dataLineType = getSolidDashedDottedWavy(
         ch2,
         SolidDashedDottedWavy.Solid,
       );
@@ -9889,72 +9890,72 @@ function xmlToTied(node: Element) {
       foundLineType = true;
     }
     if (ch2.name === "dash-length") {
-      let dataDashLength = getNumber(ch2, true);
+      const dataDashLength = getNumber(ch2, true);
       ret.dashLength = dataDashLength;
       foundDashLength = true;
     }
     if (ch2.name === "space-length") {
-      let dataSpaceLength = getNumber(ch2, true);
+      const dataSpaceLength = getNumber(ch2, true);
       ret.spaceLength = dataSpaceLength;
       foundSpaceLength = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "orientation") {
-      let dataOrientation = getOverUnder(ch2, OverUnder.Unspecified);
+      const dataOrientation = getOverUnder(ch2, OverUnder.Unspecified);
       ret.orientation = dataOrientation;
       foundOrientation = true;
     }
     if (ch2.name === "bezier-x2") {
-      let dataBezierX2 = getNumber(ch2, true);
+      const dataBezierX2 = getNumber(ch2, true);
       ret.bezierX2 = dataBezierX2;
     }
     if (ch2.name === "bezier-offset") {
-      let dataBezierOffset = getNumber(ch2, true);
+      const dataBezierOffset = getNumber(ch2, true);
       ret.bezierOffset = dataBezierOffset;
     }
     if (ch2.name === "bezier-offset2") {
-      let dataBezierOffset2 = getNumber(ch2, true);
+      const dataBezierOffset2 = getNumber(ch2, true);
       ret.bezierOffset2 = dataBezierOffset2;
     }
     if (ch2.name === "bezier-x") {
-      let dataBezierX = getNumber(ch2, true);
+      const dataBezierX = getNumber(ch2, true);
       ret.bezierX = dataBezierX;
     }
     if (ch2.name === "bezier-y") {
-      let dataBezierY = getNumber(ch2, true);
+      const dataBezierY = getNumber(ch2, true);
       ret.bezierY = dataBezierY;
     }
     if (ch2.name === "bezier-y2") {
-      let dataBezierY2 = getNumber(ch2, true);
+      const dataBezierY2 = getNumber(ch2, true);
       ret.bezierY2 = dataBezierY2;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "type") {
-      let dataType = getStartStopContinue(ch2, null);
+      const dataType = getStartStopContinue(ch2, null);
       ret.type = dataType;
     }
   }
@@ -10001,7 +10002,7 @@ export interface Slur
 }
 
 function xmlToSlur(node: Element) {
-  let ret: Slur = <any>{};
+  const ret: Slur = <any>{};
   let foundNumber_ = false;
   let foundLineType = false;
   let foundDashLength = false;
@@ -10010,17 +10011,17 @@ function xmlToSlur(node: Element) {
   let foundOrientation = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
       foundNumber_ = true;
     }
     if (ch2.name === "line-type") {
-      let dataLineType = getSolidDashedDottedWavy(
+      const dataLineType = getSolidDashedDottedWavy(
         ch2,
         SolidDashedDottedWavy.Solid,
       );
@@ -10028,72 +10029,72 @@ function xmlToSlur(node: Element) {
       foundLineType = true;
     }
     if (ch2.name === "dash-length") {
-      let dataDashLength = getNumber(ch2, true);
+      const dataDashLength = getNumber(ch2, true);
       ret.dashLength = dataDashLength;
       foundDashLength = true;
     }
     if (ch2.name === "space-length") {
-      let dataSpaceLength = getNumber(ch2, true);
+      const dataSpaceLength = getNumber(ch2, true);
       ret.spaceLength = dataSpaceLength;
       foundSpaceLength = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "orientation") {
-      let dataOrientation = getOverUnder(ch2, OverUnder.Unspecified);
+      const dataOrientation = getOverUnder(ch2, OverUnder.Unspecified);
       ret.orientation = dataOrientation;
       foundOrientation = true;
     }
     if (ch2.name === "bezier-x2") {
-      let dataBezierX2 = getNumber(ch2, true);
+      const dataBezierX2 = getNumber(ch2, true);
       ret.bezierX2 = dataBezierX2;
     }
     if (ch2.name === "bezier-offset") {
-      let dataBezierOffset = getNumber(ch2, true);
+      const dataBezierOffset = getNumber(ch2, true);
       ret.bezierOffset = dataBezierOffset;
     }
     if (ch2.name === "bezier-offset2") {
-      let dataBezierOffset2 = getNumber(ch2, true);
+      const dataBezierOffset2 = getNumber(ch2, true);
       ret.bezierOffset2 = dataBezierOffset2;
     }
     if (ch2.name === "bezier-x") {
-      let dataBezierX = getNumber(ch2, true);
+      const dataBezierX = getNumber(ch2, true);
       ret.bezierX = dataBezierX;
     }
     if (ch2.name === "bezier-y") {
-      let dataBezierY = getNumber(ch2, true);
+      const dataBezierY = getNumber(ch2, true);
       ret.bezierY = dataBezierY;
     }
     if (ch2.name === "bezier-y2") {
-      let dataBezierY2 = getNumber(ch2, true);
+      const dataBezierY2 = getNumber(ch2, true);
       ret.bezierY2 = dataBezierY2;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "type") {
-      let dataType = getStartStopContinue(ch2, null);
+      const dataType = getStartStopContinue(ch2, null);
       ret.type = dataType;
     }
   }
@@ -10129,7 +10130,7 @@ export enum ActualBothNone {
 
 function getActualBothNone(node: Node, fallbackVal?: ActualBothNone) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -10192,71 +10193,71 @@ export interface Tuplet extends LineShape, Position, Placement {
 }
 
 function xmlToTuplet(node: Element) {
-  let ret: Tuplet = <any>{};
+  const ret: Tuplet = <any>{};
   let foundBracket = false;
   let foundShowNumber = false;
   let foundLineShape = false;
   let foundPlacement = false;
   let foundShowType = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "tuplet-normal") {
-      let dataTupletNormal = xmlToTupletNormal(ch);
+      const dataTupletNormal = xmlToTupletNormal(ch);
       ret.tupletNormal = dataTupletNormal;
     }
     if (ch.nodeName === "tuplet-actual") {
-      let dataTupletActual = xmlToTupletActual(ch);
+      const dataTupletActual = xmlToTupletActual(ch);
       ret.tupletActual = dataTupletActual;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "bracket") {
-      let dataBracket = xmlToYesNo(ch2);
+      const dataBracket = xmlToYesNo(ch2);
       ret.bracket = dataBracket;
       foundBracket = true;
     }
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
     }
     if (ch2.name === "show-number") {
-      let dataShowNumber = getActualBothNone(ch2, ActualBothNone.Actual);
+      const dataShowNumber = getActualBothNone(ch2, ActualBothNone.Actual);
       ret.showNumber = dataShowNumber;
       foundShowNumber = true;
     }
     if (ch2.name === "line-shape") {
-      let dataLineShape = getStraightCurved(ch2, StraightCurved.Straight);
+      const dataLineShape = getStraightCurved(ch2, StraightCurved.Straight);
       ret.lineShape = dataLineShape;
       foundLineShape = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "type") {
-      let dataType = getStartStop(ch2, null);
+      const dataType = getStartStop(ch2, null);
       ret.type = dataType;
     }
     if (ch2.name === "show-type") {
-      let dataShowType = getActualBothNone(ch2, ActualBothNone.None);
+      const dataShowType = getActualBothNone(ch2, ActualBothNone.None);
       ret.showType = dataShowType;
       foundShowType = true;
     }
@@ -10318,24 +10319,24 @@ export interface TupletActual {
 }
 
 function xmlToTupletActual(node: Element) {
-  let ret: TupletActual = <any>{};
+  const ret: TupletActual = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "tuplet-number") {
-      let dataTupletNumber = xmlToTupletNumber(ch);
+      const dataTupletNumber = xmlToTupletNumber(ch);
       ret.tupletNumber = dataTupletNumber;
     }
     if (ch.nodeName === "tuplet-dot") {
-      let dataTupletDots = xmlToTupletDot(ch);
+      const dataTupletDots = xmlToTupletDot(ch);
       ret.tupletDots = (ret.tupletDots || []).concat(dataTupletDots);
     }
     if (ch.nodeName === "tuplet-type") {
-      let dataTupletType = xmlToTupletType(ch);
+      const dataTupletType = xmlToTupletType(ch);
       ret.tupletType = dataTupletType;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -10379,24 +10380,24 @@ export interface TupletNormal {
 }
 
 function xmlToTupletNormal(node: Element) {
-  let ret: TupletNormal = <any>{};
+  const ret: TupletNormal = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "tuplet-number") {
-      let dataTupletNumber = xmlToTupletNumber(ch);
+      const dataTupletNumber = xmlToTupletNumber(ch);
       ret.tupletNumber = dataTupletNumber;
     }
     if (ch.nodeName === "tuplet-dot") {
-      let dataTupletDots = xmlToTupletDot(ch);
+      const dataTupletDots = xmlToTupletDot(ch);
       ret.tupletDots = (ret.tupletDots || []).concat(dataTupletDots);
     }
     if (ch.nodeName === "tuplet-type") {
-      let dataTupletType = xmlToTupletType(ch);
+      const dataTupletType = xmlToTupletType(ch);
       ret.tupletType = dataTupletType;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -10438,41 +10439,41 @@ export interface TupletNumber extends Font, Color {
 }
 
 function xmlToTupletNumber(node: Element) {
-  let ret: TupletNumber = <any>{};
+  const ret: TupletNumber = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
   }
-  let ch3 = node;
-  let dataText = getString(ch3, true);
+  const ch3 = node;
+  const dataText = getString(ch3, true);
   ret.text = dataText;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -10523,41 +10524,41 @@ export interface TupletType extends Font, Color {
 }
 
 function xmlToTupletType(node: Element) {
-  let ret: TupletType = <any>{};
+  const ret: TupletType = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
   }
-  let ch3 = node;
-  let dataText = getString(ch3, true);
+  const ch3 = node;
+  const dataText = getString(ch3, true);
   ret.text = dataText;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -10607,35 +10608,35 @@ export interface TupletDot extends Font, Color {
 }
 
 function xmlToTupletDot(node: Element) {
-  let ret: TupletDot = <any>{};
+  const ret: TupletDot = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
@@ -10670,7 +10671,7 @@ export interface Glissando extends LineType, DashedFormatting, PrintStyle {
 }
 
 function xmlToGlissando(node: Element) {
-  let ret: Glissando = <any>{};
+  const ret: Glissando = <any>{};
   let foundLineType = false;
   let foundDashLength = false;
   let foundSpaceLength = false;
@@ -10679,12 +10680,12 @@ function xmlToGlissando(node: Element) {
   let foundColor = false;
   let foundNumber = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "line-type") {
-      let dataLineType = getSolidDashedDottedWavy(
+      const dataLineType = getSolidDashedDottedWavy(
         ch2,
         SolidDashedDottedWavy.Solid,
       );
@@ -10692,66 +10693,66 @@ function xmlToGlissando(node: Element) {
       foundLineType = true;
     }
     if (ch2.name === "dash-length") {
-      let dataDashLength = getNumber(ch2, true);
+      const dataDashLength = getNumber(ch2, true);
       ret.dashLength = dataDashLength;
       foundDashLength = true;
     }
     if (ch2.name === "space-length") {
-      let dataSpaceLength = getNumber(ch2, true);
+      const dataSpaceLength = getNumber(ch2, true);
       ret.spaceLength = dataSpaceLength;
       foundSpaceLength = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "type") {
-      let dataType = getStartStop(ch2, null);
+      const dataType = getStartStop(ch2, null);
       ret.type = dataType;
     }
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
       foundNumber = true;
     }
   }
-  let ch3 = node;
-  let dataText = getString(ch3, false);
+  const ch3 = node;
+  const dataText = getString(ch3, false);
   ret.text = dataText;
   if (!foundLineType) {
     ret.lineType = SolidDashedDottedWavy.Solid;
@@ -10796,7 +10797,7 @@ export interface Slide
 }
 
 function xmlToSlide(node: Element) {
-  let ret: Slide = <any>{};
+  const ret: Slide = <any>{};
   let foundLineType = false;
   let foundDashLength = false;
   let foundSpaceLength = false;
@@ -10809,12 +10810,12 @@ function xmlToSlide(node: Element) {
   let foundFirstBeat = false;
   let foundNumber = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "line-type") {
-      let dataLineType = getSolidDashedDottedWavy(
+      const dataLineType = getSolidDashedDottedWavy(
         ch2,
         SolidDashedDottedWavy.Solid,
       );
@@ -10822,86 +10823,86 @@ function xmlToSlide(node: Element) {
       foundLineType = true;
     }
     if (ch2.name === "dash-length") {
-      let dataDashLength = getNumber(ch2, true);
+      const dataDashLength = getNumber(ch2, true);
       ret.dashLength = dataDashLength;
       foundDashLength = true;
     }
     if (ch2.name === "space-length") {
-      let dataSpaceLength = getNumber(ch2, true);
+      const dataSpaceLength = getNumber(ch2, true);
       ret.spaceLength = dataSpaceLength;
       foundSpaceLength = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "accelerate") {
-      let dataAccelerate = xmlToYesNo(ch2);
+      const dataAccelerate = xmlToYesNo(ch2);
       ret.accelerate = dataAccelerate;
       foundAccelerate = true;
     }
     if (ch2.name === "beats") {
-      let dataBeats = getNumber(ch2, true);
+      const dataBeats = getNumber(ch2, true);
       ret.beats = dataBeats;
       foundBeats = true;
     }
     if (ch2.name === "last-beat") {
-      let dataLastBeat = getNumber(ch2, true);
+      const dataLastBeat = getNumber(ch2, true);
       ret.lastBeat = dataLastBeat;
       foundLastBeat = true;
     }
     if (ch2.name === "first-beat") {
-      let dataFirstBeat = getNumber(ch2, true);
+      const dataFirstBeat = getNumber(ch2, true);
       ret.firstBeat = dataFirstBeat;
       foundFirstBeat = true;
     }
     if (ch2.name === "type") {
-      let dataType = getStartStop(ch2, null);
+      const dataType = getStartStop(ch2, null);
       ret.type = dataType;
     }
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
       foundNumber = true;
     }
   }
-  let ch3 = node;
-  let dataText = getString(ch3, false);
+  const ch3 = node;
+  const dataText = getString(ch3, false);
   ret.text = dataText;
   if (!foundLineType) {
     ret.lineType = SolidDashedDottedWavy.Solid;
@@ -10955,7 +10956,7 @@ export interface OtherNotation extends PrintObject, PrintStyle, Placement {
 }
 
 function xmlToOtherNotation(node: Element) {
-  let ret: OtherNotation = <any>{};
+  const ret: OtherNotation = <any>{};
   let foundPrintObject = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
@@ -10963,71 +10964,71 @@ function xmlToOtherNotation(node: Element) {
   let foundPlacement = false;
   let foundNumber = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "print-object") {
-      let dataPrintObject = xmlToYesNo(ch2);
+      const dataPrintObject = xmlToYesNo(ch2);
       ret.printObject = dataPrintObject;
       foundPrintObject = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "type") {
-      let dataType = getStartStopSingle(ch2, null);
+      const dataType = getStartStopSingle(ch2, null);
       ret.type = dataType;
     }
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, null);
+      const dataNumber = getNumber(ch2, null);
       foundNumber = true;
       ret.type = dataNumber;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, false);
+  const ch3 = node;
+  const dataData = getString(ch3, false);
   ret.data = dataData;
   if (!foundPrintObject) {
     ret.printObject = true;
@@ -11062,7 +11063,7 @@ export interface OtherDirection extends PrintObject, PrintStyleAlign {
 }
 
 function xmlToOtherDirection(node: Element) {
-  let ret: OtherDirection = <any>{};
+  const ret: OtherDirection = <any>{};
   let foundPrintObject = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
@@ -11070,56 +11071,56 @@ function xmlToOtherDirection(node: Element) {
   let foundHalign = false;
   let foundValign = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "print-object") {
-      let dataPrintObject = xmlToYesNo(ch2);
+      const dataPrintObject = xmlToYesNo(ch2);
       ret.printObject = dataPrintObject;
       foundPrintObject = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -11127,7 +11128,7 @@ function xmlToOtherDirection(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -11135,8 +11136,8 @@ function xmlToOtherDirection(node: Element) {
       foundValign = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundPrintObject) {
     ret.printObject = true;
@@ -11184,7 +11185,7 @@ export interface Ornaments extends PrintStyle, Placement, TrillSound {
 }
 
 function xmlToOrnaments(node: Element) {
-  let ret: Ornaments = <any>{};
+  const ret: Ornaments = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
@@ -11197,144 +11198,144 @@ function xmlToOrnaments(node: Element) {
   let foundTwoNoteTurn = false;
   let foundSecondBeat = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "delayed-inverted-turn") {
-      let dataDelayedInvertedTurn = xmlToDelayedInvertedTurn(ch);
+      const dataDelayedInvertedTurn = xmlToDelayedInvertedTurn(ch);
       ret.delayedInvertedTurn = dataDelayedInvertedTurn;
     }
     if (ch.nodeName === "shake") {
-      let dataShake = xmlToShake(ch);
+      const dataShake = xmlToShake(ch);
       ret.shake = dataShake;
     }
     if (ch.nodeName === "turn") {
-      let dataTurn = xmlToTurn(ch);
+      const dataTurn = xmlToTurn(ch);
       ret.turn = dataTurn;
     }
     if (ch.nodeName === "inverted-turn") {
-      let dataInvertedTurn = xmlToInvertedTurn(ch);
+      const dataInvertedTurn = xmlToInvertedTurn(ch);
       ret.invertedTurn = dataInvertedTurn;
     }
     if (ch.nodeName === "other-ornament") {
-      let dataOtherOrnament = xmlToOtherOrnament(ch);
+      const dataOtherOrnament = xmlToOtherOrnament(ch);
       ret.otherOrnament = dataOtherOrnament;
     }
     if (ch.nodeName === "delayed-turn") {
-      let dataDelayedTurn = xmlToDelayedTurn(ch);
+      const dataDelayedTurn = xmlToDelayedTurn(ch);
       ret.delayedTurn = dataDelayedTurn;
     }
     if (ch.nodeName === "vertical-turn") {
-      let dataVerticalTurn = xmlToVerticalTurn(ch);
+      const dataVerticalTurn = xmlToVerticalTurn(ch);
       ret.verticalTurn = dataVerticalTurn;
     }
     if (ch.nodeName === "wavy-line") {
-      let dataWavyLine = xmlToWavyLine(ch);
+      const dataWavyLine = xmlToWavyLine(ch);
       ret.wavyLine = dataWavyLine;
     }
     if (ch.nodeName === "tremolo") {
-      let dataTremolo = xmlToTremolo(ch);
+      const dataTremolo = xmlToTremolo(ch);
       ret.tremolo = dataTremolo;
     }
     if (ch.nodeName === "accidental-mark") {
-      let dataAccidentalMarks = xmlToAccidentalMark(ch);
+      const dataAccidentalMarks = xmlToAccidentalMark(ch);
       ret.accidentalMarks = (ret.accidentalMarks || []).concat(
         dataAccidentalMarks,
       );
     }
     if (ch.nodeName === "trill-mark") {
-      let dataTrillMark = xmlToTrillMark(ch);
+      const dataTrillMark = xmlToTrillMark(ch);
       ret.trillMark = dataTrillMark;
     }
     if (ch.nodeName === "mordent") {
-      let dataMordent = xmlToMordent(ch);
+      const dataMordent = xmlToMordent(ch);
       ret.mordent = dataMordent;
     }
     if (ch.nodeName === "inverted-mordent") {
-      let dataInvertedMordent = xmlToInvertedMordent(ch);
+      const dataInvertedMordent = xmlToInvertedMordent(ch);
       ret.invertedMordent = dataInvertedMordent;
     }
     if (ch.nodeName === "schleifer") {
-      let dataSchleifer = xmlToSchleifer(ch);
+      const dataSchleifer = xmlToSchleifer(ch);
       ret.schleifer = dataSchleifer;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "start-note") {
-      let dataStartNote = getUpperMainBelow(ch2, UpperMainBelow.Upper);
+      const dataStartNote = getUpperMainBelow(ch2, UpperMainBelow.Upper);
       ret.startNote = dataStartNote;
       foundStartNote = true;
     }
     if (ch2.name === "accelerate") {
-      let dataAccelerate = xmlToYesNo(ch2);
+      const dataAccelerate = xmlToYesNo(ch2);
       ret.accelerate = dataAccelerate;
       foundAccelerate = true;
     }
     if (ch2.name === "beats") {
-      let dataBeats = getNumber(ch2, true);
+      const dataBeats = getNumber(ch2, true);
       ret.beats = dataBeats;
       foundBeats = true;
     }
     if (ch2.name === "last-beat") {
-      let dataLastBeat = getNumber(ch2, true);
+      const dataLastBeat = getNumber(ch2, true);
       ret.lastBeat = dataLastBeat;
       foundLastBeat = true;
     }
     if (ch2.name === "trill-step") {
-      let dataTrillStep = getWholeHalfUnison(ch2, WholeHalfUnison.Whole);
+      const dataTrillStep = getWholeHalfUnison(ch2, WholeHalfUnison.Whole);
       ret.trillStep = dataTrillStep;
       foundTrillStep = true;
     }
     if (ch2.name === "two-note-turn") {
-      let dataTwoNoteTurn = getWholeHalfNone(ch2, WholeHalfNone.None);
+      const dataTwoNoteTurn = getWholeHalfNone(ch2, WholeHalfNone.None);
       ret.twoNoteTurn = dataTwoNoteTurn;
       foundTwoNoteTurn = true;
     }
     if (ch2.name === "second-beat") {
-      let dataSecondBeat = getNumber(ch2, true);
+      const dataSecondBeat = getNumber(ch2, true);
       ret.secondBeat = dataSecondBeat;
       foundSecondBeat = true;
     }
@@ -11380,7 +11381,7 @@ export interface TrillMark extends PrintStyle, Placement, TrillSound {
 }
 
 function xmlToTrillMark(node: Element) {
-  let ret: TrillMark = <any>{};
+  const ret: TrillMark = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
@@ -11393,86 +11394,86 @@ function xmlToTrillMark(node: Element) {
   let foundTwoNoteTurn = false;
   let foundSecondBeat = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "start-note") {
-      let dataStartNote = getUpperMainBelow(ch2, UpperMainBelow.Upper);
+      const dataStartNote = getUpperMainBelow(ch2, UpperMainBelow.Upper);
       ret.startNote = dataStartNote;
       foundStartNote = true;
     }
     if (ch2.name === "accelerate") {
-      let dataAccelerate = xmlToYesNo(ch2);
+      const dataAccelerate = xmlToYesNo(ch2);
       ret.accelerate = dataAccelerate;
       foundAccelerate = true;
     }
     if (ch2.name === "beats") {
-      let dataBeats = getNumber(ch2, true);
+      const dataBeats = getNumber(ch2, true);
       ret.beats = dataBeats;
       foundBeats = true;
     }
     if (ch2.name === "last-beat") {
-      let dataLastBeat = getNumber(ch2, true);
+      const dataLastBeat = getNumber(ch2, true);
       ret.lastBeat = dataLastBeat;
       foundLastBeat = true;
     }
     if (ch2.name === "trill-step") {
-      let dataTrillStep = getWholeHalfUnison(ch2, WholeHalfUnison.Whole);
+      const dataTrillStep = getWholeHalfUnison(ch2, WholeHalfUnison.Whole);
       ret.trillStep = dataTrillStep;
       foundTrillStep = true;
     }
     if (ch2.name === "two-note-turn") {
-      let dataTwoNoteTurn = getWholeHalfNone(ch2, WholeHalfNone.None);
+      const dataTwoNoteTurn = getWholeHalfNone(ch2, WholeHalfNone.None);
       ret.twoNoteTurn = dataTwoNoteTurn;
       foundTwoNoteTurn = true;
     }
     if (ch2.name === "second-beat") {
-      let dataSecondBeat = getNumber(ch2, true);
+      const dataSecondBeat = getNumber(ch2, true);
       ret.secondBeat = dataSecondBeat;
       foundSecondBeat = true;
     }
@@ -11530,7 +11531,7 @@ export interface Turn extends PrintStyle, Placement, TrillSound {
 }
 
 function xmlToTurn(node: Element) {
-  let ret: Turn = <any>{};
+  const ret: Turn = <any>{};
   let foundSlash = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
@@ -11544,91 +11545,91 @@ function xmlToTurn(node: Element) {
   let foundTwoNoteTurn = false;
   let foundSecondBeat = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "slash") {
-      let dataSlash = xmlToYesNo(ch2);
+      const dataSlash = xmlToYesNo(ch2);
       ret.slash = dataSlash;
       foundSlash = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "start-note") {
-      let dataStartNote = getUpperMainBelow(ch2, UpperMainBelow.Upper);
+      const dataStartNote = getUpperMainBelow(ch2, UpperMainBelow.Upper);
       ret.startNote = dataStartNote;
       foundStartNote = true;
     }
     if (ch2.name === "accelerate") {
-      let dataAccelerate = xmlToYesNo(ch2);
+      const dataAccelerate = xmlToYesNo(ch2);
       ret.accelerate = dataAccelerate;
       foundAccelerate = true;
     }
     if (ch2.name === "beats") {
-      let dataBeats = getNumber(ch2, true);
+      const dataBeats = getNumber(ch2, true);
       ret.beats = dataBeats;
       foundBeats = true;
     }
     if (ch2.name === "last-beat") {
-      let dataLastBeat = getNumber(ch2, true);
+      const dataLastBeat = getNumber(ch2, true);
       ret.lastBeat = dataLastBeat;
       foundLastBeat = true;
     }
     if (ch2.name === "trill-step") {
-      let dataTrillStep = getWholeHalfUnison(ch2, WholeHalfUnison.Whole);
+      const dataTrillStep = getWholeHalfUnison(ch2, WholeHalfUnison.Whole);
       ret.trillStep = dataTrillStep;
       foundTrillStep = true;
     }
     if (ch2.name === "two-note-turn") {
-      let dataTwoNoteTurn = getWholeHalfNone(ch2, WholeHalfNone.None);
+      const dataTwoNoteTurn = getWholeHalfNone(ch2, WholeHalfNone.None);
       ret.twoNoteTurn = dataTwoNoteTurn;
       foundTwoNoteTurn = true;
     }
     if (ch2.name === "second-beat") {
-      let dataSecondBeat = getNumber(ch2, true);
+      const dataSecondBeat = getNumber(ch2, true);
       ret.secondBeat = dataSecondBeat;
       foundSecondBeat = true;
     }
@@ -11689,7 +11690,7 @@ export interface DelayedTurn extends PrintStyle, Placement, TrillSound {
 }
 
 function xmlToDelayedTurn(node: Element) {
-  let ret: DelayedTurn = <any>{};
+  const ret: DelayedTurn = <any>{};
   let foundSlash = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
@@ -11703,91 +11704,91 @@ function xmlToDelayedTurn(node: Element) {
   let foundTwoNoteTurn = false;
   let foundSecondBeat = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "slash") {
-      let dataSlash = xmlToYesNo(ch2);
+      const dataSlash = xmlToYesNo(ch2);
       ret.slash = dataSlash;
       foundSlash = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "start-note") {
-      let dataStartNote = getUpperMainBelow(ch2, UpperMainBelow.Upper);
+      const dataStartNote = getUpperMainBelow(ch2, UpperMainBelow.Upper);
       ret.startNote = dataStartNote;
       foundStartNote = true;
     }
     if (ch2.name === "accelerate") {
-      let dataAccelerate = xmlToYesNo(ch2);
+      const dataAccelerate = xmlToYesNo(ch2);
       ret.accelerate = dataAccelerate;
       foundAccelerate = true;
     }
     if (ch2.name === "beats") {
-      let dataBeats = getNumber(ch2, true);
+      const dataBeats = getNumber(ch2, true);
       ret.beats = dataBeats;
       foundBeats = true;
     }
     if (ch2.name === "last-beat") {
-      let dataLastBeat = getNumber(ch2, true);
+      const dataLastBeat = getNumber(ch2, true);
       ret.lastBeat = dataLastBeat;
       foundLastBeat = true;
     }
     if (ch2.name === "trill-step") {
-      let dataTrillStep = getWholeHalfUnison(ch2, WholeHalfUnison.Whole);
+      const dataTrillStep = getWholeHalfUnison(ch2, WholeHalfUnison.Whole);
       ret.trillStep = dataTrillStep;
       foundTrillStep = true;
     }
     if (ch2.name === "two-note-turn") {
-      let dataTwoNoteTurn = getWholeHalfNone(ch2, WholeHalfNone.None);
+      const dataTwoNoteTurn = getWholeHalfNone(ch2, WholeHalfNone.None);
       ret.twoNoteTurn = dataTwoNoteTurn;
       foundTwoNoteTurn = true;
     }
     if (ch2.name === "second-beat") {
-      let dataSecondBeat = getNumber(ch2, true);
+      const dataSecondBeat = getNumber(ch2, true);
       ret.secondBeat = dataSecondBeat;
       foundSecondBeat = true;
     }
@@ -11848,7 +11849,7 @@ export interface InvertedTurn extends PrintStyle, Placement, TrillSound {
 }
 
 function xmlToInvertedTurn(node: Element) {
-  let ret: InvertedTurn = <any>{};
+  const ret: InvertedTurn = <any>{};
   let foundSlash = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
@@ -11862,91 +11863,91 @@ function xmlToInvertedTurn(node: Element) {
   let foundTwoNoteTurn = false;
   let foundSecondBeat = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "slash") {
-      let dataSlash = xmlToYesNo(ch2);
+      const dataSlash = xmlToYesNo(ch2);
       ret.slash = dataSlash;
       foundSlash = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "start-note") {
-      let dataStartNote = getUpperMainBelow(ch2, UpperMainBelow.Upper);
+      const dataStartNote = getUpperMainBelow(ch2, UpperMainBelow.Upper);
       ret.startNote = dataStartNote;
       foundStartNote = true;
     }
     if (ch2.name === "accelerate") {
-      let dataAccelerate = xmlToYesNo(ch2);
+      const dataAccelerate = xmlToYesNo(ch2);
       ret.accelerate = dataAccelerate;
       foundAccelerate = true;
     }
     if (ch2.name === "beats") {
-      let dataBeats = getNumber(ch2, true);
+      const dataBeats = getNumber(ch2, true);
       ret.beats = dataBeats;
       foundBeats = true;
     }
     if (ch2.name === "last-beat") {
-      let dataLastBeat = getNumber(ch2, true);
+      const dataLastBeat = getNumber(ch2, true);
       ret.lastBeat = dataLastBeat;
       foundLastBeat = true;
     }
     if (ch2.name === "trill-step") {
-      let dataTrillStep = getWholeHalfUnison(ch2, WholeHalfUnison.Whole);
+      const dataTrillStep = getWholeHalfUnison(ch2, WholeHalfUnison.Whole);
       ret.trillStep = dataTrillStep;
       foundTrillStep = true;
     }
     if (ch2.name === "two-note-turn") {
-      let dataTwoNoteTurn = getWholeHalfNone(ch2, WholeHalfNone.None);
+      const dataTwoNoteTurn = getWholeHalfNone(ch2, WholeHalfNone.None);
       ret.twoNoteTurn = dataTwoNoteTurn;
       foundTwoNoteTurn = true;
     }
     if (ch2.name === "second-beat") {
-      let dataSecondBeat = getNumber(ch2, true);
+      const dataSecondBeat = getNumber(ch2, true);
       ret.secondBeat = dataSecondBeat;
       foundSecondBeat = true;
     }
@@ -12007,7 +12008,7 @@ export interface DelayedInvertedTurn extends PrintStyle, Placement, TrillSound {
 }
 
 function xmlToDelayedInvertedTurn(node: Element) {
-  let ret: DelayedInvertedTurn = <any>{};
+  const ret: DelayedInvertedTurn = <any>{};
   let foundSlash = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
@@ -12021,91 +12022,91 @@ function xmlToDelayedInvertedTurn(node: Element) {
   let foundTwoNoteTurn = false;
   let foundSecondBeat = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "slash") {
-      let dataSlash = xmlToYesNo(ch2);
+      const dataSlash = xmlToYesNo(ch2);
       ret.slash = dataSlash;
       foundSlash = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "start-note") {
-      let dataStartNote = getUpperMainBelow(ch2, UpperMainBelow.Upper);
+      const dataStartNote = getUpperMainBelow(ch2, UpperMainBelow.Upper);
       ret.startNote = dataStartNote;
       foundStartNote = true;
     }
     if (ch2.name === "accelerate") {
-      let dataAccelerate = xmlToYesNo(ch2);
+      const dataAccelerate = xmlToYesNo(ch2);
       ret.accelerate = dataAccelerate;
       foundAccelerate = true;
     }
     if (ch2.name === "beats") {
-      let dataBeats = getNumber(ch2, true);
+      const dataBeats = getNumber(ch2, true);
       ret.beats = dataBeats;
       foundBeats = true;
     }
     if (ch2.name === "last-beat") {
-      let dataLastBeat = getNumber(ch2, true);
+      const dataLastBeat = getNumber(ch2, true);
       ret.lastBeat = dataLastBeat;
       foundLastBeat = true;
     }
     if (ch2.name === "trill-step") {
-      let dataTrillStep = getWholeHalfUnison(ch2, WholeHalfUnison.Whole);
+      const dataTrillStep = getWholeHalfUnison(ch2, WholeHalfUnison.Whole);
       ret.trillStep = dataTrillStep;
       foundTrillStep = true;
     }
     if (ch2.name === "two-note-turn") {
-      let dataTwoNoteTurn = getWholeHalfNone(ch2, WholeHalfNone.None);
+      const dataTwoNoteTurn = getWholeHalfNone(ch2, WholeHalfNone.None);
       ret.twoNoteTurn = dataTwoNoteTurn;
       foundTwoNoteTurn = true;
     }
     if (ch2.name === "second-beat") {
-      let dataSecondBeat = getNumber(ch2, true);
+      const dataSecondBeat = getNumber(ch2, true);
       ret.secondBeat = dataSecondBeat;
       foundSecondBeat = true;
     }
@@ -12165,7 +12166,7 @@ export interface VerticalTurn extends PrintStyle, Placement, TrillSound {
 }
 
 function xmlToVerticalTurn(node: Element) {
-  let ret: VerticalTurn = <any>{};
+  const ret: VerticalTurn = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
@@ -12178,86 +12179,86 @@ function xmlToVerticalTurn(node: Element) {
   let foundTwoNoteTurn = false;
   let foundSecondBeat = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "start-note") {
-      let dataStartNote = getUpperMainBelow(ch2, UpperMainBelow.Upper);
+      const dataStartNote = getUpperMainBelow(ch2, UpperMainBelow.Upper);
       ret.startNote = dataStartNote;
       foundStartNote = true;
     }
     if (ch2.name === "accelerate") {
-      let dataAccelerate = xmlToYesNo(ch2);
+      const dataAccelerate = xmlToYesNo(ch2);
       ret.accelerate = dataAccelerate;
       foundAccelerate = true;
     }
     if (ch2.name === "beats") {
-      let dataBeats = getNumber(ch2, true);
+      const dataBeats = getNumber(ch2, true);
       ret.beats = dataBeats;
       foundBeats = true;
     }
     if (ch2.name === "last-beat") {
-      let dataLastBeat = getNumber(ch2, true);
+      const dataLastBeat = getNumber(ch2, true);
       ret.lastBeat = dataLastBeat;
       foundLastBeat = true;
     }
     if (ch2.name === "trill-step") {
-      let dataTrillStep = getWholeHalfUnison(ch2, WholeHalfUnison.Whole);
+      const dataTrillStep = getWholeHalfUnison(ch2, WholeHalfUnison.Whole);
       ret.trillStep = dataTrillStep;
       foundTrillStep = true;
     }
     if (ch2.name === "two-note-turn") {
-      let dataTwoNoteTurn = getWholeHalfNone(ch2, WholeHalfNone.None);
+      const dataTwoNoteTurn = getWholeHalfNone(ch2, WholeHalfNone.None);
       ret.twoNoteTurn = dataTwoNoteTurn;
       foundTwoNoteTurn = true;
     }
     if (ch2.name === "second-beat") {
-      let dataSecondBeat = getNumber(ch2, true);
+      const dataSecondBeat = getNumber(ch2, true);
       ret.secondBeat = dataSecondBeat;
       foundSecondBeat = true;
     }
@@ -12314,7 +12315,7 @@ export interface Shake extends PrintStyle, Placement, TrillSound {
 }
 
 function xmlToShake(node: Element) {
-  let ret: Shake = <any>{};
+  const ret: Shake = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
@@ -12327,86 +12328,86 @@ function xmlToShake(node: Element) {
   let foundTwoNoteTurn = false;
   let foundSecondBeat = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "start-note") {
-      let dataStartNote = getUpperMainBelow(ch2, UpperMainBelow.Upper);
+      const dataStartNote = getUpperMainBelow(ch2, UpperMainBelow.Upper);
       ret.startNote = dataStartNote;
       foundStartNote = true;
     }
     if (ch2.name === "accelerate") {
-      let dataAccelerate = xmlToYesNo(ch2);
+      const dataAccelerate = xmlToYesNo(ch2);
       ret.accelerate = dataAccelerate;
       foundAccelerate = true;
     }
     if (ch2.name === "beats") {
-      let dataBeats = getNumber(ch2, true);
+      const dataBeats = getNumber(ch2, true);
       ret.beats = dataBeats;
       foundBeats = true;
     }
     if (ch2.name === "last-beat") {
-      let dataLastBeat = getNumber(ch2, true);
+      const dataLastBeat = getNumber(ch2, true);
       ret.lastBeat = dataLastBeat;
       foundLastBeat = true;
     }
     if (ch2.name === "trill-step") {
-      let dataTrillStep = getWholeHalfUnison(ch2, WholeHalfUnison.Whole);
+      const dataTrillStep = getWholeHalfUnison(ch2, WholeHalfUnison.Whole);
       ret.trillStep = dataTrillStep;
       foundTrillStep = true;
     }
     if (ch2.name === "two-note-turn") {
-      let dataTwoNoteTurn = getWholeHalfNone(ch2, WholeHalfNone.None);
+      const dataTwoNoteTurn = getWholeHalfNone(ch2, WholeHalfNone.None);
       ret.twoNoteTurn = dataTwoNoteTurn;
       foundTwoNoteTurn = true;
     }
     if (ch2.name === "second-beat") {
-      let dataSecondBeat = getNumber(ch2, true);
+      const dataSecondBeat = getNumber(ch2, true);
       ret.secondBeat = dataSecondBeat;
       foundSecondBeat = true;
     }
@@ -12464,7 +12465,7 @@ export interface Mordent extends PrintStyle, Placement, TrillSound {
 }
 
 function xmlToMordent(node: Element) {
-  let ret: Mordent = <any>{};
+  const ret: Mordent = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
@@ -12477,98 +12478,98 @@ function xmlToMordent(node: Element) {
   let foundTwoNoteTurn = false;
   let foundSecondBeat = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "long") {
-      let dataLong = xmlToYesNo(ch2);
+      const dataLong = xmlToYesNo(ch2);
       ret.long = dataLong;
     }
     if (ch2.name === "approach") {
-      let dataApproach = getAboveBelow(ch2, null);
+      const dataApproach = getAboveBelow(ch2, null);
       ret.approach = dataApproach;
     }
     if (ch2.name === "departure") {
-      let dataDeparture = getAboveBelow(ch2, null);
+      const dataDeparture = getAboveBelow(ch2, null);
       ret.departure = dataDeparture;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "start-note") {
-      let dataStartNote = getUpperMainBelow(ch2, UpperMainBelow.Upper);
+      const dataStartNote = getUpperMainBelow(ch2, UpperMainBelow.Upper);
       ret.startNote = dataStartNote;
       foundStartNote = true;
     }
     if (ch2.name === "accelerate") {
-      let dataAccelerate = xmlToYesNo(ch2);
+      const dataAccelerate = xmlToYesNo(ch2);
       ret.accelerate = dataAccelerate;
       foundAccelerate = true;
     }
     if (ch2.name === "beats") {
-      let dataBeats = getNumber(ch2, true);
+      const dataBeats = getNumber(ch2, true);
       ret.beats = dataBeats;
       foundBeats = true;
     }
     if (ch2.name === "last-beat") {
-      let dataLastBeat = getNumber(ch2, true);
+      const dataLastBeat = getNumber(ch2, true);
       ret.lastBeat = dataLastBeat;
       foundLastBeat = true;
     }
     if (ch2.name === "trill-step") {
-      let dataTrillStep = getWholeHalfUnison(ch2, WholeHalfUnison.Whole);
+      const dataTrillStep = getWholeHalfUnison(ch2, WholeHalfUnison.Whole);
       ret.trillStep = dataTrillStep;
       foundTrillStep = true;
     }
     if (ch2.name === "two-note-turn") {
-      let dataTwoNoteTurn = getWholeHalfNone(ch2, WholeHalfNone.None);
+      const dataTwoNoteTurn = getWholeHalfNone(ch2, WholeHalfNone.None);
       ret.twoNoteTurn = dataTwoNoteTurn;
       foundTwoNoteTurn = true;
     }
     if (ch2.name === "second-beat") {
-      let dataSecondBeat = getNumber(ch2, true);
+      const dataSecondBeat = getNumber(ch2, true);
       ret.secondBeat = dataSecondBeat;
       foundSecondBeat = true;
     }
@@ -12626,7 +12627,7 @@ export interface InvertedMordent extends PrintStyle, Placement, TrillSound {
 }
 
 function xmlToInvertedMordent(node: Element) {
-  let ret: InvertedMordent = <any>{};
+  const ret: InvertedMordent = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
@@ -12639,98 +12640,98 @@ function xmlToInvertedMordent(node: Element) {
   let foundTwoNoteTurn = false;
   let foundSecondBeat = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "long") {
-      let dataLong = xmlToYesNo(ch2);
+      const dataLong = xmlToYesNo(ch2);
       ret.long = dataLong;
     }
     if (ch2.name === "approach") {
-      let dataApproach = getAboveBelow(ch2, null);
+      const dataApproach = getAboveBelow(ch2, null);
       ret.approach = dataApproach;
     }
     if (ch2.name === "departure") {
-      let dataDeparture = getAboveBelow(ch2, null);
+      const dataDeparture = getAboveBelow(ch2, null);
       ret.departure = dataDeparture;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "start-note") {
-      let dataStartNote = getUpperMainBelow(ch2, UpperMainBelow.Upper);
+      const dataStartNote = getUpperMainBelow(ch2, UpperMainBelow.Upper);
       ret.startNote = dataStartNote;
       foundStartNote = true;
     }
     if (ch2.name === "accelerate") {
-      let dataAccelerate = xmlToYesNo(ch2);
+      const dataAccelerate = xmlToYesNo(ch2);
       ret.accelerate = dataAccelerate;
       foundAccelerate = true;
     }
     if (ch2.name === "beats") {
-      let dataBeats = getNumber(ch2, true);
+      const dataBeats = getNumber(ch2, true);
       ret.beats = dataBeats;
       foundBeats = true;
     }
     if (ch2.name === "last-beat") {
-      let dataLastBeat = getNumber(ch2, true);
+      const dataLastBeat = getNumber(ch2, true);
       ret.lastBeat = dataLastBeat;
       foundLastBeat = true;
     }
     if (ch2.name === "trill-step") {
-      let dataTrillStep = getWholeHalfUnison(ch2, WholeHalfUnison.Whole);
+      const dataTrillStep = getWholeHalfUnison(ch2, WholeHalfUnison.Whole);
       ret.trillStep = dataTrillStep;
       foundTrillStep = true;
     }
     if (ch2.name === "two-note-turn") {
-      let dataTwoNoteTurn = getWholeHalfNone(ch2, WholeHalfNone.None);
+      const dataTwoNoteTurn = getWholeHalfNone(ch2, WholeHalfNone.None);
       ret.twoNoteTurn = dataTwoNoteTurn;
       foundTwoNoteTurn = true;
     }
     if (ch2.name === "second-beat") {
-      let dataSecondBeat = getNumber(ch2, true);
+      const dataSecondBeat = getNumber(ch2, true);
       ret.secondBeat = dataSecondBeat;
       foundSecondBeat = true;
     }
@@ -12781,57 +12782,57 @@ export interface Schleifer extends PrintStyle, Placement {
 }
 
 function xmlToSchleifer(node: Element) {
-  let ret: Schleifer = <any>{};
+  const ret: Schleifer = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -12879,69 +12880,69 @@ export interface Tremolo extends PrintStyle, Placement {
 }
 
 function xmlToTremolo(node: Element) {
-  let ret: Tremolo = <any>{};
+  const ret: Tremolo = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   let foundType = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "type") {
-      let dataType = getStartStopSingle(ch2, StartStopSingle.Single);
+      const dataType = getStartStopSingle(ch2, StartStopSingle.Single);
       ret.type = dataType;
       foundType = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, false);
+  const ch3 = node;
+  const dataData = getString(ch3, false);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -12973,67 +12974,67 @@ export interface OtherOrnament extends PrintStyle, Placement {
 }
 
 function xmlToOtherOrnament(node: Element) {
-  let ret: OtherOrnament = <any>{};
+  const ret: OtherOrnament = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "type") {
-      let dataType = getStartStopSingle(ch2, null);
+      const dataType = getStartStopSingle(ch2, null);
       ret.type = dataType;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, false);
+  const ch3 = node;
+  const dataData = getString(ch3, false);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -13062,63 +13063,63 @@ export interface AccidentalMark extends PrintStyle, Placement {
 }
 
 function xmlToAccidentalMark(node: Element) {
-  let ret: AccidentalMark = <any>{};
+  const ret: AccidentalMark = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
   }
-  let ch3 = node;
-  let dataMark = getString(ch3, true);
+  const ch3 = node;
+  const dataMark = getString(ch3, true);
   ret.mark = dataMark;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -13168,108 +13169,108 @@ export interface Technical {
 }
 
 function xmlToTechnical(node: Element) {
-  let ret: Technical = <any>{};
+  const ret: Technical = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "triple-tongue") {
-      let dataTripleTongue = xmlToTripleTongue(ch);
+      const dataTripleTongue = xmlToTripleTongue(ch);
       ret.tripleTongue = dataTripleTongue;
     }
     if (ch.nodeName === "toe") {
-      let dataToe = xmlToToe(ch);
+      const dataToe = xmlToToe(ch);
       ret.toe = dataToe;
     }
     if (ch.nodeName === "hole") {
-      let dataHole = xmlToHole(ch);
+      const dataHole = xmlToHole(ch);
       ret.hole = dataHole;
     }
     if (ch.nodeName === "hammer-on") {
-      let dataHammerOn = xmlToHammerOn(ch);
+      const dataHammerOn = xmlToHammerOn(ch);
       ret.hammerOn = dataHammerOn;
     }
     if (ch.nodeName === "up-bow") {
-      let dataUpBow = xmlToUpBow(ch);
+      const dataUpBow = xmlToUpBow(ch);
       ret.upBow = dataUpBow;
     }
     if (ch.nodeName === "down-bow") {
-      let dataDownBow = xmlToDownBow(ch);
+      const dataDownBow = xmlToDownBow(ch);
       ret.downBow = dataDownBow;
     }
     if (ch.nodeName === "fret") {
-      let dataFret = xmlToFret(ch);
+      const dataFret = xmlToFret(ch);
       ret.fret = dataFret;
     }
     if (ch.nodeName === "tap") {
-      let dataTap = xmlToTap(ch);
+      const dataTap = xmlToTap(ch);
       ret.tap = dataTap;
     }
     if (ch.nodeName === "pull-off") {
-      let dataPullOff = xmlToPullOff(ch);
+      const dataPullOff = xmlToPullOff(ch);
       ret.pullOff = dataPullOff;
     }
     if (ch.nodeName === "handbell") {
-      let dataHandbell = xmlToHandbell(ch);
+      const dataHandbell = xmlToHandbell(ch);
       ret.handbell = dataHandbell;
     }
     if (ch.nodeName === "bend") {
-      let dataBend = xmlToBend(ch);
+      const dataBend = xmlToBend(ch);
       ret.bend = dataBend;
     }
     if (ch.nodeName === "thumb-position") {
-      let dataThumbPosition = xmlToThumbPosition(ch);
+      const dataThumbPosition = xmlToThumbPosition(ch);
       ret.thumbPosition = dataThumbPosition;
     }
     if (ch.nodeName === "stopped") {
-      let dataStopped = xmlToStopped(ch);
+      const dataStopped = xmlToStopped(ch);
       ret.stopped = dataStopped;
     }
     if (ch.nodeName === "pluck") {
-      let dataPluck = xmlToPluck(ch);
+      const dataPluck = xmlToPluck(ch);
       ret.pluck = dataPluck;
     }
     if (ch.nodeName === "double-tongue") {
-      let dataDoubleTongue = xmlToDoubleTongue(ch);
+      const dataDoubleTongue = xmlToDoubleTongue(ch);
       ret.doubleTongue = dataDoubleTongue;
     }
     if (ch.nodeName === "string") {
-      let dataString = xmlToString(ch);
+      const dataString = xmlToString(ch);
       ret.string = dataString;
     }
     if (ch.nodeName === "open-string") {
-      let dataOpenString = xmlToOpenString(ch);
+      const dataOpenString = xmlToOpenString(ch);
       ret.openString = dataOpenString;
     }
     if (ch.nodeName === "fingernails") {
-      let dataFingernails = xmlToFingernails(ch);
+      const dataFingernails = xmlToFingernails(ch);
       ret.fingernails = dataFingernails;
     }
     if (ch.nodeName === "arrow") {
-      let dataArrow = xmlToArrow(ch);
+      const dataArrow = xmlToArrow(ch);
       ret.arrow = dataArrow;
     }
     if (ch.nodeName === "harmonic") {
-      let dataHarmonic = xmlToHarmonic(ch);
+      const dataHarmonic = xmlToHarmonic(ch);
       ret.harmonic = dataHarmonic;
     }
     if (ch.nodeName === "heel") {
-      let dataHeel = xmlToHeel(ch);
+      const dataHeel = xmlToHeel(ch);
       ret.heel = dataHeel;
     }
     if (ch.nodeName === "other-technical") {
-      let dataOtherTechnical = xmlToOtherTechnical(ch);
+      const dataOtherTechnical = xmlToOtherTechnical(ch);
       ret.otherTechnical = dataOtherTechnical;
     }
     if (ch.nodeName === "snap-pizzicato") {
-      let dataSnapPizzicato = xmlToSnapPizzicato(ch);
+      const dataSnapPizzicato = xmlToSnapPizzicato(ch);
       ret.snapPizzicato = dataSnapPizzicato;
     }
     if (ch.nodeName === "fingering") {
-      let dataFingering = xmlToFingering(ch);
+      const dataFingering = xmlToFingering(ch);
       ret.fingering = dataFingering;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -13284,57 +13285,57 @@ export interface UpBow extends PrintStyle, Placement {
 }
 
 function xmlToUpBow(node: Element) {
-  let ret: UpBow = <any>{};
+  const ret: UpBow = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -13364,57 +13365,57 @@ export interface DownBow extends PrintStyle, Placement {
 }
 
 function xmlToDownBow(node: Element) {
-  let ret: DownBow = <any>{};
+  const ret: DownBow = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -13458,83 +13459,83 @@ export interface Harmonic extends PrintObject, PrintStyle, Placement {
 }
 
 function xmlToHarmonic(node: Element) {
-  let ret: Harmonic = <any>{};
+  const ret: Harmonic = <any>{};
   let foundPrintObject = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "artificial") {
-      let dataArtificial = true;
+      const dataArtificial = true;
       ret.artificial = dataArtificial;
     }
     if (ch.nodeName === "touching-pitch") {
-      let dataTouchingPitch = true;
+      const dataTouchingPitch = true;
       ret.touchingPitch = dataTouchingPitch;
     }
     if (ch.nodeName === "sounding-pitch") {
-      let dataSoundingPitch = true;
+      const dataSoundingPitch = true;
       ret.soundingPitch = dataSoundingPitch;
     }
     if (ch.nodeName === "natural") {
-      let dataNatural = true;
+      const dataNatural = true;
       ret.natural = dataNatural;
     }
     if (ch.nodeName === "base-pitch") {
-      let dataBasePitch = true;
+      const dataBasePitch = true;
       ret.basePitch = dataBasePitch;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "print-object") {
-      let dataPrintObject = xmlToYesNo(ch2);
+      const dataPrintObject = xmlToYesNo(ch2);
       ret.printObject = dataPrintObject;
       foundPrintObject = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -13566,57 +13567,57 @@ export interface OpenString extends PrintStyle, Placement {
 }
 
 function xmlToOpenString(node: Element) {
-  let ret: OpenString = <any>{};
+  const ret: OpenString = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -13647,57 +13648,57 @@ export interface ThumbPosition extends PrintStyle, Placement {
 }
 
 function xmlToThumbPosition(node: Element) {
-  let ret: ThumbPosition = <any>{};
+  const ret: ThumbPosition = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -13730,63 +13731,63 @@ export interface Pluck extends PrintStyle, Placement {
 }
 
 function xmlToPluck(node: Element) {
-  let ret: Pluck = <any>{};
+  const ret: Pluck = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -13812,57 +13813,57 @@ export interface DoubleTongue extends PrintStyle, Placement {
 }
 
 function xmlToDoubleTongue(node: Element) {
-  let ret: DoubleTongue = <any>{};
+  const ret: DoubleTongue = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -13891,57 +13892,57 @@ export interface TripleTongue extends PrintStyle, Placement {
 }
 
 function xmlToTripleTongue(node: Element) {
-  let ret: TripleTongue = <any>{};
+  const ret: TripleTongue = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -13970,57 +13971,57 @@ export interface Stopped extends PrintStyle, Placement {
 }
 
 function xmlToStopped(node: Element) {
-  let ret: Stopped = <any>{};
+  const ret: Stopped = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -14051,57 +14052,57 @@ export interface SnapPizzicato extends PrintStyle, Placement {
 }
 
 function xmlToSnapPizzicato(node: Element) {
-  let ret: SnapPizzicato = <any>{};
+  const ret: SnapPizzicato = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -14138,73 +14139,73 @@ export interface HammerOn extends PrintStyle, Placement {
 }
 
 function xmlToHammerOn(node: Element) {
-  let ret: HammerOn = <any>{};
+  const ret: HammerOn = <any>{};
   let foundNumber_ = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
       foundNumber_ = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "type") {
-      let dataType = getStartStop(ch2, null);
+      const dataType = getStartStop(ch2, null);
       ret.type = dataType;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, false);
+  const ch3 = node;
+  const dataData = getString(ch3, false);
   ret.data = dataData;
   if (!foundNumber_) {
     ret.number = 1;
@@ -14241,73 +14242,73 @@ export interface PullOff extends PrintStyle, Placement {
 }
 
 function xmlToPullOff(node: Element) {
-  let ret: PullOff = <any>{};
+  const ret: PullOff = <any>{};
   let foundNumber_ = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
       foundNumber_ = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "type") {
-      let dataType = getStartStop(ch2, null);
+      const dataType = getStartStop(ch2, null);
       ret.type = dataType;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, false);
+  const ch3 = node;
+  const dataData = getString(ch3, false);
   ret.data = dataData;
   if (!foundNumber_) {
     ret.number = 1;
@@ -14348,7 +14349,7 @@ export interface Bend extends PrintStyle, BendSound {
 }
 
 function xmlToBend(node: Element) {
-  let ret: Bend = <any>{};
+  const ret: Bend = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
@@ -14357,82 +14358,82 @@ function xmlToBend(node: Element) {
   let foundLastBeat = false;
   let foundFirstBeat = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "bend-alter") {
-      let dataBendAlter = getString(ch, true);
+      const dataBendAlter = getString(ch, true);
       ret.bendAlter = dataBendAlter;
     }
     if (ch.nodeName === "with-bar") {
-      let dataWithBar = xmlToWithBar(ch);
+      const dataWithBar = xmlToWithBar(ch);
       ret.withBar = dataWithBar;
     }
     if (ch.nodeName === "pre-bend") {
-      let dataPreBend = true;
+      const dataPreBend = true;
       ret.preBend = dataPreBend;
     }
     if (ch.nodeName === "release") {
-      let dataRelease = true;
+      const dataRelease = true;
       ret.release = dataRelease;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "accelerate") {
-      let dataAccelerate = xmlToYesNo(ch2);
+      const dataAccelerate = xmlToYesNo(ch2);
       ret.accelerate = dataAccelerate;
       foundAccelerate = true;
     }
     if (ch2.name === "beats") {
-      let dataBeats = getNumber(ch2, true);
+      const dataBeats = getNumber(ch2, true);
       ret.beats = dataBeats;
       foundBeats = true;
     }
     if (ch2.name === "last-beat") {
-      let dataLastBeat = getNumber(ch2, true);
+      const dataLastBeat = getNumber(ch2, true);
       ret.lastBeat = dataLastBeat;
       foundLastBeat = true;
     }
     if (ch2.name === "first-beat") {
-      let dataFirstBeat = getNumber(ch2, true);
+      const dataFirstBeat = getNumber(ch2, true);
       ret.firstBeat = dataFirstBeat;
       foundFirstBeat = true;
     }
@@ -14479,63 +14480,63 @@ export interface WithBar extends PrintStyle, Placement {
 }
 
 function xmlToWithBar(node: Element) {
-  let ret: WithBar = <any>{};
+  const ret: WithBar = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -14564,63 +14565,63 @@ export interface Tap extends PrintStyle, Placement {
 }
 
 function xmlToTap(node: Element) {
-  let ret: Tap = <any>{};
+  const ret: Tap = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -14647,63 +14648,63 @@ export interface Heel extends PrintStyle, Placement {
 }
 
 function xmlToHeel(node: Element) {
-  let ret: Heel = <any>{};
+  const ret: Heel = <any>{};
   let foundSubstitution = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "substitution") {
-      let dataSubstitution = xmlToYesNo(ch2);
+      const dataSubstitution = xmlToYesNo(ch2);
       ret.substitution = dataSubstitution;
       foundSubstitution = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -14736,63 +14737,63 @@ export interface Toe extends PrintStyle, Placement {
 }
 
 function xmlToToe(node: Element) {
-  let ret: Toe = <any>{};
+  const ret: Toe = <any>{};
   let foundSubstitution = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "substitution") {
-      let dataSubstitution = xmlToYesNo(ch2);
+      const dataSubstitution = xmlToYesNo(ch2);
       ret.substitution = dataSubstitution;
       foundSubstitution = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -14824,57 +14825,57 @@ export interface Fingernails extends PrintStyle, Placement {
 }
 
 function xmlToFingernails(node: Element) {
-  let ret: Fingernails = <any>{};
+  const ret: Fingernails = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -14914,69 +14915,69 @@ export interface Hole extends PrintStyle, Placement {
 }
 
 function xmlToHole(node: Element) {
-  let ret: Hole = <any>{};
+  const ret: Hole = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "hole-closed") {
-      let dataHoleClosed = xmlToHoleClosed(ch);
+      const dataHoleClosed = xmlToHoleClosed(ch);
       ret.holeClosed = dataHoleClosed;
     }
     if (ch.nodeName === "hole-shape") {
-      let dataHoleShape = getString(ch, true);
+      const dataHoleShape = getString(ch, true);
       ret.holeShape = dataHoleShape;
     }
     if (ch.nodeName === "hole-type") {
-      let dataHoleType = getString(ch, true);
+      const dataHoleType = getString(ch, true);
       ret.holeType = dataHoleType;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -15005,7 +15006,7 @@ export enum HoleLocation {
 
 function getHoleLocation(node: Node, fallbackVal?: HoleLocation) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -15036,7 +15037,7 @@ export enum HoleClosedType {
 
 function getHoleClosedType(node: Node, fallbackVal?: HoleClosedType) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -15075,19 +15076,19 @@ export interface HoleClosed {
 }
 
 function xmlToHoleClosed(node: Element) {
-  let ret: HoleClosed = <any>{};
+  const ret: HoleClosed = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "location") {
-      let dataLocation = getHoleLocation(ch2, null);
+      const dataLocation = getHoleLocation(ch2, null);
       ret.location = dataLocation;
     }
   }
-  let ch3 = node;
-  let dataData = getHoleClosedType(ch3, null);
+  const ch3 = node;
+  const dataData = getHoleClosedType(ch3, null);
   ret.data = dataData;
   return ret;
 }
@@ -15123,69 +15124,69 @@ export interface Arrow extends PrintStyle, Placement {
 }
 
 function xmlToArrow(node: Element) {
-  let ret: Arrow = <any>{};
+  const ret: Arrow = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "arrow-style") {
-      let dataArrowStyle = getString(ch, true);
+      const dataArrowStyle = getString(ch, true);
       ret.arrowStyle = dataArrowStyle;
     }
     if (ch.nodeName === "arrow-direction") {
-      let dataArrowDirection = getString(ch, true);
+      const dataArrowDirection = getString(ch, true);
       ret.arrowDirection = dataArrowDirection;
     }
     if (ch.nodeName === "circular-arrow") {
-      let dataCircularArrow = getString(ch, true);
+      const dataCircularArrow = getString(ch, true);
       ret.circularArrow = dataCircularArrow;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -15218,63 +15219,63 @@ export interface Handbell extends PrintStyle, Placement {
 }
 
 function xmlToHandbell(node: Element) {
-  let ret: Handbell = <any>{};
+  const ret: Handbell = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -15303,63 +15304,63 @@ export interface OtherTechnical extends PrintStyle, Placement {
 }
 
 function xmlToOtherTechnical(node: Element) {
-  let ret: OtherTechnical = <any>{};
+  const ret: OtherTechnical = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -15400,78 +15401,78 @@ export interface Articulations {
 }
 
 function xmlToArticulations(node: Element) {
-  let ret: Articulations = <any>{};
+  const ret: Articulations = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "accent") {
-      let dataAccent = xmlToAccent(ch);
+      const dataAccent = xmlToAccent(ch);
       ret.accent = dataAccent;
     }
     if (ch.nodeName === "doit") {
-      let dataDoit = xmlToDoit(ch);
+      const dataDoit = xmlToDoit(ch);
       ret.doit = dataDoit;
     }
     if (ch.nodeName === "breath-mark") {
-      let dataBreathMark = xmlToBreathMark(ch);
+      const dataBreathMark = xmlToBreathMark(ch);
       ret.breathMark = dataBreathMark;
     }
     if (ch.nodeName === "other-articulation") {
-      let dataOtherArticulations = xmlToOtherArticulation(ch);
+      const dataOtherArticulations = xmlToOtherArticulation(ch);
       ret.otherArticulations = (ret.otherArticulations || []).concat(
         dataOtherArticulations,
       );
     }
     if (ch.nodeName === "detached-legato") {
-      let dataDetachedLegato = xmlToDetachedLegato(ch);
+      const dataDetachedLegato = xmlToDetachedLegato(ch);
       ret.detachedLegato = dataDetachedLegato;
     }
     if (ch.nodeName === "staccatissimo") {
-      let dataStaccatissimo = xmlToStaccatissimo(ch);
+      const dataStaccatissimo = xmlToStaccatissimo(ch);
       ret.staccatissimo = dataStaccatissimo;
     }
     if (ch.nodeName === "plop") {
-      let dataPlop = xmlToPlop(ch);
+      const dataPlop = xmlToPlop(ch);
       ret.plop = dataPlop;
     }
     if (ch.nodeName === "unstress") {
-      let dataUnstress = xmlToUnstress(ch);
+      const dataUnstress = xmlToUnstress(ch);
       ret.unstress = dataUnstress;
     }
     if (ch.nodeName === "strong-accent") {
-      let dataStrongAccent = xmlToStrongAccent(ch);
+      const dataStrongAccent = xmlToStrongAccent(ch);
       ret.strongAccent = dataStrongAccent;
     }
     if (ch.nodeName === "staccato") {
-      let dataStaccato = xmlToStaccato(ch);
+      const dataStaccato = xmlToStaccato(ch);
       ret.staccato = dataStaccato;
     }
     if (ch.nodeName === "spiccato") {
-      let dataSpiccato = xmlToSpiccato(ch);
+      const dataSpiccato = xmlToSpiccato(ch);
       ret.spiccato = dataSpiccato;
     }
     if (ch.nodeName === "scoop") {
-      let dataScoop = xmlToScoop(ch);
+      const dataScoop = xmlToScoop(ch);
       ret.scoop = dataScoop;
     }
     if (ch.nodeName === "falloff") {
-      let dataFalloff = xmlToFalloff(ch);
+      const dataFalloff = xmlToFalloff(ch);
       ret.falloff = dataFalloff;
     }
     if (ch.nodeName === "caesura") {
-      let dataCaesura = xmlToCaesura(ch);
+      const dataCaesura = xmlToCaesura(ch);
       ret.caesura = dataCaesura;
     }
     if (ch.nodeName === "stress") {
-      let dataStress = xmlToStress(ch);
+      const dataStress = xmlToStress(ch);
       ret.stress = dataStress;
     }
     if (ch.nodeName === "tenuto") {
-      let dataTenuto = xmlToTenuto(ch);
+      const dataTenuto = xmlToTenuto(ch);
       ret.tenuto = dataTenuto;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -15481,57 +15482,57 @@ export interface Accent extends PrintStyle, Placement {
 }
 
 function xmlToAccent(node: Element) {
-  let ret: Accent = <any>{};
+  const ret: Accent = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -15557,63 +15558,63 @@ export interface StrongAccent extends PrintStyle, Placement {
 }
 
 function xmlToStrongAccent(node: Element) {
-  let ret: StrongAccent = <any>{};
+  const ret: StrongAccent = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   let foundType = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "type") {
-      let dataType = getUpDown(ch2, UpDown.Up);
+      const dataType = getUpDown(ch2, UpDown.Up);
       ret.type = dataType;
       foundType = true;
     }
@@ -15645,57 +15646,57 @@ export interface Staccato extends PrintStyle, Placement {
 }
 
 function xmlToStaccato(node: Element) {
-  let ret: Staccato = <any>{};
+  const ret: Staccato = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -15720,57 +15721,57 @@ export interface Tenuto extends PrintStyle, Placement {
 }
 
 function xmlToTenuto(node: Element) {
-  let ret: Tenuto = <any>{};
+  const ret: Tenuto = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -15795,57 +15796,57 @@ export interface DetachedLegato extends PrintStyle, Placement {
 }
 
 function xmlToDetachedLegato(node: Element) {
-  let ret: DetachedLegato = <any>{};
+  const ret: DetachedLegato = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -15874,57 +15875,57 @@ export interface Staccatissimo extends PrintStyle, Placement {
 }
 
 function xmlToStaccatissimo(node: Element) {
-  let ret: Staccatissimo = <any>{};
+  const ret: Staccatissimo = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -15953,57 +15954,57 @@ export interface Spiccato extends PrintStyle, Placement {
 }
 
 function xmlToSpiccato(node: Element) {
-  let ret: Spiccato = <any>{};
+  const ret: Spiccato = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -16037,7 +16038,7 @@ export interface Scoop
 }
 
 function xmlToScoop(node: Element) {
-  let ret: Scoop = <any>{};
+  const ret: Scoop = <any>{};
   let foundLineShape = false;
   let foundLineType = false;
   let foundDashLength = false;
@@ -16047,17 +16048,17 @@ function xmlToScoop(node: Element) {
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "line-shape") {
-      let dataLineShape = getStraightCurved(ch2, StraightCurved.Straight);
+      const dataLineShape = getStraightCurved(ch2, StraightCurved.Straight);
       ret.lineShape = dataLineShape;
       foundLineShape = true;
     }
     if (ch2.name === "line-type") {
-      let dataLineType = getSolidDashedDottedWavy(
+      const dataLineType = getSolidDashedDottedWavy(
         ch2,
         SolidDashedDottedWavy.Solid,
       );
@@ -16065,56 +16066,56 @@ function xmlToScoop(node: Element) {
       foundLineType = true;
     }
     if (ch2.name === "dash-length") {
-      let dataDashLength = getNumber(ch2, true);
+      const dataDashLength = getNumber(ch2, true);
       ret.dashLength = dataDashLength;
       foundDashLength = true;
     }
     if (ch2.name === "space-length") {
-      let dataSpaceLength = getNumber(ch2, true);
+      const dataSpaceLength = getNumber(ch2, true);
       ret.spaceLength = dataSpaceLength;
       foundSpaceLength = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -16160,7 +16161,7 @@ export interface Plop
 }
 
 function xmlToPlop(node: Element) {
-  let ret: Plop = <any>{};
+  const ret: Plop = <any>{};
   let foundLineShape = false;
   let foundLineType = false;
   let foundDashLength = false;
@@ -16170,17 +16171,17 @@ function xmlToPlop(node: Element) {
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "line-shape") {
-      let dataLineShape = getStraightCurved(ch2, StraightCurved.Straight);
+      const dataLineShape = getStraightCurved(ch2, StraightCurved.Straight);
       ret.lineShape = dataLineShape;
       foundLineShape = true;
     }
     if (ch2.name === "line-type") {
-      let dataLineType = getSolidDashedDottedWavy(
+      const dataLineType = getSolidDashedDottedWavy(
         ch2,
         SolidDashedDottedWavy.Solid,
       );
@@ -16188,56 +16189,56 @@ function xmlToPlop(node: Element) {
       foundLineType = true;
     }
     if (ch2.name === "dash-length") {
-      let dataDashLength = getNumber(ch2, true);
+      const dataDashLength = getNumber(ch2, true);
       ret.dashLength = dataDashLength;
       foundDashLength = true;
     }
     if (ch2.name === "space-length") {
-      let dataSpaceLength = getNumber(ch2, true);
+      const dataSpaceLength = getNumber(ch2, true);
       ret.spaceLength = dataSpaceLength;
       foundSpaceLength = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -16283,7 +16284,7 @@ export interface Doit
 }
 
 function xmlToDoit(node: Element) {
-  let ret: Doit = <any>{};
+  const ret: Doit = <any>{};
   let foundLineShape = false;
   let foundLineType = false;
   let foundDashLength = false;
@@ -16293,17 +16294,17 @@ function xmlToDoit(node: Element) {
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "line-shape") {
-      let dataLineShape = getStraightCurved(ch2, StraightCurved.Straight);
+      const dataLineShape = getStraightCurved(ch2, StraightCurved.Straight);
       ret.lineShape = dataLineShape;
       foundLineShape = true;
     }
     if (ch2.name === "line-type") {
-      let dataLineType = getSolidDashedDottedWavy(
+      const dataLineType = getSolidDashedDottedWavy(
         ch2,
         SolidDashedDottedWavy.Solid,
       );
@@ -16311,56 +16312,56 @@ function xmlToDoit(node: Element) {
       foundLineType = true;
     }
     if (ch2.name === "dash-length") {
-      let dataDashLength = getNumber(ch2, true);
+      const dataDashLength = getNumber(ch2, true);
       ret.dashLength = dataDashLength;
       foundDashLength = true;
     }
     if (ch2.name === "space-length") {
-      let dataSpaceLength = getNumber(ch2, true);
+      const dataSpaceLength = getNumber(ch2, true);
       ret.spaceLength = dataSpaceLength;
       foundSpaceLength = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -16406,7 +16407,7 @@ export interface Falloff
 }
 
 function xmlToFalloff(node: Element) {
-  let ret: Falloff = <any>{};
+  const ret: Falloff = <any>{};
   let foundLineShape = false;
   let foundLineType = false;
   let foundDashLength = false;
@@ -16416,17 +16417,17 @@ function xmlToFalloff(node: Element) {
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "line-shape") {
-      let dataLineShape = getStraightCurved(ch2, StraightCurved.Straight);
+      const dataLineShape = getStraightCurved(ch2, StraightCurved.Straight);
       ret.lineShape = dataLineShape;
       foundLineShape = true;
     }
     if (ch2.name === "line-type") {
-      let dataLineType = getSolidDashedDottedWavy(
+      const dataLineType = getSolidDashedDottedWavy(
         ch2,
         SolidDashedDottedWavy.Solid,
       );
@@ -16434,56 +16435,56 @@ function xmlToFalloff(node: Element) {
       foundLineType = true;
     }
     if (ch2.name === "dash-length") {
-      let dataDashLength = getNumber(ch2, true);
+      const dataDashLength = getNumber(ch2, true);
       ret.dashLength = dataDashLength;
       foundDashLength = true;
     }
     if (ch2.name === "space-length") {
-      let dataSpaceLength = getNumber(ch2, true);
+      const dataSpaceLength = getNumber(ch2, true);
       ret.spaceLength = dataSpaceLength;
       foundSpaceLength = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -16523,7 +16524,7 @@ export enum BreathMarkType {
 
 function getBreathMarkType(node: Node, fallbackVal?: BreathMarkType) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -16555,7 +16556,7 @@ export interface BreathMark
 }
 
 function xmlToBreathMark(node: Element) {
-  let ret: BreathMark = <any>{};
+  const ret: BreathMark = <any>{};
   let foundLineShape = false;
   let foundLineType = false;
   let foundDashLength = false;
@@ -16565,17 +16566,17 @@ function xmlToBreathMark(node: Element) {
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "line-shape") {
-      let dataLineShape = getStraightCurved(ch2, StraightCurved.Straight);
+      const dataLineShape = getStraightCurved(ch2, StraightCurved.Straight);
       ret.lineShape = dataLineShape;
       foundLineShape = true;
     }
     if (ch2.name === "line-type") {
-      let dataLineType = getSolidDashedDottedWavy(
+      const dataLineType = getSolidDashedDottedWavy(
         ch2,
         SolidDashedDottedWavy.Solid,
       );
@@ -16583,62 +16584,62 @@ function xmlToBreathMark(node: Element) {
       foundLineType = true;
     }
     if (ch2.name === "dash-length") {
-      let dataDashLength = getNumber(ch2, true);
+      const dataDashLength = getNumber(ch2, true);
       ret.dashLength = dataDashLength;
       foundDashLength = true;
     }
     if (ch2.name === "space-length") {
-      let dataSpaceLength = getNumber(ch2, true);
+      const dataSpaceLength = getNumber(ch2, true);
       ret.spaceLength = dataSpaceLength;
       foundSpaceLength = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
   }
-  let ch3 = node;
-  let dataType = getBreathMarkType(ch3, null);
+  const ch3 = node;
+  const dataType = getBreathMarkType(ch3, null);
   ret.type = dataType;
   if (!foundLineShape) {
     ret.lineShape = StraightCurved.Straight;
@@ -16672,57 +16673,57 @@ export interface Caesura extends PrintStyle, Placement {
 }
 
 function xmlToCaesura(node: Element) {
-  let ret: Caesura = <any>{};
+  const ret: Caesura = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -16747,57 +16748,57 @@ export interface Stress extends PrintStyle, Placement {
 }
 
 function xmlToStress(node: Element) {
-  let ret: Stress = <any>{};
+  const ret: Stress = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -16822,57 +16823,57 @@ export interface Unstress extends PrintStyle, Placement {
 }
 
 function xmlToUnstress(node: Element) {
-  let ret: Unstress = <any>{};
+  const ret: Unstress = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
@@ -16904,63 +16905,63 @@ export interface OtherArticulation extends PrintStyle, Placement {
 }
 
 function xmlToOtherArticulation(node: Element) {
-  let ret: OtherArticulation = <any>{};
+  const ret: OtherArticulation = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -16993,49 +16994,49 @@ export interface Arpeggiate extends Position, Placement, Color {
 }
 
 function xmlToArpeggiate(node: Element) {
-  let ret: Arpeggiate = <any>{};
+  const ret: Arpeggiate = <any>{};
   let foundNumber_ = false;
   let foundPlacement = false;
   let foundColor = false;
   let foundDirection = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
       foundNumber_ = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "direction") {
-      let dataDirection = getUpDown(ch2, UpDown.Up);
+      const dataDirection = getUpDown(ch2, UpDown.Up);
       ret.direction = dataDirection;
       foundDirection = true;
     }
@@ -17069,48 +17070,48 @@ export interface NonArpeggiate extends Position, Placement, Color {
 }
 
 function xmlToNonArpeggiate(node: Element) {
-  let ret: NonArpeggiate = <any>{};
+  const ret: NonArpeggiate = <any>{};
   let foundNumber_ = false;
   let foundPlacement = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
       foundNumber_ = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "type") {
-      let dataType = getTopBottom(ch2, null);
+      const dataType = getTopBottom(ch2, null);
       ret.type = dataType;
     }
   }
@@ -17136,12 +17137,12 @@ export interface Laughing {
 }
 
 function xmlToLaughing(node: Element) {
-  let ret: Laughing = <any>{};
+  const ret: Laughing = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   ret._class = "Laughing";
   return ret;
@@ -17157,12 +17158,12 @@ export interface Humming {
 }
 
 function xmlToHumming(node: Element) {
-  let ret: Humming = <any>{};
+  const ret: Humming = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   ret._class = "Humming";
   return ret;
@@ -17180,12 +17181,12 @@ export interface EndLine {
 }
 
 function xmlToEndLine(node: Element) {
-  let ret: EndLine = <any>{};
+  const ret: EndLine = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   ret._class = "EndLine";
   return ret;
@@ -17203,12 +17204,12 @@ export interface EndParagraph {
 }
 
 function xmlToEndParagraph(node: Element) {
-  let ret: EndParagraph = <any>{};
+  const ret: EndParagraph = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   ret._class = "EndParagraph";
   return ret;
@@ -17224,42 +17225,42 @@ export interface LyricParts {
 function xmlToLyricParts(node: Element) {
   let rarr: any[] = [];
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "extend") {
-      let data: any = xmlToExtend(ch);
+      const data: any = xmlToExtend(ch);
       rarr = (rarr || []).concat(data);
     }
     if (ch.nodeName === "end-line") {
-      let data: any = xmlToEndLine(ch);
+      const data: any = xmlToEndLine(ch);
       rarr = (rarr || []).concat(data);
     }
     if (ch.nodeName === "syllabic") {
-      let data: any = xmlToSyllabic(ch);
+      const data: any = xmlToSyllabic(ch);
       rarr = (rarr || []).concat(data);
     }
     if (ch.nodeName === "text") {
-      let data: any = xmlToText(ch);
+      const data: any = xmlToText(ch);
       rarr = (rarr || []).concat(data);
     }
     if (ch.nodeName === "laughing") {
-      let data: any = xmlToLaughing(ch);
+      const data: any = xmlToLaughing(ch);
       rarr = (rarr || []).concat(data);
     }
     if (ch.nodeName === "humming") {
-      let data: any = xmlToHumming(ch);
+      const data: any = xmlToHumming(ch);
       rarr = (rarr || []).concat(data);
     }
     if (ch.nodeName === "end-paragraph") {
-      let data: any = xmlToEndParagraph(ch);
+      const data: any = xmlToEndParagraph(ch);
       rarr = (rarr || []).concat(data);
     }
     if (ch.nodeName === "elision") {
-      let data: any = xmlToElision(ch);
+      const data: any = xmlToElision(ch);
       rarr = (rarr || []).concat(data);
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return rarr;
 }
@@ -17306,7 +17307,7 @@ export interface Text
 }
 
 function xmlToText(node: Element) {
-  let ret: Text = <any>{};
+  const ret: Text = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
@@ -17317,66 +17318,66 @@ function xmlToText(node: Element) {
   let foundLetterSpacing = false;
   let foundDir = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "underline") {
-      let dataUnderline = getNumber(ch2, true);
+      const dataUnderline = getNumber(ch2, true);
       ret.underline = dataUnderline;
       foundUnderline = true;
     }
     if (ch2.name === "overline") {
-      let dataOverline = getNumber(ch2, true);
+      const dataOverline = getNumber(ch2, true);
       ret.overline = dataOverline;
       foundOverline = true;
     }
     if (ch2.name === "line-through") {
-      let dataLineThrough = getNumber(ch2, true);
+      const dataLineThrough = getNumber(ch2, true);
       ret.lineThrough = dataLineThrough;
       foundLineThrough = true;
     }
     if (ch2.name === "rotation") {
-      let dataRotation = getNumber(ch2, true);
+      const dataRotation = getNumber(ch2, true);
       ret.rotation = dataRotation;
       foundRotation = true;
     }
     if (ch2.name === "letter-spacing") {
-      let dataLetterSpacing = getString(ch2, true);
+      const dataLetterSpacing = getString(ch2, true);
       ret.letterSpacing = dataLetterSpacing;
       foundLetterSpacing = true;
     }
     if (ch2.name === "dir") {
-      let dataDir = getDirectionMode(ch2, DirectionMode.Ltr);
+      const dataDir = getDirectionMode(ch2, DirectionMode.Ltr);
       ret.dir = dataDir;
       foundDir = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -17418,7 +17419,7 @@ export enum SyllabicType {
 
 function getSyllabicType(node: Node, fallbackVal?: SyllabicType) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -17454,41 +17455,41 @@ export interface Syllabic extends Font, Color {
 }
 
 function xmlToSyllabic(node: Element) {
-  let ret: Syllabic = <any>{};
+  const ret: Syllabic = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
   }
-  let ch3 = node;
-  let dataData = getSyllabicType(ch3, null);
+  const ch3 = node;
+  const dataData = getSyllabicType(ch3, null);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -17522,41 +17523,41 @@ export interface Elision extends Font, Color {
 }
 
 function xmlToElision(node: Element) {
-  let ret: Elision = <any>{};
+  const ret: Elision = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -17586,57 +17587,57 @@ export interface Extend extends PrintStyle {
 }
 
 function xmlToExtend(node: Element) {
-  let ret: Extend = <any>{};
+  const ret: Extend = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundType = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "type") {
-      let dataType = getStartStopContinue(ch2, StartStopContinue.Start);
+      const dataType = getStartStopContinue(ch2, StartStopContinue.Start);
       ret.type = dataType;
       foundType = true;
     }
@@ -17683,7 +17684,7 @@ export interface FiguredBass extends Editorial, PrintStyle, Printout {
 }
 
 function xmlToFiguredBass(node: Element) {
-  let ret: FiguredBass = <any>{};
+  const ret: FiguredBass = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
@@ -17691,85 +17692,85 @@ function xmlToFiguredBass(node: Element) {
   let foundPrintSpacing = false;
   let foundParentheses = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "footnote") {
-      let dataFootnote = xmlToFootnote(ch);
+      const dataFootnote = xmlToFootnote(ch);
       ret.footnote = dataFootnote;
     }
     if (ch.nodeName === "level") {
-      let dataLevel = xmlToLevel(ch);
+      const dataLevel = xmlToLevel(ch);
       ret.level = dataLevel;
     }
     if (ch.nodeName === "figure") {
-      let dataFigures = xmlToFigure(ch);
+      const dataFigures = xmlToFigure(ch);
       ret.figures = (ret.figures || []).concat(dataFigures);
     }
     if (ch.nodeName === "duration") {
-      let dataDuration = getNumber(ch, true);
+      const dataDuration = getNumber(ch, true);
       ret.duration = dataDuration;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "print-dot") {
-      let dataPrintDot = xmlToYesNo(ch2);
+      const dataPrintDot = xmlToYesNo(ch2);
       ret.printDot = dataPrintDot;
     }
     if (ch2.name === "print-object") {
-      let dataPrintObject = xmlToYesNo(ch2);
+      const dataPrintObject = xmlToYesNo(ch2);
       ret.printObject = dataPrintObject;
       foundPrintObject = true;
     }
     if (ch2.name === "print-spacing") {
-      let dataPrintSpacing = xmlToYesNo(ch2);
+      const dataPrintSpacing = xmlToYesNo(ch2);
       ret.printSpacing = dataPrintSpacing;
       foundPrintSpacing = true;
     }
     if (ch2.name === "print-lyric") {
-      let dataPrintLyric = xmlToYesNo(ch2);
+      const dataPrintLyric = xmlToYesNo(ch2);
       ret.printLyric = dataPrintLyric;
     }
     if (ch2.name === "parentheses") {
-      let dataParentheses = xmlToYesNo(ch2);
+      const dataParentheses = xmlToYesNo(ch2);
       ret.parentheses = dataParentheses;
       foundParentheses = true;
     }
@@ -17805,67 +17806,67 @@ export interface Figure extends PrintStyle {
 }
 
 function xmlToFigure(node: Element) {
-  let ret: Figure = <any>{};
+  const ret: Figure = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "prefix") {
-      let dataPrefix = xmlToPrefix(ch);
+      const dataPrefix = xmlToPrefix(ch);
       ret.prefix = dataPrefix;
     }
     if (ch.nodeName === "figure-number") {
-      let dataFigureNumber = xmlToFigureNumber(ch);
+      const dataFigureNumber = xmlToFigureNumber(ch);
       ret.figureNumber = dataFigureNumber;
     }
     if (ch.nodeName === "extend") {
-      let dataExtend = xmlToExtend(ch);
+      const dataExtend = xmlToExtend(ch);
       ret.extend = dataExtend;
     }
     if (ch.nodeName === "suffix") {
-      let dataSuffix = xmlToSuffix(ch);
+      const dataSuffix = xmlToSuffix(ch);
       ret.suffix = dataSuffix;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
@@ -17888,57 +17889,57 @@ export interface Prefix extends PrintStyle {
 }
 
 function xmlToPrefix(node: Element) {
-  let ret: Prefix = <any>{};
+  const ret: Prefix = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -17958,57 +17959,57 @@ export interface FigureNumber extends PrintStyle {
 }
 
 function xmlToFigureNumber(node: Element) {
-  let ret: FigureNumber = <any>{};
+  const ret: FigureNumber = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -18028,57 +18029,57 @@ export interface Suffix extends PrintStyle {
 }
 
 function xmlToSuffix(node: Element) {
-  let ret: Suffix = <any>{};
+  const ret: Suffix = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -18109,24 +18110,24 @@ export interface Backup extends Editorial {
 }
 
 function xmlToBackup(node: Element) {
-  let ret: Backup = <any>{};
+  const ret: Backup = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "footnote") {
-      let dataFootnote = xmlToFootnote(ch);
+      const dataFootnote = xmlToFootnote(ch);
       ret.footnote = dataFootnote;
     }
     if (ch.nodeName === "level") {
-      let dataLevel = xmlToLevel(ch);
+      const dataLevel = xmlToLevel(ch);
       ret.level = dataLevel;
     }
     if (ch.nodeName === "duration") {
-      let dataDuration = getNumber(ch, true);
+      const dataDuration = getNumber(ch, true);
       ret.duration = dataDuration;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   ret._class = "Backup";
   return ret;
@@ -18149,32 +18150,32 @@ export interface Forward extends EditorialVoice {
 }
 
 function xmlToForward(node: Element) {
-  let ret: Forward = <any>{};
+  const ret: Forward = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "voice") {
-      let dataVoice = getNumber(ch, true);
+      const dataVoice = getNumber(ch, true);
       ret.voice = dataVoice;
     }
     if (ch.nodeName === "footnote") {
-      let dataFootnote = xmlToFootnote(ch);
+      const dataFootnote = xmlToFootnote(ch);
       ret.footnote = dataFootnote;
     }
     if (ch.nodeName === "level") {
-      let dataLevel = xmlToLevel(ch);
+      const dataLevel = xmlToLevel(ch);
       ret.level = dataLevel;
     }
     if (ch.nodeName === "duration") {
-      let dataDuration = getNumber(ch, true);
+      const dataDuration = getNumber(ch, true);
       ret.duration = dataDuration;
     }
     if (ch.nodeName === "staff") {
-      let dataStaff = getNumber(ch, true);
+      const dataStaff = getNumber(ch, true);
       ret.staff = dataStaff;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   ret._class = "Forward";
   return ret;
@@ -18188,7 +18189,7 @@ export enum BarlineLocation {
 
 function getBarlineLocation(node: Node, fallbackVal?: BarlineLocation) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -18252,62 +18253,62 @@ export interface Barline extends Editorial {
 }
 
 function xmlToBarline(node: Element) {
-  let ret: Barline = <any>{};
+  const ret: Barline = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "segno") {
-      let dataSegno = xmlToSegno(ch);
+      const dataSegno = xmlToSegno(ch);
       ret.segno = dataSegno;
     }
     if (ch.nodeName === "coda") {
-      let dataCoda = xmlToCoda(ch);
+      const dataCoda = xmlToCoda(ch);
       ret.coda = dataCoda;
     }
     if (ch.nodeName === "footnote") {
-      let dataFootnote = xmlToFootnote(ch);
+      const dataFootnote = xmlToFootnote(ch);
       ret.footnote = dataFootnote;
     }
     if (ch.nodeName === "level") {
-      let dataLevel = xmlToLevel(ch);
+      const dataLevel = xmlToLevel(ch);
       ret.level = dataLevel;
     }
     if (ch.nodeName === "wavy-line") {
-      let dataWavyLine = xmlToWavyLine(ch);
+      const dataWavyLine = xmlToWavyLine(ch);
       ret.wavyLine = dataWavyLine;
     }
     if (ch.nodeName === "fermata") {
-      let dataFermatas = xmlToFermata(ch);
+      const dataFermatas = xmlToFermata(ch);
       ret.fermatas = (ret.fermatas || []).concat(dataFermatas);
     }
     if (ch.nodeName === "bar-style") {
-      let dataBarStyle = xmlToBarStyle(ch);
+      const dataBarStyle = xmlToBarStyle(ch);
       ret.barStyle = dataBarStyle;
     }
     if (ch.nodeName === "ending") {
-      let dataEnding = xmlToEnding(ch);
+      const dataEnding = xmlToEnding(ch);
       ret.ending = dataEnding;
     }
     if (ch.nodeName === "repeat") {
-      let dataRepeat = xmlToRepeat(ch);
+      const dataRepeat = xmlToRepeat(ch);
       ret.repeat = dataRepeat;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "location") {
-      let dataLocation = getBarlineLocation(ch2, null);
+      const dataLocation = getBarlineLocation(ch2, null);
       ret.location = dataLocation;
     }
     if (ch2.name === "coda") {
-      let dataCodaAttrib = getString(ch2, true);
+      const dataCodaAttrib = getString(ch2, true);
       ret.codaAttrib = dataCodaAttrib;
     }
     if (ch2.name === "segno") {
-      let dataSegnoAttrib = getString(ch2, true);
+      const dataSegnoAttrib = getString(ch2, true);
       ret.segnoAttrib = dataSegnoAttrib;
     }
     if (ch2.name === "divisions") {
-      let dataDivisions = getNumber(ch2, true);
+      const dataDivisions = getNumber(ch2, true);
       ret.divisions = dataDivisions;
     }
   }
@@ -18338,7 +18339,7 @@ export enum BarStyleType {
 
 function getBarStyleType(node: Node, fallbackVal?: BarStyleType) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -18395,21 +18396,21 @@ export interface BarStyle extends Color {
 }
 
 function xmlToBarStyle(node: Element) {
-  let ret: BarStyle = <any>{};
+  const ret: BarStyle = <any>{};
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
   }
-  let ch3 = node;
-  let dataData = getBarStyleType(ch3, null);
+  const ch3 = node;
+  const dataData = getBarStyleType(ch3, null);
   ret.data = dataData;
   if (!foundColor) {
     ret.color = "#000000";
@@ -18428,7 +18429,7 @@ function getStartStopDiscontinue(
   fallbackVal?: StartStopDiscontinue,
 ) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -18483,83 +18484,83 @@ export interface Ending extends PrintObject, PrintStyle {
 }
 
 function xmlToEnding(node: Element) {
-  let ret: Ending = <any>{};
+  const ret: Ending = <any>{};
   let foundPrintObject = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "end-length") {
-      let dataEndLength = getNumber(ch2, true);
+      const dataEndLength = getNumber(ch2, true);
       ret.endLength = dataEndLength;
     }
     if (ch2.name === "text-x") {
-      let dataTextX = getNumber(ch2, true);
+      const dataTextX = getNumber(ch2, true);
       ret.textX = dataTextX;
     }
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
     }
     if (ch2.name === "text-y") {
-      let dataTextY = getNumber(ch2, true);
+      const dataTextY = getNumber(ch2, true);
       ret.textY = dataTextY;
     }
     if (ch2.name === "print-object") {
-      let dataPrintObject = xmlToYesNo(ch2);
+      const dataPrintObject = xmlToYesNo(ch2);
       ret.printObject = dataPrintObject;
       foundPrintObject = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "type") {
-      let dataType = getStartStopDiscontinue(ch2, null);
+      const dataType = getStartStopDiscontinue(ch2, null);
       ret.type = dataType;
     }
   }
-  let ch3 = node;
-  let dataEnding = getString(ch3, false);
+  const ch3 = node;
+  const dataEnding = getString(ch3, false);
   ret.ending = dataEnding;
   if (!foundPrintObject) {
     ret.printObject = true;
@@ -18586,7 +18587,7 @@ export enum WingedType {
 
 function getWingedType(node: Node, fallbackVal?: WingedType) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -18619,7 +18620,7 @@ export enum DirectionTypeBg {
 
 function getDirectionTypeBg(node: Node, fallbackVal?: DirectionTypeBg) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -18655,24 +18656,24 @@ export interface Repeat {
 }
 
 function xmlToRepeat(node: Element) {
-  let ret: Repeat = <any>{};
+  const ret: Repeat = <any>{};
   let foundWinged = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "times") {
-      let dataTimes = getString(ch2, true);
+      const dataTimes = getString(ch2, true);
       ret.times = dataTimes;
     }
     if (ch2.name === "winged") {
-      let dataWinged = getWingedType(ch2, WingedType.None);
+      const dataWinged = getWingedType(ch2, WingedType.None);
       ret.winged = dataWinged;
       foundWinged = true;
     }
     if (ch2.name === "direction") {
-      let dataDirection = getDirectionTypeBg(ch2, null);
+      const dataDirection = getDirectionTypeBg(ch2, null);
       ret.direction = dataDirection;
     }
   }
@@ -18700,7 +18701,7 @@ export enum TipDirection {
 
 function getTipDirection(node: Node, fallbackVal?: TipDirection) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -18756,50 +18757,50 @@ export interface Direction extends EditorialVoice, Placement, DirectiveEntity {
 }
 
 function xmlToDirection(node: Element) {
-  let ret: Direction = <any>{};
+  const ret: Direction = <any>{};
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "voice") {
-      let dataVoice = getNumber(ch, true);
+      const dataVoice = getNumber(ch, true);
       ret.voice = dataVoice;
     }
     if (ch.nodeName === "footnote") {
-      let dataFootnote = xmlToFootnote(ch);
+      const dataFootnote = xmlToFootnote(ch);
       ret.footnote = dataFootnote;
     }
     if (ch.nodeName === "level") {
-      let dataLevel = xmlToLevel(ch);
+      const dataLevel = xmlToLevel(ch);
       ret.level = dataLevel;
     }
     if (ch.nodeName === "direction-type") {
-      let dataDirectionTypes = xmlToDirectionType(ch);
+      const dataDirectionTypes = xmlToDirectionType(ch);
       ret.directionTypes = (ret.directionTypes || []).concat(
         dataDirectionTypes,
       );
     }
     if (ch.nodeName === "staff") {
-      let dataStaff = getNumber(ch, true);
+      const dataStaff = getNumber(ch, true);
       ret.staff = dataStaff;
     }
     if (ch.nodeName === "offset") {
-      let dataOffset = xmlToOffset(ch);
+      const dataOffset = xmlToOffset(ch);
       ret.offset = dataOffset;
     }
     if (ch.nodeName === "sound") {
-      let dataSound = xmlToSound(ch);
+      const dataSound = xmlToSound(ch);
       ret.sound = dataSound;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "directive") {
-      let dataDirective = xmlToYesNo(ch2);
+      const dataDirective = xmlToYesNo(ch2);
       ret.directive = dataDirective;
     }
   }
@@ -18843,100 +18844,100 @@ export interface DirectionType {
 }
 
 function xmlToDirectionType(node: Element) {
-  let ret: DirectionType = <any>{};
+  const ret: DirectionType = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "percussion") {
-      let dataPercussions = xmlToPercussion(ch);
+      const dataPercussions = xmlToPercussion(ch);
       ret.percussions = (ret.percussions || []).concat(dataPercussions);
     }
     if (ch.nodeName === "rehearsal") {
-      let dataRehearsals = xmlToRehearsal(ch);
+      const dataRehearsals = xmlToRehearsal(ch);
       ret.rehearsals = (ret.rehearsals || []).concat(dataRehearsals);
     }
     if (ch.nodeName === "pedal") {
-      let dataPedal = xmlToPedal(ch);
+      const dataPedal = xmlToPedal(ch);
       ret.pedal = dataPedal;
     }
     if (ch.nodeName === "principal-voice") {
-      let dataPrincipalVoice = xmlToPrincipalVoice(ch);
+      const dataPrincipalVoice = xmlToPrincipalVoice(ch);
       ret.principalVoice = dataPrincipalVoice;
     }
     if (ch.nodeName === "accordion-registration") {
-      let dataAccordionRegistration = xmlToAccordionRegistration(ch);
+      const dataAccordionRegistration = xmlToAccordionRegistration(ch);
       ret.accordionRegistration = dataAccordionRegistration;
     }
     if (ch.nodeName === "eyeglasses") {
-      let dataEyeglasses = xmlToEyeglasses(ch);
+      const dataEyeglasses = xmlToEyeglasses(ch);
       ret.eyeglasses = dataEyeglasses;
     }
     if (ch.nodeName === "image") {
-      let dataImage = xmlToImage(ch);
+      const dataImage = xmlToImage(ch);
       ret.image = dataImage;
     }
     if (ch.nodeName === "harp-pedals") {
-      let dataHarpPedals = xmlToHarpPedals(ch);
+      const dataHarpPedals = xmlToHarpPedals(ch);
       ret.harpPedals = dataHarpPedals;
     }
     if (ch.nodeName === "metronome") {
-      let dataMetronome = xmlToMetronome(ch);
+      const dataMetronome = xmlToMetronome(ch);
       ret.metronome = dataMetronome;
     }
     if (ch.nodeName === "other-direction") {
-      let dataOtherDirection = xmlToOtherDirection(ch);
+      const dataOtherDirection = xmlToOtherDirection(ch);
       ret.otherDirection = dataOtherDirection;
     }
     if (ch.nodeName === "segno") {
-      let dataSegnos = xmlToSegno(ch);
+      const dataSegnos = xmlToSegno(ch);
       ret.segnos = (ret.segnos || []).concat(dataSegnos);
     }
     if (ch.nodeName === "scordatura") {
-      let dataScordatura = xmlToScordatura(ch);
+      const dataScordatura = xmlToScordatura(ch);
       ret.scordatura = dataScordatura;
     }
     if (ch.nodeName === "string-mute") {
-      let dataStringMute = xmlToStringMute(ch);
+      const dataStringMute = xmlToStringMute(ch);
       ret.stringMute = dataStringMute;
     }
     if (ch.nodeName === "wedge") {
-      let dataWedge = xmlToWedge(ch);
+      const dataWedge = xmlToWedge(ch);
       ret.wedge = dataWedge;
     }
     if (ch.nodeName === "dashes") {
-      let dataDashes = xmlToDashes(ch);
+      const dataDashes = xmlToDashes(ch);
       ret.dashes = dataDashes;
     }
     if (ch.nodeName === "damp") {
-      let dataDamp = xmlToDamp(ch);
+      const dataDamp = xmlToDamp(ch);
       ret.damp = dataDamp;
     }
     if (ch.nodeName === "bracket") {
-      let dataBracket = xmlToBracket(ch);
+      const dataBracket = xmlToBracket(ch);
       ret.bracket = dataBracket;
     }
     if (ch.nodeName === "dynamics") {
-      let dataDynamics = xmlToDynamics(ch);
+      const dataDynamics = xmlToDynamics(ch);
       ret.dynamics = dataDynamics;
     }
     if (ch.nodeName === "octave-shift") {
-      let dataOctaveShift = xmlToOctaveShift(ch);
+      const dataOctaveShift = xmlToOctaveShift(ch);
       ret.octaveShift = dataOctaveShift;
     }
     if (ch.nodeName === "words") {
-      let dataWords = xmlToWords(ch);
+      const dataWords = xmlToWords(ch);
       ret.words = (ret.words || []).concat(dataWords);
     }
     if (ch.nodeName === "damp-all") {
-      let dataDampAll = xmlToDampAll(ch);
+      const dataDampAll = xmlToDampAll(ch);
       ret.dampAll = dataDampAll;
     }
     if (ch.nodeName === "coda") {
-      let dataCodas = xmlToCoda(ch);
+      const dataCodas = xmlToCoda(ch);
       ret.codas = (ret.codas || []).concat(dataCodas);
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -18952,7 +18953,7 @@ export interface Rehearsal extends TextFormatting {
 }
 
 function xmlToRehearsal(node: Element) {
-  let ret: Rehearsal = <any>{};
+  const ret: Rehearsal = <any>{};
   let foundJustify = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
@@ -18968,56 +18969,56 @@ function xmlToRehearsal(node: Element) {
   let foundDir = false;
   let foundEnclosure = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "justify") {
-      let dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
+      const dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
       ret.justify = dataJustify;
       foundJustify = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -19025,7 +19026,7 @@ function xmlToRehearsal(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -19033,48 +19034,48 @@ function xmlToRehearsal(node: Element) {
       foundValign = true;
     }
     if (ch2.name === "underline") {
-      let dataUnderline = getNumber(ch2, true);
+      const dataUnderline = getNumber(ch2, true);
       ret.underline = dataUnderline;
       foundUnderline = true;
     }
     if (ch2.name === "overline") {
-      let dataOverline = getNumber(ch2, true);
+      const dataOverline = getNumber(ch2, true);
       ret.overline = dataOverline;
       foundOverline = true;
     }
     if (ch2.name === "line-through") {
-      let dataLineThrough = getNumber(ch2, true);
+      const dataLineThrough = getNumber(ch2, true);
       ret.lineThrough = dataLineThrough;
       foundLineThrough = true;
     }
     if (ch2.name === "rotation") {
-      let dataRotation = getNumber(ch2, true);
+      const dataRotation = getNumber(ch2, true);
       ret.rotation = dataRotation;
       foundRotation = true;
     }
     if (ch2.name === "letter-spacing") {
-      let dataLetterSpacing = getString(ch2, true);
+      const dataLetterSpacing = getString(ch2, true);
       ret.letterSpacing = dataLetterSpacing;
       foundLetterSpacing = true;
     }
     if (ch2.name === "line-height") {
-      let dataLineHeight = getString(ch2, true);
+      const dataLineHeight = getString(ch2, true);
       ret.lineHeight = dataLineHeight;
       foundLineHeight = true;
     }
     if (ch2.name === "dir") {
-      let dataDir = getDirectionMode(ch2, DirectionMode.Ltr);
+      const dataDir = getDirectionMode(ch2, DirectionMode.Ltr);
       ret.dir = dataDir;
       foundDir = true;
     }
     if (ch2.name === "enclosure") {
-      let dataEnclosure = getEnclosureShape(ch2, EnclosureShape.None);
+      const dataEnclosure = getEnclosureShape(ch2, EnclosureShape.None);
       ret.enclosure = dataEnclosure;
       foundEnclosure = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundJustify) {
     ret.justify = LeftCenterRight.Left;
@@ -19132,7 +19133,7 @@ export interface Words extends TextFormatting {
 }
 
 function xmlToWords(node: Element) {
-  let ret: Words = <any>{};
+  const ret: Words = <any>{};
   let foundJustify = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
@@ -19148,56 +19149,56 @@ function xmlToWords(node: Element) {
   let foundDir = false;
   let foundEnclosure = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "justify") {
-      let dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
+      const dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
       ret.justify = dataJustify;
       foundJustify = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -19205,7 +19206,7 @@ function xmlToWords(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -19213,48 +19214,48 @@ function xmlToWords(node: Element) {
       foundValign = true;
     }
     if (ch2.name === "underline") {
-      let dataUnderline = getNumber(ch2, true);
+      const dataUnderline = getNumber(ch2, true);
       ret.underline = dataUnderline;
       foundUnderline = true;
     }
     if (ch2.name === "overline") {
-      let dataOverline = getNumber(ch2, true);
+      const dataOverline = getNumber(ch2, true);
       ret.overline = dataOverline;
       foundOverline = true;
     }
     if (ch2.name === "line-through") {
-      let dataLineThrough = getNumber(ch2, true);
+      const dataLineThrough = getNumber(ch2, true);
       ret.lineThrough = dataLineThrough;
       foundLineThrough = true;
     }
     if (ch2.name === "rotation") {
-      let dataRotation = getNumber(ch2, true);
+      const dataRotation = getNumber(ch2, true);
       ret.rotation = dataRotation;
       foundRotation = true;
     }
     if (ch2.name === "letter-spacing") {
-      let dataLetterSpacing = getString(ch2, true);
+      const dataLetterSpacing = getString(ch2, true);
       ret.letterSpacing = dataLetterSpacing;
       foundLetterSpacing = true;
     }
     if (ch2.name === "line-height") {
-      let dataLineHeight = getString(ch2, true);
+      const dataLineHeight = getString(ch2, true);
       ret.lineHeight = dataLineHeight;
       foundLineHeight = true;
     }
     if (ch2.name === "dir") {
-      let dataDir = getDirectionMode(ch2, DirectionMode.Ltr);
+      const dataDir = getDirectionMode(ch2, DirectionMode.Ltr);
       ret.dir = dataDir;
       foundDir = true;
     }
     if (ch2.name === "enclosure") {
-      let dataEnclosure = getEnclosureShape(ch2, EnclosureShape.None);
+      const dataEnclosure = getEnclosureShape(ch2, EnclosureShape.None);
       ret.enclosure = dataEnclosure;
       foundEnclosure = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundJustify) {
     ret.justify = LeftCenterRight.Left;
@@ -19310,7 +19311,7 @@ export enum WedgeType {
 
 function getWedgeType(node: Node, fallbackVal?: WedgeType) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -19358,7 +19359,7 @@ export interface Wedge extends LineType, DashedFormatting, Position, Color {
 }
 
 function xmlToWedge(node: Element) {
-  let ret: Wedge = <any>{};
+  const ret: Wedge = <any>{};
   let foundNumber_ = false;
   let foundNiente = false;
   let foundLineType = false;
@@ -19366,22 +19367,22 @@ function xmlToWedge(node: Element) {
   let foundSpaceLength = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
       foundNumber_ = true;
     }
     if (ch2.name === "niente") {
-      let dataNiente = xmlToYesNo(ch2);
+      const dataNiente = xmlToYesNo(ch2);
       ret.niente = dataNiente;
       foundNiente = true;
     }
     if (ch2.name === "line-type") {
-      let dataLineType = getSolidDashedDottedWavy(
+      const dataLineType = getSolidDashedDottedWavy(
         ch2,
         SolidDashedDottedWavy.Solid,
       );
@@ -19389,42 +19390,42 @@ function xmlToWedge(node: Element) {
       foundLineType = true;
     }
     if (ch2.name === "dash-length") {
-      let dataDashLength = getNumber(ch2, true);
+      const dataDashLength = getNumber(ch2, true);
       ret.dashLength = dataDashLength;
       foundDashLength = true;
     }
     if (ch2.name === "space-length") {
-      let dataSpaceLength = getNumber(ch2, true);
+      const dataSpaceLength = getNumber(ch2, true);
       ret.spaceLength = dataSpaceLength;
       foundSpaceLength = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "type") {
-      let dataType = getWedgeType(ch2, null);
+      const dataType = getWedgeType(ch2, null);
       ret.type = dataType;
     }
     if (ch2.name === "spread") {
-      let dataSpread = getNumber(ch2, true);
+      const dataSpread = getNumber(ch2, true);
       ret.spread = dataSpread;
     }
   }
@@ -19460,54 +19461,54 @@ export interface Dashes extends DashedFormatting, Position, Color {
 }
 
 function xmlToDashes(node: Element) {
-  let ret: Dashes = <any>{};
+  const ret: Dashes = <any>{};
   let foundNumber_ = false;
   let foundDashLength = false;
   let foundSpaceLength = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
       foundNumber_ = true;
     }
     if (ch2.name === "dash-length") {
-      let dataDashLength = getNumber(ch2, true);
+      const dataDashLength = getNumber(ch2, true);
       ret.dashLength = dataDashLength;
       foundDashLength = true;
     }
     if (ch2.name === "space-length") {
-      let dataSpaceLength = getNumber(ch2, true);
+      const dataSpaceLength = getNumber(ch2, true);
       ret.spaceLength = dataSpaceLength;
       foundSpaceLength = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "type") {
-      let dataType = getStartStopContinue(ch2, null);
+      const dataType = getStartStopContinue(ch2, null);
       ret.type = dataType;
     }
   }
@@ -19536,7 +19537,7 @@ export enum LineEndType {
 
 function getLineEndType(node: Node, fallbackVal?: LineEndType) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -19580,28 +19581,28 @@ export interface Bracket extends LineType, DashedFormatting, Position, Color {
 }
 
 function xmlToBracket(node: Element) {
-  let ret: Bracket = <any>{};
+  const ret: Bracket = <any>{};
   let foundNumber_ = false;
   let foundLineType = false;
   let foundDashLength = false;
   let foundSpaceLength = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "end-length") {
-      let dataEndLength = getNumber(ch2, true);
+      const dataEndLength = getNumber(ch2, true);
       ret.endLength = dataEndLength;
     }
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
       foundNumber_ = true;
     }
     if (ch2.name === "line-type") {
-      let dataLineType = getSolidDashedDottedWavy(
+      const dataLineType = getSolidDashedDottedWavy(
         ch2,
         SolidDashedDottedWavy.Solid,
       );
@@ -19609,42 +19610,42 @@ function xmlToBracket(node: Element) {
       foundLineType = true;
     }
     if (ch2.name === "dash-length") {
-      let dataDashLength = getNumber(ch2, true);
+      const dataDashLength = getNumber(ch2, true);
       ret.dashLength = dataDashLength;
       foundDashLength = true;
     }
     if (ch2.name === "space-length") {
-      let dataSpaceLength = getNumber(ch2, true);
+      const dataSpaceLength = getNumber(ch2, true);
       ret.spaceLength = dataSpaceLength;
       foundSpaceLength = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "type") {
-      let dataType = getStartStopContinue(ch2, null);
+      const dataType = getStartStopContinue(ch2, null);
       ret.type = dataType;
     }
     if (ch2.name === "line-end") {
-      let dataLineEnd = getLineEndType(ch2, null);
+      const dataLineEnd = getLineEndType(ch2, null);
       ret.lineEnd = dataLineEnd;
     }
   }
@@ -19675,7 +19676,7 @@ export enum PedalType {
 
 function getPedalType(node: Node, fallbackVal?: PedalType) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -19719,66 +19720,66 @@ export interface Pedal extends PrintStyleAlign {
 }
 
 function xmlToPedal(node: Element) {
-  let ret: Pedal = <any>{};
+  const ret: Pedal = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundHalign = false;
   let foundValign = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "line") {
-      let dataLine = xmlToYesNo(ch2);
+      const dataLine = xmlToYesNo(ch2);
       ret.line = dataLine;
     }
     if (ch2.name === "sign") {
-      let dataSign = xmlToYesNo(ch2);
+      const dataSign = xmlToYesNo(ch2);
       ret.sign = dataSign;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -19786,7 +19787,7 @@ function xmlToPedal(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -19794,7 +19795,7 @@ function xmlToPedal(node: Element) {
       foundValign = true;
     }
     if (ch2.name === "type") {
-      let dataType = getPedalType(ch2, null);
+      const dataType = getPedalType(ch2, null);
       ret.type = dataType;
     }
   }
@@ -19861,7 +19862,7 @@ export interface Metronome extends PrintStyleAlign, Justify {
 }
 
 function xmlToMetronome(node: Element) {
-  let ret: Metronome = <any>{};
+  const ret: Metronome = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
@@ -19871,19 +19872,19 @@ function xmlToMetronome(node: Element) {
   let gotFirstPair = false;
   let gotSecondPair = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "metronome-note") {
-      let dataMetronomeNotes = xmlToMetronomeNote(ch);
+      const dataMetronomeNotes = xmlToMetronomeNote(ch);
       ret.metronomeNotes = (ret.metronomeNotes || []).concat(
         dataMetronomeNotes,
       );
     }
     if (ch.nodeName === "per-minute") {
-      let dataPerMinute = xmlToPerMinute(ch);
+      const dataPerMinute = xmlToPerMinute(ch);
       ret.perMinute = dataPerMinute;
     }
     if (ch.nodeName === "beat-unit") {
-      let dataBeatUnit = getString(ch, true);
+      const dataBeatUnit = getString(ch, true);
       if (!gotFirstPair) {
         ret.beatUnit = dataBeatUnit;
         gotFirstPair = true;
@@ -19895,7 +19896,7 @@ function xmlToMetronome(node: Element) {
       }
     }
     if (ch.nodeName === "beat-unit-dot") {
-      let dataBeatUnitDots = xmlToBeatUnitDot(ch);
+      const dataBeatUnitDots = xmlToBeatUnitDot(ch);
       if (!gotSecondPair) {
         ret.beatUnitDots = (ret.beatUnitDots || []).concat(dataBeatUnitDots);
       } else {
@@ -19905,53 +19906,53 @@ function xmlToMetronome(node: Element) {
       }
     }
     if (ch.nodeName === "metronome-relation") {
-      let dataMetronomeRelation = getString(ch, true);
+      const dataMetronomeRelation = getString(ch, true);
       ret.metronomeRelation = dataMetronomeRelation;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -19959,7 +19960,7 @@ function xmlToMetronome(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -19967,12 +19968,12 @@ function xmlToMetronome(node: Element) {
       foundValign = true;
     }
     if (ch2.name === "justify") {
-      let dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
+      const dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
       ret.justify = dataJustify;
       foundJustify = true;
     }
     if (ch2.name === "parentheses") {
-      let dataParentheses = xmlToYesNo(ch2);
+      const dataParentheses = xmlToYesNo(ch2);
       ret.parentheses = dataParentheses;
     }
   }
@@ -20002,12 +20003,12 @@ export interface BeatUnitDot {
 }
 
 function xmlToBeatUnitDot(node: Element) {
-  let ret: BeatUnitDot = <any>{};
+  const ret: BeatUnitDot = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -20018,35 +20019,35 @@ export interface PerMinute extends Font {
 }
 
 function xmlToPerMinute(node: Element) {
-  let ret: PerMinute = <any>{};
+  const ret: PerMinute = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -20066,30 +20067,30 @@ export interface MetronomeNote {
 }
 
 function xmlToMetronomeNote(node: Element) {
-  let ret: MetronomeNote = <any>{};
+  const ret: MetronomeNote = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "metronome-dot") {
-      let dataMetronomeDots = xmlToMetronomeDot(ch);
+      const dataMetronomeDots = xmlToMetronomeDot(ch);
       ret.metronomeDots = (ret.metronomeDots || []).concat(dataMetronomeDots);
     }
     if (ch.nodeName === "metronome-beam") {
-      let dataMetronomeBeams = xmlToMetronomeBeam(ch);
+      const dataMetronomeBeams = xmlToMetronomeBeam(ch);
       ret.metronomeBeams = (ret.metronomeBeams || []).concat(
         dataMetronomeBeams,
       );
     }
     if (ch.nodeName === "metronome-type") {
-      let dataMetronomeType = getString(ch, true);
+      const dataMetronomeType = getString(ch, true);
       ret.metronomeType = dataMetronomeType;
     }
     if (ch.nodeName === "metronome-tuplet") {
-      let dataMetronomeTuplet = xmlToMetronomeTuplet(ch);
+      const dataMetronomeTuplet = xmlToMetronomeTuplet(ch);
       ret.metronomeTuplet = dataMetronomeTuplet;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -20099,12 +20100,12 @@ export interface MetronomeDot {
 }
 
 function xmlToMetronomeDot(node: Element) {
-  let ret: MetronomeDot = <any>{};
+  const ret: MetronomeDot = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -20116,21 +20117,21 @@ export interface MetronomeBeam {
 }
 
 function xmlToMetronomeBeam(node: Element) {
-  let ret: MetronomeBeam = <any>{};
+  const ret: MetronomeBeam = <any>{};
   let foundNumber_ = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
       foundNumber_ = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundNumber_) {
     ret.number = 1;
@@ -20150,42 +20151,42 @@ export interface MetronomeTuplet {
 }
 
 function xmlToMetronomeTuplet(node: Element) {
-  let ret: MetronomeTuplet = <any>{};
+  const ret: MetronomeTuplet = <any>{};
   let foundBracket = false;
   let foundShowNumber = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "actual-notes") {
-      let dataActualNotes = getNumber(ch, true);
+      const dataActualNotes = getNumber(ch, true);
       ret.actualNotes = dataActualNotes;
     }
     if (ch.nodeName === "normal-type") {
-      let dataNormalType = getString(ch, true);
+      const dataNormalType = getString(ch, true);
       ret.normalType = dataNormalType;
     }
     if (ch.nodeName === "normal-notes") {
-      let dataNormalNotes = getNumber(ch, true);
+      const dataNormalNotes = getNumber(ch, true);
       ret.normalNotes = dataNormalNotes;
     }
     if (ch.nodeName === "normal-dot") {
-      let dataNormalDots = xmlToNormalDot(ch);
+      const dataNormalDots = xmlToNormalDot(ch);
       ret.normalDots = (ret.normalDots || []).concat(dataNormalDots);
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "bracket") {
-      let dataBracket = xmlToYesNo(ch2);
+      const dataBracket = xmlToYesNo(ch2);
       ret.bracket = dataBracket;
       foundBracket = true;
     }
     if (ch2.name === "show-number") {
-      let dataShowNumber = getActualBothNone(ch2, ActualBothNone.Both);
+      const dataShowNumber = getActualBothNone(ch2, ActualBothNone.Both);
       ret.showNumber = dataShowNumber;
       foundShowNumber = true;
     }
     if (ch2.name === "type") {
-      let dataType = getStartStop(ch2, null);
+      const dataType = getStartStop(ch2, null);
       ret.type = dataType;
     }
   }
@@ -20207,7 +20208,7 @@ export enum OctaveShiftType {
 
 function getOctaveShiftType(node: Node, fallbackVal?: OctaveShiftType) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -20246,7 +20247,7 @@ export interface OctaveShift extends DashedFormatting, PrintStyle {
 }
 
 function xmlToOctaveShift(node: Element) {
-  let ret: OctaveShift = <any>{};
+  const ret: OctaveShift = <any>{};
   let foundSize = false;
   let foundDashLength = false;
   let foundSpaceLength = false;
@@ -20254,70 +20255,70 @@ function xmlToOctaveShift(node: Element) {
   let foundFontStyle = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
     }
     if (ch2.name === "size") {
-      let dataSize = getNumber(ch2, true);
+      const dataSize = getNumber(ch2, true);
       ret.size = dataSize;
       foundSize = true;
     }
     if (ch2.name === "dash-length") {
-      let dataDashLength = getNumber(ch2, true);
+      const dataDashLength = getNumber(ch2, true);
       ret.dashLength = dataDashLength;
       foundDashLength = true;
     }
     if (ch2.name === "space-length") {
-      let dataSpaceLength = getNumber(ch2, true);
+      const dataSpaceLength = getNumber(ch2, true);
       ret.spaceLength = dataSpaceLength;
       foundSpaceLength = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "type") {
-      let dataType = getOctaveShiftType(ch2, null);
+      const dataType = getOctaveShiftType(ch2, null);
       ret.type = dataType;
     }
   }
@@ -20356,62 +20357,62 @@ export interface HarpPedals extends PrintStyleAlign {
 }
 
 function xmlToHarpPedals(node: Element) {
-  let ret: HarpPedals = <any>{};
+  const ret: HarpPedals = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundHalign = false;
   let foundValign = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "pedal-tuning") {
-      let dataPedalTunings = xmlToPedalTuning(ch);
+      const dataPedalTunings = xmlToPedalTuning(ch);
       ret.pedalTunings = (ret.pedalTunings || []).concat(dataPedalTunings);
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -20419,7 +20420,7 @@ function xmlToHarpPedals(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -20452,20 +20453,20 @@ export interface PedalTuning {
 }
 
 function xmlToPedalTuning(node: Element) {
-  let ret: PedalTuning = <any>{};
+  const ret: PedalTuning = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "pedal-step") {
-      let dataPedalStep = getString(ch, true);
+      const dataPedalStep = getString(ch, true);
       ret.pedalStep = dataPedalStep;
     }
     if (ch.nodeName === "pedal-alter") {
-      let dataPedalAlter = getString(ch, true);
+      const dataPedalAlter = getString(ch, true);
       ret.pedalAlter = dataPedalAlter;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -20478,58 +20479,58 @@ export interface Damp extends PrintStyleAlign {
 }
 
 function xmlToDamp(node: Element) {
-  let ret: Damp = <any>{};
+  const ret: Damp = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundHalign = false;
   let foundValign = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -20537,7 +20538,7 @@ function xmlToDamp(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -20568,58 +20569,58 @@ export interface DampAll extends PrintStyleAlign {
 }
 
 function xmlToDampAll(node: Element) {
-  let ret: DampAll = <any>{};
+  const ret: DampAll = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundHalign = false;
   let foundValign = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -20627,7 +20628,7 @@ function xmlToDampAll(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -20658,58 +20659,58 @@ export interface Eyeglasses extends PrintStyleAlign {
 }
 
 function xmlToEyeglasses(node: Element) {
-  let ret: Eyeglasses = <any>{};
+  const ret: Eyeglasses = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundHalign = false;
   let foundValign = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -20717,7 +20718,7 @@ function xmlToEyeglasses(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -20749,58 +20750,58 @@ export interface StringMute extends PrintStyleAlign {
 }
 
 function xmlToStringMute(node: Element) {
-  let ret: StringMute = <any>{};
+  const ret: StringMute = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundHalign = false;
   let foundValign = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -20808,7 +20809,7 @@ function xmlToStringMute(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -20816,7 +20817,7 @@ function xmlToStringMute(node: Element) {
       foundValign = true;
     }
     if (ch2.name === "type") {
-      let dataType = getString(ch2, true);
+      const dataType = getString(ch2, true);
       ret.type = dataType;
     }
   }
@@ -20851,16 +20852,16 @@ export interface Scordatura {
 }
 
 function xmlToScordatura(node: Element) {
-  let ret: Scordatura = <any>{};
+  const ret: Scordatura = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "accord") {
-      let dataAccords = xmlToAccord(ch);
+      const dataAccords = xmlToAccord(ch);
       ret.accords = (ret.accords || []).concat(dataAccords);
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -20881,26 +20882,26 @@ export interface Accord {
 }
 
 function xmlToAccord(node: Element) {
-  let ret: Accord = <any>{};
+  const ret: Accord = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "tuning-alter") {
-      let dataTuningAlter = getString(ch, true);
+      const dataTuningAlter = getString(ch, true);
       ret.tuningAlter = dataTuningAlter;
     }
     if (ch.nodeName === "tuning-step") {
-      let dataTuningStep = getString(ch, true);
+      const dataTuningStep = getString(ch, true);
       ret.tuningStep = dataTuningStep;
     }
     if (ch.nodeName === "tuning-octave") {
-      let dataTuningOctave = getString(ch, true);
+      const dataTuningOctave = getString(ch, true);
       ret.tuningOctave = dataTuningOctave;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "string") {
-      let dataString = getString(ch2, true);
+      const dataString = getString(ch2, true);
       ret.string = dataString;
     }
   }
@@ -20922,32 +20923,32 @@ export interface Image extends Position, Halign, ValignImage {
 }
 
 function xmlToImage(node: Element) {
-  let ret: Image = <any>{};
+  const ret: Image = <any>{};
   let foundHalign = false;
   let foundValignImage = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -20955,7 +20956,7 @@ function xmlToImage(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValignImage = getTopMiddleBottomBaseline(
+      const dataValignImage = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -20963,11 +20964,11 @@ function xmlToImage(node: Element) {
       foundValignImage = true;
     }
     if (ch2.name === "type") {
-      let dataType = getString(ch2, true);
+      const dataType = getString(ch2, true);
       ret.type = dataType;
     }
     if (ch2.name === "source") {
-      let dataSource = getString(ch2, true);
+      const dataSource = getString(ch2, true);
       ret.source = dataSource;
     }
   }
@@ -20989,7 +20990,7 @@ export enum VoiceSymbol {
 
 function getVoiceSymbol(node: Node, fallbackVal?: VoiceSymbol) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -21032,62 +21033,62 @@ export interface PrincipalVoice extends PrintStyleAlign {
 }
 
 function xmlToPrincipalVoice(node: Element) {
-  let ret: PrincipalVoice = <any>{};
+  const ret: PrincipalVoice = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundHalign = false;
   let foundValign = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "symbol") {
-      let dataSymbol = getVoiceSymbol(ch2, null);
+      const dataSymbol = getVoiceSymbol(ch2, null);
       ret.symbol = dataSymbol;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -21095,7 +21096,7 @@ function xmlToPrincipalVoice(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -21103,12 +21104,12 @@ function xmlToPrincipalVoice(node: Element) {
       foundValign = true;
     }
     if (ch2.name === "type") {
-      let dataType = getStartStop(ch2, null);
+      const dataType = getStartStop(ch2, null);
       ret.type = dataType;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, false);
+  const ch3 = node;
+  const dataData = getString(ch3, false);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -21148,70 +21149,70 @@ export interface AccordionRegistration extends PrintStyleAlign {
 }
 
 function xmlToAccordionRegistration(node: Element) {
-  let ret: AccordionRegistration = <any>{};
+  const ret: AccordionRegistration = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundHalign = false;
   let foundValign = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "accordion-middle") {
-      let dataAccordionMiddle = getString(ch, true);
+      const dataAccordionMiddle = getString(ch, true);
       ret.accordionMiddle = dataAccordionMiddle;
     }
     if (ch.nodeName === "accordion-high") {
-      let dataAccordionHigh = true;
+      const dataAccordionHigh = true;
       ret.accordionHigh = dataAccordionHigh;
     }
     if (ch.nodeName === "accordion-low") {
-      let dataAccordionLow = true;
+      const dataAccordionLow = true;
       ret.accordionLow = dataAccordionLow;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -21219,7 +21220,7 @@ function xmlToAccordionRegistration(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -21269,7 +21270,7 @@ export interface Percussion extends PrintStyleAlign, Enclosure {
 }
 
 function xmlToPercussion(node: Element) {
-  let ret: Percussion = <any>{};
+  const ret: Percussion = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
@@ -21277,95 +21278,95 @@ function xmlToPercussion(node: Element) {
   let foundValign = false;
   let foundEnclosure = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "stick-location") {
-      let dataStickLocation = getString(ch, true);
+      const dataStickLocation = getString(ch, true);
       ret.stickLocation = dataStickLocation;
     }
     if (ch.nodeName === "other-percussion") {
-      let dataOtherPercussion = getString(ch, true);
+      const dataOtherPercussion = getString(ch, true);
       ret.otherPercussion = dataOtherPercussion;
     }
     if (ch.nodeName === "wood") {
-      let dataWood = getString(ch, true);
+      const dataWood = getString(ch, true);
       ret.wood = dataWood;
     }
     if (ch.nodeName === "effect") {
-      let dataEffect = getString(ch, true);
+      const dataEffect = getString(ch, true);
       ret.effect = dataEffect;
     }
     if (ch.nodeName === "glass") {
-      let dataGlass = getString(ch, true);
+      const dataGlass = getString(ch, true);
       ret.glass = dataGlass;
     }
     if (ch.nodeName === "timpani") {
-      let dataTimpani = xmlToTimpani(ch);
+      const dataTimpani = xmlToTimpani(ch);
       ret.timpani = dataTimpani;
     }
     if (ch.nodeName === "stick") {
-      let dataStick = xmlToStick(ch);
+      const dataStick = xmlToStick(ch);
       ret.stick = dataStick;
     }
     if (ch.nodeName === "metal") {
-      let dataMetal = getString(ch, true);
+      const dataMetal = getString(ch, true);
       ret.metal = dataMetal;
     }
     if (ch.nodeName === "pitched") {
-      let dataPitched = getString(ch, true);
+      const dataPitched = getString(ch, true);
       ret.pitched = dataPitched;
     }
     if (ch.nodeName === "membrane") {
-      let dataMembrane = getString(ch, true);
+      const dataMembrane = getString(ch, true);
       ret.membrane = dataMembrane;
     }
     if (ch.nodeName === "beater") {
-      let dataBeater = xmlToBeater(ch);
+      const dataBeater = xmlToBeater(ch);
       ret.beater = dataBeater;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -21373,7 +21374,7 @@ function xmlToPercussion(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -21381,7 +21382,7 @@ function xmlToPercussion(node: Element) {
       foundValign = true;
     }
     if (ch2.name === "enclosure") {
-      let dataEnclosure = getEnclosureShape(ch2, EnclosureShape.None);
+      const dataEnclosure = getEnclosureShape(ch2, EnclosureShape.None);
       ret.enclosure = dataEnclosure;
       foundEnclosure = true;
     }
@@ -21416,12 +21417,12 @@ export interface Timpani {
 }
 
 function xmlToTimpani(node: Element) {
-  let ret: Timpani = <any>{};
+  const ret: Timpani = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -21447,19 +21448,19 @@ export interface Beater {
 }
 
 function xmlToBeater(node: Element) {
-  let ret: Beater = <any>{};
+  const ret: Beater = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "tip") {
-      let dataTip = getTipDirection(ch2, null);
+      const dataTip = getTipDirection(ch2, null);
       ret.tip = dataTip;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   return ret;
 }
@@ -21482,22 +21483,22 @@ export interface Stick {
 }
 
 function xmlToStick(node: Element) {
-  let ret: Stick = <any>{};
+  const ret: Stick = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "stick-material") {
-      let dataStickMaterial = getString(ch, true);
+      const dataStickMaterial = getString(ch, true);
       ret.stickMaterial = dataStickMaterial;
     }
     if (ch.nodeName === "stick-type") {
-      let dataStickType = getString(ch, true);
+      const dataStickType = getString(ch, true);
       ret.stickType = dataStickType;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "tip") {
-      let dataTip = getTipDirection(ch2, null);
+      const dataTip = getTipDirection(ch2, null);
       ret.tip = dataTip;
     }
   }
@@ -21525,21 +21526,21 @@ export interface Offset {
 }
 
 function xmlToOffset(node: Element) {
-  let ret: Offset = <any>{};
+  const ret: Offset = <any>{};
   let foundSound = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "sound") {
-      let dataSound = xmlToYesNo(ch2);
+      const dataSound = xmlToYesNo(ch2);
       ret.sound = dataSound;
       foundSound = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundSound) {
     ret.sound = false;
@@ -21584,7 +21585,7 @@ export interface HarmonyChord {
 }
 
 function xmlToHarmonyChord(node: Element) {
-  let ret: HarmonyChord = {
+  const ret: HarmonyChord = {
     root: null,
     function: null,
     kind: null,
@@ -21593,34 +21594,34 @@ function xmlToHarmonyChord(node: Element) {
     bass: null,
   };
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "root") {
-      let dataRoot = xmlToRoot(ch);
+      const dataRoot = xmlToRoot(ch);
       ret.root = dataRoot;
     }
     if (ch.nodeName === "function") {
-      let dataFunction = xmlToFunction(ch);
+      const dataFunction = xmlToFunction(ch);
       ret.function = dataFunction;
     }
     if (ch.nodeName === "kind") {
-      let dataKind = xmlToKind(ch);
+      const dataKind = xmlToKind(ch);
       ret.kind = dataKind;
     }
     if (ch.nodeName === "degree") {
-      let dataDegree = xmlToDegree(ch);
+      const dataDegree = xmlToDegree(ch);
       ret.degrees.push(dataDegree);
     }
     if (ch.nodeName === "inversion") {
-      let dataInversion = xmlToInversion(ch);
+      const dataInversion = xmlToInversion(ch);
       ret.inversion = dataInversion;
     }
     if (ch.nodeName === "bass") {
-      let dataBass = xmlToBass(ch);
+      const dataBass = xmlToBass(ch);
       ret.bass = dataBass;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -21636,7 +21637,7 @@ function getExplicitImpliedAlternate(
   fallbackVal?: ExplicitImpliedAlternate,
 ) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -21667,7 +21668,7 @@ export interface Harmony
 }
 
 function xmlToHarmony(node: Element) {
-  let ret: Harmony = {
+  const ret: Harmony = {
     frame: null,
     printFrame: null,
     staff: null,
@@ -21686,109 +21687,109 @@ function xmlToHarmony(node: Element) {
   let foundColor = false;
   let foundPlacement = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "frame") {
-      let dataFrame = xmlToFrame(ch);
+      const dataFrame = xmlToFrame(ch);
       ret.frame = dataFrame;
     }
     if (ch.nodeName === "root") {
-      let dataRoot = xmlToRoot(ch);
+      const dataRoot = xmlToRoot(ch);
       ret.root = dataRoot;
     }
     if (ch.nodeName === "function") {
-      let dataFunction = xmlToFunction(ch);
+      const dataFunction = xmlToFunction(ch);
       ret.function = dataFunction;
     }
     if (ch.nodeName === "kind") {
-      let dataKind = xmlToKind(ch);
+      const dataKind = xmlToKind(ch);
       ret.kind = dataKind;
     }
     if (ch.nodeName === "degree") {
-      let dataDegree = xmlToDegree(ch);
+      const dataDegree = xmlToDegree(ch);
       ret.degrees.push(dataDegree);
     }
     if (ch.nodeName === "inversion") {
-      let dataInversion = xmlToInversion(ch);
+      const dataInversion = xmlToInversion(ch);
       ret.inversion = dataInversion;
     }
     if (ch.nodeName === "bass") {
-      let dataBass = xmlToBass(ch);
+      const dataBass = xmlToBass(ch);
       ret.bass = dataBass;
     }
     if (ch.nodeName === "footnote") {
-      let dataFootnote = xmlToFootnote(ch);
+      const dataFootnote = xmlToFootnote(ch);
       ret.footnote = dataFootnote;
     }
     if (ch.nodeName === "level") {
-      let dataLevel = xmlToLevel(ch);
+      const dataLevel = xmlToLevel(ch);
       ret.level = dataLevel;
     }
     if (ch.nodeName === "staff") {
-      let dataStaff = getNumber(ch, true);
+      const dataStaff = getNumber(ch, true);
       ret.staff = dataStaff;
     }
     if (ch.nodeName === "offset") {
-      let dataOffset = xmlToOffset(ch);
+      const dataOffset = xmlToOffset(ch);
       ret.offset = dataOffset;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "print-frame") {
-      let dataPrintFrame = xmlToYesNo(ch2);
+      const dataPrintFrame = xmlToYesNo(ch2);
       ret.printFrame = dataPrintFrame;
     }
     if (ch2.name === "print-object") {
-      let dataPrintObject = xmlToYesNo(ch2);
+      const dataPrintObject = xmlToYesNo(ch2);
       ret.printObject = dataPrintObject;
       foundPrintObject = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "placement") {
-      let dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
+      const dataPlacement = getAboveBelow(ch2, AboveBelow.Unspecified);
       ret.placement = dataPlacement;
       foundPlacement = true;
     }
     if (ch2.name === "type") {
-      let dataHarmonyType = getExplicitImpliedAlternate(ch2, null);
+      const dataHarmonyType = getExplicitImpliedAlternate(ch2, null);
       ret.type = dataHarmonyType;
     }
   }
@@ -21838,20 +21839,20 @@ export interface Root {
 }
 
 function xmlToRoot(node: Element) {
-  let ret: Root = <any>{};
+  const ret: Root = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "root-step") {
-      let dataRootStep = xmlToRootStep(ch);
+      const dataRootStep = xmlToRootStep(ch);
       ret.rootStep = dataRootStep;
     }
     if (ch.nodeName === "root-alter") {
-      let dataRootAlter = xmlToRootAlter(ch);
+      const dataRootAlter = xmlToRootAlter(ch);
       ret.rootAlter = dataRootAlter;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -21863,61 +21864,61 @@ export interface RootStep extends PrintStyle {
 }
 
 function xmlToRootStep(node: Element) {
-  let ret: RootStep = <any>{};
+  const ret: RootStep = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "text") {
-      let dataText = getString(ch2, true);
+      const dataText = getString(ch2, true);
       ret.text = dataText;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -21938,67 +21939,67 @@ export interface RootAlter extends PrintObject, PrintStyle {
 }
 
 function xmlToRootAlter(node: Element) {
-  let ret: RootAlter = <any>{};
+  const ret: RootAlter = <any>{};
   let foundPrintObject = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "location") {
-      let dataLocation = getLeftRight(ch2, null);
+      const dataLocation = getLeftRight(ch2, null);
       ret.location = dataLocation;
     }
     if (ch2.name === "print-object") {
-      let dataPrintObject = xmlToYesNo(ch2);
+      const dataPrintObject = xmlToYesNo(ch2);
       ret.printObject = dataPrintObject;
       foundPrintObject = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundPrintObject) {
     ret.printObject = true;
@@ -22021,57 +22022,57 @@ export interface Function extends PrintStyle {
 }
 
 function xmlToFunction(node: Element) {
-  let ret: Function = <any>{};
+  const ret: Function = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -22182,70 +22183,70 @@ export interface Kind extends PrintStyle, Halign, Valign {
 }
 
 function xmlToKind(node: Element) {
-  let ret: Kind = <any>{};
+  const ret: Kind = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundHalign = false;
   let foundValign = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "parentheses-degrees") {
-      let dataParenthesesDegrees = xmlToYesNo(ch2);
+      const dataParenthesesDegrees = xmlToYesNo(ch2);
       ret.parenthesesDegrees = dataParenthesesDegrees;
     }
     if (ch2.name === "use-symbols") {
-      let dataUseSymbols = xmlToYesNo(ch2);
+      const dataUseSymbols = xmlToYesNo(ch2);
       ret.useSymbols = dataUseSymbols;
     }
     if (ch2.name === "text") {
-      let dataText = getString(ch2, true);
+      const dataText = getString(ch2, true);
       ret.text = dataText;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -22253,7 +22254,7 @@ function xmlToKind(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -22261,16 +22262,16 @@ function xmlToKind(node: Element) {
       foundValign = true;
     }
     if (ch2.name === "stack-degrees") {
-      let dataStackDegrees = xmlToYesNo(ch2);
+      const dataStackDegrees = xmlToYesNo(ch2);
       ret.stackDegrees = dataStackDegrees;
     }
     if (ch2.name === "bracket-degrees") {
-      let dataBracketDegrees = xmlToYesNo(ch2);
+      const dataBracketDegrees = xmlToYesNo(ch2);
       ret.bracketDegrees = dataBracketDegrees;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -22300,57 +22301,57 @@ export interface Inversion extends PrintStyle {
 }
 
 function xmlToInversion(node: Element) {
-  let ret: Inversion = <any>{};
+  const ret: Inversion = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -22380,20 +22381,20 @@ export interface Bass {
 }
 
 function xmlToBass(node: Element) {
-  let ret: Bass = <any>{};
+  const ret: Bass = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "bass-step") {
-      let dataBassStep = xmlToBassStep(ch);
+      const dataBassStep = xmlToBassStep(ch);
       ret.bassStep = dataBassStep;
     }
     if (ch.nodeName === "bass-alter") {
-      let dataBassAlter = xmlToBassAlter(ch);
+      const dataBassAlter = xmlToBassAlter(ch);
       ret.bassAlter = dataBassAlter;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -22414,61 +22415,61 @@ export interface BassStep extends PrintStyle {
 }
 
 function xmlToBassStep(node: Element) {
-  let ret: BassStep = <any>{};
+  const ret: BassStep = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "text") {
-      let dataText = getString(ch2, true);
+      const dataText = getString(ch2, true);
       ret.text = dataText;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -22489,67 +22490,67 @@ export interface BassAlter extends PrintObject, PrintStyle {
 }
 
 function xmlToBassAlter(node: Element) {
-  let ret: BassAlter = <any>{};
+  const ret: BassAlter = <any>{};
   let foundPrintObject = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "location") {
-      let dataLocation = getLeftRight(ch2, null);
+      const dataLocation = getLeftRight(ch2, null);
       ret.location = dataLocation;
     }
     if (ch2.name === "print-object") {
-      let dataPrintObject = xmlToYesNo(ch2);
+      const dataPrintObject = xmlToYesNo(ch2);
       ret.printObject = dataPrintObject;
       foundPrintObject = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundPrintObject) {
     ret.printObject = true;
@@ -22604,27 +22605,27 @@ export interface Degree extends PrintObject {
 }
 
 function xmlToDegree(node: Element) {
-  let ret: Degree = <any>{};
+  const ret: Degree = <any>{};
   let foundPrintObject = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "degree-alter") {
-      let dataDegreeAlter = xmlToDegreeAlter(ch);
+      const dataDegreeAlter = xmlToDegreeAlter(ch);
       ret.degreeAlter = dataDegreeAlter;
     }
     if (ch.nodeName === "degree-value") {
-      let dataDegreeValue = xmlToDegreeValue(ch);
+      const dataDegreeValue = xmlToDegreeValue(ch);
       ret.degreeValue = dataDegreeValue;
     }
     if (ch.nodeName === "degree-type") {
-      let dataDegreeType = xmlToDegreeType(ch);
+      const dataDegreeType = xmlToDegreeType(ch);
       ret.degreeType = dataDegreeType;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "print-object") {
-      let dataPrintObject = xmlToYesNo(ch2);
+      const dataPrintObject = xmlToYesNo(ch2);
       ret.printObject = dataPrintObject;
       foundPrintObject = true;
     }
@@ -22645,7 +22646,7 @@ export enum ChordType {
 
 function getChordType(node: Node, fallbackVal?: ChordType) {
   "use strict";
-  let s = (
+  const s = (
     node.nodeType === node.ATTRIBUTE_NODE
       ? (<Attr>node).value
       : node.textContent
@@ -22679,65 +22680,65 @@ export interface DegreeValue extends PrintStyle {
 }
 
 function xmlToDegreeValue(node: Element) {
-  let ret: DegreeValue = <any>{};
+  const ret: DegreeValue = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "symbol") {
-      let dataSymbol = getChordType(ch2, null);
+      const dataSymbol = getChordType(ch2, null);
       ret.symbol = dataSymbol;
     }
     if (ch2.name === "text") {
-      let dataText = getString(ch2, true);
+      const dataText = getString(ch2, true);
       ret.text = dataText;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -22758,61 +22759,61 @@ export interface DegreeAlter extends PrintStyle {
 }
 
 function xmlToDegreeAlter(node: Element) {
-  let ret: DegreeAlter = <any>{};
+  const ret: DegreeAlter = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "plus-minus") {
-      let dataPlusMinus = xmlToYesNo(ch2);
+      const dataPlusMinus = xmlToYesNo(ch2);
       ret.plusMinus = dataPlusMinus;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -22833,61 +22834,61 @@ export interface DegreeType extends PrintStyle {
 }
 
 function xmlToDegreeType(node: Element) {
-  let ret: DegreeType = <any>{};
+  const ret: DegreeType = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "text") {
-      let dataText = getString(ch2, true);
+      const dataText = getString(ch2, true);
       ret.text = dataText;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -22927,58 +22928,58 @@ export interface Frame extends Position, Color, Halign, ValignImage {
 }
 
 function xmlToFrame(node: Element) {
-  let ret: Frame = <any>{};
+  const ret: Frame = <any>{};
   let foundColor = false;
   let foundHalign = false;
   let foundValignImage = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "frame-strings") {
-      let dataFrameStrings = getString(ch, true);
+      const dataFrameStrings = getString(ch, true);
       ret.frameStrings = dataFrameStrings;
     }
     if (ch.nodeName === "frame-note") {
-      let dataFrameNotes = xmlToFrameNote(ch);
+      const dataFrameNotes = xmlToFrameNote(ch);
       ret.frameNotes = (ret.frameNotes || []).concat(dataFrameNotes);
     }
     if (ch.nodeName === "frame-frets") {
-      let dataFrameFrets = getString(ch, true);
+      const dataFrameFrets = getString(ch, true);
       ret.frameFrets = dataFrameFrets;
     }
     if (ch.nodeName === "first-fret") {
-      let dataFirstFret = xmlToFirstFret(ch);
+      const dataFirstFret = xmlToFirstFret(ch);
       ret.firstFret = dataFirstFret;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "unplayed") {
-      let dataUnplayed = getString(ch2, true);
+      const dataUnplayed = getString(ch2, true);
       ret.unplayed = dataUnplayed;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -22986,7 +22987,7 @@ function xmlToFrame(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValignImage = getTopMiddleBottomBaseline(
+      const dataValignImage = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -22994,11 +22995,11 @@ function xmlToFrame(node: Element) {
       foundValignImage = true;
     }
     if (ch2.name === "width") {
-      let dataWidth = getNumber(ch2, true);
+      const dataWidth = getNumber(ch2, true);
       ret.width = dataWidth;
     }
     if (ch2.name === "height") {
-      let dataHeight = getNumber(ch2, true);
+      const dataHeight = getNumber(ch2, true);
       ret.height = dataHeight;
     }
   }
@@ -23030,23 +23031,23 @@ export interface FirstFret {
 }
 
 function xmlToFirstFret(node: Element) {
-  let ret: FirstFret = <any>{};
+  const ret: FirstFret = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "text") {
-      let dataText = getString(ch2, true);
+      const dataText = getString(ch2, true);
       ret.text = dataText;
     }
     if (ch2.name === "location") {
-      let dataLocation = getLeftRight(ch2, null);
+      const dataLocation = getLeftRight(ch2, null);
       ret.location = dataLocation;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   return ret;
 }
@@ -23067,28 +23068,28 @@ export interface FrameNote {
 }
 
 function xmlToFrameNote(node: Element) {
-  let ret: FrameNote = <any>{};
+  const ret: FrameNote = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "barre") {
-      let dataBarre = xmlToBarre(ch);
+      const dataBarre = xmlToBarre(ch);
       ret.barre = dataBarre;
     }
     if (ch.nodeName === "string") {
-      let dataString = xmlToString(ch);
+      const dataString = xmlToString(ch);
       ret.string = dataString;
     }
     if (ch.nodeName === "fingering") {
-      let dataFingering = xmlToFingering(ch);
+      const dataFingering = xmlToFingering(ch);
       ret.fingering = dataFingering;
     }
     if (ch.nodeName === "fret") {
-      let dataFret = xmlToFret(ch);
+      const dataFret = xmlToFret(ch);
       ret.fret = dataFret;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -23106,20 +23107,20 @@ export interface Barre extends Color {
 }
 
 function xmlToBarre(node: Element) {
-  let ret: Barre = <any>{};
+  const ret: Barre = <any>{};
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "type") {
-      let dataType = getStartStop(ch2, null);
+      const dataType = getStartStop(ch2, null);
       ret.type = dataType;
     }
   }
@@ -23154,28 +23155,28 @@ export interface Grouping {
 }
 
 function xmlToGrouping(node: Element) {
-  let ret: Grouping = <any>{};
+  const ret: Grouping = <any>{};
   let foundNumber_ = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "feature") {
-      let dataFeatures = xmlToFeature(ch);
+      const dataFeatures = xmlToFeature(ch);
       ret.features = (ret.features || []).concat(dataFeatures);
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
       foundNumber_ = true;
     }
     if (ch2.name === "type") {
-      let dataGroupingType = getStartStopSingle(ch2, null);
+      const dataGroupingType = getStartStopSingle(ch2, null);
       ret.type = dataGroupingType;
     }
     if (ch2.name === "member-of") {
-      let dataMemberOf = getString(ch2, true);
+      const dataMemberOf = getString(ch2, true);
       ret.memberOf = dataMemberOf;
     }
   }
@@ -23193,19 +23194,19 @@ export interface Feature {
 }
 
 function xmlToFeature(node: Element) {
-  let ret: Feature = <any>{};
+  const ret: Feature = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "type") {
-      let dataType = getString(ch2, true);
+      const dataType = getString(ch2, true);
       ret.type = dataType;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   return ret;
 }
@@ -23264,58 +23265,58 @@ export interface Print {
 }
 
 function xmlToPrint(node: Element) {
-  let ret: Print = <any>{};
+  const ret: Print = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "measure-numbering") {
-      let dataMeasureNumbering = xmlToMeasureNumbering(ch);
+      const dataMeasureNumbering = xmlToMeasureNumbering(ch);
       ret.measureNumbering = dataMeasureNumbering;
     }
     if (ch.nodeName === "part-name-display") {
-      let dataPartNameDisplay = xmlToPartNameDisplay(ch);
+      const dataPartNameDisplay = xmlToPartNameDisplay(ch);
       ret.partNameDisplay = dataPartNameDisplay;
     }
     if (ch.nodeName === "measure-layout") {
-      let dataMeasureLayout = xmlToMeasureLayout(ch);
+      const dataMeasureLayout = xmlToMeasureLayout(ch);
       ret.measureLayout = dataMeasureLayout;
     }
     if (ch.nodeName === "part-abbreviation-display") {
-      let dataPartAbbreviationDisplay = xmlToPartAbbreviationDisplay(ch);
+      const dataPartAbbreviationDisplay = xmlToPartAbbreviationDisplay(ch);
       ret.partAbbreviationDisplay = dataPartAbbreviationDisplay;
     }
     if (ch.nodeName === "page-layout") {
-      let dataPageLayout = xmlToPageLayout(ch);
+      const dataPageLayout = xmlToPageLayout(ch);
       ret.pageLayout = dataPageLayout;
     }
     if (ch.nodeName === "system-layout") {
-      let dataSystemLayout = xmlToSystemLayout(ch);
+      const dataSystemLayout = xmlToSystemLayout(ch);
       ret.systemLayout = dataSystemLayout;
     }
     if (ch.nodeName === "staff-layout") {
-      let dataStaffLayouts = xmlToStaffLayout(ch);
+      const dataStaffLayouts = xmlToStaffLayout(ch);
       ret.staffLayouts = (ret.staffLayouts || []).concat(dataStaffLayouts);
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "new-system") {
-      let dataNewSystem = xmlToYesNo(ch2);
+      const dataNewSystem = xmlToYesNo(ch2);
       ret.newSystem = dataNewSystem;
     }
     if (ch2.name === "new-page") {
-      let dataNewPage = xmlToYesNo(ch2);
+      const dataNewPage = xmlToYesNo(ch2);
       ret.newPage = dataNewPage;
     }
     if (ch2.name === "blank-page") {
-      let dataBlankPage = getString(ch2, true);
+      const dataBlankPage = getString(ch2, true);
       ret.blankPage = dataBlankPage;
     }
     if (ch2.name === "staff-spacing") {
-      let dataStaffSpacing = getNumber(ch2, true);
+      const dataStaffSpacing = getNumber(ch2, true);
       ret.staffSpacing = dataStaffSpacing;
     }
     if (ch2.name === "page-number") {
-      let dataPageNumber = getString(ch2, true);
+      const dataPageNumber = getString(ch2, true);
       ret.pageNumber = dataPageNumber;
     }
   }
@@ -23337,58 +23338,58 @@ export interface MeasureNumbering extends PrintStyleAlign {
 }
 
 function xmlToMeasureNumbering(node: Element) {
-  let ret: MeasureNumbering = <any>{};
+  const ret: MeasureNumbering = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundHalign = false;
   let foundValign = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -23396,7 +23397,7 @@ function xmlToMeasureNumbering(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -23404,8 +23405,8 @@ function xmlToMeasureNumbering(node: Element) {
       foundValign = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -23534,96 +23535,96 @@ export interface Sound extends TimeOnly {
 }
 
 function xmlToSound(node: Element) {
-  let ret: Sound = <any>{};
+  const ret: Sound = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "midi-instrument") {
-      let dataMidiInstruments = xmlToMidiInstrument(ch);
+      const dataMidiInstruments = xmlToMidiInstrument(ch);
       ret.midiInstruments = (ret.midiInstruments || []).concat(
         dataMidiInstruments,
       );
     }
     if (ch.nodeName === "play") {
-      let dataPlays = xmlToPlay(ch);
+      const dataPlays = xmlToPlay(ch);
       ret.plays = (ret.plays || []).concat(dataPlays);
     }
     if (ch.nodeName === "offset") {
-      let dataOffset = xmlToOffset(ch);
+      const dataOffset = xmlToOffset(ch);
       ret.offset = dataOffset;
     }
     if (ch.nodeName === "midi-device") {
-      let dataMidiDevices = xmlToMidiDevice(ch);
+      const dataMidiDevices = xmlToMidiDevice(ch);
       ret.midiDevices = (ret.midiDevices || []).concat(dataMidiDevices);
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "soft-pedal") {
-      let dataSoftPedal = getString(ch2, true);
+      const dataSoftPedal = getString(ch2, true);
       ret.softPedal = dataSoftPedal;
     }
     if (ch2.name === "pan") {
-      let dataPan = getString(ch2, true);
+      const dataPan = getString(ch2, true);
       ret.pan = dataPan;
     }
     if (ch2.name === "tocoda") {
-      let dataTocoda = getString(ch2, true);
+      const dataTocoda = getString(ch2, true);
       ret.tocoda = dataTocoda;
     }
     if (ch2.name === "decapo") {
-      let dataDecapo = xmlToYesNo(ch2);
+      const dataDecapo = xmlToYesNo(ch2);
       ret.decapo = dataDecapo;
     }
     if (ch2.name === "divisions") {
-      let dataDivisions = getNumber(ch2, true);
+      const dataDivisions = getNumber(ch2, true);
       ret.divisions = dataDivisions;
     }
     if (ch2.name === "pizzicato") {
-      let dataPizzicato = xmlToYesNo(ch2);
+      const dataPizzicato = xmlToYesNo(ch2);
       ret.pizzicato = dataPizzicato;
     }
     if (ch2.name === "coda") {
-      let dataCoda = getString(ch2, true);
+      const dataCoda = getString(ch2, true);
       ret.coda = dataCoda;
     }
     if (ch2.name === "segno") {
-      let dataSegno = getString(ch2, true);
+      const dataSegno = getString(ch2, true);
       ret.segno = dataSegno;
     }
     if (ch2.name === "elevation") {
-      let dataElevation = getString(ch2, true);
+      const dataElevation = getString(ch2, true);
       ret.elevation = dataElevation;
     }
     if (ch2.name === "fine") {
-      let dataFine = getString(ch2, true);
+      const dataFine = getString(ch2, true);
       ret.fine = dataFine;
     }
     if (ch2.name === "damper-pedal") {
-      let dataDamperPedal = getString(ch2, true);
+      const dataDamperPedal = getString(ch2, true);
       ret.damperPedal = dataDamperPedal;
     }
     if (ch2.name === "dynamics") {
-      let dataDynamics = getString(ch2, true);
+      const dataDynamics = getString(ch2, true);
       ret.dynamics = dataDynamics;
     }
     if (ch2.name === "time-only") {
-      let dataTimeOnly = getString(ch2, true);
+      const dataTimeOnly = getString(ch2, true);
       ret.timeOnly = dataTimeOnly;
     }
     if (ch2.name === "sostenuto-pedal") {
-      let dataSostenutoPedal = getString(ch2, true);
+      const dataSostenutoPedal = getString(ch2, true);
       ret.sostenutoPedal = dataSostenutoPedal;
     }
     if (ch2.name === "dalsegno") {
-      let dataDalsegno = getString(ch2, true);
+      const dataDalsegno = getString(ch2, true);
       ret.dalsegno = dataDalsegno;
     }
     if (ch2.name === "tempo") {
-      let dataTempo = getString(ch2, true);
+      const dataTempo = getString(ch2, true);
       ret.tempo = dataTempo;
     }
     if (ch2.name === "forward-repeat") {
-      let dataForwardRepeat = xmlToYesNo(ch2);
+      const dataForwardRepeat = xmlToYesNo(ch2);
       ret.forwardRepeat = dataForwardRepeat;
     }
   }
@@ -23645,24 +23646,24 @@ export interface Work {
 }
 
 function xmlToWork(node: Element) {
-  let ret: Work = <any>{};
+  const ret: Work = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "work-number") {
-      let dataWorkNumber = getString(ch, true);
+      const dataWorkNumber = getString(ch, true);
       ret.workNumber = dataWorkNumber;
     }
     if (ch.nodeName === "work-title") {
-      let dataWorkTitle = getString(ch, true);
+      const dataWorkTitle = getString(ch, true);
       ret.workTitle = dataWorkTitle;
     }
     if (ch.nodeName === "opus") {
-      let dataOpus = xmlToOpus(ch);
+      const dataOpus = xmlToOpus(ch);
       ret.opus = dataOpus;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -23675,12 +23676,12 @@ export interface Opus {
 }
 
 function xmlToOpus(node: Element) {
-  let ret: Opus = <any>{};
+  const ret: Opus = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -23710,50 +23711,50 @@ export interface Defaults {
 }
 
 function xmlToDefaults(node: Element) {
-  let ret: Defaults = <any>{};
+  const ret: Defaults = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "word-font") {
-      let dataWordFont = xmlToWordFont(ch);
+      const dataWordFont = xmlToWordFont(ch);
       ret.wordFont = dataWordFont;
     }
     if (ch.nodeName === "lyric-language") {
-      let dataLyricLanguages = xmlToLyricLanguage(ch);
+      const dataLyricLanguages = xmlToLyricLanguage(ch);
       ret.lyricLanguages = (ret.lyricLanguages || []).concat(
         dataLyricLanguages,
       );
     }
     if (ch.nodeName === "lyric-font") {
-      let dataLyricFonts = xmlToLyricFont(ch);
+      const dataLyricFonts = xmlToLyricFont(ch);
       ret.lyricFonts = (ret.lyricFonts || []).concat(dataLyricFonts);
     }
     if (ch.nodeName === "page-layout") {
-      let dataPageLayout = xmlToPageLayout(ch);
+      const dataPageLayout = xmlToPageLayout(ch);
       ret.pageLayout = dataPageLayout;
     }
     if (ch.nodeName === "system-layout") {
-      let dataSystemLayout = xmlToSystemLayout(ch);
+      const dataSystemLayout = xmlToSystemLayout(ch);
       ret.systemLayout = dataSystemLayout;
     }
     if (ch.nodeName === "appearance") {
-      let dataAppearance = xmlToAppearance(ch);
+      const dataAppearance = xmlToAppearance(ch);
       ret.appearance = dataAppearance;
     }
     if (ch.nodeName === "scaling") {
-      let dataScaling = xmlToScaling(ch);
+      const dataScaling = xmlToScaling(ch);
       ret.scaling = dataScaling;
     }
     if (ch.nodeName === "staff-layout") {
-      let dataStaffLayouts = xmlToStaffLayout(ch);
+      const dataStaffLayouts = xmlToStaffLayout(ch);
       ret.staffLayouts = (ret.staffLayouts || []).concat(dataStaffLayouts);
     }
     if (ch.nodeName === "music-font") {
-      let dataMusicFont = xmlToMusicFont(ch);
+      const dataMusicFont = xmlToMusicFont(ch);
       ret.musicFont = dataMusicFont;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -23763,30 +23764,30 @@ export interface MusicFont extends Font {
 }
 
 function xmlToMusicFont(node: Element) {
-  let ret: MusicFont = <any>{};
+  const ret: MusicFont = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
   }
@@ -23804,30 +23805,30 @@ export interface WordFont extends Font {
 }
 
 function xmlToWordFont(node: Element) {
-  let ret: WordFont = <any>{};
+  const ret: WordFont = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
   }
@@ -23847,38 +23848,38 @@ export interface LyricFont extends Font {
 }
 
 function xmlToLyricFont(node: Element) {
-  let ret: LyricFont = <any>{};
+  const ret: LyricFont = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "name") {
-      let dataName = getString(ch2, true);
+      const dataName = getString(ch2, true);
       ret.name = dataName;
     }
   }
@@ -23898,18 +23899,18 @@ export interface LyricLanguage {
 }
 
 function xmlToLyricLanguage(node: Element) {
-  let ret: LyricLanguage = <any>{};
+  const ret: LyricLanguage = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
     }
     if (ch2.name === "name") {
-      let dataName = getString(ch2, true);
+      const dataName = getString(ch2, true);
       ret.name = dataName;
     }
   }
@@ -23949,29 +23950,29 @@ export interface Credit {
 }
 
 function xmlToCredit(node: Element) {
-  let ret: Credit = <any>{};
+  const ret: Credit = <any>{};
   ret.creditWords = [];
   let foundCreditTypes = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "credit-type") {
-      let dataCreditTypes = getString(ch, true);
+      const dataCreditTypes = getString(ch, true);
       ret.creditTypes = (ret.creditTypes || []).concat(dataCreditTypes);
       foundCreditTypes = true;
     }
     if (ch.nodeName === "credit-words") {
-      let dataCreditWords = xmlToCreditWords(ch);
+      const dataCreditWords = xmlToCreditWords(ch);
       ret.creditWords.push(dataCreditWords);
     }
     if (ch.nodeName === "credit-image") {
-      let dataCreditImage = xmlToCreditImage(ch);
+      const dataCreditImage = xmlToCreditImage(ch);
       ret.creditImage = dataCreditImage;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "page") {
-      let dataPage = getNumber(ch2, true);
+      const dataPage = getNumber(ch2, true);
       ret.page = dataPage;
     }
   }
@@ -23987,7 +23988,7 @@ export interface CreditWords extends TextFormatting {
 }
 
 function xmlToCreditWords(node: Element) {
-  let ret: CreditWords = <any>{};
+  const ret: CreditWords = <any>{};
   let foundJustify = false;
   let foundFontWeight = false;
   let foundFontStyle = false;
@@ -24008,61 +24009,61 @@ function xmlToCreditWords(node: Element) {
   let foundDefaultX = false;
   let foundDefaultY = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "justify") {
-      let dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
+      const dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
       ret.justify = dataJustify;
       foundJustify = true;
     }
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
       foundDefaultX = true;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
       foundRelativeY = true;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
       foundDefaultY = true;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
       foundRelativeX = true;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
       foundFontFamily = true;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -24070,7 +24071,7 @@ function xmlToCreditWords(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValign = getTopMiddleBottomBaseline(
+      const dataValign = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -24078,48 +24079,48 @@ function xmlToCreditWords(node: Element) {
       foundValign = true;
     }
     if (ch2.name === "underline") {
-      let dataUnderline = getNumber(ch2, true);
+      const dataUnderline = getNumber(ch2, true);
       ret.underline = dataUnderline;
       foundUnderline = true;
     }
     if (ch2.name === "overline") {
-      let dataOverline = getNumber(ch2, true);
+      const dataOverline = getNumber(ch2, true);
       ret.overline = dataOverline;
       foundOverline = true;
     }
     if (ch2.name === "line-through") {
-      let dataLineThrough = getNumber(ch2, true);
+      const dataLineThrough = getNumber(ch2, true);
       ret.lineThrough = dataLineThrough;
       foundLineThrough = true;
     }
     if (ch2.name === "rotation") {
-      let dataRotation = getNumber(ch2, true);
+      const dataRotation = getNumber(ch2, true);
       ret.rotation = dataRotation;
       foundRotation = true;
     }
     if (ch2.name === "letter-spacing") {
-      let dataLetterSpacing = getString(ch2, true);
+      const dataLetterSpacing = getString(ch2, true);
       ret.letterSpacing = dataLetterSpacing;
       foundLetterSpacing = true;
     }
     if (ch2.name === "line-height") {
-      let dataLineHeight = getString(ch2, true);
+      const dataLineHeight = getString(ch2, true);
       ret.lineHeight = dataLineHeight;
       foundLineHeight = true;
     }
     if (ch2.name === "dir") {
-      let dataDir = getDirectionMode(ch2, DirectionMode.Ltr);
+      const dataDir = getDirectionMode(ch2, DirectionMode.Ltr);
       ret.dir = dataDir;
       foundDir = true;
     }
     if (ch2.name === "enclosure") {
-      let dataEnclosure = getEnclosureShape(ch2, EnclosureShape.None);
+      const dataEnclosure = getEnclosureShape(ch2, EnclosureShape.None);
       ret.enclosure = dataEnclosure;
       foundEnclosure = true;
     }
   }
-  let ch3 = node;
-  let dataWords = getString(ch3, true);
+  const ch3 = node;
+  const dataWords = getString(ch3, true);
   ret.words = dataWords;
   if (!foundJustify) {
     ret.justify = LeftCenterRight.Left;
@@ -24188,32 +24189,32 @@ export interface CreditImage extends Position, Halign, ValignImage {
 }
 
 function xmlToCreditImage(node: Element) {
-  let ret: CreditImage = <any>{};
+  const ret: CreditImage = <any>{};
   let foundHalign = false;
   let foundValignImage = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "halign") {
-      let dataHalign = getLeftCenterRight(
+      const dataHalign = getLeftCenterRight(
         ch2,
         (<any>ret).justify || LeftCenterRight.Left,
       );
@@ -24221,7 +24222,7 @@ function xmlToCreditImage(node: Element) {
       foundHalign = true;
     }
     if (ch2.name === "valign") {
-      let dataValignImage = getTopMiddleBottomBaseline(
+      const dataValignImage = getTopMiddleBottomBaseline(
         ch2,
         TopMiddleBottomBaseline.Bottom,
       );
@@ -24229,11 +24230,11 @@ function xmlToCreditImage(node: Element) {
       foundValignImage = true;
     }
     if (ch2.name === "type") {
-      let dataType = getString(ch2, true);
+      const dataType = getString(ch2, true);
       ret.type = dataType;
     }
     if (ch2.name === "source") {
-      let dataSource = getString(ch2, true);
+      const dataSource = getString(ch2, true);
       ret.source = dataSource;
     }
   }
@@ -24269,20 +24270,20 @@ function xmlToCreditImage(node: Element) {
 export type PartList = Array<ScorePart | PartGroup>;
 
 function xmlToPartList(node: Element): PartList {
-  let ret: PartList = [];
+  const ret: PartList = [];
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "score-part") {
-      let dataScoreParts = xmlToScorePart(ch);
+      const dataScoreParts = xmlToScorePart(ch);
       ret.push(dataScoreParts);
     }
     if (ch.nodeName === "part-group") {
-      let dataPartGroups = xmlToPartGroup(ch);
+      const dataPartGroups = xmlToPartGroup(ch);
       ret.push(dataPartGroups);
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -24304,7 +24305,7 @@ export interface ScorePart {
 }
 
 function xmlToScorePart(node: Element) {
-  let ret: ScorePart = {
+  const ret: ScorePart = {
     _class: "ScorePart",
     identification: null,
     partNameDisplay: null,
@@ -24318,52 +24319,52 @@ function xmlToScorePart(node: Element) {
     id: "",
   };
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "identification") {
-      let dataIdentification = xmlToIdentification(ch);
+      const dataIdentification = xmlToIdentification(ch);
       ret.identification = dataIdentification;
     }
     if (ch.nodeName === "part-name-display") {
-      let dataPartNameDisplay = xmlToPartNameDisplay(ch);
+      const dataPartNameDisplay = xmlToPartNameDisplay(ch);
       ret.partNameDisplay = dataPartNameDisplay;
     }
     if (ch.nodeName === "score-instrument") {
-      let dataScoreInstruments = xmlToScoreInstrument(ch);
+      const dataScoreInstruments = xmlToScoreInstrument(ch);
       ret.scoreInstruments = (ret.scoreInstruments || []).concat(
         dataScoreInstruments,
       );
     }
     if (ch.nodeName === "midi-device") {
-      let dataMidiDevices = xmlToMidiDevice(ch);
+      const dataMidiDevices = xmlToMidiDevice(ch);
       ret.midiDevices = (ret.midiDevices || []).concat(dataMidiDevices);
     }
     if (ch.nodeName === "part-name") {
-      let dataPartName = xmlToPartName(ch);
+      const dataPartName = xmlToPartName(ch);
       ret.partName = dataPartName;
     }
     if (ch.nodeName === "part-abbreviation-display") {
-      let dataPartAbbreviationDisplay = xmlToPartAbbreviationDisplay(ch);
+      const dataPartAbbreviationDisplay = xmlToPartAbbreviationDisplay(ch);
       ret.partAbbreviationDisplay = dataPartAbbreviationDisplay;
     }
     if (ch.nodeName === "part-abbreviation") {
-      let dataPartAbbreviation = xmlToPartAbbreviation(ch);
+      const dataPartAbbreviation = xmlToPartAbbreviation(ch);
       ret.partAbbreviation = dataPartAbbreviation;
     }
     if (ch.nodeName === "group") {
-      let dataGroups = getString(ch, true);
+      const dataGroups = getString(ch, true);
       ret.groups = (ret.groups || []).concat(dataGroups);
     }
     if (ch.nodeName === "midi-instrument") {
-      let dataMidiInstruments = xmlToMidiInstrument(ch);
+      const dataMidiInstruments = xmlToMidiInstrument(ch);
       ret.midiInstruments = (ret.midiInstruments || []).concat(
         dataMidiInstruments,
       );
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "id") {
-      let dataId = getString(ch2, true);
+      const dataId = getString(ch2, true);
       ret.id = dataId;
     }
   }
@@ -24389,7 +24390,7 @@ export interface PartName extends PrintStyle, PrintObject, Justify {
 }
 
 function xmlToPartName(node: Element) {
-  let ret: PartName = {
+  const ret: PartName = {
     partName: "",
     defaultX: null,
     defaultY: null,
@@ -24404,62 +24405,62 @@ function xmlToPartName(node: Element) {
   let foundPrintObject = false;
   let foundJustify = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "print-object") {
-      let dataPrintObject = xmlToYesNo(ch2);
+      const dataPrintObject = xmlToYesNo(ch2);
       ret.printObject = dataPrintObject;
       foundPrintObject = true;
     }
     if (ch2.name === "justify") {
-      let dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
+      const dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
       ret.justify = dataJustify;
       foundJustify = true;
     }
   }
-  let ch3 = node;
-  let dataPartName = getString(ch3, true);
+  const ch3 = node;
+  const dataPartName = getString(ch3, true);
   ret.partName = dataPartName;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -24498,69 +24499,69 @@ export interface PartAbbreviation extends PrintStyle, PrintObject, Justify {
 }
 
 function xmlToPartAbbreviation(node: Element) {
-  let ret: PartAbbreviation = <any>{};
+  const ret: PartAbbreviation = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundPrintObject = false;
   let foundJustify = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "print-object") {
-      let dataPrintObject = xmlToYesNo(ch2);
+      const dataPrintObject = xmlToYesNo(ch2);
       ret.printObject = dataPrintObject;
       foundPrintObject = true;
     }
     if (ch2.name === "justify") {
-      let dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
+      const dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
       ret.justify = dataJustify;
       foundJustify = true;
     }
   }
-  let ch3 = node;
-  let dataAbbreviation = getString(ch3, true);
+  const ch3 = node;
+  const dataAbbreviation = getString(ch3, true);
   ret.abbreviation = dataAbbreviation;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -24608,58 +24609,58 @@ export interface PartGroup extends Editorial {
 }
 
 function xmlToPartGroup(node: Element) {
-  let ret: PartGroup = <any>{
+  const ret: PartGroup = <any>{
     _class: "PartGroup",
   };
   let foundNumber_ = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "group-name-display") {
-      let dataGroupNameDisplay = xmlToGroupNameDisplay(ch);
+      const dataGroupNameDisplay = xmlToGroupNameDisplay(ch);
       ret.groupNameDisplay = dataGroupNameDisplay;
     }
     if (ch.nodeName === "group-symbol") {
-      let dataGroupSymbol = xmlToGroupSymbol(ch);
+      const dataGroupSymbol = xmlToGroupSymbol(ch);
       ret.groupSymbol = dataGroupSymbol;
     }
     if (ch.nodeName === "group-name") {
-      let dataGroupName = xmlToGroupName(ch);
+      const dataGroupName = xmlToGroupName(ch);
       ret.groupName = dataGroupName;
     }
     if (ch.nodeName === "group-abbreviation-display") {
-      let dataGroupAbbreviationDisplay = xmlToGroupAbbreviationDisplay(ch);
+      const dataGroupAbbreviationDisplay = xmlToGroupAbbreviationDisplay(ch);
       ret.groupAbbreviationDisplay = dataGroupAbbreviationDisplay;
     }
     if (ch.nodeName === "group-barline") {
-      let dataGroupBarline = xmlToGroupBarline(ch);
+      const dataGroupBarline = xmlToGroupBarline(ch);
       ret.groupBarline = dataGroupBarline;
     }
     if (ch.nodeName === "footnote") {
-      let dataFootnote = xmlToFootnote(ch);
+      const dataFootnote = xmlToFootnote(ch);
       ret.footnote = dataFootnote;
     }
     if (ch.nodeName === "level") {
-      let dataLevel = xmlToLevel(ch);
+      const dataLevel = xmlToLevel(ch);
       ret.level = dataLevel;
     }
     if (ch.nodeName === "group-abbreviation") {
-      let dataGroupAbbreviation = xmlToGroupAbbreviation(ch);
+      const dataGroupAbbreviation = xmlToGroupAbbreviation(ch);
       ret.groupAbbreviation = dataGroupAbbreviation;
     }
     if (ch.nodeName === "group-time") {
-      let dataGroupTime = xmlToGroupTime(ch);
+      const dataGroupTime = xmlToGroupTime(ch);
       ret.groupTime = dataGroupTime;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "number") {
-      let dataNumber = getNumber(ch2, true);
+      const dataNumber = getNumber(ch2, true);
       ret.number = dataNumber;
       foundNumber_ = true;
     }
     if (ch2.name === "type") {
-      let dataType = getStartStop(ch2, null);
+      const dataType = getStartStop(ch2, null);
       ret.type = dataType;
     }
   }
@@ -24681,63 +24682,63 @@ export interface GroupName extends PrintStyle, Justify {
 }
 
 function xmlToGroupName(node: Element) {
-  let ret: GroupName = <any>{};
+  const ret: GroupName = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundJustify = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "justify") {
-      let dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
+      const dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
       ret.justify = dataJustify;
       foundJustify = true;
     }
   }
-  let ch3 = node;
-  let dataName = getString(ch3, true);
+  const ch3 = node;
+  const dataName = getString(ch3, true);
   ret.name = dataName;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -24777,63 +24778,63 @@ export interface GroupAbbreviation extends PrintStyle, Justify {
 }
 
 function xmlToGroupAbbreviation(node: Element) {
-  let ret: GroupAbbreviation = <any>{};
+  const ret: GroupAbbreviation = <any>{};
   let foundFontWeight = false;
   let foundFontStyle = false;
   let foundColor = false;
   let foundJustify = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "font-family") {
-      let dataFontFamily = getString(ch2, true);
+      const dataFontFamily = getString(ch2, true);
       ret.fontFamily = dataFontFamily;
     }
     if (ch2.name === "font-weight") {
-      let dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
+      const dataFontWeight = getNormalBold(ch2, NormalBold.Normal);
       ret.fontWeight = dataFontWeight;
       foundFontWeight = true;
     }
     if (ch2.name === "font-style") {
-      let dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
+      const dataFontStyle = getNormalItalic(ch2, NormalItalic.Normal);
       ret.fontStyle = dataFontStyle;
       foundFontStyle = true;
     }
     if (ch2.name === "font-size") {
-      let dataFontSize = getString(ch2, true);
+      const dataFontSize = getString(ch2, true);
       ret.fontSize = dataFontSize;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
     if (ch2.name === "justify") {
-      let dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
+      const dataJustify = getLeftCenterRight(ch2, LeftCenterRight.Left);
       ret.justify = dataJustify;
       foundJustify = true;
     }
   }
-  let ch3 = node;
-  let dataText = getString(ch3, true);
+  const ch3 = node;
+  const dataText = getString(ch3, true);
   ret.text = dataText;
   if (!foundFontWeight) {
     ret.fontWeight = NormalBold.Normal;
@@ -24872,38 +24873,38 @@ export interface GroupSymbol extends Position, Color {
 }
 
 function xmlToGroupSymbol(node: Element) {
-  let ret: GroupSymbol = <any>{};
-  let foundData = false;
+  const ret: GroupSymbol = <any>{};
+  const foundData = false;
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "default-x") {
-      let dataDefaultX = getNumber(ch2, true);
+      const dataDefaultX = getNumber(ch2, true);
       ret.defaultX = dataDefaultX;
     }
     if (ch2.name === "relative-y") {
-      let dataRelativeY = getNumber(ch2, true);
+      const dataRelativeY = getNumber(ch2, true);
       ret.relativeY = dataRelativeY;
     }
     if (ch2.name === "default-y") {
-      let dataDefaultY = getNumber(ch2, true);
+      const dataDefaultY = getNumber(ch2, true);
       ret.defaultY = dataDefaultY;
     }
     if (ch2.name === "relative-x") {
-      let dataRelativeX = getNumber(ch2, true);
+      const dataRelativeX = getNumber(ch2, true);
       ret.relativeX = dataRelativeX;
     }
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
   }
-  let ch3 = node;
-  let dataData = getPartSymbolType(ch3, PartSymbolType.None);
+  const ch3 = node;
+  const dataData = getPartSymbolType(ch3, PartSymbolType.None);
   ret.data = dataData;
   if (!foundData) {
     ret.data = PartSymbolType.None;
@@ -24925,21 +24926,21 @@ export interface GroupBarline extends Color {
 }
 
 function xmlToGroupBarline(node: Element) {
-  let ret: GroupBarline = <any>{};
+  const ret: GroupBarline = <any>{};
   let foundColor = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "color") {
-      let dataColor = getString(ch2, true);
+      const dataColor = getString(ch2, true);
       ret.color = dataColor;
       foundColor = true;
     }
   }
-  let ch3 = node;
-  let dataData = getString(ch3, true);
+  const ch3 = node;
+  const dataData = getString(ch3, true);
   ret.data = dataData;
   if (!foundColor) {
     ret.color = "#000000";
@@ -24957,12 +24958,12 @@ export interface GroupTime {
 }
 
 function xmlToGroupTime(node: Element) {
-  let ret: GroupTime = <any>{};
+  const ret: GroupTime = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -25017,7 +25018,7 @@ export interface ScoreInstrument {
 }
 
 function xmlToScoreInstrument(node: Element) {
-  let ret: ScoreInstrument = {
+  const ret: ScoreInstrument = {
     instrumentName: "",
     instrumentSound: "",
     ensemble: "",
@@ -25027,36 +25028,36 @@ function xmlToScoreInstrument(node: Element) {
     id: "",
   };
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "instrument-name") {
-      let dataInstrumentName = getString(ch, true);
+      const dataInstrumentName = getString(ch, true);
       ret.instrumentName = dataInstrumentName;
     }
     if (ch.nodeName === "instrument-sound") {
-      let dataInstrumentSound = getString(ch, true);
+      const dataInstrumentSound = getString(ch, true);
       ret.instrumentSound = dataInstrumentSound;
     }
     if (ch.nodeName === "ensemble") {
-      let dataEnsemble = getString(ch, true);
+      const dataEnsemble = getString(ch, true);
       ret.ensemble = dataEnsemble;
     }
     if (ch.nodeName === "virtual-instrument") {
-      let dataVirtualInstrument = xmlToVirtualInstrument(ch);
+      const dataVirtualInstrument = xmlToVirtualInstrument(ch);
       ret.virtualInstrument = dataVirtualInstrument;
     }
     if (ch.nodeName === "instrument-abbreviation") {
-      let dataInstrumentAbbreviation = getString(ch, true);
+      const dataInstrumentAbbreviation = getString(ch, true);
       ret.instrumentAbbreviation = dataInstrumentAbbreviation;
     }
     if (ch.nodeName === "solo") {
-      let dataSolo = xmlToSolo(ch);
+      const dataSolo = xmlToSolo(ch);
       ret.solo = dataSolo;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "id") {
-      let dataId = getString(ch2, true);
+      const dataId = getString(ch2, true);
       ret.id = dataId;
     }
   }
@@ -25068,12 +25069,12 @@ export interface Solo {
 }
 
 function xmlToSolo(node: Element) {
-  let ret: Solo = <any>{};
+  const ret: Solo = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -25085,20 +25086,20 @@ export interface VirtualInstrument {
 }
 
 function xmlToVirtualInstrument(node: Element) {
-  let ret: VirtualInstrument = <any>{};
+  const ret: VirtualInstrument = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "virtual-library") {
-      let dataVirtualLibrary = getString(ch, true);
+      const dataVirtualLibrary = getString(ch, true);
       ret.virtualLibrary = dataVirtualLibrary;
     }
     if (ch.nodeName === "virtual-name") {
-      let dataVirtualName = getString(ch, true);
+      const dataVirtualName = getString(ch, true);
       ret.virtualName = dataVirtualName;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -25121,40 +25122,40 @@ export interface ScoreHeader {
 }
 
 function xmlToScoreHeader(node: Element) {
-  let ret: ScoreHeader = <any>{};
+  const ret: ScoreHeader = <any>{};
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "movement-title") {
-      let dataMovementTitle = getString(ch, true);
+      const dataMovementTitle = getString(ch, true);
       ret.movementTitle = dataMovementTitle;
     }
     if (ch.nodeName === "identification") {
-      let dataIdentification = xmlToIdentification(ch);
+      const dataIdentification = xmlToIdentification(ch);
       ret.identification = dataIdentification;
     }
     if (ch.nodeName === "defaults") {
-      let dataDefaults = xmlToDefaults(ch);
+      const dataDefaults = xmlToDefaults(ch);
       ret.defaults = dataDefaults;
     }
     if (ch.nodeName === "work") {
-      let dataWork = xmlToWork(ch);
+      const dataWork = xmlToWork(ch);
       ret.work = dataWork;
     }
     if (ch.nodeName === "credit") {
-      let dataCredits = xmlToCredit(ch);
+      const dataCredits = xmlToCredit(ch);
       ret.credits = (ret.credits || []).concat(dataCredits);
     }
     if (ch.nodeName === "part-list") {
-      let dataPartList = xmlToPartList(ch);
+      const dataPartList = xmlToPartList(ch);
       ret.partList = dataPartList;
     }
     if (ch.nodeName === "movement-number") {
-      let dataMovementNumber = getString(ch, true);
+      const dataMovementNumber = getString(ch, true);
       ret.movementNumber = dataMovementNumber;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return ret;
 }
@@ -25172,47 +25173,47 @@ export interface ScoreTimewise extends DocumentAttributes, ScoreHeader {
 }
 
 function xmlToScoreTimewise(node: Element) {
-  let ret: ScoreTimewise = <any>{};
+  const ret: ScoreTimewise = <any>{};
   let foundVersion_ = false;
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "measure") {
-      let dataMeasures = xmlToMeasure(ch);
+      const dataMeasures = xmlToMeasure(ch);
       ret.measures = (ret.measures || []).concat(dataMeasures);
     }
     if (ch.nodeName === "movement-title") {
-      let dataMovementTitle = getString(ch, true);
+      const dataMovementTitle = getString(ch, true);
       ret.movementTitle = dataMovementTitle;
     }
     if (ch.nodeName === "identification") {
-      let dataIdentification = xmlToIdentification(ch);
+      const dataIdentification = xmlToIdentification(ch);
       ret.identification = dataIdentification;
     }
     if (ch.nodeName === "defaults") {
-      let dataDefaults = xmlToDefaults(ch);
+      const dataDefaults = xmlToDefaults(ch);
       ret.defaults = dataDefaults;
     }
     if (ch.nodeName === "work") {
-      let dataWork = xmlToWork(ch);
+      const dataWork = xmlToWork(ch);
       ret.work = dataWork;
     }
     if (ch.nodeName === "credit") {
-      let dataCredits = xmlToCredit(ch);
+      const dataCredits = xmlToCredit(ch);
       ret.credits = (ret.credits || []).concat(dataCredits);
     }
     if (ch.nodeName === "part-list") {
-      let dataPartList = xmlToPartList(ch);
+      const dataPartList = xmlToPartList(ch);
       ret.partList = dataPartList;
     }
     if (ch.nodeName === "movement-number") {
-      let dataMovementNumber = getString(ch, true);
+      const dataMovementNumber = getString(ch, true);
       ret.movementNumber = dataMovementNumber;
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
     if (ch2.name === "version") {
-      let dataVersion = getString(ch2, true);
+      const dataVersion = getString(ch2, true);
       ret.version = dataVersion;
       foundVersion_ = true;
     }
@@ -25226,54 +25227,54 @@ function xmlToScoreTimewise(node: Element) {
 function xmlToPart(node: Element) {
   let rarr: any[] = [];
   for (let i = 0; i < node.children.length; ++i) {
-    let ch = node.children[i];
+    const ch = node.children[i];
     if (ch.nodeName === "note") {
-      let data: any = xmlToNote(ch);
+      const data: any = xmlToNote(ch);
       rarr = (rarr || []).concat(data);
     }
     if (ch.nodeName === "backup") {
-      let data: any = xmlToBackup(ch);
+      const data: any = xmlToBackup(ch);
       rarr = (rarr || []).concat(data);
     }
     if (ch.nodeName === "harmony") {
-      let data: any = xmlToHarmony(ch);
+      const data: any = xmlToHarmony(ch);
       rarr = (rarr || []).concat(data);
     }
     if (ch.nodeName === "forward") {
-      let data: any = xmlToForward(ch);
+      const data: any = xmlToForward(ch);
       rarr = (rarr || []).concat(data);
     }
     if (ch.nodeName === "print") {
-      let data: any = xmlToPrint(ch);
+      const data: any = xmlToPrint(ch);
       rarr = (rarr || []).concat(data);
     }
     if (ch.nodeName === "figured-bass") {
-      let data: any = xmlToFiguredBass(ch);
+      const data: any = xmlToFiguredBass(ch);
       rarr = (rarr || []).concat(data);
     }
     if (ch.nodeName === "direction") {
-      let data: any = xmlToDirection(ch);
+      const data: any = xmlToDirection(ch);
       rarr = (rarr || []).concat(data);
     }
     if (ch.nodeName === "attributes") {
-      let data: any = xmlToAttributes(ch);
+      const data: any = xmlToAttributes(ch);
       rarr = (rarr || []).concat(data);
     }
     if (ch.nodeName === "sound") {
-      let data: any = xmlToSound(ch);
+      const data: any = xmlToSound(ch);
       rarr = (rarr || []).concat(data);
     }
     if (ch.nodeName === "barline") {
-      let data: any = xmlToBarline(ch);
+      const data: any = xmlToBarline(ch);
       rarr = (rarr || []).concat(data);
     }
     if (ch.nodeName === "grouping") {
-      let data: any = xmlToGrouping(ch);
+      const data: any = xmlToGrouping(ch);
       rarr = (rarr || []).concat(data);
     }
   }
   for (let i = 0; i < node.attributes.length; ++i) {
-    let ch2 = node.attributes[i];
+    const ch2 = node.attributes[i];
   }
   return rarr;
 }
@@ -25348,7 +25349,7 @@ function defined(val: any): boolean {
 
 function scalingToXML(scaling: Scaling): string {
   // <!ELEMENT scaling (millimeters, tenths)>
-  let children: string[] = [];
+  const children: string[] = [];
 
   if (defined(scaling.millimeters)) {
     children.push(millimetersToXML(scaling.millimeters));
@@ -25377,7 +25378,7 @@ function pageLayoutToXML(pageLayout: PageLayout): string {
   //     (page-margins, page-margins?)?)>
   // <!ELEMENT page-height %layout-tenths;>
   // <!ELEMENT page-width %layout-tenths;>
-  let children: string[] = [];
+  const children: string[] = [];
 
   if (defined(pageLayout.pageHeight)) {
     children.push(xml`<page-height>${pageLayout.pageHeight}</page-height>`);
@@ -25396,7 +25397,7 @@ function pageLayoutToXML(pageLayout: PageLayout): string {
     .join("\n")}\n</page-layout>`;
 }
 
-let oddEvenBothToXML: { [key: number]: string } = {
+const oddEvenBothToXML: { [key: number]: string } = {
   2: "both",
   1: "even",
   0: "odd",
@@ -25431,7 +25432,7 @@ function hmarginsToXML(hmargins: {
 }): string[] {
   // <!ELEMENT left-margin %layout-tenths;>
   // <!ELEMENT right-margin %layout-tenths;>
-  let children: string[] = [];
+  const children: string[] = [];
   if (defined(hmargins.leftMargin)) {
     children.push(xml`<left-margin>${hmargins.leftMargin}</left-margin>`);
   }
@@ -25447,7 +25448,7 @@ function vmarginsToXML(hmargins: {
 }): string[] {
   // <!ELEMENT top-margin %layout-tenths;>
   // <!ELEMENT bottom-margin %layout-tenths;>
-  let children: string[] = [];
+  const children: string[] = [];
   if (defined(hmargins.topMargin)) {
     children.push(xml`<top-margin>${hmargins.topMargin}</top-margin>`);
   }
@@ -25461,7 +25462,7 @@ function systemLayoutToXML(systemLayout: SystemLayout): string {
   // <!ELEMENT system-layout
   //     (system-margins?, system-distance?,
   //      top-system-distance?, system-dividers?)>
-  let children: string[] = [];
+  const children: string[] = [];
 
   if (defined(systemLayout.systemMargins)) {
     children.push(systemMarginsToXML(systemLayout.systemMargins));
@@ -25489,7 +25490,7 @@ function systemLayoutToXML(systemLayout: SystemLayout): string {
 
 function systemMarginsToXML(systemMargins: SystemMargins): string {
   // <!ELEMENT system-margins (left-margin, right-margin)>
-  let children = hmarginsToXML(systemMargins);
+  const children = hmarginsToXML(systemMargins);
   return dangerous`<system-margins>\n${children
     .join("\n")
     .split("\n")
@@ -25509,7 +25510,7 @@ function systemDividersToXML(systemDividers: SystemDividers): string {
   //     %print-object;
   //     %print-style-align;
   // >
-  let children: string[] = [];
+  const children: string[] = [];
   if (defined(systemDividers.leftDivider)) {
     children.push(
       xml`<left-divider${
@@ -25537,7 +25538,7 @@ function appearanceToXML(appearance: Appearance): string {
   // <!ELEMENT appearance
   //     (line-width*, note-size*, distance*,
   //      other-appearance*)>
-  let children: string[] = [];
+  const children: string[] = [];
   Object.keys(appearance.lineWidths || {}).forEach((key) => {
     children.push(lineWidthToXML(appearance.lineWidths[key]));
   });
@@ -25566,7 +25567,7 @@ function lineWidthToXML(lineWidth: LineWidth): string {
   return xml`<line-width type="${lineWidth.type}">${lineWidth.tenths}</line-width>`;
 }
 
-let cueGraceLargeToXML: { [key: number]: string } = {
+const cueGraceLargeToXML: { [key: number]: string } = {
   1: "grace",
   0: "cue",
   2: "large",
@@ -25596,7 +25597,7 @@ function workToXML(work: Work): string {
     return xml`<!-- no work metadata -->`;
   }
 
-  let children: string[] = [];
+  const children: string[] = [];
   if (defined(work.workNumber)) {
     // <!ELEMENT work-number (#PCDATA)>
     children.push(xml`<work-number>${work.workNumber}</work-number>`);
@@ -25640,7 +25641,7 @@ function movementTitleToXML(movementTitle: string): string {
 function identificationToXML(identification: Identification): string {
   // <!ELEMENT identification (creator*, rights*, encoding?,
   //     source?, relation*, miscellaneous?)>
-  let children: string[] = [];
+  const children: string[] = [];
   (identification.creators || []).forEach((creator) => {
     children.push(creatorToXML(creator));
   });
@@ -25676,7 +25677,7 @@ function creatorToXML(creator: Creator): string {
   if (creator.type) {
     attribs += xml` type="${creator.type}"`;
   }
-  let pcdata = xml`${creator.creator}`;
+  const pcdata = xml`${creator.creator}`;
   return dangerous`<creator${attribs}>${pcdata}</creator>`;
 }
 
@@ -25689,14 +25690,14 @@ function rightsToXML(rights: Rights): string {
   if (rights.type) {
     attribs += xml` type="${rights.type}"`;
   }
-  let pcdata = xml`${rights.rights}`;
+  const pcdata = xml`${rights.rights}`;
   return dangerous`<rights${attribs}>${pcdata}</rights>`;
 }
 
 function encodingToXML(encoding: Encoding): string {
   // <!ELEMENT encoding ((encoding-date | encoder | software |
   //     encoding-description | supports)*)>
-  let children: string[] = [];
+  const children: string[] = [];
   if (defined(encoding.encodingDate)) {
     children.push(encodingDateToXML(encoding.encodingDate));
   }
@@ -25735,7 +25736,7 @@ function encoderToXML(encoder: Encoder): string {
   if (defined(encoder.type)) {
     attribs = xml` type="${encoder.type}"`;
   }
-  let pcdata = xml`${encoder.encoder}`;
+  const pcdata = xml`${encoder.encoder}`;
   return dangerous`<encoder${attribs}>${pcdata}</encoder>`;
 }
 
@@ -25786,13 +25787,13 @@ function relationToXML(relation: Relation): string {
   if (relation.type) {
     attribs += xml` type="${relation.type}"`;
   }
-  let pcdata = xml`${relation.data}`;
+  const pcdata = xml`${relation.data}`;
   return dangerous`<relation${attribs}>${pcdata}</relation>`;
 }
 
 function miscellaneousToXML(miscellaneous: Miscellaneous): string {
   // <!ELEMENT miscellaneous (miscellaneous-field*)>
-  let children = miscellaneous.miscellaneousFields.map((field) =>
+  const children = miscellaneous.miscellaneousFields.map((field) =>
     miscellaneousFieldToXML(field),
   );
   return dangerous`<miscellaneous>\n${children
@@ -25817,7 +25818,7 @@ function defaultsToXML(defaults: Defaults): string {
   //     system-layout?, staff-layout*, appearance?,
   //     music-font?, word-font?, lyric-font*, lyric-language*)>
 
-  let children: string[] = [];
+  const children: string[] = [];
 
   if (defined(defaults.scaling)) {
     children.push(scalingToXML(defaults.scaling));
@@ -25899,7 +25900,7 @@ function creditToXML(credit: Credit): string {
   //     page NMTOKEN #IMPLIED
   // >
   let attributes = "";
-  let children: string[] = [];
+  const children: string[] = [];
   (credit.creditTypes || []).forEach((creditType) => {
     children.push(creditTypeToXML(creditType));
   });
@@ -25936,7 +25937,7 @@ function creditWordsToXML(creditWords: CreditWords): string {
   // <!ATTLIST credit-words
   //     %text-formatting;
   // >
-  let pcdata = xml`${creditWords.words}`;
+  const pcdata = xml`${creditWords.words}`;
   return dangerous`<credit-words${textFormattingToXML(
     creditWords,
   )}>${pcdata}</credit-words>`;
@@ -25966,7 +25967,7 @@ function creditImageToXML(creditImage: CreditImage): string {
   return dangerous`<credit-image${attribs} />`;
 }
 
-let topMiddleBottomBaselineToXML: { [key: number]: string } = {
+const topMiddleBottomBaselineToXML: { [key: number]: string } = {
   0: "top",
   1: "middle",
   3: "baseline",
@@ -25988,7 +25989,7 @@ function partListToXML(partList: PartList): string {
   // <!ELEMENT part-list (part-group*, score-part,
   //     (part-group | score-part)*)>
 
-  let children: string[] = [];
+  const children: string[] = [];
   partList.forEach((partGroupOrScorePart) => {
     if (partGroupOrScorePart._class === "PartGroup") {
       children.push(partGroupToXML(<PartGroup>partGroupOrScorePart));
@@ -26014,7 +26015,7 @@ function scorePartToXML(scorePart: ScorePart): string {
   // <!ATTLIST score-part
   //     id ID #REQUIRED
   // >
-  let children: string[] = [];
+  const children: string[] = [];
   let attribs = "";
   if (defined(scorePart.identification)) {
     children.push(identificationToXML(scorePart.identification));
@@ -26063,7 +26064,7 @@ function partNameToXML(partName: PartName): string {
   //     %print-object;
   //     %justify;
   // >
-  let pcdata = xml`${partName.partName}`;
+  const pcdata = xml`${partName.partName}`;
   return dangerous`<part-name${
     printStyleToXML(partName) +
     printObjectToXML(partName) +
@@ -26093,7 +26094,7 @@ function partAbbreviationToXML(abbreviation: PartAbbreviation): string {
   //     %print-object;
   //     %justify;
   // >
-  let pcdata = xml`${abbreviation.abbreviation}`;
+  const pcdata = xml`${abbreviation.abbreviation}`;
   return dangerous`<part-abbreviation${
     printStyleToXML(abbreviation) +
     printObjectToXML(abbreviation) +
@@ -26149,7 +26150,7 @@ function midiDeviceToXML(midiDevice: MidiDevice): string {
   if (defined(midiDevice.id)) {
     attribs += xml` id="${midiDevice.id}"`;
   }
-  let pcdata = xml`${midiDevice.deviceName || ""}`;
+  const pcdata = xml`${midiDevice.deviceName || ""}`;
   return dangerous`<midi-device${attribs}>${pcdata}</midi-device>`;
 }
 
@@ -26160,7 +26161,7 @@ function midiInstrumentToXML(midiInstrument: MidiInstrument): string {
   // <!ATTLIST midi-instrument
   //     id IDREF #REQUIRED
   // >
-  let children: string[] = [];
+  const children: string[] = [];
   let attribs = "";
   if (defined(midiInstrument.midiChannel)) {
     // <!ELEMENT midi-channel (#PCDATA)>
@@ -26218,8 +26219,8 @@ function scoreInstrumentToXML(scoreInstrument: ScoreInstrument): string {
   // <!ATTLIST score-instrument
   //     id ID #REQUIRED
   // >
-  let children: string[] = [];
-  let attribs = xml` id="${scoreInstrument.id}"`;
+  const children: string[] = [];
+  const attribs = xml` id="${scoreInstrument.id}"`;
   if (defined(scoreInstrument.instrumentName)) {
     // <!ELEMENT instrument-name (#PCDATA)>
     children.push(
@@ -26249,8 +26250,8 @@ function scoreInstrumentToXML(scoreInstrument: ScoreInstrument): string {
   if (defined(scoreInstrument.virtualInstrument)) {
     // <!ELEMENT virtual-instrument
     //     (virtual-library?, virtual-name?)>
-    let vChildren: string[] = [];
-    let v = scoreInstrument.virtualInstrument;
+    const vChildren: string[] = [];
+    const v = scoreInstrument.virtualInstrument;
     if (defined(v.virtualLibrary)) {
       // <!ELEMENT virtual-library (#PCDATA)>
       vChildren.push(
@@ -26289,7 +26290,7 @@ function partGroupToXML(partGroup: PartGroup): string {
   // <!ELEMENT group-time EMPTY>
 
   let children: string[] = [];
-  let attribs: string =
+  const attribs: string =
     "" + startStopToXML(partGroup) + numberLevelToXML(partGroup);
 
   if (defined(partGroup.groupName)) {
@@ -26312,7 +26313,7 @@ function partGroupToXML(partGroup: PartGroup): string {
   if (defined(partGroup.groupBarline)) {
     children.push(groupBarlineToXML(partGroup.groupBarline));
   }
-  if (!!partGroup.groupTime) {
+  if (partGroup.groupTime) {
     children.push(xml`<group-time />`);
   }
 
@@ -26331,7 +26332,7 @@ function groupNameToXML(groupName: GroupName): string {
   //     %print-style;
   //     %justify;
   // >
-  let pcdata = xml`${groupName.name}`;
+  const pcdata = xml`${groupName.name}`;
   return dangerous`<group-name${
     printStyleToXML(groupName) + justifyToXML(groupName)
   }>${pcdata}</group-name>`;
@@ -26356,7 +26357,7 @@ function groupAbbreviationToXML(groupAbbreviation: GroupAbbreviation): string {
   //     %print-style;
   //     %justify;
   // >
-  let pcdata = xml`${groupAbbreviation.text}`;
+  const pcdata = xml`${groupAbbreviation.text}`;
   return dangerous`<group-abbreviation${
     printStyleToXML(groupAbbreviation) + justifyToXML(groupAbbreviation)
   }>${pcdata}</group-abbreviation>`;
@@ -26383,7 +26384,7 @@ function groupSymbolToXML(groupSymbol: GroupSymbol): string {
   //     %position;
   //     %color;
   // >
-  let pcdata = xml`${groupSymbol.data}`;
+  const pcdata = xml`${groupSymbol.data}`;
   return dangerous`<group-symbol${
     positionToXML(groupSymbol) + colorToXML(groupSymbol)
   }>${pcdata}</group-symbol>`;
@@ -26394,7 +26395,7 @@ function groupBarlineToXML(groupBarline: GroupBarline): string {
   // <!ATTLIST group-barline
   //     %color;
   // >
-  let pcdata = xml`${groupBarline.data}`;
+  const pcdata = xml`${groupBarline.data}`;
   return dangerous`<group-barline${colorToXML(
     groupBarline,
   )}>${pcdata}</group-barline>`;
@@ -26472,7 +26473,7 @@ function groupingToXML(grouping: Grouping): string {
     // <!ATTLIST feature
     //     type CDATA #IMPLIED
     // >
-    let pcdata = xml`${feature.data}`;
+    const pcdata = xml`${feature.data}`;
     let attribs = "";
     if (defined(feature.type)) {
       attribs += xml` type="${feature.type}"`;
@@ -26553,7 +26554,7 @@ function harmonyToXML(harmony: Harmony): string {
     .join("\n")}\n</harmony>`;
 }
 
-let eiaTypeToXML: { [key: number]: string } = {
+const eiaTypeToXML: { [key: number]: string } = {
   [ExplicitImpliedAlternate.Explicit]: "explicit",
   [ExplicitImpliedAlternate.Implied]: "implied",
   [ExplicitImpliedAlternate.Alternate]: "alternate",
@@ -26569,7 +26570,7 @@ function explicitImpliedAlternateToXML(eia: {
 
 function rootToXML(root: Root): string {
   // <!ELEMENT root (root-step, root-alter?)>
-  let children: string[] = [];
+  const children: string[] = [];
   if (defined(root.rootStep)) {
     // <!ELEMENT root-step (#PCDATA)>
     // <!ATTLIST root-step
@@ -26581,7 +26582,7 @@ function rootToXML(root: Root): string {
       attribs += xml` text="${root.rootStep.text}"`;
     }
     attribs += printStyleToXML(root.rootStep);
-    let pcdata = xml`${root.rootStep.data}`;
+    const pcdata = xml`${root.rootStep.data}`;
     children.push(dangerous`<root-step${attribs}>${pcdata}</root-step>`);
   }
   if (defined(root.rootAlter)) {
@@ -26598,7 +26599,7 @@ function rootToXML(root: Root): string {
         root.rootAlter.location === LeftRight.Left ? "left" : "right"
       }"`;
     }
-    let pcdata = root.rootAlter.data;
+    const pcdata = root.rootAlter.data;
     children.push(dangerous`<root-alter${attribs}>${pcdata}</root-alter>`);
   }
   return dangerous`<root>\n${children
@@ -26613,8 +26614,8 @@ function functionToXML(func: Function): string {
   // <!ATTLIST function
   //     %print-style;
   // >
-  let pcdata = xml`${func.data}`;
-  let attribs = printStyleToXML(func);
+  const pcdata = xml`${func.data}`;
+  const attribs = printStyleToXML(func);
   return `<function${attribs}>${pcdata}</function>`;
 }
 
@@ -26645,7 +26646,7 @@ function kindToXML(kind: Kind): string {
   }
   attribs += printStyleToXML(kind) + halignToXML(kind) + valignToXML(kind);
 
-  let pcdata = xml`${kind.data}`;
+  const pcdata = xml`${kind.data}`;
   return dangerous`<kind${attribs}>\n${pcdata}</kind>`;
 }
 
@@ -26654,14 +26655,14 @@ function inversionToXML(inversion: Inversion): string {
   // <!ATTLIST inversion
   //     %print-style;
   //     >
-  let pcdata = xml`${inversion.data}`;
-  let attribs = printStyleToXML(inversion);
+  const pcdata = xml`${inversion.data}`;
+  const attribs = printStyleToXML(inversion);
   return `<inversion${attribs}>${pcdata}</inversion>`;
 }
 
 function bassToXML(bass: Bass): string {
   // <!ELEMENT bass (bass-step, bass-alter?)>
-  let children: string[] = [];
+  const children: string[] = [];
   if (defined(bass.bassStep)) {
     // <!ELEMENT bass-step (#PCDATA)>
     // <!ATTLIST bass-step
@@ -26673,7 +26674,7 @@ function bassToXML(bass: Bass): string {
       attribs += xml` text="${bass.bassStep.text}"`;
     }
     attribs += printStyleToXML(bass.bassStep);
-    let pcdata = xml`${bass.bassStep.data}`;
+    const pcdata = xml`${bass.bassStep.data}`;
     children.push(dangerous`<bass-step${attribs}>${pcdata}</bass-step>`);
   }
   if (defined(bass.bassAlter)) {
@@ -26690,7 +26691,7 @@ function bassToXML(bass: Bass): string {
         bass.bassAlter.location === LeftRight.Left ? "left" : "right"
       }"`;
     }
-    let pcdata = bass.bassAlter.data;
+    const pcdata = bass.bassAlter.data;
     children.push(dangerous`<bass-alter${attribs}>${pcdata}</bass-alter>`);
   }
   return dangerous`<bass>\n${children
@@ -26700,7 +26701,7 @@ function bassToXML(bass: Bass): string {
     .join("\n")}\n</bass>`;
 }
 
-let chordTypeToXML: { [key: number]: string } = {
+const chordTypeToXML: { [key: number]: string } = {
   [ChordType.Augmented]: "augmented",
   [ChordType.Diminished]: "diminished",
   [ChordType.Major]: "major",
@@ -26713,7 +26714,7 @@ function degreeToXML(degree: Degree): string {
   // <!ATTLIST degree
   //     %print-object;
   // >
-  let children: string[] = [];
+  const children: string[] = [];
   if (defined(degree.degreeValue)) {
     // <!ELEMENT degree-value (#PCDATA)>
     // <!ATTLIST degree-value
@@ -26730,7 +26731,7 @@ function degreeToXML(degree: Degree): string {
       lattribs += xml` text="${degree.degreeValue.text}"`;
     }
     lattribs += printStyleToXML(degree.degreeValue);
-    let pcdata = xml`${degree.degreeValue.data}`;
+    const pcdata = xml`${degree.degreeValue.data}`;
     children.push(dangerous`<degree-value${lattribs}>${pcdata}</degree-value>`);
   }
   if (defined(degree.degreeAlter)) {
@@ -26743,7 +26744,7 @@ function degreeToXML(degree: Degree): string {
     if (defined(degree.degreeAlter.plusMinus)) {
       lattribs += yesNo` plus-minus="${degree.degreeAlter.plusMinus}"`;
     }
-    let pcdata = xml`${degree.degreeAlter.data}`;
+    const pcdata = xml`${degree.degreeAlter.data}`;
     children.push(dangerous`<degree-alter${lattribs}>${pcdata}</degree-alter>`);
   }
   if (defined(degree.degreeType)) {
@@ -26756,10 +26757,10 @@ function degreeToXML(degree: Degree): string {
     if (defined(degree.degreeType.text)) {
       lattribs += xml` text="${degree.degreeType.text}"`;
     }
-    let pcdata = xml`${degree.degreeType.data}`;
+    const pcdata = xml`${degree.degreeType.data}`;
     children.push(dangerous`<degree-type${lattribs}>${pcdata}</degree-type>`);
   }
-  let attribs = printObjectToXML(degree);
+  const attribs = printObjectToXML(degree);
   return dangerous`<degree${attribs}>\n${children
     .join("\n")
     .split("\n")
@@ -26794,7 +26795,7 @@ function frameToXML(frame: Frame): string {
   if (defined(frame.unplayed)) {
     attribs += xml` unplayed="${frame.unplayed}"`;
   }
-  let children: string[] = [];
+  const children: string[] = [];
   if (defined(frame.frameStrings)) {
     // <!ELEMENT frame-strings (#PCDATA)>
     children.push(xml`<frame-strings>${frame.frameStrings}</frame-strings>`);
@@ -26809,7 +26810,7 @@ function frameToXML(frame: Frame): string {
     //     text CDATA #IMPLIED
     //     location %left-right; #IMPLIED
     // >
-    let pcdata = xml`${frame.firstFret.data}`;
+    const pcdata = xml`${frame.firstFret.data}`;
     let attribs = "";
     if (defined(frame.firstFret.text)) {
       attribs += xml` text="${frame.firstFret.text}"`;
@@ -26822,7 +26823,7 @@ function frameToXML(frame: Frame): string {
   }
   (frame.frameNotes || []).forEach((frameNote) => {
     // <!ELEMENT frame-note (string, fret, fingering?, barre?)>
-    let fChildren: string[] = [];
+    const fChildren: string[] = [];
 
     // <!ELEMENT string (#PCDATA)>
     // <!ATTLIST string
@@ -26830,7 +26831,7 @@ function frameToXML(frame: Frame): string {
     //     %placement;
     // >
     if (defined(frameNote.string)) {
-      let pcdata = xml`${frameNote.string.stringNum}`;
+      const pcdata = xml`${frameNote.string.stringNum}`;
       fChildren.push(
         dangerous`<string${
           printStyleToXML(frameNote.string) + placementToXML(frameNote.string)
@@ -26843,7 +26844,7 @@ function frameToXML(frame: Frame): string {
     //     %color;
     // >
     if (defined(frameNote.fret)) {
-      let pcdata = xml`${frameNote.fret.fret}`;
+      const pcdata = xml`${frameNote.fret.fret}`;
       fChildren.push(
         dangerous`<fret${
           fontToXML(frameNote.fret) + colorToXML(frameNote.fret)
@@ -26858,7 +26859,7 @@ function frameToXML(frame: Frame): string {
     //     %placement;
     // >
     if (defined(frameNote.fingering)) {
-      let pcdata = xml`${frameNote.fingering.finger}`;
+      const pcdata = xml`${frameNote.fingering.finger}`;
       let coreAttribs = "";
       if (defined(frameNote.fingering.substitution)) {
         coreAttribs += yesNo` substitution="${frameNote.fingering.substitution}"`;
@@ -27059,7 +27060,7 @@ function soundToXML(sound: Sound): string {
 }
 
 function staffDebugInfoToXMLComment(module: any): string[] {
-  let comments: string[] = [];
+  const comments: string[] = [];
   if (defined(module.divCount)) {
     comments.push(
       xml`<!--musicxml-interfaces:debug>\n${""}  <div-count>${
@@ -27169,7 +27170,7 @@ function attributesToXML(attributes: Attributes): string {
     .join("\n")}\n</attributes>`;
 }
 
-let countToXML: { [key: number]: string } = {
+const countToXML: { [key: number]: string } = {
   4: "quarter",
   9990: "breve",
   9991: "long",
@@ -27186,7 +27187,7 @@ let countToXML: { [key: number]: string } = {
   1: "whole",
 };
 
-let accidentalToXML: { [key: number]: string } = {
+const accidentalToXML: { [key: number]: string } = {
   7: "natural-flat",
   13: "sharp-up",
   10: "three-quarters-flat",
@@ -27226,39 +27227,39 @@ let accidentalToXML: { [key: number]: string } = {
   33: "double-flat",
 };
 
-let syllabicTypeToXML: { [key: number]: string } = {
+const syllabicTypeToXML: { [key: number]: string } = {
   0: "single",
   1: "begin",
   3: "middle",
   2: "end",
 };
 
-let breathMarkTypeToXML: { [key: number]: string } = {
+const breathMarkTypeToXML: { [key: number]: string } = {
   0: "comma",
   1: "tick",
   2: "empty",
 };
 
-let holeClosedTypeToXML: { [key: number]: string } = {
+const holeClosedTypeToXML: { [key: number]: string } = {
   1: "no",
   0: "yes",
   2: "half",
 };
 
-let holeLocationToXML: { [key: number]: string } = {
+const holeLocationToXML: { [key: number]: string } = {
   0: "right",
   3: "top",
   1: "bottom",
   2: "left",
 };
 
-let actualBothNoneToXML: { [key: number]: string } = {
+const actualBothNoneToXML: { [key: number]: string } = {
   [ActualBothNone.None]: "none",
   [ActualBothNone.Both]: "both",
   [ActualBothNone.Actual]: "actual",
 };
 
-let beamTypeToXML: { [key: number]: string } = {
+const beamTypeToXML: { [key: number]: string } = {
   4: "backward hook",
   0: "begin",
   3: "forward hook",
@@ -27266,13 +27267,13 @@ let beamTypeToXML: { [key: number]: string } = {
   2: "end",
 };
 
-let accelRitNoneToXML: { [key: number]: string } = {
+const accelRitNoneToXML: { [key: number]: string } = {
   0: "accel",
   2: "none",
   1: "rit",
 };
 
-let noteheadTypeToXML: { [key: number]: string } = {
+const noteheadTypeToXML: { [key: number]: string } = {
   7: "inverted triangle",
   14: "circle dot",
   9: "arrow up",
@@ -27301,7 +27302,7 @@ let noteheadTypeToXML: { [key: number]: string } = {
   6: "circle x",
 };
 
-let stemToXML: { [key: number]: string } = {
+const stemToXML: { [key: number]: string } = {
   2: "none",
   3: "double",
   0: "down",
@@ -27330,8 +27331,8 @@ function measureToXML(measure: Measure) {
     attribs += xml` width="${measure.width}"`;
   }
 
-  let elements: string[] = [];
-  for (let key in measure.parts) {
+  const elements: string[] = [];
+  for (const key in measure.parts) {
     elements.push(partToXML(measure.parts[key], key));
   }
 
@@ -27347,12 +27348,12 @@ function partToXML(part: any[], id: string) {
   // <!ATTLIST part
   //     id IDREF #REQUIRED
   // >
-  let attribs = xml` id="${id}"`;
+  const attribs = xml` id="${id}"`;
   // <!ENTITY % music-data
   //     "(note | backup | forward | direction | attributes |
   //       harmony | figured-bass | print | sound | barline |
   //       grouping | link | bookmark)*">
-  let elements = part.map((element) => {
+  const elements = part.map((element) => {
     switch (element._class) {
       case "Note":
         return noteToXML(element);
@@ -27471,7 +27472,7 @@ function noteToXML(note: Note) {
             <!ELEMENT alter (#PCDATA)>
             <!ELEMENT octave (#PCDATA)>
         */
-    let pitchElements: string[] = [];
+    const pitchElements: string[] = [];
     if (note.pitch.step) {
       pitchElements.push(xml`<step>${note.pitch.step.toUpperCase()}</step>`);
     }
@@ -27490,7 +27491,7 @@ function noteToXML(note: Note) {
     );
   } else if (note.unpitched) {
     // <!ELEMENT unpitched ((display-step, display-octave)?)>
-    let upChildren: string[] = [];
+    const upChildren: string[] = [];
     if (note.unpitched.displayStep) {
       upChildren.push(
         xml`<display-step>${note.unpitched.displayStep}</display-step>`,
@@ -27510,7 +27511,7 @@ function noteToXML(note: Note) {
     );
   } else if (note.rest) {
     let restAttribs = "";
-    let restChildren: string[] = [];
+    const restChildren: string[] = [];
     if (note.rest.displayStep) {
       restChildren.push(
         `<display-step>${note.rest.displayStep}</display-step>`,
@@ -27538,7 +27539,7 @@ function noteToXML(note: Note) {
   }
 
   if (note.ties && note.ties.length) {
-    let tieAttribs = xml` type="${
+    const tieAttribs = xml` type="${
       note.ties[0].type === StartStop.Stop ? "stop" : "start"
     }"`;
     elements.push(dangerous`<tie${tieAttribs} />`);
@@ -27588,7 +27589,7 @@ function noteToXML(note: Note) {
   }
 
   if (note.timeModification) {
-    let timeModificationChildren: string[] = [];
+    const timeModificationChildren: string[] = [];
 
     // <!ELEMENT time-modification
     // 	(actual-notes, normal-notes,
@@ -27627,7 +27628,7 @@ function noteToXML(note: Note) {
   }
 
   if (note.stem) {
-    let stemAttribs = "" + positionToXML(note.stem) + colorToXML(note.stem);
+    const stemAttribs = "" + positionToXML(note.stem) + colorToXML(note.stem);
     elements.push(
       dangerous`<stem${stemAttribs}>${stemToXML[note.stem.type]}</stem>`,
     ); // (safe)
@@ -27802,21 +27803,21 @@ function noteToXML(note: Note) {
       tattribs += positionToXML(tuplet);
       tattribs += placementToXML(tuplet);
 
-      let tChildren: string[] = [];
+      const tChildren: string[] = [];
 
       [
         ["tuplet-actual", "tupletActual"],
         ["tuplet-normal", "tupletNormal"],
       ].forEach((tup) => {
-        let data: TupletNormal | TupletActual = (<any>tuplet)[tup[1]];
+        const data: TupletNormal | TupletActual = (<any>tuplet)[tup[1]];
         if (!data) {
           return;
         }
 
-        let dataChildren: string[] = [];
+        const dataChildren: string[] = [];
         if (data.tupletNumber) {
-          let num = data.tupletNumber;
-          let pcdata = xml`${num.text}`;
+          const num = data.tupletNumber;
+          const pcdata = xml`${num.text}`;
           dataChildren.push(
             dangerous`<tuplet-number${
               fontToXML(num) + colorToXML(num)
@@ -27824,8 +27825,8 @@ function noteToXML(note: Note) {
           );
         }
         if (data.tupletType) {
-          let type = data.tupletType;
-          let pcdata = xml`${type.text}`;
+          const type = data.tupletType;
+          const pcdata = xml`${type.text}`;
           dataChildren.push(
             dangerous`<tuplet-type${
               fontToXML(type) + colorToXML(type)
@@ -27864,7 +27865,7 @@ function noteToXML(note: Note) {
       //     %dashed-formatting;
       //     %print-style;
       // >
-      let pcdata = xml`${glissando.text}`;
+      const pcdata = xml`${glissando.text}`;
       nChildren.push(
         dangerous`<glissando${
           startStopToXML(glissando) +
@@ -27886,7 +27887,7 @@ function noteToXML(note: Note) {
       //     %print-style;
       //     %bend-sound;
       // >
-      let pcdata = xml`${slide.text}`;
+      const pcdata = xml`${slide.text}`;
       nChildren.push(
         dangerous`<slide${
           startStopToXML(slide) +
@@ -27905,7 +27906,7 @@ function noteToXML(note: Note) {
       //        delayed-inverted-turn | vertical-turn | shake |
       //        wavy-line | mordent | inverted-mordent | schleifer |
       //        tremolo | other-ornament), accidental-mark*)*)>
-      let oChildren: string[] = [];
+      const oChildren: string[] = [];
 
       // <!ELEMENT trill-mark EMPTY>
       // <!ATTLIST trill-mark
@@ -28078,7 +28079,7 @@ function noteToXML(note: Note) {
       //     %placement;
       // >
       if (ornaments.tremolo) {
-        let pcdata = xml`${ornaments.tremolo.data || ""}`;
+        const pcdata = xml`${ornaments.tremolo.data || ""}`;
         oChildren.push(
           dangerous`<tremolo${
             startStopSingleToXML(ornaments.tremolo) +
@@ -28094,7 +28095,7 @@ function noteToXML(note: Note) {
       //     %placement;
       // >
       if (ornaments.otherOrnament) {
-        let pcdata = xml`${ornaments.otherOrnament.data || ""}`;
+        const pcdata = xml`${ornaments.otherOrnament.data || ""}`;
         oChildren.push(
           dangerous`<other-ornament${
             printStyleToXML(ornaments.otherOrnament) +
@@ -28109,7 +28110,7 @@ function noteToXML(note: Note) {
       //     %placement;
       // >
       (ornaments.accidentalMarks || []).forEach((accidentalMark) => {
-        let pcdata = xml`${accidentalMark.mark || ""}`;
+        const pcdata = xml`${accidentalMark.mark || ""}`;
         oChildren.push(
           dangerous`<accidental-mark${
             printStyleToXML(accidentalMark) + placementToXML(accidentalMark)
@@ -28127,7 +28128,7 @@ function noteToXML(note: Note) {
     });
 
     (notation.technicals || []).forEach((technical) => {
-      let oChildren: string[] = [];
+      const oChildren: string[] = [];
       // <!ELEMENT technical
       //     ((up-bow | down-bow | harmonic | open-string |
       //       thumb-position | fingering | pluck | double-tongue |
@@ -28168,7 +28169,7 @@ function noteToXML(note: Note) {
       //     %placement;
       // >
       if (technical.harmonic) {
-        let hChildren: string[] = [];
+        const hChildren: string[] = [];
 
         // <!ELEMENT natural EMPTY>
         // <!ELEMENT artificial EMPTY>
@@ -28331,7 +28332,7 @@ function noteToXML(note: Note) {
       //     %placement;
       // >
       if (technical.hammerOn) {
-        let pcdata = xml`${technical.hammerOn.data}`;
+        const pcdata = xml`${technical.hammerOn.data}`;
         oChildren.push(
           dangerous`<hammer-on${
             startStopToXML(technical.hammerOn) +
@@ -28349,7 +28350,7 @@ function noteToXML(note: Note) {
       //     %placement;
       // >
       if (technical.pullOff) {
-        let pcdata = xml`${technical.pullOff.data}`;
+        const pcdata = xml`${technical.pullOff.data}`;
         oChildren.push(
           dangerous`<pull-off${
             startStopToXML(technical.pullOff) +
@@ -28375,7 +28376,7 @@ function noteToXML(note: Note) {
       //     %placement;
       // >
       if (technical.bend) {
-        let bendChildren: string[] = [];
+        const bendChildren: string[] = [];
         if (defined(technical.bend.bendAlter)) {
           bendChildren.push(
             xml`<bend-alter>${technical.bend.bendAlter}</bend-alter>`,
@@ -28387,7 +28388,7 @@ function noteToXML(note: Note) {
           bendChildren.push(xml`<release />`);
         }
         if (defined(technical.bend.withBar)) {
-          let pcdata = xml`${technical.bend.withBar.data}`;
+          const pcdata = xml`${technical.bend.withBar.data}`;
           bendChildren.push(
             dangerous`<with-bar${
               printStyleToXML(technical.bend.withBar) +
@@ -28412,7 +28413,7 @@ function noteToXML(note: Note) {
       //     %placement;
       // >
       if (technical.tap) {
-        let pcdata = xml`${technical.tap.data}`;
+        const pcdata = xml`${technical.tap.data}`;
         oChildren.push(
           dangerous`<tap${
             printStyleToXML(technical.tap) + placementToXML(technical.tap)
@@ -28482,7 +28483,7 @@ function noteToXML(note: Note) {
       // >
       // <!ELEMENT hole-shape (#PCDATA)>
       if (technical.hole) {
-        let holeChildren: string[] = [];
+        const holeChildren: string[] = [];
         if (defined(technical.hole.holeType)) {
           holeChildren.push(
             xml`<hole-type>${technical.hole.holeType}</hole-type>`,
@@ -28527,7 +28528,7 @@ function noteToXML(note: Note) {
       // <!ELEMENT arrow-style (#PCDATA)>
       // <!ELEMENT circular-arrow (#PCDATA)>
       if (technical.arrow) {
-        let arrowChildren: string[] = [];
+        const arrowChildren: string[] = [];
         if (defined(technical.arrow.arrowDirection)) {
           arrowChildren.push(xml`<arrow-direction>
                         ${technical.arrow.arrowDirection}</arrow-direction>`);
@@ -28557,7 +28558,7 @@ function noteToXML(note: Note) {
       //     %placement;
       // >
       if (technical.handbell) {
-        let pcdata = xml`${technical.handbell.data}`;
+        const pcdata = xml`${technical.handbell.data}`;
         oChildren.push(
           dangerous`<handbell${
             printStyleToXML(technical.handbell) +
@@ -28572,7 +28573,7 @@ function noteToXML(note: Note) {
       //     %placement;
       // >
       if (technical.otherTechnical) {
-        let pcdata = xml`${technical.otherTechnical.data}`;
+        const pcdata = xml`${technical.otherTechnical.data}`;
         oChildren.push(
           dangerous`<other-technical${
             printStyleToXML(technical.otherTechnical) +
@@ -28591,7 +28592,7 @@ function noteToXML(note: Note) {
     });
 
     (notation.articulations || []).forEach((articulation) => {
-      let oChildren: string[] = [];
+      const oChildren: string[] = [];
       // <!ELEMENT articulations
       //     ((accent | strong-accent | staccato | tenuto |
       //       detached-legato | staccatissimo | spiccato |
@@ -28767,7 +28768,7 @@ function noteToXML(note: Note) {
       //     %placement;
       // >
       if (articulation.breathMark) {
-        let pcdata = xml`${breathMarkTypeToXML[articulation.breathMark.type]}`;
+        const pcdata = xml`${breathMarkTypeToXML[articulation.breathMark.type]}`;
         oChildren.push(
           dangerous`<breath-mark${
             printStyleToXML(articulation.breathMark) +
@@ -28818,7 +28819,7 @@ function noteToXML(note: Note) {
       //     %placement;
       // >
       (articulation.otherArticulations || []).forEach((articulation) => {
-        let pcdata = xml`${articulation.data}`;
+        const pcdata = xml`${articulation.data}`;
         oChildren.push(
           dangerous`<other-articulation${
             printStyleToXML(articulation) + placementToXML(articulation)
@@ -28887,7 +28888,7 @@ function noteToXML(note: Note) {
       //     %print-style;
       //     %placement;
       // >
-      let pcdata = xml`${accidentalMark.mark}`;
+      const pcdata = xml`${accidentalMark.mark}`;
       nChildren.push(
         dangerous`<accidental-mark${
           printStyleToXML(accidentalMark) + placementToXML(accidentalMark)
@@ -28904,7 +28905,7 @@ function noteToXML(note: Note) {
       //     %print-style;
       //     %placement;
       // >
-      let pcdata = xml`${otherNotation.data}`;
+      const pcdata = xml`${otherNotation.data}`;
       nChildren.push(
         dangerous`<other-notation${
           startStopSingleToXML(otherNotation) +
@@ -28941,7 +28942,7 @@ function noteToXML(note: Note) {
     //     %print-object;
     // >
     // TODO: should validate other (e.g., no end-paragraph after syllabic)
-    let lyricAttribs =
+    const lyricAttribs =
       "" +
       numberLevelToXML(lyric) +
       nameToXML(lyric) +
@@ -28971,7 +28972,7 @@ function noteToXML(note: Note) {
           //     %letter-spacing;
           //     xml:lang NMTOKEN #IMPLIED TODO musicxml-interfaces
           //     %text-direction;
-          let textpcdata: string = xml`${part.data}`;
+          const textpcdata: string = xml`${part.data}`;
           lyricChildren.push(
             dangerous`<text${
               fontToXML(part) +
@@ -28989,7 +28990,7 @@ function noteToXML(note: Note) {
           //     %font;
           //     %color;
           // >
-          let pcdata: string = xml`${part.data}`;
+          const pcdata: string = xml`${part.data}`;
           lyricChildren.push(
             dangerous`<elision${
               startStopContinueToXML(part) + printStyleToXML(part)
@@ -29046,8 +29047,8 @@ function noteToXML(note: Note) {
     // <!ATTLIST play
     //     id IDREF #IMPLIED
     // >
-    let playAttribs = "";
-    let playChildren: string[] = [];
+    const playAttribs = "";
+    const playChildren: string[] = [];
     // TODO: musicxml-interfaces is missing play.id!!
     // if (defined(note.play.id)) {
     //     playAttribs += xml ` id="${note.play.id}"`;
@@ -29072,7 +29073,7 @@ function noteToXML(note: Note) {
     //     type CDATA #REQUIRED
     // >
     if (defined(note.play.otherPlay)) {
-      let oPcdata = xml`${note.play.otherPlay.data}`;
+      const oPcdata = xml`${note.play.otherPlay.data}`;
       let oAttribs = "";
       if (defined(note.play.otherPlay.type)) {
         oAttribs += xml` type="${note.play.otherPlay.type}"`;
@@ -29112,14 +29113,14 @@ function figuredBassToXML(figuredBass: FiguredBass): string {
   children = children.concat(staffDebugInfoToXMLComment(figuredBass));
   (figuredBass.figures || []).forEach((figure) => {
     // <!ELEMENT figure (prefix?, figure-number?, suffix?, extend?)>
-    let fChildren: string[] = [];
+    const fChildren: string[] = [];
 
     // <!ELEMENT prefix (#PCDATA)>
     // <!ATTLIST prefix
     //     %print-style;
     // >
     if (defined(figure.prefix)) {
-      let pcdata = xml`${figure.prefix.data}`;
+      const pcdata = xml`${figure.prefix.data}`;
       fChildren.push(
         dangerous`<prefix${printStyleToXML(figure.prefix)}>${pcdata}</prefix>`,
       );
@@ -29129,7 +29130,7 @@ function figuredBassToXML(figuredBass: FiguredBass): string {
     //     %print-style;
     // >
     if (defined(figure.figureNumber)) {
-      let pcdata = xml`${figure.figureNumber.data}`;
+      const pcdata = xml`${figure.figureNumber.data}`;
       fChildren.push(
         dangerous`<figure-number${printStyleToXML(
           figure.figureNumber,
@@ -29141,7 +29142,7 @@ function figuredBassToXML(figuredBass: FiguredBass): string {
     //     %print-style;
     // >
     if (defined(figure.suffix)) {
-      let pcdata = xml`${figure.suffix.data}`;
+      const pcdata = xml`${figure.suffix.data}`;
       fChildren.push(
         dangerous`<suffix${printStyleToXML(figure.suffix)}>${pcdata}</suffix>`,
       );
@@ -29166,7 +29167,7 @@ function figuredBassToXML(figuredBass: FiguredBass): string {
     .join("\n")}\n</figured-bass>`;
 }
 
-let barlineLocationToXML: { [key: number]: string } = {
+const barlineLocationToXML: { [key: number]: string } = {
   1: "right",
   2: "middle",
   0: "left",
@@ -29227,7 +29228,7 @@ function barlineToXML(barline: Barline): string {
 
 function directionTypeToXML(d: DirectionType) {
   // <!ELEMENT direction-type (rehearsal+ | segno+ | words+ |
-  let children: string[] = [];
+  const children: string[] = [];
 
   (d.rehearsals || []).forEach((rehearsal) => {
     children.push(rehearsalToXML(rehearsal));
@@ -29313,8 +29314,8 @@ function offsetToXML(offset: Offset): string {
   // <!ATTLIST offset
   //     sound %yes-no; #IMPLIED
   // >
-  let pcdata = xml`${offset.data || ""}`;
-  let attribs = yesNo` sound="${offset.sound}"`;
+  const pcdata = xml`${offset.data || ""}`;
+  const attribs = yesNo` sound="${offset.sound}"`;
   return dangerous`<offset${attribs}>${pcdata}</offset>`;
 }
 
@@ -29323,7 +29324,7 @@ function rehearsalToXML(rehearsal: Rehearsal): string {
   // <!ATTLIST rehearsal
   //     %text-formatting;
   // >
-  let pcdata = xml`${rehearsal.data}`;
+  const pcdata = xml`${rehearsal.data}`;
   return dangerous`<rehearsal${textFormattingToXML(
     rehearsal,
   )}>${pcdata}</rehearsal>`;
@@ -29334,11 +29335,11 @@ function wordsToXML(words: Words): string {
   // <!ATTLIST words
   //     %text-formatting;
   // >
-  let pcdata = xml`${words.data}`;
+  const pcdata = xml`${words.data}`;
   return dangerous`<words${textFormattingToXML(words)}>${pcdata}</words>`;
 }
 
-let wedgeTypeToXML: { [key: number]: string } = {
+const wedgeTypeToXML: { [key: number]: string } = {
   [WedgeType.Diminuendo]: "diminuendo",
   [WedgeType.Crescendo]: "crescendo",
   [WedgeType.Stop]: "stop",
@@ -29389,10 +29390,10 @@ function dynamicsToXML(dynamics: Dynamics): string {
   // <!ELEMENT p EMPTY>
   // ...
   // <!ELEMENT other-dynamics (#PCDATA)>
-  let oChildren: string[] = [];
+  const oChildren: string[] = [];
 
   Object.keys(dynamics || {}).forEach((key) => {
-    let subDynamic = dynamics[key];
+    const subDynamic = dynamics[key];
     if (
       !!subDynamic &&
       [
@@ -29450,7 +29451,7 @@ function dashesToXML(dashes: Dashes): string {
   //     %position;
   //     %color;
   // >
-  let attribs =
+  const attribs =
     "" +
     startStopContinueToXML(dashes) +
     numberLevelToXML(dashes) +
@@ -29461,7 +29462,7 @@ function dashesToXML(dashes: Dashes): string {
   return dangerous`<dashes${attribs} />`;
 }
 
-let lineEndTypeToXML: { [key: number]: string } = {
+const lineEndTypeToXML: { [key: number]: string } = {
   [LineEndType.None]: "none",
   [LineEndType.Both]: "both",
   [LineEndType.Arrow]: "arrow",
@@ -29498,7 +29499,7 @@ function bracketToXML(bracket: Bracket): string {
   return dangerous`<bracket${attribs} />`;
 }
 
-let pedalTypeToXML: { [key: number]: string } = {
+const pedalTypeToXML: { [key: number]: string } = {
   [PedalType.Change]: "change",
   [PedalType.Start]: "start",
   [PedalType.Stop]: "stop",
@@ -29534,7 +29535,7 @@ function metronomeToXML(metronome: Metronome): string {
   //     %justify;
   //     parentheses %yes-no; #IMPLIED
   // >
-  let children: string[] = [];
+  const children: string[] = [];
   let attribs = "" + printStyleAlignToXML(metronome) + justifyToXML(metronome);
   if (defined(metronome.parentheses)) {
     attribs += yesNo` parentheses="${metronome.parentheses}"`;
@@ -29552,7 +29553,7 @@ function metronomeToXML(metronome: Metronome): string {
     // <!ATTLIST per-minute
     //     %font;
     // >
-    let pcdata = xml`${metronome.perMinute.data}`;
+    const pcdata = xml`${metronome.perMinute.data}`;
     children.push(
       dangerous`<per-minute${fontToXML(
         metronome.perMinute,
@@ -29575,7 +29576,7 @@ function metronomeToXML(metronome: Metronome): string {
     // <!ELEMENT metronome-note
     //     (metronome-type, metronome-dot*,
     //      metronome-beam*, metronome-tuplet?)>
-    let oChildren: string[] = [];
+    const oChildren: string[] = [];
 
     if (defined(note.metronomeType)) {
       // <!ELEMENT metronome-type (#PCDATA)>
@@ -29592,7 +29593,7 @@ function metronomeToXML(metronome: Metronome): string {
       // <!ATTLIST metronome-beam
       //     number %beam-level; "1"
       // >
-      let pcdata = xml`${beam.data}`;
+      const pcdata = xml`${beam.data}`;
       oChildren.push(
         dangerous`<metronome-beam${numberLevelToXML(
           beam,
@@ -29635,7 +29636,7 @@ function metronomeTupletToXML(metronomeTuplet: MetronomeTuplet): string {
   //     bracket %yes-no; #IMPLIED
   //     show-number (actual | both | none) #IMPLIED
   // >
-  let children: string[] = [];
+  const children: string[] = [];
   let attribs = "" + startStopToXML(metronomeTuplet);
   if (defined(metronomeTuplet.bracket)) {
     attribs += yesNo` bracket="${metronomeTuplet.bracket}"`;
@@ -29670,7 +29671,7 @@ function metronomeTupletToXML(metronomeTuplet: MetronomeTuplet): string {
     .join("\n")}\n</metronome-tuplet>`;
 }
 
-let octaveShiftTypeToXML: { [key: number]: string } = {
+const octaveShiftTypeToXML: { [key: number]: string } = {
   [OctaveShiftType.Down]: "down",
   [OctaveShiftType.Stop]: "stop",
   [OctaveShiftType.Up]: "up",
@@ -29707,9 +29708,9 @@ function harpPedalsToXML(harpPedals: HarpPedals): string {
   // <!ELEMENT pedal-tuning (pedal-step, pedal-alter)>
   // <!ELEMENT pedal-step (#PCDATA)>
   // <!ELEMENT pedal-alter (#PCDATA)>
-  let children: string[] = [];
+  const children: string[] = [];
   (harpPedals.pedalTunings || []).forEach((tuning) => {
-    let nChildren: string[] = [];
+    const nChildren: string[] = [];
     if (tuning.pedalStep) {
       nChildren.push(xml`<pedal-step>${tuning.pedalStep}</pedal-step>`);
     }
@@ -29725,7 +29726,7 @@ function harpPedalsToXML(harpPedals: HarpPedals): string {
     );
   });
 
-  let attribs = printStyleAlignToXML(harpPedals);
+  const attribs = printStyleAlignToXML(harpPedals);
 
   return dangerous`<harp-pedals${attribs}>\n${children
     .join("\n")
@@ -29764,7 +29765,7 @@ function stringMuteToXML(stringMute: StringMute): string {
   //     type (on | off) #REQUIRED
   //     %print-style-align;
   // >
-  let attribs =
+  const attribs =
     xml` type="${stringMute.type}"` + printStyleAlignToXML(stringMute);
   return dangerous`<string-mute${attribs} />`;
 }
@@ -29776,10 +29777,10 @@ function scordaturaToXML(scordatura: Scordatura): string {
   // <!ATTLIST accord
   //     string CDATA #REQUIRED
   // >
-  let children: string[] = [];
+  const children: string[] = [];
   (scordatura.accords || []).forEach((accord) => {
-    let oChildren = tuningStepAlterOctaveToXML(accord);
-    let oAttribs = xml` string="${accord.string}"`;
+    const oChildren = tuningStepAlterOctaveToXML(accord);
+    const oAttribs = xml` string="${accord.string}"`;
     children.push(
       dangerous`<accord${oAttribs}>\n${oChildren
         .join("\n")
@@ -29804,7 +29805,7 @@ function imageToXML(image: Image): string {
   //     %halign;
   //     %valign-image;
   // >
-  let attribs =
+  const attribs =
     "" +
     xml` source="${image.source}"` +
     xml` type="${image.type}"` +
@@ -29815,7 +29816,7 @@ function imageToXML(image: Image): string {
   return dangerous`<image${attribs} />`;
 }
 
-let voiceSymbolToXML: { [key: number]: string } = {
+const voiceSymbolToXML: { [key: number]: string } = {
   [VoiceSymbol.None]: "none",
   [VoiceSymbol.Hauptstimme]: "hauptstimme",
   [VoiceSymbol.Nebenstimme]: "nebenstimme",
@@ -29829,8 +29830,8 @@ function principalVoiceToXML(principalVoice: PrincipalVoice): string {
   //     symbol (Hauptstimme | Nebenstimme | plain | none) #REQUIRED
   //     %print-style-align;
   // >
-  let pcdata = xml`${principalVoice.data}`;
-  let attribs =
+  const pcdata = xml`${principalVoice.data}`;
+  const attribs =
     startStopToXML(principalVoice) +
     xml` symbol="${voiceSymbolToXML[principalVoice.symbol]}"` +
     printStyleAlignToXML(principalVoice);
@@ -29849,8 +29850,8 @@ function accordionRegistrationToXML(
   // <!ELEMENT accordion-high EMPTY>
   // <!ELEMENT accordion-middle (#PCDATA)>
   // <!ELEMENT accordion-low EMPTY>
-  let children: string[] = [];
-  let attribs = printStyleAlignToXML(accordionRegistration);
+  const children: string[] = [];
+  const attribs = printStyleAlignToXML(accordionRegistration);
   if (defined(accordionRegistration.accordionHigh)) {
     children.push(xml`<accordion-high />`);
   }
@@ -29871,7 +29872,7 @@ function accordionRegistrationToXML(
     .join("\n")}\n</accordion-registration>`;
 }
 
-let tipDirectionToXML: { [key: number]: string } = {
+const tipDirectionToXML: { [key: number]: string } = {
   [TipDirection.Right]: "right",
   [TipDirection.Northwest]: "northwest",
   [TipDirection.Southwest]: "southwest",
@@ -29891,7 +29892,7 @@ function percussionToXML(percussion: Percussion): string {
   //     %print-style-align;
   //     %enclosure;
   // >
-  let children: string[] = [];
+  const children: string[] = [];
   if (defined(percussion.glass)) {
     // <!ELEMENT glass (#PCDATA)>
     children.push(xml`<glass>${percussion.glass}</glass>`);
@@ -29925,7 +29926,7 @@ function percussionToXML(percussion: Percussion): string {
     // <!ATTLIST beater
     //     tip %tip-direction; #IMPLIED
     // >
-    let pcdata = xml`${percussion.beater.data || ""}`;
+    const pcdata = xml`${percussion.beater.data || ""}`;
     let oAttribs = "";
     if (defined(percussion.beater.tip)) {
       oAttribs += xml` tip="${tipDirectionToXML[percussion.beater.tip]}"`;
@@ -29979,7 +29980,7 @@ function otherDirectionToXML(otherDirection: OtherDirection): string {
   //     %print-object;
   //     %print-style-align;
   // >
-  let pcdata = xml`${otherDirection.data}`;
+  const pcdata = xml`${otherDirection.data}`;
   return dangerous`<other-direction${
     printObjectToXML(otherDirection) + printStyleAlignToXML(otherDirection)
   }>${pcdata}</other-direction>`;
@@ -29995,7 +29996,7 @@ function wavyLineToXML(wavyLine: WavyLine): string {
   //     %color;
   //     %trill-sound;
   // >
-  let attribs =
+  const attribs =
     "" +
     startStopContinueToXML(wavyLine) +
     numberLevelToXML(wavyLine) +
@@ -30007,7 +30008,7 @@ function wavyLineToXML(wavyLine: WavyLine): string {
   return dangerous`<wavy-line${attribs} />`;
 }
 
-let barStyleTypeToXML: { [key: number]: string } = {
+const barStyleTypeToXML: { [key: number]: string } = {
   0: "regular",
   5: "light-heavy",
   6: "heavy-light",
@@ -30026,12 +30027,12 @@ function barStyleToXML(barStyle: BarStyle): string {
   // <!ATTLIST bar-style
   //     %color;
   // >
-  let attribs = "" + colorToXML(barStyle);
-  let pcdata = xml`${barStyleTypeToXML[barStyle.data] || ""}`;
+  const attribs = "" + colorToXML(barStyle);
+  const pcdata = xml`${barStyleTypeToXML[barStyle.data] || ""}`;
   return dangerous`<bar-style${attribs}>${pcdata}</bar-style>`;
 }
 
-let startStopDiscontinueTypeToXML: { [key: number]: string } = {
+const startStopDiscontinueTypeToXML: { [key: number]: string } = {
   [StartStopDiscontinue.Start]: "start",
   [StartStopDiscontinue.Stop]: "stop",
   [StartStopDiscontinue.Discontinue]: "discontinue",
@@ -30065,16 +30066,16 @@ function endingToXML(ending: Ending): string {
     attribs += xml` text-y="${ending.textY}"`;
   }
 
-  let pcdata = xml`${ending.ending}`;
+  const pcdata = xml`${ending.ending}`;
   return dangerous`<ending${attribs}>${pcdata}</ending>`;
 }
 
-let directionTypeBgToXML: { [key: number]: string } = {
+const directionTypeBgToXML: { [key: number]: string } = {
   [DirectionTypeBg.Forward]: "forward",
   [DirectionTypeBg.Backward]: "backward",
 };
 
-let wingedTypeToXML: { [key: number]: string } = {
+const wingedTypeToXML: { [key: number]: string } = {
   [WingedType.None]: "none",
   [WingedType.Curved]: "curved",
   [WingedType.DoubleCurved]: "double-curved",
@@ -30107,7 +30108,7 @@ function segnoToXML(segno: Segno): string {
   // <!ATTLIST segno
   //     %print-style-align;
   // >
-  let attribs = "" + printStyleAlignToXML(segno);
+  const attribs = "" + printStyleAlignToXML(segno);
 
   return dangerous`<segno${attribs} />`;
 }
@@ -30117,17 +30118,17 @@ function codaToXML(coda: Coda): string {
   // <!ATTLIST coda
   //     %print-style-align;
   // >
-  let attribs = "" + printStyleAlignToXML(coda);
+  const attribs = "" + printStyleAlignToXML(coda);
 
   return dangerous`<coda${attribs} />`;
 }
 
-let uprightInvertedToXML: { [key: number]: string } = {
+const uprightInvertedToXML: { [key: number]: string } = {
   0: "upright",
   1: "inverted",
 };
 
-let normalAngledSquareToXML: { [key: number]: string } = {
+const normalAngledSquareToXML: { [key: number]: string } = {
   1: "angled",
   2: "square",
   0: "normal",
@@ -30139,7 +30140,7 @@ function fermataToXML(fermata: Fermata): string {
   //     type (upright | inverted) #IMPLIED
   //     %print-style;
   // >
-  let pcdata = defined(fermata.shape)
+  const pcdata = defined(fermata.shape)
     ? normalAngledSquareToXML[fermata.shape]
     : "";
   let attribs = defined(fermata.type)
@@ -30155,7 +30156,7 @@ function playToXML(play: Play): string {
   //     id IDREF #IMPLIED
   // >
   // TODO musicxml-interfaces: missing id
-  let children: string[] = [];
+  const children: string[] = [];
   if (defined(play.ipa)) {
     children.push(xml`<ipa>${play.ipa}</ipa>`);
   }
@@ -30166,7 +30167,7 @@ function playToXML(play: Play): string {
     children.push(xml`<semi-pitched>${play.semiPitched}</semi-pitched>`);
   }
   if (defined(play.otherPlay)) {
-    let pcdata = xml`${play.otherPlay.data}`;
+    const pcdata = xml`${play.otherPlay.data}`;
     let oAttribs = "";
     if (defined(play.otherPlay.type)) {
       oAttribs += xml` type="${play.otherPlay.type}"`;
@@ -30186,13 +30187,13 @@ function staffLayoutToXML(staffLayout: StaffLayout): string {
   // <!ATTLIST staff-layout
   //     number CDATA #IMPLIED
   // >
-  let children: string[] = [];
+  const children: string[] = [];
   if (defined(staffLayout.staffDistance)) {
     children.push(
       xml`<staff-distance>${staffLayout.staffDistance}</staff-distance>`,
     );
   }
-  let attribs = numberLevelToXML(staffLayout);
+  const attribs = numberLevelToXML(staffLayout);
   return dangerous`<staff-layout${attribs}>\n${children
     .join("\n")
     .split("\n")
@@ -30203,7 +30204,7 @@ function staffLayoutToXML(staffLayout: StaffLayout): string {
 function measureLayoutToXML(measureLayout: MeasureLayout): string {
   // <!ELEMENT measure-layout (measure-distance?)>
   // <!ELEMENT measure-distance %layout-tenths;>
-  let children: string[] = [];
+  const children: string[] = [];
   if (defined(measureLayout.measureDistance)) {
     children.push(
       xml`<measure-distance>${measureLayout.measureDistance}</measure-distance>`,
@@ -30221,8 +30222,8 @@ function measureNumberingToXML(measureNumbering: MeasureNumbering): string {
   // <!ATTLIST measure-numbering
   //     %print-style-align;
   // >
-  let attribs = printStyleAlignToXML(measureNumbering);
-  let pcdata = xml`${measureNumbering.data}`;
+  const attribs = printStyleAlignToXML(measureNumbering);
+  const pcdata = xml`${measureNumbering.data}`;
   return dangerous`<measure-numbering${attribs}>${pcdata}</measure-numbering>`;
 }
 
@@ -30234,8 +30235,8 @@ function keyToXML(key: Key): string {
   //     %print-style;
   //     %print-object;
   // >
-  let children: string[] = [];
-  let attribs =
+  const children: string[] = [];
+  const attribs =
     "" + numberLevelToXML(key) + printStyleToXML(key) + printObjectToXML(key);
 
   if (defined(key.cancel)) {
@@ -30276,7 +30277,7 @@ function keyToXML(key: Key): string {
     .join("\n")}\n</key>`;
 }
 
-let cancelLocationToXML: { [key: number]: string } = {
+const cancelLocationToXML: { [key: number]: string } = {
   1: "right",
   2: "before-barline",
   0: "left",
@@ -30288,7 +30289,7 @@ function cancelToXML(cancel: Cancel): string {
   //     location (left | right | before-barline) #IMPLIED
   // >
   let attribs = "";
-  let pcdata = xml`${cancel.fifths}`;
+  const pcdata = xml`${cancel.fifths}`;
   if (defined(cancel.location)) {
     attribs += xml` location="${cancelLocationToXML[cancel.location]}"`;
   }
@@ -30302,7 +30303,7 @@ function keyOctaveToXML(keyOctave: KeyOctave): string {
   //     cancel %yes-no; #IMPLIED
   // >
   let attribs = numberLevelToXML(keyOctave);
-  let pcdata = xml`${keyOctave.octave}`;
+  const pcdata = xml`${keyOctave.octave}`;
   if (defined(keyOctave.cancel)) {
     attribs += yesNo` cancel="${keyOctave.cancel}"`;
   }
@@ -30319,7 +30320,7 @@ function timeToXML(time: Time): string {
   //     %print-style-align;
   //     %print-object;
   // >
-  let attribs =
+  const attribs =
     "" +
     numberLevelToXML(time) +
     timeSymbolToXML(time) +
@@ -30327,7 +30328,7 @@ function timeToXML(time: Time): string {
     printStyleAlignToXML(time) +
     printObjectToXML(time);
 
-  let children: string[] = [];
+  const children: string[] = [];
 
   if (time.senzaMisura != null) {
     // <!ELEMENT senza-misura (#PCDATA)>
@@ -30354,7 +30355,7 @@ function timeToXML(time: Time): string {
     .join("\n")}\n</time>`;
 }
 
-let timeSymbolTypeToXML: { [key: number]: string } = {
+const timeSymbolTypeToXML: { [key: number]: string } = {
   4: "dotted-note",
   1: "cut",
   2: "single-number",
@@ -30373,7 +30374,7 @@ function timeSymbolToXML(timeSymbol: TimeSymbol): string {
   return "";
 }
 
-let separatorTypeToXML: { [key: number]: string } = {
+const separatorTypeToXML: { [key: number]: string } = {
   0: "none",
   1: "horizontal",
   2: "diagonal",
@@ -30397,10 +30398,10 @@ function interchangeableToXML(interchangeable: Interchangeable): string {
   //     %time-symbol;
   //     %time-separator;
   // >
-  let attribs =
+  const attribs =
     "" + timeSymbolToXML(interchangeable) + timeSeparatorToXML(interchangeable);
 
-  let children: string[] = [];
+  const children: string[] = [];
   (interchangeable.beats || []).forEach((beats, idx) => {
     // <!ELEMENT beats (#PCDATA)>
     // <!ELEMENT beat-type (#PCDATA)>
@@ -30422,7 +30423,7 @@ function interchangeableToXML(interchangeable: Interchangeable): string {
     .join("\n")}\n</interchangeable>`;
 }
 
-let partSymbolTypeToXML: { [key: number]: string } = {
+const partSymbolTypeToXML: { [key: number]: string } = {
   0: "none",
   2: "line",
   3: "bracket",
@@ -30454,7 +30455,7 @@ function partSymbolToXML(partSymbol: PartSymbol): string {
   return dangerous`<part-symbol${attribs}>${pcdata}</part-symbol>`;
 }
 
-let symbolSizeToXML: { [key: number]: string } = {
+const symbolSizeToXML: { [key: number]: string } = {
   1: "full",
   2: "cue",
   3: "large",
@@ -30472,7 +30473,7 @@ function clefToXML(clef: Clef): string {
   // >
   let attribs = "" + numberLevelToXML(clef);
 
-  let children: string[] = [];
+  const children: string[] = [];
 
   if (defined(clef.additional)) {
     attribs += yesNo` additional="${clef.additional}"`;
@@ -30522,7 +30523,7 @@ function staffDetailsToXML(staffDetails: StaffDetails): string {
   //     %print-spacing;
   // >
   let attribs = "";
-  let children: string[] = [];
+  const children: string[] = [];
 
   attribs += numberLevelToXML(staffDetails);
   // TODO: musicxml-interfaces show__FRETS__
@@ -30580,7 +30581,7 @@ function tuningStepAlterOctaveToXML(tuning: {
   tuningStep?: string;
   tuningOctave: string;
 }): string[] {
-  let children: string[] = [];
+  const children: string[] = [];
   if (defined(tuning.tuningStep)) {
     // <!ELEMENT tuning-step (#PCDATA)>
     children.push(xml`<tuning-step>${tuning.tuningStep}</tuning-step>`);
@@ -30602,8 +30603,8 @@ function transposeToXML(transpose: Transpose): string {
   // <!ATTLIST transpose
   //     number CDATA #IMPLIED
   // >
-  let children: string[] = [];
-  let attribs = numberLevelToXML(transpose);
+  const children: string[] = [];
+  const attribs = numberLevelToXML(transpose);
   if (defined(transpose.diatonic)) {
     // <!ELEMENT diatonic (#PCDATA)>
     children.push(xml`<diatonic>${transpose.diatonic}</diatonic>`);
@@ -30635,8 +30636,8 @@ function directiveToXML(directive: Directive): string {
   //     %print-style;
   //     xml:lang NMTOKEN #IMPLIED
   // >
-  let pcdata = xml`${directive.data}`;
-  let attribs = printStyleToXML(directive); // TODO musicxml-interfaces xml:lang
+  const pcdata = xml`${directive.data}`;
+  const attribs = printStyleToXML(directive); // TODO musicxml-interfaces xml:lang
   return dangerous`<directive${attribs}>${pcdata}</directive>`;
 }
 
@@ -30648,8 +30649,8 @@ function measureStyleToXML(measureStyle: MeasureStyle): string {
   //     %font;
   //     %color;
   // >
-  let children: string[] = [];
-  let attribs =
+  const children: string[] = [];
+  const attribs =
     "" +
     numberLevelToXML(measureStyle) +
     fontToXML(measureStyle) +
@@ -30681,7 +30682,7 @@ function multipleRestToXML(multipleRest: MultipleRest): string {
   //     use-symbols %yes-no; #IMPLIED
   // >
   let attribs = "";
-  let pcdata = xml`${multipleRest.count}`;
+  const pcdata = xml`${multipleRest.count}`;
   if (defined(multipleRest.useSymbols)) {
     attribs += yesNo` use-symbols="${multipleRest.useSymbols}"`;
   }
@@ -30695,7 +30696,7 @@ function measureRepeatToXML(measureRepeat: MeasureRepeat): string {
   //     slashes NMTOKEN #IMPLIED
   // >
   let attribs = "";
-  let pcdata = xml`${measureRepeat.data || ""}`;
+  const pcdata = xml`${measureRepeat.data || ""}`;
   attribs += startStopToXML(measureRepeat);
   // TODO: musicxml-interfaces: slashed -> slashes
   return dangerous`<measure-repeat${attribs}>${pcdata}</measure-repeat>`;
@@ -30709,7 +30710,7 @@ function beatRepeatToXML(beatRepeat: BeatRepeat): string {
   //     use-dots %yes-no; #IMPLIED
   // >
   // <!ELEMENT slash-type (#PCDATA)>
-  let children: string[] = [];
+  const children: string[] = [];
   let attribs = "" + startStopToXML(beatRepeat);
 
   // TODO: musicxml-interfaces: slases -> slashes
@@ -30744,7 +30745,7 @@ function slashElToXML(slash: Slash): string {
   if (defined(slash.useStems)) {
     attribs += yesNo` use-stems="${slash.useStems}"`;
   }
-  let children: string[] = [];
+  const children: string[] = [];
   if (defined(slash.slashType)) {
     children.push(xml`<slash-type>${slash.slashType}</slash-type>`);
   }
@@ -30810,14 +30811,14 @@ function editorialToXML(editorial: Editorial): string[] {
   // >
 
   // <!ELEMENT voice (#PCDATA)>
-  let elements: string[] = [];
+  const elements: string[] = [];
   if (defined(editorial.footnote) && !!editorial.footnote.text) {
-    let footnoteEscaped = xml`${editorial.footnote.text}`;
+    const footnoteEscaped = xml`${editorial.footnote.text}`;
     elements.push(dangerous`<footnote${textFormattingToXML(editorial.footnote)}>
             ${footnoteEscaped}</footnote>`);
   }
   if (defined(editorial.level) && !!editorial.level.text) {
-    let levelEscaped = xml`${editorial.level.text}`;
+    const levelEscaped = xml`${editorial.level.text}`;
     let attribs = "";
     if (defined(editorial.level.reference)) {
       attribs += yesNo` reference="${editorial.level.reference}"`;
@@ -30841,7 +30842,7 @@ function editorialVoiceToXML(editorial: EditorialVoice): string[] {
   //    reference %yes-no; #IMPLIED
   //    %level-display;
   // >
-  let elements = editorialToXML(editorial);
+  const elements = editorialToXML(editorial);
 
   // <!ELEMENT voice (#PCDATA)>
   if (defined(editorial.voice)) {
@@ -30850,7 +30851,7 @@ function editorialVoiceToXML(editorial: EditorialVoice): string[] {
   return elements;
 }
 
-let solidDashedDottedWavyToXML: { [key: number]: string } = {
+const solidDashedDottedWavyToXML: { [key: number]: string } = {
   1: "dashed",
   2: "dotted",
   3: "wavy",
@@ -30895,7 +30896,7 @@ function numberLevelToXML(numberLevel: { number?: number }): string {
   return "";
 }
 
-let startStopContinueSingleToXML: { [key: number]: string } = {
+const startStopContinueSingleToXML: { [key: number]: string } = {
   0: "start",
   1: "stop",
   2: "continue",
@@ -30947,7 +30948,7 @@ function dashedFormattingToXML(dashedFormatting: DashedFormatting): string {
   return attribs;
 }
 
-let straightCurvedToXML: { [key: number]: string } = {
+const straightCurvedToXML: { [key: number]: string } = {
   1: "curved",
   0: "straight",
 };
@@ -31103,7 +31104,7 @@ function textFormattingToXML(textFormatting: TextFormatting): string {
   );
 }
 
-let leftCenterRightToXML: { [key: number]: string } = {
+const leftCenterRightToXML: { [key: number]: string } = {
   1: "right",
   2: "center",
   0: "left",
@@ -31181,7 +31182,7 @@ function lineHeightToXML(lineHeight: LineHeight): string {
   return attribs;
 }
 
-let directionModeToXML: { [key: number]: string } = {
+const directionModeToXML: { [key: number]: string } = {
   0: "ltr",
   1: "rtl",
   2: "lro",
@@ -31198,7 +31199,7 @@ function textDirectionToXML(textDirection: TextDirection): string {
   return attribs;
 }
 
-let enclosureShapeToXML: { [key: number]: string } = {
+const enclosureShapeToXML: { [key: number]: string } = {
   3: "circle",
   4: "bracket",
   5: "triangle",
@@ -31248,19 +31249,19 @@ function bendSoundToXML(bendSound: BendSound): string {
   return attribs;
 }
 
-let upperMainBelowToXML: { [key: number]: string } = {
+const upperMainBelowToXML: { [key: number]: string } = {
   1: "main",
   2: "below",
   0: "upper",
 };
 
-let wholeHalfUnisonToXML: { [key: number]: string } = {
+const wholeHalfUnisonToXML: { [key: number]: string } = {
   2: "unison",
   0: "whole",
   1: "half",
 };
 
-let wholeHalfNoneToXML: { [key: number]: string } = {
+const wholeHalfNoneToXML: { [key: number]: string } = {
   3: "none",
   0: "whole",
   1: "half",

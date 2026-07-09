@@ -1,10 +1,5 @@
 import * as React from "react";
-import {
-  Link,
-  useParams,
-  useSearchParams,
-  useLocation,
-} from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { reduce } from "lodash";
 
 import Test from "./test";
@@ -173,7 +168,6 @@ const TESTS = [
 export default function Tests() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
-  const location = useLocation();
   const isSingleLine = searchParams.get("mode") === "singleline";
   const filter = id || null;
   const cat = reduce(

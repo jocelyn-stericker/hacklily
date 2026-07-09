@@ -23,7 +23,6 @@
 import { Attributes } from "#/musicxml-interfaces";
 
 import AttributesModel, {
-  IAttributesModel,
   IAttributesLayout,
 } from "../implAttributes_attributesModel";
 

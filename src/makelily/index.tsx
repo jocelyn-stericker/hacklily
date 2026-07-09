@@ -19,8 +19,9 @@
  */
 
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import App, { QUERY_PROP_KEYS, QueryProps } from "./App";
+import ErrorBoundary from "#/ErrorBoundary";
 
 // http://stackoverflow.com/a/8648962
 export function parseQuery(qstr: string): { [key: string]: string } {
@@ -49,13 +50,16 @@ export function toQueryString(obj: { [key: string]: string }): string {
   return parts.join("&").replace(/%2F/g, "/"); // because we can, and it's less ugly.
 }
 
+const root = createRoot(document.getElementById("root")!);
+
 /**
  * Renders Hacklily, with props set.
  */
 function render(): void {
-  ReactDOM.render(
-    <App {...getQueryProps()} setQuery={setQuery} />,
-    document.getElementById("root"),
+  root.render(
+    <ErrorBoundary>
+      <App {...getQueryProps()} setQuery={setQuery} />
+    </ErrorBoundary>,
   );
 }
 
