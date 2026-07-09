@@ -20,7 +20,7 @@
 
 import { Icon } from "@blueprintjs/core";
 import { css } from "aphrodite";
-import Makelily from "makelily"; // note: use for types only
+import Makelily from "./makelily/Makelily"; // note: use for types only
 import * as monacoEditor from "monaco-editor";
 import React from "react";
 
@@ -904,7 +904,7 @@ export default class App extends React.PureComponent<Props, State> {
       return;
     }
 
-    const makelilyComponent: typeof Makelily = (await import("makelily"))
+    const makelilyComponent: typeof Makelily = (await import("./makelily/Makelily"))
       .default;
 
     track(`makelily/${tool || this.state.makelilyTool}`);

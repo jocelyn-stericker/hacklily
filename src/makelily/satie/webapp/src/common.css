@@ -1,0 +1,9 @@
+:root {
+  --color--text: #444;
+  --color--highlight-blue: #428bca;
+  --color--link: #999;
+  --color--border--accepted: #c1cdd8;
+  --color--border--error: red;
+
+  --font--body: "Alegreya", serif;
+}
