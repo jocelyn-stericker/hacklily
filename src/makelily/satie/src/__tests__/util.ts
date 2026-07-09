@@ -22,7 +22,6 @@
 
 import { gcd, lcm } from "../private_util";
 
-
 describe("[engine/util.ts]", function () {
   describe("gcd", function () {
     it("handles powers of 2", function () {

@@ -22,7 +22,6 @@
 
 import Print from "../implPrint_printModel";
 
-
 import { IModel, Type } from "../document";
 
 import Factory from "../engine_factory";

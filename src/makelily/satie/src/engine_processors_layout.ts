@@ -172,10 +172,13 @@ function getLinePlacementHints(
 
   const shortestsObj: {
     readonly [key: number]: boolean;
-  } = shortestByMeasure.reduce((shortests, shortest) => {
-    shortests[shortest] = true;
-    return shortests;
-  }, {} as { [key: number]: boolean });
+  } = shortestByMeasure.reduce(
+    (shortests, shortest) => {
+      shortests[shortest] = true;
+      return shortests;
+    },
+    {} as { [key: number]: boolean },
+  );
 
   const shortests = Object.keys(shortestsObj).map((str) => parseInt(str, 10));
 
@@ -192,12 +195,15 @@ function getLinePlacementHints(
       ) {
         console.warn("Bad measure width %s. Ignoring", measure.width);
       }
-      const widthByShortest = shortests.reduce((shortests, shortest) => {
-        if (shortest <= shortestInMeasure) {
-          shortests[shortest] = getApproximateMeasureWidth(measure, shortest);
-        }
-        return shortests;
-      }, {} as { [key: number]: number });
+      const widthByShortest = shortests.reduce(
+        (shortests, shortest) => {
+          if (shortest <= shortestInMeasure) {
+            shortests[shortest] = getApproximateMeasureWidth(measure, shortest);
+          }
+          return shortests;
+        },
+        {} as { [key: number]: number },
+      );
 
       // XXX: multiple rests
       return {

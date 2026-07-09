@@ -1182,9 +1182,7 @@ export default function createPatch(
   isPreview: boolean,
   document: Document,
   builderOrMeasure:
-    | number
-    | ((build: DocumentBuilder) => DocumentBuilder)
-    | IAny[],
+    number | ((build: DocumentBuilder) => DocumentBuilder) | IAny[],
   part?: string,
   partBuilder?: (partBuilder: PartBuilder) => PartBuilder,
 ) {

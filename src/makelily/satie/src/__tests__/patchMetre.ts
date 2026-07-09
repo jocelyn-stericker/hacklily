@@ -121,20 +121,10 @@ describe("patch metre", function () {
     expect(getDivisionBreakdown(song, patch)).toEqual(["1N", "1N", "2R"]);
 
     patch = insertNote(song, patch, 2, Count.Quarter);
-    expect(getDivisionBreakdown(song, patch)).toEqual([
-      "1N",
-      "1N",
-      "1N",
-      "1R",
-    ]);
+    expect(getDivisionBreakdown(song, patch)).toEqual(["1N", "1N", "1N", "1R"]);
 
     patch = insertNote(song, patch, 3, Count.Quarter);
-    expect(getDivisionBreakdown(song, patch)).toEqual([
-      "1N",
-      "1N",
-      "1N",
-      "1N",
-    ]);
+    expect(getDivisionBreakdown(song, patch)).toEqual(["1N", "1N", "1N", "1N"]);
   });
 
   it("4/4, eighth notes", function () {

@@ -22,7 +22,6 @@
 
 import ScoreHeader from "../engine_scoreHeader";
 
-
 import { parseScore, LeftCenterRight } from "#/musicxml-interfaces";
 
 const headerTest = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>

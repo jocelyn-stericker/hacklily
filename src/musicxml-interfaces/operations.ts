@@ -27,242 +27,253 @@ export type OTPath = (number | string)[];
  * Adds x to the number at path
  */
 export interface INumberAdd {
-    /**
-     * Path to a number.
-     */
-    p: OTPath;
+  /**
+   * Path to a number.
+   */
+  p: OTPath;
 
-    /**
-     * The number to add to the number at `p`.
-     */
-    na: number;
+  /**
+   * The number to add to the number at `p`.
+   */
+  na: number;
 }
 
 /**
  * Inserts the object obj before the item at idx in the list at [path].
  */
 export interface IListInsert<T> {
-    /**
-     * [...path, idx]
-     */
-    p: OTPath;
+  /**
+   * [...path, idx]
+   */
+  p: OTPath;
 
-    /**
-     * The object to insert before the item at idx `idx`.
-     */
-    li: T;
+  /**
+   * The object to insert before the item at idx `idx`.
+   */
+  li: T;
 }
 
 /**
  * Deletes the object obj from the index idx in the list at [path].
  */
 export interface IListDelete<T> {
-    /**
-     * [...path, idx]
-     */
-    p: OTPath;
+  /**
+   * [...path, idx]
+   */
+  p: OTPath;
 
-    /**
-     * The object that will be removed at `idx`, for invertibility.
-     */
-    ld: T;
+  /**
+   * The object that will be removed at `idx`, for invertibility.
+   */
+  ld: T;
 }
 
 /**
  * Replaces the object before at the index idx in the list at [path] with the object after.
  */
 export interface IListReplace<T> {
-    /**
-     * [...path, idx]
-     */
-    p: OTPath;
+  /**
+   * [...path, idx]
+   */
+  p: OTPath;
 
-    /**
-     * The object that will be removed at `idx`, for invertibility.
-     */
-    ld: T;
+  /**
+   * The object that will be removed at `idx`, for invertibility.
+   */
+  ld: T;
 
-    /**
-     * The object that will be added to `idx`.
-     */
-    li: T;
+  /**
+   * The object that will be added to `idx`.
+   */
+  li: T;
 }
 
 /**
  * Moves the object at idx1 such that the object will be at index idx2 in the list at [path].
  */
 export interface IListMove {
-    /**
-     * [...path, idx]
-     */
-    p: OTPath;
+  /**
+   * [...path, idx]
+   */
+  p: OTPath;
 
-    /**
-     * The index to move the object to ("idx2")
-     */
-    lm: number;
+  /**
+   * The index to move the object to ("idx2")
+   */
+  lm: number;
 }
 
 /**
  * Inserts the object obj into the object at [path] with key key.
  */
 export interface IObjectInsert<T> {
-    /**
-     * [...path, key: string]
-     */
-    p: OTPath;
+  /**
+   * [...path, key: string]
+   */
+  p: OTPath;
 
-    /**
-     * The object to insert
-     */
-    oi: T;
+  /**
+   * The object to insert
+   */
+  oi: T;
 }
 
 /**
  * Deletes the object obj with key key from the object at [path].
  */
 export interface IObjectDelete<T> {
-    /**
-     * [...path, key: string]
-     */
-    p: OTPath;
+  /**
+   * [...path, key: string]
+   */
+  p: OTPath;
 
-    /**
-     * The object to delete, for invertibility
-     */
-    od: T;
+  /**
+   * The object to delete, for invertibility
+   */
+  od: T;
 }
 
 /**
  * Replaces the object before with the object after at key key in the object at [path].
  */
 export interface IObjectReplace<T> {
-    /**
-     * [...path, key: string]
-     */
-    p: OTPath;
+  /**
+   * [...path, key: string]
+   */
+  p: OTPath;
 
-    /**
-     * The object to delete, for invertibility.
-     */
-    od: T;
+  /**
+   * The object to delete, for invertibility.
+   */
+  od: T;
 
-    /**
-     * The object to insert at key.
-     */
-    oi: T;
+  /**
+   * The object to insert at key.
+   */
+  oi: T;
 }
 
 /**
  * Applies the subtype op o of type t to the object at [path].
  */
 export interface IObjectApply {
-    /**
-     * [...path, key: string] to subtype
-     */
-    p: OTPath;
+  /**
+   * [...path, key: string] to subtype
+   */
+  p: OTPath;
 
-    /**
-     * The subtype
-     */
-    t: any;
+  /**
+   * The subtype
+   */
+  t: any;
 
-    /**
-     * The operation.
-     */
-    o: any;
+  /**
+   * The operation.
+   */
+  o: any;
 }
 
 /**
  * Inserts the string s at offset offset into the string at [path] (uses subtypes internally).
  */
 export interface IStringInsert {
-    /**
-     * Path to string
-     */
-    p: OTPath;
+  /**
+   * Path to string
+   */
+  p: OTPath;
 
-    si: string;
+  si: string;
 }
 
 export interface IStringDelete {
-    /**
-     * Path to string
-     */
-    p: OTPath;
+  /**
+   * Path to string
+   */
+  p: OTPath;
 
-    /**
-     * The string being removed, for length and invertibility
-     */
-    sd: string;
+  /**
+   * The string being removed, for length and invertibility
+   */
+  sd: string;
 }
 
-export type Operation<T> = INumberAdd |
-    IListInsert<T> | IListDelete<T> | IListReplace<T> | IListMove |
-    IObjectInsert<T> | IObjectDelete<T> | IObjectReplace<T> | IObjectApply |
-    IStringInsert | IStringDelete;
+export type Operation<T> =
+  | INumberAdd
+  | IListInsert<T>
+  | IListDelete<T>
+  | IListReplace<T>
+  | IListMove
+  | IObjectInsert<T>
+  | IObjectDelete<T>
+  | IObjectReplace<T>
+  | IObjectApply
+  | IStringInsert
+  | IStringDelete;
 
 export interface IAny {
-    /**
-     * Path to string
-     */
-    p: OTPath;
+  /**
+   * Path to string
+   */
+  p: OTPath;
 
-    si?: string;
-    sd?: string;
-    na?: number;
-    li?: any;
-    ld?: any;
-    lm?: string;
-    od?: any;
-    oi?: any;
-    t?: any;
-    o?: any;
+  si?: string;
+  sd?: string;
+  na?: number;
+  li?: any;
+  ld?: any;
+  lm?: string;
+  od?: any;
+  oi?: any;
+  t?: any;
+  o?: any;
 }
 
 let subtypes: any[] = [];
 
 function invertComponent<T>(cm: IAny): IAny {
-    let c = cm as any;
-    let c_ = {p: c.p} as any;
+  let c = cm as any;
+  let c_ = { p: c.p } as any;
 
-    // handle subtype ops
-    if (c.t && subtypes[c.t]) {
-        c_.t = c.t;
-        c_.o = subtypes[c.t].invert(c.o);
-    }
+  // handle subtype ops
+  if (c.t && subtypes[c.t]) {
+    c_.t = c.t;
+    c_.o = subtypes[c.t].invert(c.o);
+  }
 
-    if (c.si !== void 0) {
-        c_.sd = c.si;
-    }
+  if (c.si !== void 0) {
+    c_.sd = c.si;
+  }
 
-    if (c.sd !== void 0) {
-        c_.si = c.sd;
-    }
-    if (c.oi !== void 0) {
-        c_.od = c.oi;
-    }
-    if (c.od !== void 0) {
-        c_.oi = c.od;
-    }
-    if (c.li !== void 0) {
-        c_.ld = c.li;
-    }
-    if (c.ld !== void 0) {
-        c_.li = c.ld;
-    }
-    if (c.na !== void 0) {
-        c_.na = -c.na;
-    }
+  if (c.sd !== void 0) {
+    c_.si = c.sd;
+  }
+  if (c.oi !== void 0) {
+    c_.od = c.oi;
+  }
+  if (c.od !== void 0) {
+    c_.oi = c.od;
+  }
+  if (c.li !== void 0) {
+    c_.ld = c.li;
+  }
+  if (c.ld !== void 0) {
+    c_.li = c.ld;
+  }
+  if (c.na !== void 0) {
+    c_.na = -c.na;
+  }
 
-    if (c.lm !== void 0) {
-        c_.lm = c.p[c.p.length - 1];
-        c_.p = c.p.slice(0, c.p.length - 1).concat([c.lm]);
-    }
+  if (c.lm !== void 0) {
+    c_.lm = c.p[c.p.length - 1];
+    c_.p = c.p.slice(0, c.p.length - 1).concat([c.lm]);
+  }
 
-    return c_;
+  return c_;
 }
 
 export function invert(ops: IAny[]): IAny[] {
-    return ops.slice().reverse().map(c => invertComponent(c));
+  return ops
+    .slice()
+    .reverse()
+    .map((c) => invertComponent(c));
 }

@@ -22,7 +22,6 @@
 
 import { bboxes, bravura, getGlyphCode } from "../private_smufl";
 
-
 describe("[smufl.ts]", function () {
   describe("bboxes", function () {
     // TODO: Refactor so SMuFL does not contain Bravura stuff.

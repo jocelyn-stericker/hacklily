@@ -563,11 +563,17 @@ describe("[musicxml/import.ts]", function () {
 
       expect(header.identification.creators.length).toEqual(3);
       expect(header.identification.creators[0].type).toEqual("composer");
-      expect(header.identification.creators[0].creator).toEqual("Song Composer");
+      expect(header.identification.creators[0].creator).toEqual(
+        "Song Composer",
+      );
       expect(header.identification.creators[1].type).toEqual("lyricist");
-      expect(header.identification.creators[1].creator).toEqual("Song Lyricist");
+      expect(header.identification.creators[1].creator).toEqual(
+        "Song Lyricist",
+      );
       expect(header.identification.creators[2].type).toEqual("arranger");
-      expect(header.identification.creators[2].creator).toEqual("Song Arranger");
+      expect(header.identification.creators[2].creator).toEqual(
+        "Song Arranger",
+      );
       expect(header.identification.encoding).toEqual({
         encoders: [],
         encodingDate: {

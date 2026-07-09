@@ -135,12 +135,12 @@ describe("[engine/ichord.ts]", function () {
           .noteType((noteType) => noteType.duration(Count.Quarter)),
       );
 
-      expect(
-        heightDeterminingLine([noteC, note2], 1 /* Up */, treble),
-      ).toEqual(3.5);
-      expect(
-        heightDeterminingLine([note2, noteC], 1 /* Up */, treble),
-      ).toEqual(3.5);
+      expect(heightDeterminingLine([noteC, note2], 1 /* Up */, treble)).toEqual(
+        3.5,
+      );
+      expect(heightDeterminingLine([note2, noteC], 1 /* Up */, treble)).toEqual(
+        3.5,
+      );
 
       expect(
         heightDeterminingLine([noteC, note2], -1 /* Down */, treble),

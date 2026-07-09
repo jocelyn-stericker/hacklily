@@ -1,5 +1,10 @@
 import * as React from "react";
-import { Link, useParams, useSearchParams, useLocation } from "react-router-dom";
+import {
+  Link,
+  useParams,
+  useSearchParams,
+  useLocation,
+} from "react-router-dom";
 import { reduce } from "lodash";
 
 import Test from "./test";
@@ -248,9 +253,9 @@ export default function Tests() {
       "regression/musicxml/collated-files.html";
     description = (
       <span>
-        Satie uses the <a href={lilypond}>unoffical MusicXML test suite</a>{" "}
-        from <a href="http://lilypond.org/">LilyPond</a> to test MusicXML
-        parsing as well as basic layout.
+        Satie uses the <a href={lilypond}>unoffical MusicXML test suite</a> from{" "}
+        <a href="http://lilypond.org/">LilyPond</a> to test MusicXML parsing as
+        well as basic layout.
       </span>
     );
   }

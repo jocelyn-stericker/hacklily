@@ -111,12 +111,12 @@ describe("checkRests (Grouping rests according to the metre)", function () {
       expect(checkRests("2/4", 8, "r_r.r_r.", { dotsAllowed: false })).toEqual(
         "GOOD",
       );
-      expect(
-        checkRests("9/8", 9, "r_rr_rr_.", { dotsAllowed: false }),
-      ).toEqual("GOOD");
-      expect(
-        checkRests("9/8", 9, ".rrr_rr_r", { dotsAllowed: false }),
-      ).toEqual("GOOD");
+      expect(checkRests("9/8", 9, "r_rr_rr_.", { dotsAllowed: false })).toEqual(
+        "GOOD",
+      );
+      expect(checkRests("9/8", 9, ".rrr_rr_r", { dotsAllowed: false })).toEqual(
+        "GOOD",
+      );
       expect(
         checkRests("2/4", 16, "r______.........", { dotsAllowed: false }),
       ).toEqual("apply 16 ....r__.........");

@@ -189,7 +189,7 @@ function tryValidate(
     rootFixupOpts.debugFixupOperations = [];
 
     // Fixups can require multiple passes.
-    for (let tryAgain = true; tryAgain; ) {
+    for (let tryAgain = true; tryAgain;) {
       if (++tries > 100) {
         console.warn(
           "-------------- too many fixups: aborting -------------- ",

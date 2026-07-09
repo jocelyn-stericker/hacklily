@@ -22,7 +22,6 @@
 
 import Sound from "../implSound_soundModel";
 
-
 import { IModel, Type } from "../document";
 
 import Factory from "../engine_factory";

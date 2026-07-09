@@ -4,7 +4,7 @@ const _ = require("lodash");
 const impGen = require("./symbols.json");
 
 const symbols = impGen.filter(
-  (n) => n.kind === "ModuleDeclaration" && n.name === "index"
+  (n) => n.kind === "ModuleDeclaration" && n.name === "index",
 )[0].symbols;
 
 const decls = {
@@ -82,8 +82,8 @@ function emitIFields(spec, key) {
       emit(
         `  set: (key: string, val: ${fieldSpec.replace(
           "?",
-          ""
-        )}) => I${key}Builder;`
+          "",
+        )}) => I${key}Builder;`,
       );
       return;
     }
@@ -94,16 +94,16 @@ function emitIFields(spec, key) {
 
     if (interfaces[realFieldSpec]) {
       emit(
-        `  ${fieldName}: (build: ${realFieldSpec} | ((builder: I${realFieldSpec}Builder) => I${realFieldSpec}Builder)) => I${key}Builder;`
+        `  ${fieldName}: (build: ${realFieldSpec} | ((builder: I${realFieldSpec}Builder) => I${realFieldSpec}Builder)) => I${key}Builder;`,
       );
       return;
     }
     if (isArray && interfaces[containedFieldSpec]) {
       emit(
-        `  ${fieldName}At: (idx: number, build: ${containedFieldSpec} | ((builder: I${containedFieldSpec}Builder) => I${containedFieldSpec}Builder)) => I${key}Builder;`
+        `  ${fieldName}At: (idx: number, build: ${containedFieldSpec} | ((builder: I${containedFieldSpec}Builder) => I${containedFieldSpec}Builder)) => I${key}Builder;`,
       );
       emit(
-        `  ${fieldName}Splice: (start: number, deleteCount: number, ...items: ${containedFieldSpec}[]) => I${key}Builder;`
+        `  ${fieldName}Splice: (start: number, deleteCount: number, ...items: ${containedFieldSpec}[]) => I${key}Builder;`,
       );
     }
 
@@ -193,7 +193,7 @@ _.forEach(interfaces, (spec, key) => {
   emit(`    this.patch = (): any[] => {`);
   emit(`      checkInvariants();`);
   emit(
-    `      return makePatch(original, updates, childBuilders, patches, modifiedKeys);`
+    `      return makePatch(original, updates, childBuilders, patches, modifiedKeys);`,
   );
   emit(`    }`); // patch
 
@@ -206,8 +206,8 @@ _.forEach(interfaces, (spec, key) => {
       emit(
         `    this.set = (key: string, val: ${fieldSpec.replace(
           "?",
-          ""
-        )}): I${key}Builder => {`
+          "",
+        )}): I${key}Builder => {`,
       );
       emit(`      updates[key] = val;`);
       emit(`      modifiedKeys[key] = true;`);
@@ -313,10 +313,10 @@ _.forEach(interfaces, (spec, key) => {
 
   emit(`}`); // class ${key}Builder (not exported)
   emit(
-    `export function patch${key}(base: ${key}, builder: (build: I${key}Builder) => I${key}Builder): IAny[] { return builder(new ${key}Builder(base)).patch(); }`
+    `export function patch${key}(base: ${key}, builder: (build: I${key}Builder) => I${key}Builder): IAny[] { return builder(new ${key}Builder(base)).patch(); }`,
   );
   emit(
-    `export function build${key}(builder: (build: I${key}Builder) => I${key}Builder): ${key} { return builder(new ${key}Builder()).build(); }`
+    `export function build${key}(builder: (build: I${key}Builder) => I${key}Builder): ${key} { return builder(new ${key}Builder()).build(); }`,
   );
   emit(``);
 });

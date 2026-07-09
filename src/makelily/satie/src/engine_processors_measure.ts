@@ -132,12 +132,15 @@ export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
       }
       cleanliness.x[part][voice.owner] = cleanliness.x[part][voice.owner] || {
         voiceX: [],
-        staffX: spec.measure.parts[part].staves.reduce((memo, staff) => {
-          if (staff) {
-            memo[staff.owner] = [];
-          }
-          return memo;
-        }, {} as { [staff: number]: number[] }),
+        staffX: spec.measure.parts[part].staves.reduce(
+          (memo, staff) => {
+            if (staff) {
+              memo[staff.owner] = [];
+            }
+            return memo;
+          },
+          {} as { [staff: number]: number[] },
+        ),
       };
     });
   });

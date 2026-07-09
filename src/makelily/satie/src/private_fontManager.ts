@@ -305,8 +305,7 @@ const _toPathData = memoize(function (
     return "";
   }
   return font.getPath(text, x, y, fontSize, { kerning: true }).toPathData(3);
-},
-resolvePDKey);
+}, resolvePDKey);
 
 export function toPathData(
   name: string,

@@ -22,7 +22,6 @@
 
 import { normalizeDivisionsInPlace } from "../engine_divisions";
 
-
 import {
   createFakeStaffSegment,
   createFakeVoiceSegment,

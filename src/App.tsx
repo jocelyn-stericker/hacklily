@@ -904,8 +904,9 @@ export default class App extends React.PureComponent<Props, State> {
       return;
     }
 
-    const makelilyComponent: typeof Makelily = (await import("./makelily/Makelily"))
-      .default;
+    const makelilyComponent: typeof Makelily = (
+      await import("./makelily/Makelily")
+    ).default;
 
     track(`makelily/${tool || this.state.makelilyTool}`);
     this.setState({

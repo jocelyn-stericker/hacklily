@@ -47,13 +47,23 @@ export default class CreditView
   };
 
   /* ITextMixin */
-  declare getTextAnchor: (words: CreditWords | Words) => "start" | "middle" | "end" | "inherit" | undefined;
+  declare getTextAnchor: (
+    words: CreditWords | Words,
+  ) => "start" | "middle" | "end" | "inherit" | undefined;
   declare getTextDecoration: (words: CreditWords | Words) => string;
   declare getTransform: (words: CreditWords | Words) => string;
   declare getDirection: (words: CreditWords | Words) => string;
   declare getX: (lineNum: number) => number;
-  declare getDX: (words: CreditWords | Words, initX: number, lineNum: number) => number;
-  declare getDY: (words: CreditWords | Words, initY: number, lineNum: number) => number;
+  declare getDX: (
+    words: CreditWords | Words,
+    initX: number,
+    lineNum: number,
+  ) => number;
+  declare getDY: (
+    words: CreditWords | Words,
+    initY: number,
+    lineNum: number,
+  ) => number;
 
   render(): any {
     const image = this.props.creditImage;

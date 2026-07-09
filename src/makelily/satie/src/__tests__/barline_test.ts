@@ -22,7 +22,6 @@
 
 import BarlineModel from "../implBarline_barlineModel";
 
-
 import { IModel, Type } from "../document";
 
 import Factory from "../engine_factory";

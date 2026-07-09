@@ -185,12 +185,7 @@ export interface State {
   redoStack: IAny[][];
   relativeMode: boolean;
   showAdditionalHelp:
-    | "keyboard"
-    | "midi"
-    | "mouse"
-    | "relative"
-    | "whyNotEdit"
-    | null;
+    "keyboard" | "midi" | "mouse" | "relative" | "whyNotEdit" | null;
   showHelp: boolean;
   src: string;
   timeModification: TimeModification;
@@ -1189,30 +1184,30 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
                       )
                       .color(isPreview ? "#cecece" : "#000000")
                   : this.state.accidental
-                  ? note
-                      .pitch(pitch)
-                      .rest(undefined)
-                      .dots(
-                        times(this.state.dots, () => ({
-                          color: isPreview ? "#cecece" : "#000000",
-                        })),
-                      )
-                      .noteType((noteType: ITypeBuilder) =>
-                        noteType.duration(this.state.note),
-                      )
-                      .color(isPreview ? "#cecece" : "#000000")
-                  : note
-                      .pitch(pitch)
-                      .rest(undefined)
-                      .dots(
-                        times(this.state.dots, () => ({
-                          color: isPreview ? "#cecece" : "#000000",
-                        })),
-                      )
-                      .noteType((noteType: ITypeBuilder) =>
-                        noteType.duration(this.state.note),
-                      )
-                      .color(isPreview ? "#cecece" : "#000000"),
+                    ? note
+                        .pitch(pitch)
+                        .rest(undefined)
+                        .dots(
+                          times(this.state.dots, () => ({
+                            color: isPreview ? "#cecece" : "#000000",
+                          })),
+                        )
+                        .noteType((noteType: ITypeBuilder) =>
+                          noteType.duration(this.state.note),
+                        )
+                        .color(isPreview ? "#cecece" : "#000000")
+                    : note
+                        .pitch(pitch)
+                        .rest(undefined)
+                        .dots(
+                          times(this.state.dots, () => ({
+                            color: isPreview ? "#cecece" : "#000000",
+                          })),
+                        )
+                        .noteType((noteType: ITypeBuilder) =>
+                          noteType.duration(this.state.note),
+                        )
+                        .color(isPreview ? "#cecece" : "#000000"),
               ),
 
             elIdx,
@@ -1663,23 +1658,19 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
         "P1",
         (part: PartBuilder): PartBuilder =>
           part
-            .staff(
-              1,
-              (staff: StaffBuilder): StaffBuilder =>
-                staff
-                  .at(1)
-                  .attributes(
-                    (attributes: IAttributesBuilder): IAttributesBuilder =>
-                      attributes
-                        .clefs([this.props.clef])
-                        .keySignatures([this.props.keySig])
-                        .times([this.props.time]),
-                  ),
+            .staff(1, (staff: StaffBuilder): StaffBuilder =>
+              staff
+                .at(1)
+                .attributes(
+                  (attributes: IAttributesBuilder): IAttributesBuilder =>
+                    attributes
+                      .clefs([this.props.clef])
+                      .keySignatures([this.props.keySig])
+                      .times([this.props.time]),
+                ),
             )
-            .voice(
-              1,
-              (voice: VoiceBuilder): VoiceBuilder =>
-                voice.at(0).addVisualCursor(),
+            .voice(1, (voice: VoiceBuilder): VoiceBuilder =>
+              voice.at(0).addVisualCursor(),
             ),
       );
       this.applyUndoablePatch(patch);

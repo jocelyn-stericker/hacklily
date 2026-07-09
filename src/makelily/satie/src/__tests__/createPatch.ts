@@ -105,14 +105,7 @@ describe("patches (1)", function () {
     expect(newMeasureUUID).toEqual(expect.any(Number));
 
     // new note
-    expect(patch[1].p).toEqual([
-      newMeasureUUID,
-      "parts",
-      "P1",
-      "voices",
-      1,
-      0,
-    ]);
+    expect(patch[1].p).toEqual([newMeasureUUID, "parts", "P1", "voices", 1, 0]);
     expect(patch[1].li[0]._class).toEqual("Note");
     expect(patch[1].ld).toEqual(undefined);
 

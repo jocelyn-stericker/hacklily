@@ -65,10 +65,11 @@ describe("Import/export tests", function () {
   mkdirp("src/makelily/satie/rendertest/out");
 
   function testFile(root: string, file: string) {
-    const outname = `${root.replace(/^.*vendor\//, "vendor_").replace("-", "_")}_${file.replace(
-      "-",
-      "_",
-    )}`.replace(".xml", ".svg");
+    const outname =
+      `${root.replace(/^.*vendor\//, "vendor_").replace("-", "_")}_${file.replace(
+        "-",
+        "_",
+      )}`.replace(".xml", ".svg");
     it(file, function (done) {
       readFile(root + "/" + file, function (musicXML) {
         const song = new SongImpl({
@@ -90,13 +91,20 @@ describe("Import/export tests", function () {
                 measure.uuid = 42 + idx;
               });
               const page1Svg = song.toSVG();
-              fs.writeFileSync("src/makelily/satie/rendertest/out/" + outname, page1Svg);
+              fs.writeFileSync(
+                "src/makelily/satie/rendertest/out/" + outname,
+                page1Svg,
+              );
 
               if (!process.env.SKIP_DTD_VALIDATION) {
                 const mxmlOut = song.toMusicXML();
                 const env = Object.create(process.env);
-                env.XML_CATALOG_FILES = "src/makelily/satie/vendor/musicxml-dtd/catalog.xml";
-                fs.writeFileSync("src/makelily/satie/rendertest/out/" + outname + ".xml", mxmlOut);
+                env.XML_CATALOG_FILES =
+                  "src/makelily/satie/vendor/musicxml-dtd/catalog.xml";
+                fs.writeFileSync(
+                  "src/makelily/satie/rendertest/out/" + outname + ".xml",
+                  mxmlOut,
+                );
                 const proc = child_process.spawnSync(
                   "xmllint",
                   ["--valid", "--noout", "--nonet", "-"],

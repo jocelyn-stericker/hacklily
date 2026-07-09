@@ -172,7 +172,7 @@ export function parseGrouping(str: string) {
 
 export function serializeScore(
   score: ScoreTimewise,
-  parttime: boolean = false
+  parttime: boolean = false,
 ): string {
   let timewise = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE score-timewise
@@ -249,7 +249,7 @@ declare class XSLTProcessor {
   transformToDocument(xml: Node): Document;
 }
 
-let isNode = typeof window === "undefined" || !!process.versions?.node
+let isNode = typeof window === "undefined" || !!process.versions?.node;
 
 var xmlToParttimeDoc: (str: string) => Document;
 var timewiseToPartwise: (str: string) => string;
@@ -273,7 +273,17 @@ var xmlToDoc: (str: string) => Document;
         "xsltproc",
         [
           "--nonet",
-          path.join(__dirname, "..", "..", "src", "makelily", "satie", "vendor", "musicxml-dtd", "parttime.xsl"),
+          path.join(
+            __dirname,
+            "..",
+            "..",
+            "src",
+            "makelily",
+            "satie",
+            "vendor",
+            "musicxml-dtd",
+            "parttime.xsl",
+          ),
           "-",
         ],
         {
@@ -282,13 +292,15 @@ var xmlToDoc: (str: string) => Document;
             XML_CATALOG_FILES: path.join(
               __dirname,
               "..",
-              "src","makelily","satie",
+              "src",
+              "makelily",
+              "satie",
               "vendor",
               "musicxml-dtd",
-              "catalog.xml"
+              "catalog.xml",
             ),
           },
-        }
+        },
       );
       if (res.error) {
         throw res.error;
@@ -311,10 +323,10 @@ var xmlToDoc: (str: string) => Document;
               "..",
               "vendor",
               "musicxml-dtd",
-              "catalog.xml"
+              "catalog.xml",
             ),
           },
-        }
+        },
       );
       if (res.error) {
         throw res.error;
@@ -324,11 +336,11 @@ var xmlToDoc: (str: string) => Document;
   } else {
     let parttimeXSLDoc = new DOMParser().parseFromString(
       parttimeXSLBuffer,
-      "text/xml"
+      "text/xml",
     );
     let timepartXSLDoc = new DOMParser().parseFromString(
       timepartXSLBuffer,
-      "text/xml"
+      "text/xml",
     );
 
     let parttimeXSLProcessor: XSLTProcessor = new XSLTProcessor();
@@ -347,7 +359,7 @@ var xmlToDoc: (str: string) => Document;
     timewiseToPartwise = function (str: string) {
       let dom: Document = new DOMParser().parseFromString(str, "text/xml");
       return new XMLSerializer().serializeToString(
-        timepartXSLProcessor.transformToDocument(dom).documentElement
+        timepartXSLProcessor.transformToDocument(dom).documentElement,
       );
     };
   }
@@ -1649,7 +1661,7 @@ function getLeftCenterRight(node: Node, fallbackVal?: LeftCenterRight) {
 
 function getTopMiddleBottomBaseline(
   node: Node,
-  fallbackVal?: TopMiddleBottomBaseline
+  fallbackVal?: TopMiddleBottomBaseline,
 ) {
   "use strict";
   let s = (
@@ -1721,7 +1733,7 @@ function getStraightCurved(node: Node, fallbackVal?: StraightCurved) {
 
 function getSolidDashedDottedWavy(
   node: Node,
-  fallbackVal?: SolidDashedDottedWavy
+  fallbackVal?: SolidDashedDottedWavy,
 ) {
   "use strict";
   let s = (
@@ -1943,7 +1955,7 @@ function xmlToHalign(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -1966,7 +1978,7 @@ function xmlToValign(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -1989,7 +2001,7 @@ function xmlToValignImage(node: Element) {
     if (ch2.name === "valign") {
       let dataValignImage = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valignImage = dataValignImage;
       foundValignImage = true;
@@ -2287,7 +2299,7 @@ function xmlToPrintStyleAlign(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -2295,7 +2307,7 @@ function xmlToPrintStyleAlign(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -2510,7 +2522,8 @@ export interface Printout extends PrintObject, PrintSpacing {
  * across the elements that use this entity.
  */
 export interface TextFormatting
-  extends Justify,
+  extends
+    Justify,
     PrintStyleAlign,
     TextDecoration,
     TextRotation,
@@ -2589,7 +2602,7 @@ function xmlToTextFormatting(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -2597,7 +2610,7 @@ function xmlToTextFormatting(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -3127,7 +3140,7 @@ function xmlToFootnote(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -3135,7 +3148,7 @@ function xmlToFootnote(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -3594,7 +3607,7 @@ function xmlToSegno(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -3602,7 +3615,7 @@ function xmlToSegno(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -3690,7 +3703,7 @@ function xmlToCoda(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -3698,7 +3711,7 @@ function xmlToCoda(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -3772,10 +3785,7 @@ function xmlToNormalDot(node: Element) {
  * dynamics.
  */
 export interface Dynamics
-  extends PrintStyleAlign,
-    Placement,
-    TextDecoration,
-    Enclosure {
+  extends PrintStyleAlign, Placement, TextDecoration, Enclosure {
   _snapshot?: Dynamics;
   f?: boolean;
   ff?: boolean;
@@ -3958,7 +3968,7 @@ function xmlToDynamics(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -3966,7 +3976,7 @@ function xmlToDynamics(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -4367,7 +4377,7 @@ function xmlToDisplayText(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -4375,7 +4385,7 @@ function xmlToDisplayText(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -4548,7 +4558,7 @@ function xmlToAccidentalText(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -4556,7 +4566,7 @@ function xmlToAccidentalText(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -5413,7 +5423,7 @@ function xmlToLeftDivider(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -5421,7 +5431,7 @@ function xmlToLeftDivider(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -5527,7 +5537,7 @@ function xmlToRightDivider(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -5535,7 +5545,7 @@ function xmlToRightDivider(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -5895,8 +5905,8 @@ function xmlToAppearance(node: Element) {
       ret.lineWidths[
         popFront(
           toCamelCase(
-            (dataLineWidths.type.length ? "_" : "") + dataLineWidths.type
-          )
+            (dataLineWidths.type.length ? "_" : "") + dataLineWidths.type,
+          ),
         )
       ] = dataLineWidths;
     }
@@ -5906,15 +5916,15 @@ function xmlToAppearance(node: Element) {
       ret.distances[
         popFront(
           toCamelCase(
-            (dataDistances.type.length ? "_" : "") + dataDistances.type
-          )
+            (dataDistances.type.length ? "_" : "") + dataDistances.type,
+          ),
         )
       ] = dataDistances;
     }
     if (ch.nodeName === "other-appearance") {
       let dataOtherAppearances = getString(ch, true);
       ret.otherAppearances = (ret.otherAppearances || []).concat(
-        dataOtherAppearances
+        dataOtherAppearances,
       );
     }
     if (ch.nodeName === "note-size") {
@@ -6090,7 +6100,7 @@ function xmlToMiscellaneous(node: Element) {
     if (ch.nodeName === "miscellaneous-field") {
       let dataMiscellaneousFields = xmlToMiscellaneousField(ch);
       ret.miscellaneousFields = (ret.miscellaneousFields || []).concat(
-        dataMiscellaneousFields
+        dataMiscellaneousFields,
       );
     }
   }
@@ -6230,7 +6240,7 @@ function xmlToEncoding(node: Element) {
     if (ch.nodeName === "encoding-description") {
       let dataEncodingDescriptions = getString(ch, true);
       ret.encodingDescriptions = (ret.encodingDescriptions || []).concat(
-        dataEncodingDescriptions
+        dataEncodingDescriptions,
       );
     }
     if (ch.nodeName === "encoding-date") {
@@ -6243,10 +6253,10 @@ function xmlToEncoding(node: Element) {
       ret.supports[
         popFront(
           toCamelCase(
-            (dataSupports.element.length ? "_" : "") + dataSupports.element
+            (dataSupports.element.length ? "_" : "") + dataSupports.element,
           ) +
             (dataSupports.attribute.length ? "_" : "") +
-            toCamelCase(dataSupports.attribute)
+            toCamelCase(dataSupports.attribute),
         )
       ] = dataSupports;
     }
@@ -6700,7 +6710,7 @@ function xmlToKey(node: Element) {
       ret.keyAccidentals = ret.keyAccidentals || [];
       ret.keyAccidentals.length = Math.max(
         ret.keyAccidentals.length,
-        ret.keySteps.length
+        ret.keySteps.length,
       );
       ret.keyAccidentals[ret.keySteps.length - 1] = dataKeyAccidentals;
     }
@@ -6816,10 +6826,7 @@ function xmlToKey(node: Element) {
  * part.
  */
 export interface Time
-  extends TimeSymbol,
-    TimeSeparator,
-    PrintStyleAlign,
-    PrintObject {
+  extends TimeSymbol, TimeSeparator, PrintStyleAlign, PrintObject {
   _snapshot?: Time;
   interchangeable?: Interchangeable;
   beats: string[];
@@ -6913,7 +6920,7 @@ function xmlToTime(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -6921,7 +6928,7 @@ function xmlToTime(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -8432,11 +8439,7 @@ function xmlToInstrument(node: Element) {
  * readily than the other.
  */
 export interface Note
-  extends EditorialVoice,
-    PrintStyle,
-    Printout,
-    TimeOnly,
-    FullNote {
+  extends EditorialVoice, PrintStyle, Printout, TimeOnly, FullNote {
   _snapshot?: Note;
   noteheadText?: NoteheadText;
   timeModification?: TimeModification;
@@ -9798,7 +9801,7 @@ function xmlToNotations(node: Element) {
     if (ch.nodeName === "accidental-mark") {
       let dataAccidentalMarks = xmlToAccidentalMark(ch);
       ret.accidentalMarks = (ret.accidentalMarks || []).concat(
-        dataAccidentalMarks
+        dataAccidentalMarks,
       );
     }
     if (ch.nodeName === "ornaments") {
@@ -9812,13 +9815,13 @@ function xmlToNotations(node: Element) {
     if (ch.nodeName === "non-arpeggiate") {
       let dataNonArpeggiates = xmlToNonArpeggiate(ch);
       ret.nonArpeggiates = (ret.nonArpeggiates || []).concat(
-        dataNonArpeggiates
+        dataNonArpeggiates,
       );
     }
     if (ch.nodeName === "other-notation") {
       let dataOtherNotations = xmlToOtherNotation(ch);
       ret.otherNotations = (ret.otherNotations || []).concat(
-        dataOtherNotations
+        dataOtherNotations,
       );
     }
   }
@@ -9847,7 +9850,8 @@ function xmlToNotations(node: Element) {
  * situations.
  */
 export interface Tied
-  extends LineType,
+  extends
+    LineType,
     DashedFormatting,
     Position,
     Placement,
@@ -9879,7 +9883,7 @@ function xmlToTied(node: Element) {
     if (ch2.name === "line-type") {
       let dataLineType = getSolidDashedDottedWavy(
         ch2,
-        SolidDashedDottedWavy.Solid
+        SolidDashedDottedWavy.Solid,
       );
       ret.lineType = dataLineType;
       foundLineType = true;
@@ -9983,7 +9987,8 @@ function xmlToTied(node: Element) {
  * system slurs, or to specify the shape of very complex slurs.
  */
 export interface Slur
-  extends LineType,
+  extends
+    LineType,
     DashedFormatting,
     Position,
     Placement,
@@ -10017,7 +10022,7 @@ function xmlToSlur(node: Element) {
     if (ch2.name === "line-type") {
       let dataLineType = getSolidDashedDottedWavy(
         ch2,
-        SolidDashedDottedWavy.Solid
+        SolidDashedDottedWavy.Solid,
       );
       ret.lineType = dataLineType;
       foundLineType = true;
@@ -10681,7 +10686,7 @@ function xmlToGlissando(node: Element) {
     if (ch2.name === "line-type") {
       let dataLineType = getSolidDashedDottedWavy(
         ch2,
-        SolidDashedDottedWavy.Solid
+        SolidDashedDottedWavy.Solid,
       );
       ret.lineType = dataLineType;
       foundLineType = true;
@@ -10783,10 +10788,7 @@ function xmlToGlissando(node: Element) {
  * printed alongside the line.
  */
 export interface Slide
-  extends LineType,
-    DashedFormatting,
-    PrintStyle,
-    BendSound {
+  extends LineType, DashedFormatting, PrintStyle, BendSound {
   _snapshot?: Slide;
   text?: string;
   type: StartStop;
@@ -10814,7 +10816,7 @@ function xmlToSlide(node: Element) {
     if (ch2.name === "line-type") {
       let dataLineType = getSolidDashedDottedWavy(
         ch2,
-        SolidDashedDottedWavy.Solid
+        SolidDashedDottedWavy.Solid,
       );
       ret.lineType = dataLineType;
       foundLineType = true;
@@ -11119,7 +11121,7 @@ function xmlToOtherDirection(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -11127,7 +11129,7 @@ function xmlToOtherDirection(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -11235,7 +11237,7 @@ function xmlToOrnaments(node: Element) {
     if (ch.nodeName === "accidental-mark") {
       let dataAccidentalMarks = xmlToAccidentalMark(ch);
       ret.accidentalMarks = (ret.accidentalMarks || []).concat(
-        dataAccidentalMarks
+        dataAccidentalMarks,
       );
     }
     if (ch.nodeName === "trill-mark") {
@@ -15416,7 +15418,7 @@ function xmlToArticulations(node: Element) {
     if (ch.nodeName === "other-articulation") {
       let dataOtherArticulations = xmlToOtherArticulation(ch);
       ret.otherArticulations = (ret.otherArticulations || []).concat(
-        dataOtherArticulations
+        dataOtherArticulations,
       );
     }
     if (ch.nodeName === "detached-legato") {
@@ -16030,11 +16032,7 @@ function xmlToSpiccato(node: Element) {
  * and below the pitch, respectively.
  */
 export interface Scoop
-  extends LineShape,
-    LineType,
-    DashedFormatting,
-    PrintStyle,
-    Placement {
+  extends LineShape, LineType, DashedFormatting, PrintStyle, Placement {
   _snapshot?: Scoop;
 }
 
@@ -16061,7 +16059,7 @@ function xmlToScoop(node: Element) {
     if (ch2.name === "line-type") {
       let dataLineType = getSolidDashedDottedWavy(
         ch2,
-        SolidDashedDottedWavy.Solid
+        SolidDashedDottedWavy.Solid,
       );
       ret.lineType = dataLineType;
       foundLineType = true;
@@ -16157,11 +16155,7 @@ function xmlToScoop(node: Element) {
  * and below the pitch, respectively.
  */
 export interface Plop
-  extends LineShape,
-    LineType,
-    DashedFormatting,
-    PrintStyle,
-    Placement {
+  extends LineShape, LineType, DashedFormatting, PrintStyle, Placement {
   _snapshot?: Plop;
 }
 
@@ -16188,7 +16182,7 @@ function xmlToPlop(node: Element) {
     if (ch2.name === "line-type") {
       let dataLineType = getSolidDashedDottedWavy(
         ch2,
-        SolidDashedDottedWavy.Solid
+        SolidDashedDottedWavy.Solid,
       );
       ret.lineType = dataLineType;
       foundLineType = true;
@@ -16284,11 +16278,7 @@ function xmlToPlop(node: Element) {
  * and below the pitch, respectively.
  */
 export interface Doit
-  extends LineShape,
-    LineType,
-    DashedFormatting,
-    PrintStyle,
-    Placement {
+  extends LineShape, LineType, DashedFormatting, PrintStyle, Placement {
   _snapshot?: Doit;
 }
 
@@ -16315,7 +16305,7 @@ function xmlToDoit(node: Element) {
     if (ch2.name === "line-type") {
       let dataLineType = getSolidDashedDottedWavy(
         ch2,
-        SolidDashedDottedWavy.Solid
+        SolidDashedDottedWavy.Solid,
       );
       ret.lineType = dataLineType;
       foundLineType = true;
@@ -16411,11 +16401,7 @@ function xmlToDoit(node: Element) {
  * and below the pitch, respectively.
  */
 export interface Falloff
-  extends LineShape,
-    LineType,
-    DashedFormatting,
-    PrintStyle,
-    Placement {
+  extends LineShape, LineType, DashedFormatting, PrintStyle, Placement {
   _snapshot?: Falloff;
 }
 
@@ -16442,7 +16428,7 @@ function xmlToFalloff(node: Element) {
     if (ch2.name === "line-type") {
       let dataLineType = getSolidDashedDottedWavy(
         ch2,
-        SolidDashedDottedWavy.Solid
+        SolidDashedDottedWavy.Solid,
       );
       ret.lineType = dataLineType;
       foundLineType = true;
@@ -16563,11 +16549,7 @@ function getBreathMarkType(node: Node, fallbackVal?: BreathMarkType) {
  * comma, tick, and an empty string.
  */
 export interface BreathMark
-  extends LineShape,
-    LineType,
-    DashedFormatting,
-    PrintStyle,
-    Placement {
+  extends LineShape, LineType, DashedFormatting, PrintStyle, Placement {
   _snapshot?: BreathMark;
   type: BreathMarkType;
 }
@@ -16595,7 +16577,7 @@ function xmlToBreathMark(node: Element) {
     if (ch2.name === "line-type") {
       let dataLineType = getSolidDashedDottedWavy(
         ch2,
-        SolidDashedDottedWavy.Solid
+        SolidDashedDottedWavy.Solid,
       );
       ret.lineType = dataLineType;
       foundLineType = true;
@@ -17303,12 +17285,7 @@ function xmlToLyricParts(node: Element) {
  *
  */
 export interface Lyric
-  extends Justify,
-    Position,
-    Placement,
-    Color,
-    PrintObject,
-    Editorial {
+  extends Justify, Position, Placement, Color, PrintObject, Editorial {
   _snapshot?: Lyric;
   lyricParts: any[];
   number?: number;
@@ -17316,7 +17293,8 @@ export interface Lyric
 }
 
 export interface Text
-  extends Font,
+  extends
+    Font,
     Color,
     TextDecoration,
     TextRotation,
@@ -18447,7 +18425,7 @@ export enum StartStopDiscontinue {
 
 function getStartStopDiscontinue(
   node: Node,
-  fallbackVal?: StartStopDiscontinue
+  fallbackVal?: StartStopDiscontinue,
 ) {
   "use strict";
   let s = (
@@ -18797,7 +18775,7 @@ function xmlToDirection(node: Element) {
     if (ch.nodeName === "direction-type") {
       let dataDirectionTypes = xmlToDirectionType(ch);
       ret.directionTypes = (ret.directionTypes || []).concat(
-        dataDirectionTypes
+        dataDirectionTypes,
       );
     }
     if (ch.nodeName === "staff") {
@@ -19041,7 +19019,7 @@ function xmlToRehearsal(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -19049,7 +19027,7 @@ function xmlToRehearsal(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -19221,7 +19199,7 @@ function xmlToWords(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -19229,7 +19207,7 @@ function xmlToWords(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -19405,7 +19383,7 @@ function xmlToWedge(node: Element) {
     if (ch2.name === "line-type") {
       let dataLineType = getSolidDashedDottedWavy(
         ch2,
-        SolidDashedDottedWavy.Solid
+        SolidDashedDottedWavy.Solid,
       );
       ret.lineType = dataLineType;
       foundLineType = true;
@@ -19625,7 +19603,7 @@ function xmlToBracket(node: Element) {
     if (ch2.name === "line-type") {
       let dataLineType = getSolidDashedDottedWavy(
         ch2,
-        SolidDashedDottedWavy.Solid
+        SolidDashedDottedWavy.Solid,
       );
       ret.lineType = dataLineType;
       foundLineType = true;
@@ -19802,7 +19780,7 @@ function xmlToPedal(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -19810,7 +19788,7 @@ function xmlToPedal(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -19897,7 +19875,7 @@ function xmlToMetronome(node: Element) {
     if (ch.nodeName === "metronome-note") {
       let dataMetronomeNotes = xmlToMetronomeNote(ch);
       ret.metronomeNotes = (ret.metronomeNotes || []).concat(
-        dataMetronomeNotes
+        dataMetronomeNotes,
       );
     }
     if (ch.nodeName === "per-minute") {
@@ -19922,7 +19900,7 @@ function xmlToMetronome(node: Element) {
         ret.beatUnitDots = (ret.beatUnitDots || []).concat(dataBeatUnitDots);
       } else {
         ret.beatUnitDotsChange = (ret.beatUnitDotsChange || []).concat(
-          dataBeatUnitDots
+          dataBeatUnitDots,
         );
       }
     }
@@ -19975,7 +19953,7 @@ function xmlToMetronome(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -19983,7 +19961,7 @@ function xmlToMetronome(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -20098,7 +20076,7 @@ function xmlToMetronomeNote(node: Element) {
     if (ch.nodeName === "metronome-beam") {
       let dataMetronomeBeams = xmlToMetronomeBeam(ch);
       ret.metronomeBeams = (ret.metronomeBeams || []).concat(
-        dataMetronomeBeams
+        dataMetronomeBeams,
       );
     }
     if (ch.nodeName === "metronome-type") {
@@ -20435,7 +20413,7 @@ function xmlToHarpPedals(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -20443,7 +20421,7 @@ function xmlToHarpPedals(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -20553,7 +20531,7 @@ function xmlToDamp(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -20561,7 +20539,7 @@ function xmlToDamp(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -20643,7 +20621,7 @@ function xmlToDampAll(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -20651,7 +20629,7 @@ function xmlToDampAll(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -20733,7 +20711,7 @@ function xmlToEyeglasses(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -20741,7 +20719,7 @@ function xmlToEyeglasses(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -20824,7 +20802,7 @@ function xmlToStringMute(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -20832,7 +20810,7 @@ function xmlToStringMute(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -20971,7 +20949,7 @@ function xmlToImage(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -20979,7 +20957,7 @@ function xmlToImage(node: Element) {
     if (ch2.name === "valign") {
       let dataValignImage = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valignImage = dataValignImage;
       foundValignImage = true;
@@ -21111,7 +21089,7 @@ function xmlToPrincipalVoice(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -21119,7 +21097,7 @@ function xmlToPrincipalVoice(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -21235,7 +21213,7 @@ function xmlToAccordionRegistration(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -21243,7 +21221,7 @@ function xmlToAccordionRegistration(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -21389,7 +21367,7 @@ function xmlToPercussion(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -21397,7 +21375,7 @@ function xmlToPercussion(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -21655,7 +21633,7 @@ export enum ExplicitImpliedAlternate {
 
 function getExplicitImpliedAlternate(
   node: Node,
-  fallbackVal?: ExplicitImpliedAlternate
+  fallbackVal?: ExplicitImpliedAlternate,
 ) {
   "use strict";
   let s = (
@@ -21679,11 +21657,7 @@ function getExplicitImpliedAlternate(
 }
 
 export interface Harmony
-  extends HarmonyChord,
-    Editorial,
-    PrintObject,
-    PrintStyle,
-    Placement {
+  extends HarmonyChord, Editorial, PrintObject, PrintStyle, Placement {
   _snapshot?: Harmony;
   frame: Frame;
   printFrame: boolean;
@@ -22273,7 +22247,7 @@ function xmlToKind(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -22281,7 +22255,7 @@ function xmlToKind(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -23006,7 +22980,7 @@ function xmlToFrame(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -23014,7 +22988,7 @@ function xmlToFrame(node: Element) {
     if (ch2.name === "valign") {
       let dataValignImage = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valignImage = dataValignImage;
       foundValignImage = true;
@@ -23416,7 +23390,7 @@ function xmlToMeasureNumbering(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -23424,7 +23398,7 @@ function xmlToMeasureNumbering(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -23566,7 +23540,7 @@ function xmlToSound(node: Element) {
     if (ch.nodeName === "midi-instrument") {
       let dataMidiInstruments = xmlToMidiInstrument(ch);
       ret.midiInstruments = (ret.midiInstruments || []).concat(
-        dataMidiInstruments
+        dataMidiInstruments,
       );
     }
     if (ch.nodeName === "play") {
@@ -23746,7 +23720,7 @@ function xmlToDefaults(node: Element) {
     if (ch.nodeName === "lyric-language") {
       let dataLyricLanguages = xmlToLyricLanguage(ch);
       ret.lyricLanguages = (ret.lyricLanguages || []).concat(
-        dataLyricLanguages
+        dataLyricLanguages,
       );
     }
     if (ch.nodeName === "lyric-font") {
@@ -24090,7 +24064,7 @@ function xmlToCreditWords(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -24098,7 +24072,7 @@ function xmlToCreditWords(node: Element) {
     if (ch2.name === "valign") {
       let dataValign = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valign = dataValign;
       foundValign = true;
@@ -24241,7 +24215,7 @@ function xmlToCreditImage(node: Element) {
     if (ch2.name === "halign") {
       let dataHalign = getLeftCenterRight(
         ch2,
-        (<any>ret).justify || LeftCenterRight.Left
+        (<any>ret).justify || LeftCenterRight.Left,
       );
       ret.halign = dataHalign;
       foundHalign = true;
@@ -24249,7 +24223,7 @@ function xmlToCreditImage(node: Element) {
     if (ch2.name === "valign") {
       let dataValignImage = getTopMiddleBottomBaseline(
         ch2,
-        TopMiddleBottomBaseline.Bottom
+        TopMiddleBottomBaseline.Bottom,
       );
       ret.valignImage = dataValignImage;
       foundValignImage = true;
@@ -24356,7 +24330,7 @@ function xmlToScorePart(node: Element) {
     if (ch.nodeName === "score-instrument") {
       let dataScoreInstruments = xmlToScoreInstrument(ch);
       ret.scoreInstruments = (ret.scoreInstruments || []).concat(
-        dataScoreInstruments
+        dataScoreInstruments,
       );
     }
     if (ch.nodeName === "midi-device") {
@@ -24382,7 +24356,7 @@ function xmlToScorePart(node: Element) {
     if (ch.nodeName === "midi-instrument") {
       let dataMidiInstruments = xmlToMidiInstrument(ch);
       ret.midiInstruments = (ret.midiInstruments || []).concat(
-        dataMidiInstruments
+        dataMidiInstruments,
       );
     }
   }
@@ -25494,12 +25468,12 @@ function systemLayoutToXML(systemLayout: SystemLayout): string {
   }
   if (defined(systemLayout.systemDistance)) {
     children.push(
-      xml`<system-distance>${systemLayout.systemDistance}</system-distance>`
+      xml`<system-distance>${systemLayout.systemDistance}</system-distance>`,
     );
   }
   if (defined(systemLayout.topSystemDistance)) {
     children.push(
-      xml`<top-system-distance>${systemLayout.topSystemDistance}</top-system-distance>`
+      xml`<top-system-distance>${systemLayout.topSystemDistance}</top-system-distance>`,
     );
   }
   if (defined(systemLayout.systemDividers)) {
@@ -25541,7 +25515,7 @@ function systemDividersToXML(systemDividers: SystemDividers): string {
       xml`<left-divider${
         printObjectToXML(systemDividers.leftDivider) +
         printStyleAlignToXML(systemDividers.leftDivider)
-      } />`
+      } />`,
     );
   }
   if (defined(systemDividers.rightDivider)) {
@@ -25549,7 +25523,7 @@ function systemDividersToXML(systemDividers: SystemDividers): string {
       xml`<right-divider${
         printObjectToXML(systemDividers.rightDivider) +
         printStyleAlignToXML(systemDividers.rightDivider)
-      } />`
+      } />`,
     );
   }
   return dangerous`<system-dividers>\n${children
@@ -25819,7 +25793,7 @@ function relationToXML(relation: Relation): string {
 function miscellaneousToXML(miscellaneous: Miscellaneous): string {
   // <!ELEMENT miscellaneous (miscellaneous-field*)>
   let children = miscellaneous.miscellaneousFields.map((field) =>
-    miscellaneousFieldToXML(field)
+    miscellaneousFieldToXML(field),
   );
   return dangerous`<miscellaneous>\n${children
     .join("\n")
@@ -25964,7 +25938,7 @@ function creditWordsToXML(creditWords: CreditWords): string {
   // >
   let pcdata = xml`${creditWords.words}`;
   return dangerous`<credit-words${textFormattingToXML(
-    creditWords
+    creditWords,
   )}>${pcdata}</credit-words>`;
 }
 
@@ -26056,7 +26030,7 @@ function scorePartToXML(scorePart: ScorePart): string {
   }
   if (defined(scorePart.partAbbreviationDisplay)) {
     children.push(
-      partAbbreviationDisplayToXML(scorePart.partAbbreviationDisplay)
+      partAbbreviationDisplayToXML(scorePart.partAbbreviationDisplay),
     );
   }
   (scorePart.groups || []).forEach((group) => {
@@ -26104,7 +26078,7 @@ function partNameDisplayToXML(partNameDisplay: PartNameDisplay): string {
   //     %print-object;
   // >
   return dangerous`<part-name-display${printObjectToXML(
-    partNameDisplay
+    partNameDisplay,
   )}>\n${textArrayToXML(partNameDisplay.name)
     .join("\n")
     .split("\n")
@@ -26128,7 +26102,7 @@ function partAbbreviationToXML(abbreviation: PartAbbreviation): string {
 }
 
 function partAbbreviationDisplayToXML(
-  partAbbreviationDisplay: PartAbbreviationDisplay
+  partAbbreviationDisplay: PartAbbreviationDisplay,
 ): string {
   // <!ELEMENT part-abbreviation-display
   //     ((display-text | accidental-text)*)>
@@ -26136,7 +26110,7 @@ function partAbbreviationDisplayToXML(
   //     %print-object;
   // >
   return dangerous`<part-abbreviation-display${printObjectToXML(
-    partAbbreviationDisplay
+    partAbbreviationDisplay,
   )}>${textArrayToXML(partAbbreviationDisplay.name)
     .join("\n")
     .split("\n")
@@ -26191,7 +26165,7 @@ function midiInstrumentToXML(midiInstrument: MidiInstrument): string {
   if (defined(midiInstrument.midiChannel)) {
     // <!ELEMENT midi-channel (#PCDATA)>
     children.push(
-      xml`<midi-channel>${midiInstrument.midiChannel}</midi-channel>`
+      xml`<midi-channel>${midiInstrument.midiChannel}</midi-channel>`,
     );
   }
   if (defined(midiInstrument.midiName)) {
@@ -26205,13 +26179,13 @@ function midiInstrumentToXML(midiInstrument: MidiInstrument): string {
   if (defined(midiInstrument.midiProgram)) {
     // <!ELEMENT midi-program (#PCDATA)>
     children.push(
-      xml`<midi-program>${midiInstrument.midiProgram}</midi-program>`
+      xml`<midi-program>${midiInstrument.midiProgram}</midi-program>`,
     );
   }
   if (defined(midiInstrument.midiUnpitched)) {
     // <!ELEMENT midi-unpitched (#PCDATA)>
     children.push(
-      xml`<midi-unpitched>${midiInstrument.midiUnpitched}</midi-unpitche>`
+      xml`<midi-unpitched>${midiInstrument.midiUnpitched}</midi-unpitche>`,
     );
   }
   if (defined(midiInstrument.volume)) {
@@ -26249,19 +26223,19 @@ function scoreInstrumentToXML(scoreInstrument: ScoreInstrument): string {
   if (defined(scoreInstrument.instrumentName)) {
     // <!ELEMENT instrument-name (#PCDATA)>
     children.push(
-      xml`<instrument-name>${scoreInstrument.instrumentName}</instrument-name>`
+      xml`<instrument-name>${scoreInstrument.instrumentName}</instrument-name>`,
     );
   }
   if (defined(scoreInstrument.instrumentAbbreviation)) {
     // <!ELEMENT instrument-abbreviation (#PCDATA)>
     children.push(
-      xml`<instrument-abbreviation>${scoreInstrument.instrumentAbbreviation}</instrument-abbreviation>`
+      xml`<instrument-abbreviation>${scoreInstrument.instrumentAbbreviation}</instrument-abbreviation>`,
     );
   }
   if (defined(scoreInstrument.instrumentSound)) {
     // <!ELEMENT instrument-sound (#PCDATA)>
     children.push(
-      xml`<instrument-sound>${scoreInstrument.instrumentSound}</instrument-sound>`
+      xml`<instrument-sound>${scoreInstrument.instrumentSound}</instrument-sound>`,
     );
   }
   if (scoreInstrument.solo) {
@@ -26280,7 +26254,7 @@ function scoreInstrumentToXML(scoreInstrument: ScoreInstrument): string {
     if (defined(v.virtualLibrary)) {
       // <!ELEMENT virtual-library (#PCDATA)>
       vChildren.push(
-        xml`<virtual-library>${v.virtualLibrary}</virtual-library>`
+        xml`<virtual-library>${v.virtualLibrary}</virtual-library>`,
       );
     }
     if (defined(v.virtualName)) {
@@ -26292,7 +26266,7 @@ function scoreInstrumentToXML(scoreInstrument: ScoreInstrument): string {
         .join("\n")
         .split("\n")
         .map((n) => "  " + n)
-        .join("\n")}\n</virtual-instrument>`
+        .join("\n")}\n</virtual-instrument>`,
     );
   }
 
@@ -26329,7 +26303,7 @@ function partGroupToXML(partGroup: PartGroup): string {
   }
   if (defined(partGroup.groupAbbreviationDisplay)) {
     children.push(
-      groupAbbreviationDisplayToXML(partGroup.groupAbbreviationDisplay)
+      groupAbbreviationDisplayToXML(partGroup.groupAbbreviationDisplay),
     );
   }
   if (defined(partGroup.groupSymbol)) {
@@ -26389,7 +26363,7 @@ function groupAbbreviationToXML(groupAbbreviation: GroupAbbreviation): string {
 }
 
 function groupAbbreviationDisplayToXML(
-  groupAbbreviationDisplay: GroupAbbreviationDisplay
+  groupAbbreviationDisplay: GroupAbbreviationDisplay,
 ): string {
   // <!ELEMENT group-abbreviation-display
   //     ((display-text | accidental-text)*)>
@@ -26422,7 +26396,7 @@ function groupBarlineToXML(groupBarline: GroupBarline): string {
   // >
   let pcdata = xml`${groupBarline.data}`;
   return dangerous`<group-barline${colorToXML(
-    groupBarline
+    groupBarline,
   )}>${pcdata}</group-barline>`;
 }
 
@@ -26860,7 +26834,7 @@ function frameToXML(frame: Frame): string {
       fChildren.push(
         dangerous`<string${
           printStyleToXML(frameNote.string) + placementToXML(frameNote.string)
-        }>${pcdata}</string>`
+        }>${pcdata}</string>`,
       );
     }
     // <!ELEMENT fret (#PCDATA)>
@@ -26873,7 +26847,7 @@ function frameToXML(frame: Frame): string {
       fChildren.push(
         dangerous`<fret${
           fontToXML(frameNote.fret) + colorToXML(frameNote.fret)
-        }>${pcdata}</fret>`
+        }>${pcdata}</fret>`,
       );
     }
     // <!ELEMENT fingering (#PCDATA)>
@@ -26897,7 +26871,7 @@ function frameToXML(frame: Frame): string {
           coreAttribs +
           printStyleToXML(frameNote.fingering) +
           placementToXML(frameNote.fingering)
-        }>${pcdata}</fingering>`
+        }>${pcdata}</fingering>`,
       );
     }
     // <!ELEMENT barre EMPTY>
@@ -26909,7 +26883,7 @@ function frameToXML(frame: Frame): string {
       fChildren.push(
         dangerous`<barre${
           startStopToXML(frameNote.barre) + colorToXML(frameNote.barre)
-        } />`
+        } />`,
       );
     }
 
@@ -26918,7 +26892,7 @@ function frameToXML(frame: Frame): string {
         .join("\n")
         .split("\n")
         .map((n) => "  " + n)
-        .join("\n")}\n</frame-note>`
+        .join("\n")}\n</frame-note>`,
     );
   });
 
@@ -27090,7 +27064,7 @@ function staffDebugInfoToXMLComment(module: any): string[] {
     comments.push(
       xml`<!--musicxml-interfaces:debug>\n${""}  <div-count>${
         module.divCount
-      }</div-count>\n${""}</musicxml-interfaces:debug-->`
+      }</div-count>\n${""}</musicxml-interfaces:debug-->`,
     );
   }
   return comments;
@@ -27512,19 +27486,19 @@ function noteToXML(note: Note) {
         .join("\n")
         .split("\n")
         .map((n) => "  " + n)
-        .join("\n")}\n</pitch>`
+        .join("\n")}\n</pitch>`,
     );
   } else if (note.unpitched) {
     // <!ELEMENT unpitched ((display-step, display-octave)?)>
     let upChildren: string[] = [];
     if (note.unpitched.displayStep) {
       upChildren.push(
-        xml`<display-step>${note.unpitched.displayStep}</display-step>`
+        xml`<display-step>${note.unpitched.displayStep}</display-step>`,
       );
     }
     if (note.unpitched.displayOctave) {
       upChildren.push(
-        xml`<display-octave>${note.unpitched.displayOctave}</display-octave>`
+        xml`<display-octave>${note.unpitched.displayOctave}</display-octave>`,
       );
     }
     elements.push(
@@ -27532,19 +27506,19 @@ function noteToXML(note: Note) {
         .join("\n")
         .split("\n")
         .map((n) => "  " + n)
-        .join("\n")}\n</unpitched>`
+        .join("\n")}\n</unpitched>`,
     );
   } else if (note.rest) {
     let restAttribs = "";
     let restChildren: string[] = [];
     if (note.rest.displayStep) {
       restChildren.push(
-        `<display-step>${note.rest.displayStep}</display-step>`
+        `<display-step>${note.rest.displayStep}</display-step>`,
       );
     }
     if (note.rest.displayOctave) {
       restChildren.push(
-        `<display-octave>${note.rest.displayOctave}</display-octave>`
+        `<display-octave>${note.rest.displayOctave}</display-octave>`,
       );
     }
     if (note.rest.measure !== undefined && note.rest.measure !== null) {
@@ -27555,7 +27529,7 @@ function noteToXML(note: Note) {
         .join("\n")
         .split("\n")
         .map((n) => "  " + n)
-        .join("\n")}\n</rest>`
+        .join("\n")}\n</rest>`,
     );
   }
 
@@ -27609,7 +27583,7 @@ function noteToXML(note: Note) {
     elements.push(
       dangerous`<accidental${accidentalAttribs}>${
         accidentalToXML[note.accidental.accidental]
-      }</accidental>`
+      }</accidental>`,
     ); // (safe)
   }
 
@@ -27626,17 +27600,17 @@ function noteToXML(note: Note) {
 
     if (note.timeModification.actualNotes) {
       timeModificationChildren.push(
-        xml`<actual-notes>${note.timeModification.actualNotes}</actual-notes>`
+        xml`<actual-notes>${note.timeModification.actualNotes}</actual-notes>`,
       );
     }
     if (note.timeModification.normalNotes) {
       timeModificationChildren.push(
-        xml`<normal-notes>${note.timeModification.normalNotes}</normal-notes>`
+        xml`<normal-notes>${note.timeModification.normalNotes}</normal-notes>`,
       );
     }
     if (note.timeModification.normalType) {
       timeModificationChildren.push(
-        xml`<normal-type>${note.timeModification.normalType}</normal-type>`
+        xml`<normal-type>${note.timeModification.normalType}</normal-type>`,
       );
     }
     (note.timeModification.normalDots || []).forEach(() => {
@@ -27648,14 +27622,14 @@ function noteToXML(note: Note) {
         .join("\n")
         .split("\n")
         .map((n) => "  " + n)
-        .join("\n")}\n</time-modification>`
+        .join("\n")}\n</time-modification>`,
     );
   }
 
   if (note.stem) {
     let stemAttribs = "" + positionToXML(note.stem) + colorToXML(note.stem);
     elements.push(
-      dangerous`<stem${stemAttribs}>${stemToXML[note.stem.type]}</stem>`
+      dangerous`<stem${stemAttribs}>${stemToXML[note.stem.type]}</stem>`,
     ); // (safe)
   }
 
@@ -27672,7 +27646,7 @@ function noteToXML(note: Note) {
     elements.push(
       dangerous`<notehead${hattribs}>${
         noteheadTypeToXML[note.notehead.type]
-      }</notehead>`
+      }</notehead>`,
     );
   }
 
@@ -27699,7 +27673,7 @@ function noteToXML(note: Note) {
       beamAttribs += xml` fan="${accelRitNoneToXML[beam.fan]}"`;
     }
     elements.push(
-      dangerous`<beam${beamAttribs}>${beamTypeToXML[beam.type]}</beam>`
+      dangerous`<beam${beamAttribs}>${beamTypeToXML[beam.type]}</beam>`,
     ); // safe
   });
 
@@ -27749,7 +27723,7 @@ function noteToXML(note: Note) {
           orientationToXML(tied) +
           bezierToXML(tied) +
           colorToXML(tied)
-        } />`
+        } />`,
       );
     });
 
@@ -27776,7 +27750,7 @@ function noteToXML(note: Note) {
           orientationToXML(slur) +
           bezierToXML(slur) +
           colorToXML(slur)
-        } />`
+        } />`,
       );
     });
 
@@ -27846,7 +27820,7 @@ function noteToXML(note: Note) {
           dataChildren.push(
             dangerous`<tuplet-number${
               fontToXML(num) + colorToXML(num)
-            }>${pcdata}</tuplet-number>`
+            }>${pcdata}</tuplet-number>`,
           );
         }
         if (data.tupletType) {
@@ -27855,12 +27829,12 @@ function noteToXML(note: Note) {
           dataChildren.push(
             dangerous`<tuplet-type${
               fontToXML(type) + colorToXML(type)
-            }>${pcdata}</tuplet-type>`
+            }>${pcdata}</tuplet-type>`,
           );
         }
         (data.tupletDots || []).forEach((dot) => {
           dataChildren.push(
-            dangerous`<tuplet-dot${fontToXML(dot) + colorToXML(dot)} />`
+            dangerous`<tuplet-dot${fontToXML(dot) + colorToXML(dot)} />`,
           );
         });
 
@@ -27869,7 +27843,7 @@ function noteToXML(note: Note) {
             .join("\n")
             .split("\n")
             .map((n) => "  " + n)
-            .join("\n")}\n</${tup[0]}>`
+            .join("\n")}\n</${tup[0]}>`,
         );
       });
       nChildren.push(
@@ -27877,7 +27851,7 @@ function noteToXML(note: Note) {
           .join("\n")
           .split("\n")
           .map((n) => "  " + n)
-          .join("\n")}\n</tuplet>`
+          .join("\n")}\n</tuplet>`,
       );
     });
 
@@ -27898,7 +27872,7 @@ function noteToXML(note: Note) {
           lineTypeToXML(glissando) +
           dashedFormattingToXML(glissando) +
           printStyleToXML(glissando)
-        }>${pcdata}</glissando>`
+        }>${pcdata}</glissando>`,
       );
     });
 
@@ -27921,7 +27895,7 @@ function noteToXML(note: Note) {
           dashedFormattingToXML(slide) +
           printStyleToXML(slide) +
           bendSoundToXML(slide)
-        }>${pcdata}</slide>`
+        }>${pcdata}</slide>`,
       );
     });
 
@@ -27945,7 +27919,7 @@ function noteToXML(note: Note) {
             printStyleToXML(ornaments.trillMark) +
             placementToXML(ornaments.trillMark) +
             trillSoundToXML(ornaments.trillMark)
-          } />`
+          } />`,
         );
       }
 
@@ -27962,7 +27936,7 @@ function noteToXML(note: Note) {
             placementToXML(ornaments.turn) +
             trillSoundToXML(ornaments.turn) +
             slashToXML(ornaments.turn)
-          } />`
+          } />`,
         );
       }
 
@@ -27979,7 +27953,7 @@ function noteToXML(note: Note) {
             placementToXML(ornaments.delayedTurn) +
             trillSoundToXML(ornaments.delayedTurn) +
             slashToXML(ornaments.delayedTurn)
-          } />`
+          } />`,
         );
       }
 
@@ -27996,7 +27970,7 @@ function noteToXML(note: Note) {
             placementToXML(ornaments.invertedTurn) +
             trillSoundToXML(ornaments.invertedTurn) +
             slashToXML(ornaments.invertedTurn)
-          } />`
+          } />`,
         );
       }
 
@@ -28013,7 +27987,7 @@ function noteToXML(note: Note) {
             placementToXML(ornaments.delayedInvertedTurn) +
             trillSoundToXML(ornaments.delayedInvertedTurn) +
             slashToXML(ornaments.delayedInvertedTurn)
-          } />`
+          } />`,
         );
       }
 
@@ -28028,7 +28002,7 @@ function noteToXML(note: Note) {
             printStyleToXML(ornaments.verticalTurn) +
             placementToXML(ornaments.verticalTurn) +
             trillSoundToXML(ornaments.verticalTurn)
-          } />`
+          } />`,
         );
       }
       //
@@ -28043,7 +28017,7 @@ function noteToXML(note: Note) {
             printStyleToXML(ornaments.shake) +
             placementToXML(ornaments.shake) +
             trillSoundToXML(ornaments.shake)
-          } />`
+          } />`,
         );
       }
       //
@@ -28062,7 +28036,7 @@ function noteToXML(note: Note) {
             printStyleToXML(ornaments.mordent) +
             placementToXML(ornaments.mordent) +
             trillSoundToXML(ornaments.mordent)
-          } />`
+          } />`,
         );
       }
       // <!ATTLIST inverted-mordent
@@ -28080,7 +28054,7 @@ function noteToXML(note: Note) {
             printStyleToXML(ornaments.invertedMordent) +
             placementToXML(ornaments.invertedMordent) +
             trillSoundToXML(ornaments.invertedMordent)
-          } />`
+          } />`,
         );
       }
       //
@@ -28093,7 +28067,7 @@ function noteToXML(note: Note) {
           dangerous`<schleifer${
             printStyleToXML(ornaments.schleifer) +
             placementToXML(ornaments.schleifer)
-          } />`
+          } />`,
         );
       }
       //
@@ -28110,7 +28084,7 @@ function noteToXML(note: Note) {
             startStopSingleToXML(ornaments.tremolo) +
             printStyleToXML(ornaments.tremolo) +
             placementToXML(ornaments.tremolo)
-          }>${pcdata}</tremolo>`
+          }>${pcdata}</tremolo>`,
         );
       }
       //
@@ -28125,7 +28099,7 @@ function noteToXML(note: Note) {
           dangerous`<other-ornament${
             printStyleToXML(ornaments.otherOrnament) +
             placementToXML(ornaments.otherOrnament)
-          }>${pcdata}</other-ornament>`
+          }>${pcdata}</other-ornament>`,
         );
       }
       //
@@ -28139,7 +28113,7 @@ function noteToXML(note: Note) {
         oChildren.push(
           dangerous`<accidental-mark${
             printStyleToXML(accidentalMark) + placementToXML(accidentalMark)
-          }>${pcdata}</accidental-mark>`
+          }>${pcdata}</accidental-mark>`,
         );
       });
 
@@ -28148,7 +28122,7 @@ function noteToXML(note: Note) {
           .join("\n")
           .split("\n")
           .map((n) => "  " + n)
-          .join("\n")}\n</ornaments>`
+          .join("\n")}\n</ornaments>`,
       );
     });
 
@@ -28170,7 +28144,7 @@ function noteToXML(note: Note) {
         oChildren.push(
           dangerous`<up-bow${
             printStyleToXML(technical.upBow) + placementToXML(technical.upBow)
-          } />`
+          } />`,
         );
       }
       // <!ATTLIST down-bow
@@ -28182,7 +28156,7 @@ function noteToXML(note: Note) {
           dangerous`<down-bow${
             printStyleToXML(technical.downBow) +
             placementToXML(technical.downBow)
-          } />`
+          } />`,
         );
       }
       // <!ELEMENT harmonic
@@ -28225,7 +28199,7 @@ function noteToXML(note: Note) {
             .join("\n")
             .split("\n")
             .map((n) => "  " + n)
-            .join("\n")}\n</harmonic>`
+            .join("\n")}\n</harmonic>`,
         );
       }
 
@@ -28238,7 +28212,7 @@ function noteToXML(note: Note) {
           dangerous`<open-string${
             printStyleToXML(technical.openString) +
             placementToXML(technical.openString)
-          } />`
+          } />`,
         );
       }
       //
@@ -28251,7 +28225,7 @@ function noteToXML(note: Note) {
           dangerous`<thumb-position${
             printStyleToXML(technical.thumbPosition) +
             placementToXML(technical.thumbPosition)
-          } />`
+          } />`,
         );
       }
       //
@@ -28279,8 +28253,8 @@ function noteToXML(note: Note) {
             printStyleToXML(technical.fingering) +
             placementToXML(technical.fingering)
           }>${String(
-            parseInt(String(technical.fingering.finger), 10)
-          )}</fingering>`
+            parseInt(String(technical.fingering.finger), 10),
+          )}</fingering>`,
         );
       }
       //
@@ -28293,7 +28267,7 @@ function noteToXML(note: Note) {
         oChildren.push(
           dangerous`<pluck${
             printStyleToXML(technical.pluck) + placementToXML(technical.pluck)
-          } />`
+          } />`,
         );
       }
       //
@@ -28306,7 +28280,7 @@ function noteToXML(note: Note) {
           dangerous`<double-tongue${
             printStyleToXML(technical.doubleTongue) +
             placementToXML(technical.doubleTongue)
-          } />`
+          } />`,
         );
       }
       //
@@ -28319,7 +28293,7 @@ function noteToXML(note: Note) {
           dangerous`<triple-tongue${
             printStyleToXML(technical.tripleTongue) +
             placementToXML(technical.tripleTongue)
-          } />`
+          } />`,
         );
       }
       //
@@ -28332,7 +28306,7 @@ function noteToXML(note: Note) {
           dangerous`<stopped${
             printStyleToXML(technical.stopped) +
             placementToXML(technical.stopped)
-          } />`
+          } />`,
         );
       }
       //
@@ -28345,7 +28319,7 @@ function noteToXML(note: Note) {
           dangerous`<snap-pizzicato${
             printStyleToXML(technical.snapPizzicato) +
             placementToXML(technical.snapPizzicato)
-          } />`
+          } />`,
         );
       }
       //
@@ -28364,7 +28338,7 @@ function noteToXML(note: Note) {
             numberLevelToXML(technical.hammerOn) +
             printStyleToXML(technical.hammerOn) +
             placementToXML(technical.hammerOn)
-          }>${pcdata}</hammer-on>`
+          }>${pcdata}</hammer-on>`,
         );
       }
       // <!ELEMENT pull-off (#PCDATA)>
@@ -28382,7 +28356,7 @@ function noteToXML(note: Note) {
             numberLevelToXML(technical.pullOff) +
             printStyleToXML(technical.pullOff) +
             placementToXML(technical.pullOff)
-          }>${pcdata}</pull-off>`
+          }>${pcdata}</pull-off>`,
         );
       }
       //
@@ -28404,7 +28378,7 @@ function noteToXML(note: Note) {
         let bendChildren: string[] = [];
         if (defined(technical.bend.bendAlter)) {
           bendChildren.push(
-            xml`<bend-alter>${technical.bend.bendAlter}</bend-alter>`
+            xml`<bend-alter>${technical.bend.bendAlter}</bend-alter>`,
           );
         }
         if (defined(technical.bend.preBend)) {
@@ -28418,7 +28392,7 @@ function noteToXML(note: Note) {
             dangerous`<with-bar${
               printStyleToXML(technical.bend.withBar) +
               placementToXML(technical.bend.withBar)
-            }>${pcdata}</with-bar>`
+            }>${pcdata}</with-bar>`,
           );
         }
         oChildren.push(
@@ -28428,7 +28402,7 @@ function noteToXML(note: Note) {
             .join("\n")
             .split("\n")
             .map((n) => "  " + n)
-            .join("\n")}\n</bend>`
+            .join("\n")}\n</bend>`,
         );
       }
       //
@@ -28442,7 +28416,7 @@ function noteToXML(note: Note) {
         oChildren.push(
           dangerous`<tap${
             printStyleToXML(technical.tap) + placementToXML(technical.tap)
-          }>${pcdata}</tap>`
+          }>${pcdata}</tap>`,
         );
       }
       //
@@ -28461,7 +28435,7 @@ function noteToXML(note: Note) {
             substitution +
             printStyleToXML(technical.heel) +
             placementToXML(technical.heel)
-          } />`
+          } />`,
         );
       }
       // <!ATTLIST toe
@@ -28479,7 +28453,7 @@ function noteToXML(note: Note) {
             substitution +
             printStyleToXML(technical.toe) +
             placementToXML(technical.toe)
-          } />`
+          } />`,
         );
       }
       //
@@ -28492,7 +28466,7 @@ function noteToXML(note: Note) {
           dangerous`<fingernails${
             printStyleToXML(technical.fingernails) +
             placementToXML(technical.fingernails)
-          } />`
+          } />`,
         );
       }
       //
@@ -28511,7 +28485,7 @@ function noteToXML(note: Note) {
         let holeChildren: string[] = [];
         if (defined(technical.hole.holeType)) {
           holeChildren.push(
-            xml`<hole-type>${technical.hole.holeType}</hole-type>`
+            xml`<hole-type>${technical.hole.holeType}</hole-type>`,
           );
         }
         if (defined(technical.hole.holeClosed)) {
@@ -28524,12 +28498,12 @@ function noteToXML(note: Note) {
           holeChildren.push(
             dangerous`<hole-closed${holeClosedAttribs}>${
               holeClosedTypeToXML[technical.hole.holeClosed.data]
-            }</hole-closed>`
+            }</hole-closed>`,
           );
         }
         if (defined(technical.hole.holeShape)) {
           holeChildren.push(
-            xml`<hole-shape>${technical.hole.holeShape}</hole-shape>`
+            xml`<hole-shape>${technical.hole.holeShape}</hole-shape>`,
           );
         }
         oChildren.push(
@@ -28539,7 +28513,7 @@ function noteToXML(note: Note) {
             .join("\n")
             .split("\n")
             .map((n) => "  " + n)
-            .join("\n")}\n</hole>`
+            .join("\n")}\n</hole>`,
         );
       }
       //
@@ -28573,7 +28547,7 @@ function noteToXML(note: Note) {
             .join("\n")
             .split("\n")
             .map((n) => "  " + n)
-            .join("\n")}\n</arrow>`
+            .join("\n")}\n</arrow>`,
         );
       }
       //
@@ -28588,7 +28562,7 @@ function noteToXML(note: Note) {
           dangerous`<handbell${
             printStyleToXML(technical.handbell) +
             placementToXML(technical.handbell)
-          }>${pcdata}</handbell>`
+          }>${pcdata}</handbell>`,
         );
       }
       //
@@ -28603,7 +28577,7 @@ function noteToXML(note: Note) {
           dangerous`<other-technical${
             printStyleToXML(technical.otherTechnical) +
             placementToXML(technical.otherTechnical)
-          }>${pcdata}</other-technical>`
+          }>${pcdata}</other-technical>`,
         );
       }
 
@@ -28612,7 +28586,7 @@ function noteToXML(note: Note) {
           .join("\n")
           .split("\n")
           .map((n) => "  " + n)
-          .join("\n")}\n</technical>`
+          .join("\n")}\n</technical>`,
       );
     });
 
@@ -28633,7 +28607,7 @@ function noteToXML(note: Note) {
           dangerous`<accent${
             printStyleToXML(articulation.accent) +
             placementToXML(articulation.accent)
-          } />`
+          } />`,
         );
       }
       // <!ATTLIST strong-accent
@@ -28647,7 +28621,7 @@ function noteToXML(note: Note) {
             printStyleToXML(articulation.strongAccent) +
             placementToXML(articulation.strongAccent) +
             upDownToXML(articulation.strongAccent)
-          } />`
+          } />`,
         );
       }
       //
@@ -28660,7 +28634,7 @@ function noteToXML(note: Note) {
           dangerous`<staccato${
             printStyleToXML(articulation.staccato) +
             placementToXML(articulation.staccato)
-          } />`
+          } />`,
         );
       }
       // <!ATTLIST tenuto
@@ -28672,7 +28646,7 @@ function noteToXML(note: Note) {
           dangerous`<tenuto${
             printStyleToXML(articulation.tenuto) +
             placementToXML(articulation.tenuto)
-          } />`
+          } />`,
         );
       }
       // <!ATTLIST detached-legato
@@ -28684,7 +28658,7 @@ function noteToXML(note: Note) {
           dangerous`<detached-legato${
             printStyleToXML(articulation.detachedLegato) +
             placementToXML(articulation.detachedLegato)
-          } />`
+          } />`,
         );
       }
       //
@@ -28697,7 +28671,7 @@ function noteToXML(note: Note) {
           dangerous`<staccatissimo${
             printStyleToXML(articulation.staccatissimo) +
             placementToXML(articulation.staccatissimo)
-          } />`
+          } />`,
         );
       }
       //
@@ -28710,7 +28684,7 @@ function noteToXML(note: Note) {
           dangerous`<spiccato${
             printStyleToXML(articulation.spiccato) +
             placementToXML(articulation.spiccato)
-          } />`
+          } />`,
         );
       }
       //
@@ -28729,7 +28703,7 @@ function noteToXML(note: Note) {
             dashedFormattingToXML(articulation.scoop) +
             printStyleToXML(articulation.scoop) +
             placementToXML(articulation.scoop)
-          } />`
+          } />`,
         );
       }
       // <!ATTLIST plop
@@ -28747,7 +28721,7 @@ function noteToXML(note: Note) {
             dashedFormattingToXML(articulation.plop) +
             printStyleToXML(articulation.plop) +
             placementToXML(articulation.plop)
-          } />`
+          } />`,
         );
       }
       // <!ATTLIST doit
@@ -28765,7 +28739,7 @@ function noteToXML(note: Note) {
             dashedFormattingToXML(articulation.doit) +
             printStyleToXML(articulation.doit) +
             placementToXML(articulation.doit)
-          } />`
+          } />`,
         );
       }
       // <!ATTLIST falloff
@@ -28783,7 +28757,7 @@ function noteToXML(note: Note) {
             dashedFormattingToXML(articulation.falloff) +
             printStyleToXML(articulation.falloff) +
             placementToXML(articulation.falloff)
-          } />`
+          } />`,
         );
       }
       //
@@ -28798,7 +28772,7 @@ function noteToXML(note: Note) {
           dangerous`<breath-mark${
             printStyleToXML(articulation.breathMark) +
             placementToXML(articulation.breathMark)
-          }>${pcdata}</breath-mark>`
+          }>${pcdata}</breath-mark>`,
         );
       }
       //
@@ -28811,7 +28785,7 @@ function noteToXML(note: Note) {
           dangerous`<caesura${
             printStyleToXML(articulation.caesura) +
             placementToXML(articulation.caesura)
-          } />`
+          } />`,
         );
       }
       // <!ATTLIST stress
@@ -28823,7 +28797,7 @@ function noteToXML(note: Note) {
           dangerous`<stress${
             printStyleToXML(articulation.stress) +
             placementToXML(articulation.stress)
-          } />`
+          } />`,
         );
       }
       // <!ATTLIST unstress
@@ -28835,7 +28809,7 @@ function noteToXML(note: Note) {
           dangerous`<unstress${
             printStyleToXML(articulation.unstress) +
             placementToXML(articulation.unstress)
-          } />`
+          } />`,
         );
       }
       // <!ELEMENT other-articulation (#PCDATA)>
@@ -28848,7 +28822,7 @@ function noteToXML(note: Note) {
         oChildren.push(
           dangerous`<other-articulation${
             printStyleToXML(articulation) + placementToXML(articulation)
-          }>${pcdata}</other-articulation>`
+          }>${pcdata}</other-articulation>`,
         );
       });
 
@@ -28857,7 +28831,7 @@ function noteToXML(note: Note) {
           .join("\n")
           .split("\n")
           .map((n) => "  " + n)
-          .join("\n")}\n</articulations>`
+          .join("\n")}\n</articulations>`,
       );
     });
 
@@ -28884,7 +28858,7 @@ function noteToXML(note: Note) {
           positionToXML(arpeggiate) +
           placementToXML(arpeggiate) +
           colorToXML(arpeggiate)
-        } />`
+        } />`,
       );
     });
 
@@ -28903,7 +28877,7 @@ function noteToXML(note: Note) {
           positionToXML(nonArpeggiate) +
           placementToXML(nonArpeggiate) +
           colorToXML(nonArpeggiate)
-        } />`
+        } />`,
       );
     });
 
@@ -28917,7 +28891,7 @@ function noteToXML(note: Note) {
       nChildren.push(
         dangerous`<accidental-mark${
           printStyleToXML(accidentalMark) + placementToXML(accidentalMark)
-        }>${pcdata}</accidental-mark>`
+        }>${pcdata}</accidental-mark>`,
       );
     });
 
@@ -28938,7 +28912,7 @@ function noteToXML(note: Note) {
           printObjectToXML(otherNotation) +
           printStyleToXML(otherNotation) +
           placementToXML(otherNotation)
-        }>${pcdata}</other-notation>`
+        }>${pcdata}</other-notation>`,
       );
     });
 
@@ -28947,7 +28921,7 @@ function noteToXML(note: Note) {
         .join("\n")
         .split("\n")
         .map((n) => "  " + n)
-        .join("\n")}\n</notations>`
+        .join("\n")}\n</notations>`,
     );
   });
 
@@ -28984,7 +28958,7 @@ function noteToXML(note: Note) {
         case "Syllabic":
           // <!ELEMENT syllabic (#PCDATA)>
           lyricChildren.push(
-            dangerous`<syllabic>${syllabicTypeToXML[part.data]}</syllabic>`
+            dangerous`<syllabic>${syllabicTypeToXML[part.data]}</syllabic>`,
           );
           break;
         case "Text":
@@ -29006,7 +28980,7 @@ function noteToXML(note: Note) {
               textRotationToXML(part) +
               letterSpacingToXML(part) +
               textDirectionToXML(part)
-            }>${textpcdata}</text>`
+            }>${textpcdata}</text>`,
           );
           break;
         case "Elision":
@@ -29019,7 +28993,7 @@ function noteToXML(note: Note) {
           lyricChildren.push(
             dangerous`<elision${
               startStopContinueToXML(part) + printStyleToXML(part)
-            }>${pcdata}</elision>`
+            }>${pcdata}</elision>`,
           );
           break;
         case "Extend":
@@ -29031,7 +29005,7 @@ function noteToXML(note: Note) {
           lyricChildren.push(
             dangerous`<extend${
               startStopContinueToXML(part) + printStyleToXML(part)
-            } />`
+            } />`,
           );
           break;
         case "Laughing":
@@ -29063,7 +29037,7 @@ function noteToXML(note: Note) {
         .join("\n")
         .split("\n")
         .map((n) => "  " + n)
-        .join("\n")}\n</lyric>`
+        .join("\n")}\n</lyric>`,
     );
   });
 
@@ -29090,7 +29064,7 @@ function noteToXML(note: Note) {
     // <!ELEMENT semi-pitched (#PCDATA)>
     if (defined(note.play.semiPitched)) {
       playChildren.push(
-        xml`<semi-pitched>${note.play.semiPitched}</semi-pitched>`
+        xml`<semi-pitched>${note.play.semiPitched}</semi-pitched>`,
       );
     }
     // <!ELEMENT other-play (#PCDATA)>
@@ -29104,7 +29078,7 @@ function noteToXML(note: Note) {
         oAttribs += xml` type="${note.play.otherPlay.type}"`;
       }
       playChildren.push(
-        dangerous`<other-play${oAttribs}>${oPcdata}</other-play>`
+        dangerous`<other-play${oAttribs}>${oPcdata}</other-play>`,
       );
     }
     elements.push(
@@ -29112,7 +29086,7 @@ function noteToXML(note: Note) {
         .join("\n")
         .split("\n")
         .map((n) => "  " + n)
-        .join("\n")}\n</play>`
+        .join("\n")}\n</play>`,
     );
   }
 
@@ -29147,7 +29121,7 @@ function figuredBassToXML(figuredBass: FiguredBass): string {
     if (defined(figure.prefix)) {
       let pcdata = xml`${figure.prefix.data}`;
       fChildren.push(
-        dangerous`<prefix${printStyleToXML(figure.prefix)}>${pcdata}</prefix>`
+        dangerous`<prefix${printStyleToXML(figure.prefix)}>${pcdata}</prefix>`,
       );
     }
     // <!ELEMENT figure-number (#PCDATA)>
@@ -29158,8 +29132,8 @@ function figuredBassToXML(figuredBass: FiguredBass): string {
       let pcdata = xml`${figure.figureNumber.data}`;
       fChildren.push(
         dangerous`<figure-number${printStyleToXML(
-          figure.figureNumber
-        )}>${pcdata}</figure-number>`
+          figure.figureNumber,
+        )}>${pcdata}</figure-number>`,
       );
     }
     // <!ELEMENT suffix (#PCDATA)>
@@ -29169,7 +29143,7 @@ function figuredBassToXML(figuredBass: FiguredBass): string {
     if (defined(figure.suffix)) {
       let pcdata = xml`${figure.suffix.data}`;
       fChildren.push(
-        dangerous`<suffix${printStyleToXML(figure.suffix)}>${pcdata}</suffix>`
+        dangerous`<suffix${printStyleToXML(figure.suffix)}>${pcdata}</suffix>`,
       );
     }
     children.push(
@@ -29177,7 +29151,7 @@ function figuredBassToXML(figuredBass: FiguredBass): string {
         .join("\n")
         .split("\n")
         .map((n) => "  " + n)
-        .join("\n")}\n</figure>`
+        .join("\n")}\n</figure>`,
     );
   });
   if (defined(figuredBass.duration)) {
@@ -29351,7 +29325,7 @@ function rehearsalToXML(rehearsal: Rehearsal): string {
   // >
   let pcdata = xml`${rehearsal.data}`;
   return dangerous`<rehearsal${textFormattingToXML(
-    rehearsal
+    rehearsal,
   )}>${pcdata}</rehearsal>`;
 }
 
@@ -29452,7 +29426,7 @@ function dynamicsToXML(dynamics: Dynamics): string {
   });
   if (dynamics.otherDynamics) {
     oChildren.push(
-      xml`<other-dynamics>${dynamics.otherDynamics}</other-dynamics>`
+      xml`<other-dynamics>${dynamics.otherDynamics}</other-dynamics>`,
     );
   }
   return dangerous`<dynamics${
@@ -29581,8 +29555,8 @@ function metronomeToXML(metronome: Metronome): string {
     let pcdata = xml`${metronome.perMinute.data}`;
     children.push(
       dangerous`<per-minute${fontToXML(
-        metronome.perMinute
-      )}>${pcdata}</per-minute>`
+        metronome.perMinute,
+      )}>${pcdata}</per-minute>`,
     );
   } else {
     if (defined(metronome.beatUnitChange)) {
@@ -29606,7 +29580,7 @@ function metronomeToXML(metronome: Metronome): string {
     if (defined(note.metronomeType)) {
       // <!ELEMENT metronome-type (#PCDATA)>
       oChildren.push(
-        xml`<metronome-type>${note.metronomeType}</metronome-type>`
+        xml`<metronome-type>${note.metronomeType}</metronome-type>`,
       );
     }
     (note.metronomeDots || []).forEach(() => {
@@ -29621,8 +29595,8 @@ function metronomeToXML(metronome: Metronome): string {
       let pcdata = xml`${beam.data}`;
       oChildren.push(
         dangerous`<metronome-beam${numberLevelToXML(
-          beam
-        )}>${pcdata}</metronome-beam>`
+          beam,
+        )}>${pcdata}</metronome-beam>`,
       );
     });
 
@@ -29635,13 +29609,13 @@ function metronomeToXML(metronome: Metronome): string {
         .join("\n")
         .split("\n")
         .map((n) => "  " + n)
-        .join("\n")}\n</metronome-note>`
+        .join("\n")}\n</metronome-note>`,
     );
   });
   if (defined(metronome.metronomeRelation)) {
     // <!ELEMENT metronome-relation (#PCDATA)>
     children.push(
-      xml`<metronome-relation>${metronome.metronomeRelation}</metronome-relation>`
+      xml`<metronome-relation>${metronome.metronomeRelation}</metronome-relation>`,
     );
   }
 
@@ -29673,17 +29647,17 @@ function metronomeTupletToXML(metronomeTuplet: MetronomeTuplet): string {
   }
   if (metronomeTuplet.actualNotes) {
     children.push(
-      xml`<actual-notes>${metronomeTuplet.actualNotes}</actual-notes>`
+      xml`<actual-notes>${metronomeTuplet.actualNotes}</actual-notes>`,
     );
   }
   if (metronomeTuplet.normalNotes) {
     children.push(
-      xml`<normal-notes>${metronomeTuplet.normalNotes}</normal-notes>`
+      xml`<normal-notes>${metronomeTuplet.normalNotes}</normal-notes>`,
     );
   }
   if (metronomeTuplet.normalType) {
     children.push(
-      xml`<normal-type>${metronomeTuplet.normalType}</normal-type>`
+      xml`<normal-type>${metronomeTuplet.normalType}</normal-type>`,
     );
   }
   (metronomeTuplet.normalDots || []).forEach(() => {
@@ -29747,7 +29721,7 @@ function harpPedalsToXML(harpPedals: HarpPedals): string {
         .join("\n")
         .split("\n")
         .map((n) => "  " + n)
-        .join("\n")}\n</pedal-tuning>`
+        .join("\n")}\n</pedal-tuning>`,
     );
   });
 
@@ -29811,7 +29785,7 @@ function scordaturaToXML(scordatura: Scordatura): string {
         .join("\n")
         .split("\n")
         .map((n) => "  " + n)
-        .join("\n")}\n</accord>`
+        .join("\n")}\n</accord>`,
     );
   });
   return dangerous`<scordatura>\n${children
@@ -29865,7 +29839,7 @@ function principalVoiceToXML(principalVoice: PrincipalVoice): string {
 }
 
 function accordionRegistrationToXML(
-  accordionRegistration: AccordionRegistration
+  accordionRegistration: AccordionRegistration,
 ): string {
   // <!ELEMENT accordion-registration
   //     (accordion-high?, accordion-middle?, accordion-low?)>
@@ -29884,7 +29858,7 @@ function accordionRegistrationToXML(
     children.push(
       xml`<accordion-middle>${
         accordionRegistration.accordionMiddle || ""
-      }</accordion-middle>`
+      }</accordion-middle>`,
     );
   }
   if (defined(accordionRegistration.accordionLow)) {
@@ -29982,13 +29956,13 @@ function percussionToXML(percussion: Percussion): string {
   if (defined(percussion.stickLocation)) {
     // <!ELEMENT stick-location (#PCDATA)>
     children.push(
-      xml`<stick-location>${percussion.stickLocation}</stick-location>`
+      xml`<stick-location>${percussion.stickLocation}</stick-location>`,
     );
   }
   if (defined(percussion.otherPercussion)) {
     // <!ELEMENT other-percussion (#PCDATA)>
     children.push(
-      xml`<other-percussion>${percussion.otherPercussion}</other-percussion>`
+      xml`<other-percussion>${percussion.otherPercussion}</other-percussion>`,
     );
   }
 
@@ -30215,7 +30189,7 @@ function staffLayoutToXML(staffLayout: StaffLayout): string {
   let children: string[] = [];
   if (defined(staffLayout.staffDistance)) {
     children.push(
-      xml`<staff-distance>${staffLayout.staffDistance}</staff-distance>`
+      xml`<staff-distance>${staffLayout.staffDistance}</staff-distance>`,
     );
   }
   let attribs = numberLevelToXML(staffLayout);
@@ -30232,7 +30206,7 @@ function measureLayoutToXML(measureLayout: MeasureLayout): string {
   let children: string[] = [];
   if (defined(measureLayout.measureDistance)) {
     children.push(
-      xml`<measure-distance>${measureLayout.measureDistance}</measure-distance>`
+      xml`<measure-distance>${measureLayout.measureDistance}</measure-distance>`,
     );
   }
   return dangerous`<measure-layout>\n${children
@@ -30286,7 +30260,7 @@ function keyToXML(key: Key): string {
     children.push(xml`<key-alter>${key.keyAlters[idx]}</key-alter>`);
     if (key.keyAccidentals && key.keyAccidentals[idx]) {
       children.push(
-        xml`<key-accidental>${key.keyAccidentals[idx]}</key-accidental>`
+        xml`<key-accidental>${key.keyAccidentals[idx]}</key-accidental>`,
       );
     }
   });
@@ -30432,13 +30406,13 @@ function interchangeableToXML(interchangeable: Interchangeable): string {
     // <!ELEMENT beat-type (#PCDATA)>
     children.push(xml`<beats>${beats}</beats>`);
     children.push(
-      xml`<beat-type>${interchangeable.beatTypes[idx]}</beat-type>`
+      xml`<beat-type>${interchangeable.beatTypes[idx]}</beat-type>`,
     );
   });
   if (defined(interchangeable.timeRelation)) {
     // <!ELEMENT time-relation (#PCDATA)>
     children.push(
-      xml`<time-relation>${interchangeable.timeRelation}</time-relation>`
+      xml`<time-relation>${interchangeable.timeRelation}</time-relation>`,
     );
   }
   return dangerous`<interchangeable${attribs}>\n${children
@@ -30527,7 +30501,7 @@ function clefToXML(clef: Clef): string {
   if (defined(clef.clefOctaveChange)) {
     // <!ELEMENT clef-octave-change (#PCDATA)>
     children.push(
-      xml`<clef-octave-change>${clef.clefOctaveChange}</clef-octave-change>`
+      xml`<clef-octave-change>${clef.clefOctaveChange}</clef-octave-change>`,
     );
   }
 
@@ -30641,7 +30615,7 @@ function transposeToXML(transpose: Transpose): string {
   if (defined(transpose.octaveChange)) {
     // <!ELEMENT octave-change (#PCDATA)>
     children.push(
-      xml`<octave-change>${transpose.octaveChange}</octave-change>`
+      xml`<octave-change>${transpose.octaveChange}</octave-change>`,
     );
   }
   if (defined(transpose.double)) {

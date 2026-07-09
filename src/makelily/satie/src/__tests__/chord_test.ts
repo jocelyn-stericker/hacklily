@@ -140,17 +140,13 @@ describe("[chord.ts]", function () {
         lineMaxPaddingBottomByStaff: [],
       };
       chord.getLayout(lCursor);
-      expect(cursor.segmentDivision).toEqual(
-        0,
-      ); // layout must not affect cursor division
+      expect(cursor.segmentDivision).toEqual(0); // layout must not affect cursor division
       const xml = (<any>chord).inspect();
       expect(xml).toContain("<step>C</step>");
       expect(xml).toContain("<alter>1</alter>");
       expect(xml).toContain("<octave>4</octave>");
       expect(xml).not.toContain("<chord");
-      expect(xml).toContain(
-        "<duration>600</duration>",
-      ); // Maintains playback data
+      expect(xml).toContain("<duration>600</duration>"); // Maintains playback data
     });
     it("can be a chord generated from specs", function () {
       const chord = factory.fromSpec({

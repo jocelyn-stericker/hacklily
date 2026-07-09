@@ -37,7 +37,7 @@ const filenameToMid: (filename: string) => string = (function () {
   } else {
     const separatorExpression = new RegExp(
       pathUtil.sep.replace("\\", "\\\\"),
-      "g"
+      "g",
     );
     return function (filename: string) {
       return filename.replace(separatorExpression, "/");
@@ -151,7 +151,7 @@ function getType(node: ts.Node): any {
 }
 
 function getTypeSpec(
-  decl: ts.VariableDeclaration | ts.PropertyDeclaration
+  decl: ts.VariableDeclaration | ts.PropertyDeclaration,
 ): any {
   if (decl.type.kind === ts.SyntaxKind.FunctionType) {
     let fnNode = decl.type as ts.FunctionOrConstructorTypeNode;
@@ -188,13 +188,16 @@ function processTree(sourceFile: ts.SourceFile): any {
 
     const syntaxList = find(
       children,
-      (child) => child.kind === ts.SyntaxKind.SyntaxList
+      (child) => child.kind === ts.SyntaxKind.SyntaxList,
     );
     const isExport =
       implicitExport ||
-      ts.canHaveModifiers(node) && ts.getModifiers(node)?.some(
-        (mod: ts.Modifier) => mod.kind === ts.SyntaxKind.ExportKeyword
-      );
+      (ts.canHaveModifiers(node) &&
+        ts
+          .getModifiers(node)
+          ?.some(
+            (mod: ts.Modifier) => mod.kind === ts.SyntaxKind.ExportKeyword,
+          ));
 
     if (!isExport) {
       return;
@@ -229,9 +232,9 @@ function processTree(sourceFile: ts.SourceFile): any {
           extends: flatten(
             icNode.heritageClauses
               ? icNode.heritageClauses.map((clause) =>
-                  clause.types.map((t) => (t as any).expression.text)
+                  clause.types.map((t) => (t as any).expression.text),
                 )
-              : []
+              : [],
           ),
         };
         asts.push(ast);
@@ -247,11 +250,11 @@ function processTree(sourceFile: ts.SourceFile): any {
                 .filter((node) => node.kind === ts.SyntaxKind.ModuleBlock)
                 .map((child) =>
                   (child as ts.ModuleBlock).statements.map((sym) =>
-                    handleSymbol(sym, true)
-                  )
+                    handleSymbol(sym, true),
+                  ),
                 )
-                .filter((a) => Boolean(a))
-            )
+                .filter((a) => Boolean(a)),
+            ),
           ),
         };
         asts.push(ast);
@@ -297,7 +300,7 @@ function processTree(sourceFile: ts.SourceFile): any {
     switch (node.kind) {
       case ts.SyntaxKind.SourceFile:
         return flatten(
-          children.map((child) => visit(child)).filter((node) => Boolean(node))
+          children.map((child) => visit(child)).filter((node) => Boolean(node)),
         );
       case ts.SyntaxKind.SyntaxList:
         return children
@@ -312,11 +315,11 @@ function processTree(sourceFile: ts.SourceFile): any {
               .filter((node) => node.kind === ts.SyntaxKind.ModuleBlock)
               .map((child) =>
                 (child as ts.ModuleBlock).statements.map((sym) =>
-                  handleSymbol(sym)
-                )
+                  handleSymbol(sym),
+                ),
               )
-              .filter((a) => Boolean(a))
-          )
+              .filter((a) => Boolean(a)),
+          ),
         ).filter((a) => Boolean(a));
         break;
       case ts.SyntaxKind.EndOfFileToken:
@@ -487,5 +490,5 @@ main(process.argv.slice(2)).then(
   },
   function (err) {
     throw err;
-  }
+  },
 );

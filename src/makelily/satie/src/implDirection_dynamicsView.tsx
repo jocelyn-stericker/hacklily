@@ -41,8 +41,7 @@ export default class DynamicsView extends Component<IProps, {}> {
   render(): ReactElement<any> {
     const layout = this.props.layout;
     const model = layout.model;
-    const dynamicsContainer = 
-      model.directionTypes.filter(
+    const dynamicsContainer = model.directionTypes.filter(
       (dt) => dt.dynamics,
     )[0];
     invariant(!!dynamicsContainer, "No dynamics found!");

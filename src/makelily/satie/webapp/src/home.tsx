@@ -9,15 +9,15 @@ export default function Home() {
     <div>
       <h1>Satie is a sheet music toolkit.</h1>
       <aside>
-        Satie is designed to help JavaScript developers create interactive
-        sheet music applications.{" "}
+        Satie is designed to help JavaScript developers create interactive sheet
+        music applications.{" "}
         <a href="https://github.com/emilyskidsister/satie/">
           Learn more at GitHub »
         </a>
       </aside>
       <p>
-        Satie is created by <a href="https://nettek.ca">Josh Netterfield</a>{" "}
-        and is a component of <a href="https://ripieno.io">Ripieno</a>, a
+        Satie is created by <a href="https://nettek.ca">Josh Netterfield</a> and
+        is a component of <a href="https://ripieno.io">Ripieno</a>, a
         collaborative sheet music editor. Satie isn&pos;t ready for production
         use, yet.
       </p>

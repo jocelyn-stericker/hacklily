@@ -28,8 +28,7 @@ export interface IBaseProps {
 }
 
 export interface IMetaComponent<P, S>
-  extends Component<P, S>,
-    ComponentLifecycle<P, S> {
+  extends Component<P, S>, ComponentLifecycle<P, S> {
   context: {
     originYByPartAndStaff: { [key: string]: number[] };
   };

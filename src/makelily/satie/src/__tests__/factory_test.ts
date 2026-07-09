@@ -22,7 +22,6 @@
 
 import Factory from "../engine_factory";
 
-
 import { Type } from "../document";
 
 class TestClass1 {}

@@ -22,8 +22,10 @@
 
 import { Attributes } from "#/musicxml-interfaces";
 
-import AttributesModel, {IAttributesModel, IAttributesLayout} from "../implAttributes_attributesModel";
-
+import AttributesModel, {
+  IAttributesModel,
+  IAttributesLayout,
+} from "../implAttributes_attributesModel";
 
 import { ISegment, IModel, Type } from "../document";
 
@@ -144,9 +146,7 @@ describe("[attributes.ts]", function () {
         lineMaxPaddingTopByStaff: [],
         lineMaxPaddingBottomByStaff: [],
       };
-      const layout = attributes.getLayout(
-        lCursor,
-      ) as IAttributesLayout;
+      const layout = attributes.getLayout(lCursor) as IAttributesLayout;
       expect(!!layout.keySignature).toBe(true);
       expect(!!layout.time).toBe(true);
       expect(!!layout.clef).toBe(true);

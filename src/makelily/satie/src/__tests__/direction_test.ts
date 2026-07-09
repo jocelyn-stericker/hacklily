@@ -22,7 +22,6 @@
 
 import Direction from "../implDirection_directionModel";
 
-
 import { IModel, Type } from "../document";
 
 import Factory from "../engine_factory";
