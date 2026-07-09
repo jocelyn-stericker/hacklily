@@ -711,7 +711,7 @@ export default class App extends React.PureComponent<Props, State> {
 
       track("export/pdf");
       this.triggerDownload(`${name}.pdf`, "data:text/plain;base64," + pdf);
-    } catch (err) {
+    } catch (_err) {
       alert("Could not export PDF.");
     }
 

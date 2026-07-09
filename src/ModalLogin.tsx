@@ -45,7 +45,7 @@ interface Props {
  */
 export default class ModalLogin extends React.PureComponent<Props> {
   componentDidMount(): void {
-    const randomContainer: Uint32Array = new Uint32Array(1);
+    const randomContainer = new Uint32Array(1);
     crypto.getRandomValues(randomContainer);
     const csrf: string = randomContainer[0].toString();
 

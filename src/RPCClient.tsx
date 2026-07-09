@@ -322,7 +322,7 @@ export default class RPCClient {
   }
 
   private genID(): string {
-    const randomContainer: Uint32Array = new Uint32Array(1);
+    const randomContainer = new Uint32Array(1);
     crypto.getRandomValues(randomContainer);
 
     return randomContainer[0].toString();

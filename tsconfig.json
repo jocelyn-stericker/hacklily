@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
     "noEmit": true,
-    "target": "es5",
+    "target": "es2022",
     "module": "commonjs",
     "jsx": "preserve",
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["node", "jest"]
   }
 }

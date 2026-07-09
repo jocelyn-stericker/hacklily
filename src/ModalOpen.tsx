@@ -149,7 +149,7 @@ class GitHubOpen extends React.Component<Props, GitHubState> {
         this.setState({
           repoTree,
         });
-      } catch (err) {
+      } catch (_err) {
         this.setState({
           repoError: "Could not retreive your songs.",
         });

@@ -69,7 +69,7 @@ export async function revokeGitHubAuth(
     await rpc.call("signOut", {
       token,
     });
-  } catch (err) {
+  } catch (_err) {
     alert(
       "Could not revoke GitHub authorization. " +
         "If you would like, you can manually do this from your GitHub settings.",
@@ -131,7 +131,7 @@ export function parseAuth(auth: string | undefined): Auth | null {
     }
 
     return null;
-  } catch (err) {
+  } catch (_err) {
     return null;
   }
 }
