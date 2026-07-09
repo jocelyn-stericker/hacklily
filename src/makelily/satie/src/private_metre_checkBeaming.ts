@@ -23,7 +23,7 @@ import * as D from "./private_metre_metreDurations";
 import { IChord } from "./private_chordUtil";
 import getTSString from "./private_metre_getTSString";
 
-import { Time } from "musicxml-interfaces";
+import { Time } from "#/musicxml-interfaces";
 
 // Adapted from Behind Bars (E. Gould) page 155
 const BEAMING_PATTERNS: { [key: string]: IChord[] } = {

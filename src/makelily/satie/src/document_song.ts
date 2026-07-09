@@ -17,8 +17,8 @@
  */
 
 import * as React from "react";
-import { ScoreHeader, Pitch } from "musicxml-interfaces";
-import { IAny } from "musicxml-interfaces/operations";
+import { ScoreHeader, Pitch } from "#/musicxml-interfaces";
+import { IAny } from "#/musicxml-interfaces/operations";
 
 import { Document } from "./document";
 import { PartBuilder, DocumentBuilder } from "./engine_createPatch";

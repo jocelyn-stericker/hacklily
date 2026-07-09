@@ -17,7 +17,7 @@
  */
 
 import * as React from "react";
-import { Note, NoteheadType } from "musicxml-interfaces";
+import { Note, NoteheadType } from "#/musicxml-interfaces";
 import { Component } from "react";
 import * as PropTypes from "prop-types";
 import { map } from "lodash";

@@ -27,7 +27,7 @@ import {
   StartStop,
   Tuplet,
   AboveBelow,
-} from "musicxml-interfaces";
+} from "#/musicxml-interfaces";
 import {
   some,
   chain,

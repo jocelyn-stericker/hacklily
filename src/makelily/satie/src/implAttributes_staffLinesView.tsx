@@ -17,7 +17,7 @@
  */
 
 import * as React from "react";
-import { StaffDetails } from "musicxml-interfaces";
+import { StaffDetails } from "#/musicxml-interfaces";
 import { Component } from "react";
 import * as PropTypes from "prop-types";
 import { times } from "lodash";

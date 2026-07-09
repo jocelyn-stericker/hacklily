@@ -17,7 +17,7 @@
  */
 
 import * as React from "react";
-import { PartSymbolType } from "musicxml-interfaces";
+import { PartSymbolType } from "#/musicxml-interfaces";
 import { Component, ReactElement } from "react";
 import * as PropTypes from "prop-types";
 import { some, map } from "lodash";

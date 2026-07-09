@@ -26,7 +26,7 @@ import {
   MidiDevice,
   Sound,
   serializeSound,
-} from "musicxml-interfaces";
+} from "#/musicxml-interfaces";
 import { forEach } from "lodash";
 
 import { IModel, ILayout, Type } from "./document";

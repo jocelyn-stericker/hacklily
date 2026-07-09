@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Tied, StartStopContinue } from "musicxml-interfaces";
+import { Tied, StartStopContinue } from "#/musicxml-interfaces";
 import { forEach, times, find } from "lodash";
 import invariant from "invariant";
 

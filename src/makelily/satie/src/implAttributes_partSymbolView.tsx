@@ -17,7 +17,7 @@
  */
 
 import * as React from "react";
-import { PartSymbol, PartSymbolType } from "musicxml-interfaces";
+import { PartSymbol, PartSymbolType } from "#/musicxml-interfaces";
 import { Component } from "react";
 import * as PropTypes from "prop-types";
 

@@ -21,8 +21,8 @@
  */
 
 import invariant from "invariant";
-import { IAny } from "musicxml-interfaces/operations";
-import { ScoreHeader, Print } from "musicxml-interfaces";
+import { IAny } from "#/musicxml-interfaces/operations";
+import { ScoreHeader, Print } from "#/musicxml-interfaces";
 import {
   keyBy,
   filter,

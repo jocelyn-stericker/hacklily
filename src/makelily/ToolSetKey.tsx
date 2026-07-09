@@ -19,7 +19,7 @@
  */
 
 import { css } from "aphrodite";
-import { Clef, Key } from "musicxml-interfaces";
+import { Clef, Key } from "#/musicxml-interfaces";
 import React from "react";
 import { Addons as SatieAddons } from "./satie/src/satie";
 

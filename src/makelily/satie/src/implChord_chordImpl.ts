@@ -27,7 +27,7 @@ import {
   Tremolo,
   TimeModification,
   serializeNote,
-} from "musicxml-interfaces";
+} from "#/musicxml-interfaces";
 import { forEach, times, reduce, map, max, some } from "lodash";
 import invariant from "invariant";
 

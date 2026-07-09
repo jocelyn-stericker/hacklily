@@ -22,7 +22,7 @@
 import * as React from "react";
 import { ReactElement, Component } from "react";
 import * as PropTypes from "prop-types";
-import { Direction } from "musicxml-interfaces";
+import { Direction } from "#/musicxml-interfaces";
 import { map } from "lodash";
 
 import Glyph from "./private_views_glyph";

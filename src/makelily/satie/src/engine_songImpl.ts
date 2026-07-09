@@ -20,8 +20,8 @@ import { Component, SyntheticEvent } from "react";
 
 import { forEach, isEqual, throttle, find, extend } from "lodash";
 import { createElement, ReactElement } from "react";
-import { Pitch, ScoreHeader } from "musicxml-interfaces";
-import { IAny, invert } from "musicxml-interfaces/operations";
+import { Pitch, ScoreHeader } from "#/musicxml-interfaces";
+import { IAny, invert } from "#/musicxml-interfaces/operations";
 import invariant from "invariant";
 
 import {

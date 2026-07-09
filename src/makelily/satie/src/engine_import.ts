@@ -29,8 +29,8 @@ import {
   Time,
   Direction,
   parseScore,
-} from "musicxml-interfaces";
-import { buildNote } from "musicxml-interfaces/builders";
+} from "#/musicxml-interfaces";
+import { buildNote } from "#/musicxml-interfaces/builders";
 import {
   map,
   reduce,

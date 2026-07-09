@@ -28,7 +28,7 @@ import {
   LeftCenterRight,
   TopMiddleBottomBaseline,
   parseScore,
-} from "musicxml-interfaces";
+} from "#/musicxml-interfaces";
 import { forEach, some } from "lodash";
 import { expect } from "chai";
 

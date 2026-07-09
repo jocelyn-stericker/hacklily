@@ -16,8 +16,8 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Print, ScoreHeader } from "musicxml-interfaces";
-import { IAny } from "musicxml-interfaces/operations";
+import { Print, ScoreHeader } from "#/musicxml-interfaces";
+import { IAny } from "#/musicxml-interfaces/operations";
 import invariant from "invariant";
 
 import createPatch, { VoiceBuilder, StaffBuilder } from "./engine_createPatch";

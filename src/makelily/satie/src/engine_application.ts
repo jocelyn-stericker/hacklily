@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Pitch } from "musicxml-interfaces";
+import { Pitch } from "#/musicxml-interfaces";
 
 import { init, ISatieOptions } from "./engine_setup";
 

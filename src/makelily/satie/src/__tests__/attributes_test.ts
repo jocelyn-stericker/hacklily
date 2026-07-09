@@ -20,7 +20,7 @@
  * @file part of Satie test suite
  */
 
-import { Attributes } from "musicxml-interfaces";
+import { Attributes } from "#/musicxml-interfaces";
 
 import AttributesModel from "../implAttributes_attributesModel";
 

@@ -27,7 +27,7 @@ import {
   IListDelete,
   IListInsert,
   OTPath,
-} from "musicxml-interfaces/operations";
+} from "#/musicxml-interfaces/operations";
 
 import { cloneObject } from "./private_util";
 

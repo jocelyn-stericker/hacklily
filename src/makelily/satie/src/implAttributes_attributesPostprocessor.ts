@@ -17,7 +17,7 @@
  */
 
 import { forEach, sortedIndex, some } from "lodash";
-import { Attributes } from "musicxml-interfaces";
+import { Attributes } from "#/musicxml-interfaces";
 
 import { ILayout, Type } from "./document";
 

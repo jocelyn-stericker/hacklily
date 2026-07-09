@@ -51,6 +51,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "jest": "^30.4.2",
     "jest-environment-jsdom": "^30.4.1",
+    "mkdirp": "^3.0.1",
     "prettier": "^3.9.4",
     "rimraf": "3.0.2",
     "typescript": "^6.0.3",

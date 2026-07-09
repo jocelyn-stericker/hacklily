@@ -16,8 +16,8 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ScoreHeader, Print } from "musicxml-interfaces";
-import { IAny } from "musicxml-interfaces/operations";
+import { ScoreHeader, Print } from "#/musicxml-interfaces";
+import { IAny } from "#/musicxml-interfaces/operations";
 
 import { Document, IMeasure, ISegment } from "./document";
 

@@ -21,7 +21,7 @@ import {
   Words,
   DirectionMode,
   LeftCenterRight,
-} from "musicxml-interfaces";
+} from "#/musicxml-interfaces";
 
 import { cssSizeToTenths } from "./private_renderUtil";
 

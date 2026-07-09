@@ -1,4 +1,4 @@
-import { BarStyleType, Count, MxmlAccidental } from "musicxml-interfaces";
+import { BarStyleType, Count, MxmlAccidental } from "#/musicxml-interfaces";
 import { expect } from "chai";
 import { find } from "lodash";
 

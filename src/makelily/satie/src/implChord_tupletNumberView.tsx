@@ -21,7 +21,7 @@
  */
 
 import * as React from "react";
-import { AboveBelow, Tuplet } from "musicxml-interfaces";
+import { AboveBelow, Tuplet } from "#/musicxml-interfaces";
 import { Component } from "react";
 import { last, map, reduce } from "lodash";
 

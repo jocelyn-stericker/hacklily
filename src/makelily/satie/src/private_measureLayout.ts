@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Print } from "musicxml-interfaces";
+import { Print } from "#/musicxml-interfaces";
 import { map, mapValues } from "lodash";
 
 import { IAttributesSnapshot } from "./private_attributesSnapshot";

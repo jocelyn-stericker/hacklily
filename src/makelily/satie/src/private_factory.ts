@@ -26,7 +26,7 @@ import {
   Harmony,
   Barline,
   Note,
-} from "musicxml-interfaces";
+} from "#/musicxml-interfaces";
 
 import { IModel, IMeasure, Type } from "./document";
 

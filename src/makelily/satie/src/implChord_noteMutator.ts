@@ -22,7 +22,7 @@ import {
   IObjectReplace,
   IObjectDelete,
   IObjectInsert,
-} from "musicxml-interfaces/operations";
+} from "#/musicxml-interfaces/operations";
 
 import { replace, remove, set, mutate } from "./private_mutate";
 

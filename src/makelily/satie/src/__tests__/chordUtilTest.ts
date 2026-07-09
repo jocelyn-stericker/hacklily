@@ -30,12 +30,12 @@ import {
   ledgerLines,
 } from "../private_chordUtil";
 
-import { Note, Count } from "musicxml-interfaces";
+import { Note, Count } from "#/musicxml-interfaces";
 import {
   buildClef,
   buildNote,
   INoteBuilder,
-} from "musicxml-interfaces/builders";
+} from "#/musicxml-interfaces/builders";
 import { expect } from "chai";
 
 import { makeCursor } from "./attributes_test";

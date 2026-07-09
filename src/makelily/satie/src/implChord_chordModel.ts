@@ -22,7 +22,7 @@
  * number of these notes may be rests.
  */
 
-import { MultipleRest, Tremolo } from "musicxml-interfaces";
+import { MultipleRest, Tremolo } from "#/musicxml-interfaces";
 
 import { IModel, ILayout, Type } from "./document";
 

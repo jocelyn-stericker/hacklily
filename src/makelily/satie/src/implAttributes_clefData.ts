@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Clef } from "musicxml-interfaces";
+import { Clef } from "#/musicxml-interfaces";
 
 export const standardClefs: Clef[] = [
   {

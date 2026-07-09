@@ -18,7 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { Clef, Key, Time } from "musicxml-interfaces";
+import { Clef, Key, Time } from "#/musicxml-interfaces";
 import {
   buildClef,
   buildKey,
@@ -26,7 +26,7 @@ import {
   IClefBuilder,
   IKeyBuilder,
   ITimeBuilder,
-} from "musicxml-interfaces/builders";
+} from "#/musicxml-interfaces/builders";
 
 export function parseClef(clefLy: string): Clef {
   let sign: string = "G";

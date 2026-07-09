@@ -18,14 +18,14 @@
 
 import invariant from "invariant";
 import { cloneDeep } from "lodash";
-import { Note, serializeNote } from "musicxml-interfaces";
+import { Note, serializeNote } from "#/musicxml-interfaces";
 import {
   IAny,
   IObjectReplace,
   IListInsert,
   IListDelete,
   IListReplace,
-} from "musicxml-interfaces/operations";
+} from "#/musicxml-interfaces/operations";
 
 import { replace, remove } from "./private_mutate";
 

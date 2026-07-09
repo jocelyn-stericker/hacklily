@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Dynamics, Direction } from "musicxml-interfaces";
+import { Dynamics, Direction } from "#/musicxml-interfaces";
 import React, { ReactElement, Component } from "react";
 import * as PropTypes from "prop-types";
 import { filter } from "lodash";

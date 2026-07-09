@@ -57,7 +57,7 @@ import {
   Tuplet,
   MxmlAccidental,
   serializeNote,
-} from "musicxml-interfaces";
+} from "#/musicxml-interfaces";
 import { forEach, reduce, map, isEqual } from "lodash";
 import invariant from "invariant";
 

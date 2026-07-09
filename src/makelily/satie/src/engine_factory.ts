@@ -29,7 +29,7 @@ import {
   Harmony,
   Barline,
   Note,
-} from "musicxml-interfaces";
+} from "#/musicxml-interfaces";
 import invariant from "invariant";
 import { forEach, some } from "lodash";
 

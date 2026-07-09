@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { serializeScoreHeader } from "musicxml-interfaces";
+import { serializeScoreHeader } from "#/musicxml-interfaces";
 import { forEach, map } from "lodash";
 
 import { Document } from "./document";

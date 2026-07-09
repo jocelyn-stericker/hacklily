@@ -16,8 +16,8 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Time } from "musicxml-interfaces";
-import { IAny } from "musicxml-interfaces/operations";
+import { Time } from "#/musicxml-interfaces";
+import { IAny } from "#/musicxml-interfaces/operations";
 import invariant from "invariant";
 import { times, forEach } from "lodash";
 

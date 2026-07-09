@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { PageMargins, OddEvenBoth } from "musicxml-interfaces";
+import { PageMargins, OddEvenBoth } from "#/musicxml-interfaces";
 
 export function getPageMargins(
   pageMargins: PageMargins[],

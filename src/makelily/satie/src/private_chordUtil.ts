@@ -32,7 +32,7 @@ import {
   Tied,
   Pitch,
   Beam,
-} from "musicxml-interfaces";
+} from "#/musicxml-interfaces";
 import { some, find, map, reduce, filter, chain, times } from "lodash";
 import invariant from "invariant";
 

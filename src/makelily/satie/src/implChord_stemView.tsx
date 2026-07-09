@@ -17,7 +17,7 @@
  */
 
 import * as React from "react";
-import { Stem, StemType, Tremolo } from "musicxml-interfaces";
+import { Stem, StemType, Tremolo } from "#/musicxml-interfaces";
 import { Component } from "react";
 import * as PropTypes from "prop-types";
 import invariant from "invariant";

@@ -23,8 +23,8 @@ import {
   Count,
   TimeModification,
   Direction,
-} from "musicxml-interfaces";
-import { IAny } from "musicxml-interfaces/operations";
+} from "#/musicxml-interfaces";
+import { IAny } from "#/musicxml-interfaces/operations";
 import {
   buildNote,
   patchNote,
@@ -42,7 +42,7 @@ import {
   buildPrint,
   patchPrint,
   IPrintBuilder,
-} from "musicxml-interfaces/builders";
+} from "#/musicxml-interfaces/builders";
 import {
   find,
   forEach,

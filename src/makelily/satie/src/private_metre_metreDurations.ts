@@ -18,7 +18,7 @@
 
 import { times } from "lodash";
 import invariant from "invariant";
-import { TimeModification, Time } from "musicxml-interfaces";
+import { TimeModification, Time } from "#/musicxml-interfaces";
 
 import { IChord, divisions } from "./private_chordUtil";
 

@@ -27,7 +27,7 @@ import {
   NormalAngledSquare,
   Notations,
   TimeModification,
-} from "musicxml-interfaces";
+} from "#/musicxml-interfaces";
 import * as React from "react";
 import { Addons as SatieAddons } from "./satie/src/satie";
 

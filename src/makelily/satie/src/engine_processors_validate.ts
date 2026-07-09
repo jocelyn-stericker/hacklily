@@ -27,8 +27,8 @@ import {
   last,
 } from "lodash";
 import invariant from "invariant";
-import { Print, BarStyleType } from "musicxml-interfaces";
-import { IAny } from "musicxml-interfaces/operations";
+import { Print, BarStyleType } from "#/musicxml-interfaces";
+import { IAny } from "#/musicxml-interfaces/operations";
 
 import { Type, ISegment } from "./document";
 

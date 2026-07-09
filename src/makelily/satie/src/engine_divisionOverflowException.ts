@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { IAny } from "musicxml-interfaces/operations";
+import { IAny } from "#/musicxml-interfaces/operations";
 
 import { IMeasure, IMeasurePart, ISegment } from "./document";
 

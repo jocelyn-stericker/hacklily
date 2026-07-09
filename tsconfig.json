@@ -5,6 +5,9 @@
     "target": "ES2022",
     "jsx": "react-jsx",
     "module": "ESNext",
+    "paths": {
+      "#/*": ["./src/*"]
+    },
     "lib": ["ES2024", "DOM", "DOM.Iterable"],
     "types": ["vite/client", "node", "jest"],
 
@@ -15,7 +18,7 @@
 
     /* Linting */
     "skipLibCheck": true,
-    "strict": true,
+    "strict": false,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true
   }

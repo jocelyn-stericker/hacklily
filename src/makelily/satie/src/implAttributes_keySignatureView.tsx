@@ -17,7 +17,7 @@
  */
 
 import * as React from "react";
-import { Key, Clef, Accidental, MxmlAccidental } from "musicxml-interfaces";
+import { Key, Clef, Accidental, MxmlAccidental } from "#/musicxml-interfaces";
 import { Component } from "react";
 import { times, map } from "lodash";
 

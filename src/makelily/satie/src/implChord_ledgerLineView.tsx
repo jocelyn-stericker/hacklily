@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { PrintStyle } from "musicxml-interfaces";
+import { PrintStyle } from "#/musicxml-interfaces";
 import React, { Component } from "react";
 import * as PropTypes from "prop-types";
 

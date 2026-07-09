@@ -29,8 +29,8 @@ import {
   Direction,
   Harmony,
   Barline,
-} from "musicxml-interfaces";
-import { IAny } from "musicxml-interfaces/operations";
+} from "#/musicxml-interfaces";
+import { IAny } from "#/musicxml-interfaces/operations";
 import { find } from "lodash";
 
 import { IProxyModel } from "./implProxy_proxyModel";

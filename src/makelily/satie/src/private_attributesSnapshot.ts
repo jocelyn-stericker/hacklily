@@ -27,7 +27,7 @@ import {
   Key,
   Directive,
   MeasureStyle,
-} from "musicxml-interfaces";
+} from "#/musicxml-interfaces";
 import { clone, forEach } from "lodash";
 
 import { cloneObject } from "./private_util";

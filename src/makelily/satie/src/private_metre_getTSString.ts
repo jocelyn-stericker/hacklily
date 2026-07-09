@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Time } from "musicxml-interfaces";
+import { Time } from "#/musicxml-interfaces";
 import { reduce } from "lodash";
 import invariant from "invariant";
 

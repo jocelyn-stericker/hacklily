@@ -36,7 +36,7 @@ import {
   SymbolSize,
   TimeSymbolType,
   serializeAttributes,
-} from "musicxml-interfaces";
+} from "#/musicxml-interfaces";
 import { find, forEach, times, isEqual } from "lodash";
 import invariant from "invariant";
 

@@ -22,7 +22,7 @@ import {
   Placement,
   Articulations,
   AboveBelow,
-} from "musicxml-interfaces";
+} from "#/musicxml-interfaces";
 import { Component, ReactElement } from "react";
 import * as PropTypes from "prop-types";
 

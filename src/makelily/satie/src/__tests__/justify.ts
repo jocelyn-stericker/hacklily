@@ -20,7 +20,7 @@
  * @file part of Satie test suite
  */
 
-import { OddEvenBoth } from "musicxml-interfaces";
+import { OddEvenBoth } from "#/musicxml-interfaces";
 import { map, forEach } from "lodash";
 
 import { detach } from "../private_measureLayout";

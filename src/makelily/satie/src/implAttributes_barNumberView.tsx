@@ -20,7 +20,7 @@
  */
 
 import * as React from "react";
-import { Position } from "musicxml-interfaces";
+import { Position } from "#/musicxml-interfaces";
 import { Component } from "react";
 import * as PropTypes from "prop-types";
 

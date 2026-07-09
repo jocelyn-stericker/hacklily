@@ -33,7 +33,7 @@ import {
   PartList,
   LeftCenterRight,
   serializeScoreHeader,
-} from "musicxml-interfaces";
+} from "#/musicxml-interfaces";
 import { forEach, some, defaultsDeep } from "lodash";
 
 import { getPageMargins } from "./private_print";

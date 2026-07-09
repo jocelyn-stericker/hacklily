@@ -28,7 +28,7 @@
 // This keeps spacing consistent, even in beam groups with rests.
 
 import * as React from "react";
-import { AboveBelow } from "musicxml-interfaces";
+import { AboveBelow } from "#/musicxml-interfaces";
 import { Component } from "react";
 import * as PropTypes from "prop-types";
 import { first, last } from "lodash";

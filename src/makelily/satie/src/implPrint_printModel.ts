@@ -30,7 +30,7 @@ import {
   NormalBold,
   serializePrint,
   OddEvenBoth,
-} from "musicxml-interfaces";
+} from "#/musicxml-interfaces";
 import { forEach, defaultsDeep } from "lodash";
 import invariant from "invariant";
 

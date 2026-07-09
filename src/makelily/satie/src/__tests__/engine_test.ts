@@ -23,7 +23,7 @@
  * @file part of Satie test suite
  */
 
-import { Print, OddEvenBoth } from "musicxml-interfaces";
+import { Print, OddEvenBoth } from "#/musicxml-interfaces";
 
 import { map } from "lodash";
 

@@ -17,7 +17,7 @@
  */
 
 import * as React from "react";
-import { Note, Lyric, Text, StemType } from "musicxml-interfaces";
+import { Note, Lyric, Text, StemType } from "#/musicxml-interfaces";
 import { Component, ReactElement } from "react";
 import * as PropTypes from "prop-types";
 import { map, some, chain, maxBy } from "lodash";

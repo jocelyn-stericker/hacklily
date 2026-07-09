@@ -18,7 +18,7 @@
 
 import invariant from "invariant";
 import { isEqual } from "lodash";
-import { IAny, IListInsert } from "musicxml-interfaces/operations";
+import { IAny, IListInsert } from "#/musicxml-interfaces/operations";
 
 import { Document, ISegment } from "./document";
 

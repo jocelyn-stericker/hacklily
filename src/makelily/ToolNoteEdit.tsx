@@ -50,15 +50,15 @@ import {
   Pitch,
   Technical,
   TimeModification,
-} from "musicxml-interfaces";
+} from "#/musicxml-interfaces";
 import {
   IAttributesBuilder,
   IBarlineBuilder,
   IBarStyleBuilder,
   INoteBuilder,
   ITypeBuilder,
-} from "musicxml-interfaces/builders";
-import { IAny } from "musicxml-interfaces/operations";
+} from "#/musicxml-interfaces/builders";
+import { IAny } from "#/musicxml-interfaces/operations";
 import React from "react";
 import {
   Addons as SatieAddons,

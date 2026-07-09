@@ -26,7 +26,7 @@ import {
   Note,
   StemType,
   Technical,
-} from "musicxml-interfaces";
+} from "#/musicxml-interfaces";
 import { forEach } from "lodash";
 
 import { IBoundingRect } from "./private_boundingRect";

@@ -25,7 +25,7 @@
 
 import Chord from "../implChord_chordModel";
 
-import { Note, Count } from "musicxml-interfaces";
+import { Note, Count } from "#/musicxml-interfaces";
 import { expect } from "chai";
 
 import { IModel, Type } from "../document";

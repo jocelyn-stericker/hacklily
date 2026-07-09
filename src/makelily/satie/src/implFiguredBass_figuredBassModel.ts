@@ -24,7 +24,7 @@ import {
   NormalBold,
   NormalItalic,
   serializeFiguredBass,
-} from "musicxml-interfaces";
+} from "#/musicxml-interfaces";
 import { forEach } from "lodash";
 
 import { IModel, ILayout, Type } from "./document";

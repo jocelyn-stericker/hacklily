@@ -22,7 +22,7 @@ import {
   Notations,
   NormalAngledSquare,
   AboveBelow,
-} from "musicxml-interfaces";
+} from "#/musicxml-interfaces";
 import { Component, ReactElement } from "react";
 import * as PropTypes from "prop-types";
 import { forEach } from "lodash";

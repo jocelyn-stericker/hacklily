@@ -1,4 +1,4 @@
-import { Count, Note } from "musicxml-interfaces";
+import { Count, Note } from "#/musicxml-interfaces";
 import { expect } from "chai";
 
 import { Type } from "../document";

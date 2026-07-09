@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Attributes, Key } from "musicxml-interfaces";
+import { Attributes, Key } from "#/musicxml-interfaces";
 import { times, forEach, map, reduce } from "lodash";
 import invariant from "invariant";
 

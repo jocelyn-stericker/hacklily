@@ -24,7 +24,7 @@ import ScoreHeader from "../engine_scoreHeader";
 
 import { expect } from "chai";
 
-import { parseScore, LeftCenterRight } from "musicxml-interfaces";
+import { parseScore, LeftCenterRight } from "#/musicxml-interfaces";
 
 const headerTest = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.0 Partwise//EN"

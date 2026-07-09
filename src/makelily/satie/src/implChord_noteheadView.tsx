@@ -17,7 +17,7 @@
  */
 
 import * as React from "react";
-import { Position, Notehead } from "musicxml-interfaces";
+import { Position, Notehead } from "#/musicxml-interfaces";
 import { Component } from "react";
 import * as PropTypes from "prop-types";
 

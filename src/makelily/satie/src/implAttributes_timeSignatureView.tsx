@@ -17,7 +17,7 @@
  */
 
 import * as React from "react";
-import { Time, TimeSymbolType } from "musicxml-interfaces";
+import { Time, TimeSymbolType } from "#/musicxml-interfaces";
 import { Component } from "react";
 import * as PropTypes from "prop-types";
 import { map } from "lodash";

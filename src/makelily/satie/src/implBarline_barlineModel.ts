@@ -36,8 +36,8 @@ import {
   PartSymbol,
   serializeBarline,
   Attributes,
-} from "musicxml-interfaces";
-import { buildBarStyle } from "musicxml-interfaces/builders";
+} from "#/musicxml-interfaces";
+import { buildBarStyle } from "#/musicxml-interfaces/builders";
 import { some, forEach } from "lodash";
 
 import { IModel, ILayout, Type } from "./document";

@@ -17,7 +17,7 @@
  */
 
 import * as React from "react";
-import { ScoreHeader, Print } from "musicxml-interfaces";
+import { ScoreHeader, Print } from "#/musicxml-interfaces";
 import { Component } from "react";
 import * as PropTypes from "prop-types";
 import { map, filter, forEach, last } from "lodash";

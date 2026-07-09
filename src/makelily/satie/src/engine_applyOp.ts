@@ -29,7 +29,7 @@ import {
   isNumber,
   isString,
 } from "lodash";
-import { IAny } from "musicxml-interfaces/operations";
+import { IAny } from "#/musicxml-interfaces/operations";
 
 import { Document, Type, IMeasure, IMeasurePart, ISegment } from "./document";
 import { normalizeDivisionsInPlace } from "./engine_divisions";

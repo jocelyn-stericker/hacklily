@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Print, SystemLayout, Scaling } from "musicxml-interfaces";
+import { Print, SystemLayout, Scaling } from "#/musicxml-interfaces";
 
 import { getPageMargins } from "./private_print";
 

@@ -17,7 +17,7 @@
  */
 
 import { some, filter } from "lodash";
-import { PartList, PartGroup, ScorePart, StartStop } from "musicxml-interfaces";
+import { PartList, PartGroup, ScorePart, StartStop } from "#/musicxml-interfaces";
 
 export function scoreParts(scoreParts: PartList): ScorePart[] {
   return <ScorePart[]>(

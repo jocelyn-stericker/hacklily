@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Note, Lyric, Text, NormalBold } from "musicxml-interfaces";
+import { Note, Lyric, Text, NormalBold } from "#/musicxml-interfaces";
 import { reduce } from "lodash";
 
 import { IChord } from "./private_chordUtil";

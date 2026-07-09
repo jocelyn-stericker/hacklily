@@ -19,7 +19,7 @@
  */
 
 import { css } from "aphrodite";
-import { Time, TimeSymbolType } from "musicxml-interfaces";
+import { Time, TimeSymbolType } from "#/musicxml-interfaces";
 import React from "react";
 import { Addons as SatieAddons } from "./satie/src/satie";
 
