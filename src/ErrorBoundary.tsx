@@ -19,17 +19,33 @@
  */
 
 import React from "react";
-import { createRoot } from "react-dom/client";
 
-import { initAnalytics, trackPageview } from "../analytics";
-import MusicXML2Ly from "./MusicXML2Ly";
-import ErrorBoundary from "../ErrorBoundary";
+interface Props {
+  children: React.ReactNode;
+}
 
-initAnalytics();
-trackPageview("/musicxml2ly", "Import MusicXML — Hacklily");
+interface State {
+  hasError: boolean;
+}
 
-createRoot(document.getElementById("root")!).render(
-  <ErrorBoundary>
-    <MusicXML2Ly />
-  </ErrorBoundary>,
-);
+export default class ErrorBoundary extends React.Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(): State {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo): void {
+    console.error("Uncaught render error:", error, info);
+  }
+
+  render(): React.ReactNode {
+    if (this.state.hasError) {
+      return <p>Something went wrong. Reload the page to continue.</p>;
+    }
+    return this.props.children;
+  }
+}

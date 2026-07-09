@@ -19,35 +19,39 @@
  */
 
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 
 import App, { QUERY_PROP_KEYS, QueryProps, Song } from "./App";
+import ErrorBoundary from "./ErrorBoundary";
 import { Auth, parseAuth } from "./auth";
 import { parseQuery, toQueryString } from "./util/queryString";
 
 import "./index.css";
 
+const root = createRoot(document.getElementById("root")!);
+
 /**
  * Renders Hacklily, with props set.
  */
 function render(): void {
-  ReactDOM.render(
-    <App
-      {...getQueryProps()}
-      dirtySongs={getDirtySongs()}
-      auth={getAuth()}
-      csrf={sessionStorage.csrf || null}
-      colourScheme={localStorage.colourScheme || "vs-dark"}
-      hideUnstableNotification={getHideUnstableNotification()}
-      setQuery={setQuery}
-      editSong={editSong}
-      markSongClean={markSongClean}
-      setAuth={setAuth}
-      setColourScheme={setColourScheme}
-      setCSRF={setCSRF}
-      setHideUnstableNotification={setHideUnstableNotification}
-    />,
-    document.getElementById("root"),
+  root.render(
+    <ErrorBoundary>
+      <App
+        {...getQueryProps()}
+        dirtySongs={getDirtySongs()}
+        auth={getAuth()}
+        csrf={sessionStorage.csrf || null}
+        colourScheme={localStorage.colourScheme || "vs-dark"}
+        hideUnstableNotification={getHideUnstableNotification()}
+        setQuery={setQuery}
+        editSong={editSong}
+        markSongClean={markSongClean}
+        setAuth={setAuth}
+        setColourScheme={setColourScheme}
+        setCSRF={setCSRF}
+        setHideUnstableNotification={setHideUnstableNotification}
+      />
+    </ErrorBoundary>,
   );
 }
 
