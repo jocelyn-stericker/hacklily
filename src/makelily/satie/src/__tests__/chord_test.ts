@@ -64,7 +64,7 @@ function getCursor(factory: IFactory, model: IModel): ValidationCursor {
     document: {
       __fakeDocument: true,
     } as any,
-    fixup: null,
+    fixup: () => null,
     dangerouslyPatchWithoutValidation: () => null,
     patch: () => null,
     advance: null,
@@ -119,8 +119,10 @@ describe("[chord.ts]", function () {
           octave: 4,
           alter: 1,
         },
+        dots: [],
       } as Note);
       let cursor = getCursor(factory, chord);
+      chord.divCount = 2;
       chord.refresh(cursor);
 
       cursor = getCursor(factory, chord);
@@ -165,6 +167,7 @@ describe("[chord.ts]", function () {
           octave: 4,
           alter: 1,
         },
+        dots: [],
       });
       chord.push({
         _class: "Note",
@@ -179,8 +182,10 @@ describe("[chord.ts]", function () {
           step: "E",
           octave: 4,
         },
+        dots: [],
       } as Note);
       let cursor = getCursor(factory, chord);
+      chord.divCount = 2;
       chord.refresh(cursor);
       cursor = getCursor(factory, chord);
       const lCursor: LayoutCursor = {

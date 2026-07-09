@@ -51,7 +51,7 @@ export default class NotationView extends Component<IProps, {}> {
     originY: PropTypes.number,
   } as any;
 
-  context: {
+  declare context: {
     originY: number;
   };
 

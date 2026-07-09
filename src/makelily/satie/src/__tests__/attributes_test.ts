@@ -22,7 +22,7 @@
 
 import { Attributes } from "#/musicxml-interfaces";
 
-import AttributesModel from "../implAttributes_attributesModel";
+import AttributesModel, {IAttributesModel, IAttributesLayout} from "../implAttributes_attributesModel";
 
 
 import { ISegment, IModel, Type } from "../document";
@@ -41,9 +41,9 @@ export function makeCursor(
     document: {
       __fakeDocument: true,
     } as any,
-    fixup: null,
-    dangerouslyPatchWithoutValidation: null,
-    patch: null,
+    fixup: () => null,
+    dangerouslyPatchWithoutValidation: () => null,
+    patch: () => null,
     advance: null,
 
     segmentInstance: <any>models,
@@ -113,6 +113,7 @@ describe("[attributes.ts]", function () {
       expect(!!attributes).toBe(true);
       // Divisions is usually set by the engine
       attributes.divisions = 100;
+      attributes.clefs = [];
       segment = [attributes] as any;
 
       const cursor = makeCursor(factory, segment);
@@ -121,7 +122,16 @@ describe("[attributes.ts]", function () {
     });
     it("lays out properly when at start of song", function () {
       const cursor = makeCursor(factory, segment);
-      cursor.staffAttributes = {} as any;
+      cursor.staffAttributes = {
+        keySignatures: [],
+        times: [],
+        clefs: [],
+        staffDetails: [],
+      } as any;
+      attributes.clefs = [{ sign: "G", line: 2, clefOctaveChange: null }];
+      attributes.keySignatures = [{ fifths: 0, mode: "major" }];
+      attributes.times = [{ beats: ["4"], beatTypes: [4] }];
+      attributes.refresh(cursor);
       const lCursor: LayoutCursor = {
         ...cursor,
         measureX: 0,
@@ -136,7 +146,7 @@ describe("[attributes.ts]", function () {
       };
       const layout = attributes.getLayout(
         lCursor,
-      ) as AttributesModel.IAttributesLayout;
+      ) as IAttributesLayout;
       expect(!!layout.keySignature).toBe(true);
       expect(!!layout.time).toBe(true);
       expect(!!layout.clef).toBe(true);

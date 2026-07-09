@@ -42,7 +42,7 @@ export default class PartSymbolView extends Component<IProps, {}> {
     systemTop: PropTypes.number.isRequired,
   } as any;
 
-  context: {
+  declare context: {
     originY: number;
     systemBottom: number;
     systemTop: number;

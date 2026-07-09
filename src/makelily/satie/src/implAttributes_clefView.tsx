@@ -35,7 +35,7 @@ export default class ClefView extends Component<
     originY: PropTypes.number,
   } as any;
 
-  context: {
+  declare context: {
     originY: number;
   };
 

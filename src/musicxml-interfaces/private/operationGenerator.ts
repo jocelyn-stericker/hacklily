@@ -192,7 +192,7 @@ function processTree(sourceFile: ts.SourceFile): any {
     );
     const isExport =
       implicitExport ||
-      node.modifiers?.some(
+      ts.canHaveModifiers(node) && ts.getModifiers(node)?.some(
         (mod: ts.Modifier) => mod.kind === ts.SyntaxKind.ExportKeyword
       );
 

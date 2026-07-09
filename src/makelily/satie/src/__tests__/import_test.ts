@@ -681,7 +681,7 @@ describe("[musicxml/import.ts]", function () {
       ).toEqual(0);
       expect(
         partsAndMeasures.measures[0].parts["P1"].staves[1][2].divCount,
-      ).toEqual(8);
+      ).toEqual(3072);
       expect(
         partsAndMeasures.measures[0].parts["P1"].staves[1][3].divCount,
       ).toEqual(0);
@@ -712,10 +712,10 @@ describe("[musicxml/import.ts]", function () {
       expect(voices.length).toEqual(3);
       expect(staves.length).toEqual(3);
       expect(voices[2].owner).toEqual(2);
-      expect(voices[2].divisions).toEqual(8);
-      expect(voices[1].divisions).toEqual(8);
-      expect(staves[2].divisions).toEqual(8);
-      expect(staves[1].divisions).toEqual(8);
+      expect(voices[2].divisions).toEqual(768);
+      expect(voices[1].divisions).toEqual(768);
+      expect(staves[2].divisions).toEqual(768);
+      expect(staves[1].divisions).toEqual(768);
       expect(staves[1].length).toEqual(3);
       expect(staves[2].length).toEqual(3);
       forEach(staves[1], (model) => {

@@ -45,7 +45,7 @@ export default class Glyph extends Component<IProps, {}> {
     renderTarget: PropTypes.oneOf(["svg-web", "svg-export"]),
   } as any;
 
-  context: {
+  declare context: {
     renderTarget?: "svg-web" | "svg-export";
   };
 

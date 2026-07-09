@@ -29,7 +29,7 @@ const DEF_SPACING = 4;
 const V_SPACING = 4;
 
 export interface ITextMixin {
-  getTextAnchor(words: CreditWords | Words): string;
+  getTextAnchor(words: CreditWords | Words): "start" | "middle" | "end" | "inherit" | undefined;
   getTextDecoration(words: CreditWords | Words): string;
   getTransform(words: CreditWords | Words): string;
   getDirection(words: CreditWords | Words): string;

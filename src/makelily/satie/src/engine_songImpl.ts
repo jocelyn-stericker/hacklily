@@ -401,7 +401,7 @@ export default class SongImpl
     (p: { x: number; y: number }, handler: Handler) => {
       const match = getByPosition(p);
 
-      let path = match && match.key.match(SATIE_ELEMENT_RX);
+      let path = match && match.key.match(SATIE_ELEMENT_RX).slice();
       if (!path) {
         handler({
           path: [],

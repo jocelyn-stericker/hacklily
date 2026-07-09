@@ -48,7 +48,7 @@ class ModelView extends Component<IProps, IState> {
     originYByPartAndStaff: PropTypes.objectOf(NUMBER_ARRAY).isRequired,
   } as any;
 
-  context: {
+  declare context: {
     originYByPartAndStaff: { [key: string]: number[] };
   };
 

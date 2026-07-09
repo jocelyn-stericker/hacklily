@@ -36,7 +36,7 @@ export default class AttributesView extends Component<
     originY: PropTypes.number.isRequired,
   } as any;
 
-  context: {
+  declare context: {
     originY: number;
   };
 

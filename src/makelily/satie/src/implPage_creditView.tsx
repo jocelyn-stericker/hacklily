@@ -41,19 +41,19 @@ export default class CreditView
     scale40: PropTypes.number.isRequired,
   } as any;
 
-  context: {
+  declare context: {
     originY: number;
     scale40: number;
   };
 
   /* ITextMixin */
-  getTextAnchor: (words: CreditWords | Words) => string;
-  getTextDecoration: (words: CreditWords | Words) => string;
-  getTransform: (words: CreditWords | Words) => string;
-  getDirection: (words: CreditWords | Words) => string;
-  getX: (lineNum: number) => number;
-  getDX: (words: CreditWords | Words, initX: number, lineNum: number) => number;
-  getDY: (words: CreditWords | Words, initY: number, lineNum: number) => number;
+  declare getTextAnchor: (words: CreditWords | Words) => "start" | "middle" | "end" | "inherit" | undefined;
+  declare getTextDecoration: (words: CreditWords | Words) => string;
+  declare getTransform: (words: CreditWords | Words) => string;
+  declare getDirection: (words: CreditWords | Words) => string;
+  declare getX: (lineNum: number) => number;
+  declare getDX: (words: CreditWords | Words, initX: number, lineNum: number) => number;
+  declare getDY: (words: CreditWords | Words, initY: number, lineNum: number) => number;
 
   render(): any {
     const image = this.props.creditImage;

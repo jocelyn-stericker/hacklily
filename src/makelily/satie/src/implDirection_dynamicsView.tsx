@@ -34,15 +34,15 @@ export default class DynamicsView extends Component<IProps, {}> {
     originY: PropTypes.number,
   };
 
-  context: {
+  declare context: {
     originY: number;
   };
 
   render(): ReactElement<any> {
     const layout = this.props.layout;
     const model = layout.model;
-    const dynamicsContainer = filter(
-      model.directionTypes,
+    const dynamicsContainer = 
+      model.directionTypes.filter(
       (dt) => dt.dynamics,
     )[0];
     invariant(!!dynamicsContainer, "No dynamics found!");

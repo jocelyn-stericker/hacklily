@@ -33,7 +33,7 @@ export default class VisualCursorView extends Component<IProps, {}> {
     systemTop: PropTypes.number.isRequired,
   } as any;
 
-  context: {
+  declare context: {
     originY: number;
     systemBottom: number;
     systemTop: number;

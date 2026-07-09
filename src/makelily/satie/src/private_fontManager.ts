@@ -38,7 +38,7 @@ const State = {
     : null,
   root: IS_BROWSER
     ? location.protocol + "//" + location.host + "/vendor/"
-    : "./vendor/",
+    : "./static/vendor/",
 };
 
 function getFullName(name: string, style?: string) {

@@ -41,7 +41,7 @@ export default class Beam extends Component<IProps, {}> {
     originY: PropTypes.number.isRequired,
   } as any;
 
-  context: {
+  declare context: {
     originY: number;
   };
 

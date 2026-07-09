@@ -74,7 +74,7 @@ export function set(obj: any, op: IObjectInsert<any>) {
 export function insertToList(obj: any, op: IListInsert<any>) {
   const parent = findParent(obj, op.p);
   const key = last(op.p);
-  invariant(key >= 0, "Invalid operation");
+  invariant(Number(key) >= 0, "Invalid operation");
   parent.splice(key, 0, op.li);
 }
 
@@ -111,7 +111,7 @@ export function removeFromList(obj: any, op: IListDelete<any>) {
   const parent = findParent(obj, op.p);
   const key = last(op.p);
   invariant(key < parent.length, "Invalid operation");
-  invariant(key >= 0, "Invalid operation");
+  invariant(Number(key) >= 0, "Invalid operation");
   // STOPSHIP: this could cause problems during collaboration/undo
   expectEqualish(parent[key], op.ld);
   parent.splice(key, 1);

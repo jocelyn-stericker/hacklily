@@ -37,7 +37,7 @@ export default class LedgerLine extends Component<IProps, {}> {
     originY: PropTypes.number.isRequired,
   } as any;
 
-  context: {
+  declare context: {
     originY: number;
   };
 

@@ -193,8 +193,8 @@ export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
           `Expected voice owner ${localSegment.owner}, got ${op.p[4]}`,
         );
         return (
-          (op.p.length === 6 && op.p[5] <= vCursor.segmentPosition) ||
-          op.p[5] < vCursor.segmentPosition
+          (op.p.length === 6 && Number(op.p[5]) <= vCursor.segmentPosition) ||
+          Number(op.p[5]) < vCursor.segmentPosition
         );
       } else if (localSegment.ownerType === "staff") {
         invariant(
@@ -206,8 +206,8 @@ export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
           `Expected staff owner ${localSegment.owner}, got ${op.p[4]}`,
         );
         return (
-          (op.p.length === 6 && op.p[5] <= vCursor.segmentPosition) ||
-          op.p[5] < vCursor.segmentPosition
+          (op.p.length === 6 && Number(op.p[5]) <= vCursor.segmentPosition) ||
+          Number(op.p[5]) < vCursor.segmentPosition
         );
       }
       throw new Error(`Invalid segment owner type ${localSegment.ownerType}`);

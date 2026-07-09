@@ -58,6 +58,7 @@ describe("[engine.ts]", function () {
             leftMargin: 0,
             rightMargin: 0,
           },
+          topSystemDistance: 0,
         },
         pageLayout: {
           pageHeight: 1000,
@@ -90,7 +91,9 @@ describe("[engine.ts]", function () {
             leftMargin: 0,
             rightMargin: 0,
           },
+          topSystemDistance: 0,
         },
+        top: 937,
       });
       expect(
         calculateLineBounds(spec1, 2, { millimeters: 10, tenths: 40 }),
@@ -102,7 +105,9 @@ describe("[engine.ts]", function () {
             leftMargin: 0,
             rightMargin: 0,
           },
+          topSystemDistance: 0,
         },
+        top: 937,
       });
     });
   });
@@ -116,6 +121,20 @@ describe("[engine.ts]", function () {
           return {
             divCount: 0,
             staffIdx: 1,
+            _snapshot: {
+              keySignature: { fifths: 0, mode: "major" },
+              clef: { sign: "G", line: 2, clefOctaveChange: null },
+              time: { beats: ["4"], beatTypes: [4], senzaMisura: null },
+              divisions: 4,
+              measure: 0,
+              clefs: [],
+              times: [],
+              keySignatures: [],
+              transposes: [],
+              staffDetails: [],
+              directives: [],
+              measureStyle: {},
+            },
 
             refresh: (_cursor: ValidationCursor) => {
               /* pass */
@@ -172,6 +191,11 @@ describe("[engine.ts]", function () {
         document: {
           modelHasType: createAttributesChordFactory.modelHasType,
           __fakeDocument: true,
+          cleanlinessTracking: {
+            measures: {},
+            lines: [],
+            linePlacementHints: [],
+          },
         } as any,
         preview: false,
         fixup: null,

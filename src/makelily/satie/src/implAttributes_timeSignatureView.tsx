@@ -64,7 +64,7 @@ export default class TimeSignatureView extends Component<
     originY: PropTypes.number,
   } as any;
 
-  context: {
+  declare context: {
     originY: number;
   };
 
