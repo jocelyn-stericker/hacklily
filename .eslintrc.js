@@ -41,5 +41,11 @@ module.exports = {
         "@typescript-eslint/no-unused-vars": ["error", {"varsIgnorePattern": "^_", "argsIgnorePattern": "^_", "caughtErrorsIgnorePattern": "^_"}],
         "react-hooks/rules-of-hooks": "error",
         "react-hooks/exhaustive-deps": "error"
-    }
+    },
+    "overrides": [
+        {
+            "files": ["**/*.test.ts", "**/*.test.tsx"],
+            "extends": ["plugin:jest/recommended"]
+        }
+    ]
 };
