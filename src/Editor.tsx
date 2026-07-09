@@ -359,7 +359,7 @@ export default class Editor extends React.PureComponent<Props> {
     window.addEventListener("resize", this.handleResize, false);
     this.commands.init(editor);
     editor.updateOptions({
-      wordBasedSuggestions: false,
+      wordBasedSuggestions: "off",
     });
   };
 
