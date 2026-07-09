@@ -1,6 +1,5 @@
 import * as React from "react";
-import { Component } from "react";
-import { Link } from "react-router";
+import { Link, useParams, useSearchParams, useLocation } from "react-router-dom";
 import { reduce } from "lodash";
 
 import Test from "./test";
@@ -81,12 +80,8 @@ const TESTS = [
   "22b",
   "22c",
   "22d",
-  "23a",
-  "23b",
-  "23c",
-  "23d",
-  "23e",
-  "23f",
+  "22e",
+  "22f",
   "24a",
   "24b",
   "24c",
@@ -169,111 +164,102 @@ const TESTS = [
   "99a",
   "99b",
 ];
-class Tests extends Component<{
-  params: { id: string };
-  location: { query: { mode: string } };
-}> {
-  render() {
-    const isSingleLine = this.props.location.query.mode === "singleline";
-    const filter = this.props.params ? this.props.params.id : null;
-    const cat = reduce(
-      TESTS,
-      (memo, testName) => {
-        const type = testName.substr(0, 2);
-        const link = filter ? null : (
-          <Link
-            to={`${prefix}/tests/${type}/?mode=${
-              isSingleLine ? "singleline" : "page"
-            }`}
-          >
-            <button>hide others</button>
-          </Link>
-        );
-        if (type !== memo.type && (!filter || type.indexOf(filter) === 0)) {
-          memo.acc.push(
-            <h2 key={type}>
-              {TEST_CATEGORIES[type]}
-              &nbsp;&nbsp;
-              {link}
-            </h2>,
-          );
-        }
-        if (!filter || testName.indexOf(filter) === 0) {
-          memo.acc.push(
-            <Test
-              singleLine={isSingleLine}
-              showFilterButton={testName !== filter}
-              name={testName}
-              key={testName}
-              filename={"/lilypond-regression/" + testName + ".xml"}
-            />,
-          );
-        }
-        return {
-          acc: memo.acc,
-          type: type,
-        };
-      },
-      { acc: [] as any[], type: "" },
-    ).acc;
-    return <div className={STYLES.tests}>{cat}</div>;
-  }
-}
 
-namespace Tests {
-  export class Header extends Component<{ params: { id: string } }> {
-    render() {
-      return <span>Satie &ndash; LilyPond Test Suite</span>;
-    }
-  }
-  export class Description extends Component<
-    { params: { id: string }; location: { query: { mode: string } } },
-    {}
-  > {
-    render() {
-      const filter = this.props.params ? this.props.params.id : null;
-      if (filter) {
-        const isSingleLine = this.props.location.query.mode === "singleline";
-        const showMoreLink =
-          filter.length > 1
-            ? `${prefix}/tests/${filter.substr(0, filter.length - 1)}/?mode=${
-                isSingleLine ? "singleline" : "page"
-              }`
-            : `/tests?mode=${isSingleLine ? "singleline" : "page"}`;
-        const swapModeLink = `${prefix}/tests/${filter}?mode=${
-          isSingleLine ? "page" : "singleline"
-        }`;
-
-        return (
-          <span>
-            <code>Filter: {`"${filter}"`}</code>
+export default function Tests() {
+  const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const isSingleLine = searchParams.get("mode") === "singleline";
+  const filter = id || null;
+  const cat = reduce(
+    TESTS,
+    (memo, testName) => {
+      const type = testName.substr(0, 2);
+      const link = filter ? null : (
+        <Link
+          to={`${prefix}/tests/${type}/?mode=${
+            isSingleLine ? "singleline" : "page"
+          }`}
+        >
+          <button>hide others</button>
+        </Link>
+      );
+      if (type !== memo.type && (!filter || type.indexOf(filter) === 0)) {
+        memo.acc.push(
+          <h2 key={type}>
+            {TEST_CATEGORIES[type]}
             &nbsp;&nbsp;
-            <Link to={showMoreLink}>
-              <button>{filter.length > 1 ? "show more" : "show all"}</button>
-            </Link>
-            <br />
-            <code>Render: {`"${isSingleLine ? "Single line" : "Page"}"`}</code>
-            &nbsp;&nbsp;
-            <Link to={swapModeLink}>
-              <button>
-                {isSingleLine ? "render full pages" : "render single lines"}
-              </button>
-            </Link>
-          </span>
+            {link}
+          </h2>,
         );
       }
-      const lilypond =
-        "http://www.lilypond.org/doc/v2.18/input/" +
-        "regression/musicxml/collated-files.html";
-      return (
-        <span>
-          Satie uses the <a href={lilypond}>unoffical MusicXML test suite</a>{" "}
-          from <a href="http://lilypond.org/">LilyPond</a> to test MusicXML
-          parsing as well as basic layout.
-        </span>
-      );
-    }
-  }
-}
+      if (!filter || testName.indexOf(filter) === 0) {
+        memo.acc.push(
+          <Test
+            singleLine={isSingleLine}
+            showFilterButton={testName !== filter}
+            name={testName}
+            key={testName}
+            filename={"/lilypond-regression/" + testName + ".xml"}
+          />,
+        );
+      }
+      return {
+        acc: memo.acc,
+        type: type,
+      };
+    },
+    { acc: [] as any[], type: "" },
+  ).acc;
 
-export default Tests;
+  const headerText = <span>Satie &ndash; LilyPond Test Suite</span>;
+  let description: React.ReactNode;
+  if (filter) {
+    const showMoreLink =
+      filter.length > 1
+        ? `${prefix}/tests/${filter.substr(0, filter.length - 1)}/?mode=${
+            isSingleLine ? "singleline" : "page"
+          }`
+        : `/tests?mode=${isSingleLine ? "singleline" : "page"}`;
+    const swapModeLink = `${prefix}/tests/${filter}?mode=${
+      isSingleLine ? "page" : "singleline"
+    }`;
+
+    description = (
+      <span>
+        <code>Filter: {`"${filter}"`}</code>
+        &nbsp;&nbsp;
+        <Link to={showMoreLink}>
+          <button>{filter.length > 1 ? "show more" : "show all"}</button>
+        </Link>
+        <br />
+        <code>Render: {`"${isSingleLine ? "Single line" : "Page"}"`}</code>
+        &nbsp;&nbsp;
+        <Link to={swapModeLink}>
+          <button>
+            {isSingleLine ? "render full pages" : "render single lines"}
+          </button>
+        </Link>
+      </span>
+    );
+  } else {
+    const lilypond =
+      "http://www.lilypond.org/doc/v2.18/input/" +
+      "regression/musicxml/collated-files.html";
+    description = (
+      <span>
+        Satie uses the <a href={lilypond}>unoffical MusicXML test suite</a>{" "}
+        from <a href="http://lilypond.org/">LilyPond</a> to test MusicXML
+        parsing as well as basic layout.
+      </span>
+    );
+  }
+
+  return (
+    <div>
+      <h1>{headerText}</h1>
+      <aside>{description}</aside>
+      <div className={STYLES.tests}>{cat}</div>
+    </div>
+  );
+}

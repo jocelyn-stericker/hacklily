@@ -81,7 +81,7 @@ const songTemplate = `<?xml version="1.0" encoding="UTF-8"?>
   </part>
 </score-partwise>`;
 
-class Tests extends Component<{ params: { id: string } }, IState> {
+class Sandbox extends Component<{}, IState> {
   state: IState = {
     error: null,
     canonicalOperations: null,
@@ -172,77 +172,80 @@ class Tests extends Component<{ params: { id: string } }, IState> {
   }
   render() {
     return (
-      <div className={STYLES.tests}>
-        <p>Use this page to test song editing.</p>
-        <ul style={{ display: "flex", listStyleType: "none" }}>
-          <li style={{ padding: 10 }}>
-            <a href="#" onClick={this._setNote.bind(this, Count._32nd)}>
-              32
-            </a>
-          </li>
-          <li style={{ padding: 10 }}>
-            <a href="#" onClick={this._setNote.bind(this, Count._16th)}>
-              16
-            </a>
-          </li>
-          <li style={{ padding: 10 }}>
-            <a href="#" onClick={this._setNote.bind(this, Count.Eighth)}>
-              8
-            </a>
-          </li>
-          <li style={{ padding: 10 }}>
-            <a href="#" onClick={this._setNote.bind(this, Count.Quarter)}>
-              4
-            </a>
-          </li>
-          <li style={{ padding: 10 }}>
-            <a href="#" onClick={this._setNote.bind(this, Count.Half)}>
-              2
-            </a>
-          </li>
-          <li style={{ padding: 10 }}>
-            <a href="#" onClick={this._setNote.bind(this, Count.Whole)}>
-              1
-            </a>
-          </li>
-          <li style={{ padding: 10 }}>
-            <a href="#" onClick={this._setType.bind(this, "N")}>
-              N
-            </a>
-          </li>
-          <li style={{ padding: 10 }}>
-            <a href="#" onClick={this._setType.bind(this, "R")}>
-              R
-            </a>
-          </li>
-          <li style={{ padding: 10 }}>
-            <a href="#" onClick={this._undo.bind(this)}>
-              Undo
-            </a>
-          </li>
-          <li style={{ padding: 10 }}>
-            <a href="#" onClick={this._newMeasure.bind(this)}>
-              +
-            </a>
-          </li>
-          <li style={{ padding: 10 }}>
-            <a href="#" onClick={this._newCursor.bind(this)}>
-              +
-            </a>
-          </li>
-        </ul>
-        <Song
-          baseSrc={songTemplate}
-          onError={this._errorHandler}
-          patches={this.state.operations}
-          onMouseClick={this._mouseClickHandler}
-          onMouseMove={this._mouseMoveHandler}
-          pageClassName={STYLES.page}
-          singleLineMode={true}
-          ref={this._setSongRef}
-        />
-        {/*<pre style={{fontSize: 8, height: 400, overflow: "scroll"}}>{
+      <div>
+        <h1>Satie &ndash; Sandbox</h1>
+        <div className={STYLES.tests}>
+          <p>Use this page to test song editing.</p>
+          <ul style={{ display: "flex", listStyleType: "none" }}>
+            <li style={{ padding: 10 }}>
+              <a href="#" onClick={this._setNote.bind(this, Count._32nd)}>
+                32
+              </a>
+            </li>
+            <li style={{ padding: 10 }}>
+              <a href="#" onClick={this._setNote.bind(this, Count._16th)}>
+                16
+              </a>
+            </li>
+            <li style={{ padding: 10 }}>
+              <a href="#" onClick={this._setNote.bind(this, Count.Eighth)}>
+                8
+              </a>
+            </li>
+            <li style={{ padding: 10 }}>
+              <a href="#" onClick={this._setNote.bind(this, Count.Quarter)}>
+                4
+              </a>
+            </li>
+            <li style={{ padding: 10 }}>
+              <a href="#" onClick={this._setNote.bind(this, Count.Half)}>
+                2
+              </a>
+            </li>
+            <li style={{ padding: 10 }}>
+              <a href="#" onClick={this._setNote.bind(this, Count.Whole)}>
+                1
+              </a>
+            </li>
+            <li style={{ padding: 10 }}>
+              <a href="#" onClick={this._setType.bind(this, "N")}>
+                N
+              </a>
+            </li>
+            <li style={{ padding: 10 }}>
+              <a href="#" onClick={this._setType.bind(this, "R")}>
+                R
+              </a>
+            </li>
+            <li style={{ padding: 10 }}>
+              <a href="#" onClick={this._undo.bind(this)}>
+                Undo
+              </a>
+            </li>
+            <li style={{ padding: 10 }}>
+              <a href="#" onClick={this._newMeasure.bind(this)}>
+                +
+              </a>
+            </li>
+            <li style={{ padding: 10 }}>
+              <a href="#" onClick={this._newCursor.bind(this)}>
+                +
+              </a>
+            </li>
+          </ul>
+          <Song
+            baseSrc={songTemplate}
+            onError={this._errorHandler}
+            patches={this.state.operations}
+            onMouseClick={this._mouseClickHandler}
+            onMouseMove={this._mouseMoveHandler}
+            pageClassName={STYLES.page}
+            singleLineMode={true}
+            ref={this._setSongRef}
+          />
+          {/*<pre style={{fontSize: 8, height: 400, overflow: "scroll"}}>{
                 JSON.stringify(this.state.operations, null, 2)}</pre>*/}
+        </div>
       </div>
     );
   }
@@ -381,12 +384,11 @@ class Tests extends Component<{ params: { id: string } }, IState> {
   }
 }
 
-namespace Tests {
-  export class Header extends Component<{ params: { id: string } }> {
-    render() {
-      return <span>Satie &ndash; Sandbox</span>;
-    }
-  }
+export default function SandboxPage() {
+  return (
+    <div>
+      <h1>Satie &ndash; Sandbox</h1>
+      <Sandbox />
+    </div>
+  );
 }
-
-export default Tests;

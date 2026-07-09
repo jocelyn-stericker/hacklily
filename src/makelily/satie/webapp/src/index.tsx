@@ -1,6 +1,6 @@
 import * as React from "react";
 import { render } from "react-dom";
-import { Router, Route, Redirect, browserHistory } from "react-router";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import App from "./app";
 import Home from "./home";
@@ -10,52 +10,17 @@ import Sandbox from "./sandbox";
 const prefix = process.env.PLAYGROUND_PREFIX || "";
 
 const rootInstance = render(
-  <Router history={browserHistory}>
-    <Route component={App} path="">
-      <Route
-        path={`${prefix}/tests`}
-        components={{
-          main: Tests,
-          header: Tests.Header,
-          description: Tests.Description,
-        }}
-      />
-      <Redirect from={`${prefix}/tests/`} to={`${prefix}/tests`} />
-      <Route
-        path={`${prefix}/tests/:id`}
-        components={{
-          main: Tests,
-          header: Tests.Header,
-          description: Tests.Description,
-        }}
-      />
-      <Redirect from={`${prefix}/tests/:id/`} to={`${prefix}/tests/:id/`} />
-      <Route
-        path={`${prefix}/`}
-        components={{
-          main: Home,
-          header: Home.Header,
-          description: Home.Description,
-        }}
-      />
-      <Route
-        path={`${prefix}/sandbox`}
-        components={{
-          main: Sandbox,
-          header: Sandbox.Header,
-        }}
-      />
-      <Redirect from={`${prefix}/sandbox/`} to={`${prefix}/sandbox`} />
-      <Route
-        path="*"
-        components={{
-          main: Home,
-          header: Home.Header,
-          description: Home.Description,
-        }}
-      />
-    </Route>
-  </Router>,
+  <BrowserRouter>
+    <Routes>
+      <Route path={`${prefix}/`} element={<App />}>
+        <Route index element={<Home />} />
+        <Route path="tests" element={<Tests />} />
+        <Route path="tests/:id" element={<Tests />} />
+        <Route path="sandbox" element={<Sandbox />} />
+        <Route path="*" element={<Home />} />
+      </Route>
+    </Routes>
+  </BrowserRouter>,
   document.getElementById("root"),
 );
 

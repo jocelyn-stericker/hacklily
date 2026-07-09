@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Component } from "react";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import { Application, ISong, Song } from "../../src/satie";
 import { find } from "lodash";
 
