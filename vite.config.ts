@@ -45,7 +45,7 @@ export default defineConfig({
     "process.env.REACT_APP_UNSTABLE_LILYPOND_VERSION": JSON.stringify(
       readLilyPondVersion("server/renderer-unstable/Dockerfile"),
     ),
-    "process.env.PLAYGROUND_PREFIX": "/playground"
+    "process.env.PLAYGROUND_PREFIX": JSON.stringify("/playground")
   },
   plugins: [
     react(),
