@@ -11,20 +11,14 @@ jobs:
         run: npm ci
       - name: Build (runs tests via the build script)
         run: npm run build
-      - name: Deploy to Grebedoc (www.hacklily.org)
-        uses: actions/git-pages@v2
-        with:
-          site: https://www.hacklily.org
-          source: ./dist
-          server: grebedoc.dev
-          password: ${{ secrets.GREBEDOC_PASSWORD }}
-      - name: Deploy to Grebedoc (hacklily.org)
-        uses: actions/git-pages@v2
-        with:
-          site: https://hacklily.org
-          source: ./dist
-          server: grebedoc.dev
-          password: ${{ secrets.GREBEDOC_PASSWORD }}
+      # Re-enable when well tested!
+      # - name: Deploy to Grebedoc (www.hacklily.org)
+      #   uses: actions/git-pages@v2
+      #   with:
+      #     site: https://www.hacklily.org
+      #     source: ./dist
+      #     server: grebedoc.dev
+      #     password: ${{ secrets.GREBEDOC_PASSWORD }}
       - name: Deploy to Grebedoc (beta.hacklily.org)
         uses: actions/git-pages@v2
         with:
