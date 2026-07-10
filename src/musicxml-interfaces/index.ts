@@ -250,7 +250,10 @@ declare class XSLTProcessor {
   transformToDocument(xml: Node): Document;
 }
 
-const isNode = typeof window === "undefined" || !!process.versions?.node;
+const isNode =
+  typeof window === "undefined" ||
+  typeof process === "undefined" ||
+  process.versions?.node;
 
 const DOMParser: typeof window.DOMParser = isNode
   ? require("@xmldom/xmldom").DOMParser
