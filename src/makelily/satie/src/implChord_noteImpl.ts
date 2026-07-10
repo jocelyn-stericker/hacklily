@@ -82,8 +82,8 @@ import ChordModelImpl from "./implChord_chordImpl";
  */
 class NoteImpl implements Note {
   _class = "Note";
-  _parent: ChordModelImpl;
-  _idx: number;
+  declare _parent: ChordModelImpl;
+  declare _idx: number;
 
   constructor(
     parent: ChordModelImpl,
@@ -161,92 +161,92 @@ class NoteImpl implements Note {
 
   /*---- Note > Core ----------------------------------------------------------------------*/
 
-  chord: Chord;
-  rest: Rest;
-  dots: Dot[];
+  declare chord: Chord;
+  declare rest: Rest;
+  declare dots: Dot[];
 
-  noteType: Type;
-  timeModification: TimeModification;
+  declare noteType: Type;
+  declare timeModification: TimeModification;
 
-  pitch: Pitch;
+  declare pitch: Pitch;
 
   /*---- Extended -------------------------------------------------------------------------*/
 
-  unpitched: Unpitched;
-  noteheadText: NoteheadText;
-  accidental: Accidental;
-  instrument: Instrument;
-  attack: number;
-  endDynamics: number;
-  lyrics: Lyric[];
+  declare unpitched: Unpitched;
+  declare noteheadText: NoteheadText;
+  declare accidental: Accidental;
+  declare instrument: Instrument;
+  declare attack: number;
+  declare endDynamics: number;
+  declare lyrics: Lyric[];
   /**
    * Do not modify notations. Instead use notationObj and articulationObj
    */
-  notations: Notations[];
+  declare notations: Notations[];
   get stem(): Stem {
     return this._parent.stem;
   }
   set stem(stem: Stem) {
     this._parent.stem = stem;
   }
-  cue: Cue;
-  duration: number;
+  declare cue: Cue;
+  declare duration: number;
   /**
    * This applies to the sound only.
    * s.a. notationObj.tieds
    */
-  ties: Tie[];
-  dynamics: number;
-  play: Play;
-  staff: number; // See prototype.
-  grace: Grace;
-  notehead: Notehead;
-  release: number;
-  pizzicato: boolean;
-  beams: Beam[];
+  declare ties: Tie[];
+  declare dynamics: number;
+  declare play: Play;
+  declare staff: number; // See prototype.
+  declare grace: Grace;
+  declare notehead: Notehead;
+  declare release: number;
+  declare pizzicato: boolean;
+  declare beams: Beam[];
 
   /*---- PrintStyle -----------------------------------------------------------------------*/
 
   /*---- PrintStyle > EditorialVoice ------------------------------------------------------*/
 
-  voice: number;
-  footnote: Footnote;
-  level: Level;
+  declare voice: number;
+  declare footnote: Footnote;
+  declare level: Level;
 
   /*---- PrintStyle > Position ------------------------------------------------------------*/
 
-  defaultX: number; // ignored for now
-  relativeY: number;
-  defaultY: number;
-  relativeX: number;
+  declare defaultX: number; // ignored for now
+  declare relativeY: number;
+  declare defaultY: number;
+  declare relativeX: number;
 
   /*---- PrintStyle > Font ----------------------------------------------------------------*/
 
-  fontFamily: string;
-  fontWeight: NormalBold;
-  fontStyle: NormalItalic;
-  fontSize: string;
+  declare fontFamily: string;
+  declare fontWeight: NormalBold;
+  declare fontStyle: NormalItalic;
+  declare fontSize: string;
 
   /*---- PrintStyle > Color ---------------------------------------------------------------*/
 
-  color: string;
+  declare color: string;
 
   /*---- Printout -------------------------------------------------------------------------*/
 
-  printDot: boolean;
-  printLyric: boolean;
+  declare printDot: boolean;
+  declare printLyric: boolean;
 
   /*---- Printout > PrintObject -----------------------------------------------------------*/
 
-  printObject: boolean;
+  declare printObject: boolean;
 
   /*---- Printout > PrintSpacing ----------------------------------------------------------*/
 
-  printSpacing: boolean;
+  declare printSpacing: boolean;
 
   /*---- TimeOnly -------------------------------------------------------------------------*/
 
-  timeOnly: string;
+  declare timeOnly: string;
 
   /*---- Implementation -------------------------------------------------------------------*/
 

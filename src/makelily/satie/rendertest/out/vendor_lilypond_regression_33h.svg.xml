@@ -6,8 +6,8 @@
   <identification>
     <encoding>
       <encoding-date>2016-01-01</encoding-date>
-      <software>Songhaus Satie</software>
-      <supports type="yes" element="satie-collaboration" />
+      <software>Satie</software>
+      <supports type="yes" element="satie-ext" />
     </encoding>
     <miscellaneous>
       <miscellaneous-field name="description">All different types of 
@@ -130,7 +130,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <glissando type="start" line-type="solid" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000"></glissando>
+          <glissando type="start" number="1" line-type="solid" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000"></glissando>
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">normal</text>
@@ -147,7 +147,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <glissando type="stop" line-type="solid" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000"></glissando>
+          <glissando type="stop" number="1" line-type="solid" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000"></glissando>
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">glissando</text>
@@ -164,7 +164,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <glissando type="start" line-type="solid" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000">text</glissando>
+          <glissando type="start" number="1" line-type="solid" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000">text</glissando>
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">solid</text>
@@ -181,7 +181,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <glissando type="stop" line-type="solid" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000"></glissando>
+          <glissando type="stop" number="1" line-type="solid" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000"></glissando>
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">(+text)</text>
@@ -247,7 +247,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <glissando type="start" line-type="dashed" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000"></glissando>
+          <glissando type="start" number="1" line-type="dashed" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000"></glissando>
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">dashed</text>
@@ -264,7 +264,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <glissando type="stop" line-type="dashed" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000"></glissando>
+          <glissando type="stop" number="1" line-type="dashed" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000"></glissando>
         </notations>
       </note>
       
@@ -278,7 +278,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <glissando type="start" line-type="dotted" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000"></glissando>
+          <glissando type="start" number="1" line-type="dotted" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000"></glissando>
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">dotted</text>
@@ -295,7 +295,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <glissando type="stop" line-type="dotted" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000"></glissando>
+          <glissando type="stop" number="1" line-type="dotted" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000"></glissando>
         </notations>
       </note>
       
@@ -358,7 +358,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <glissando type="start" line-type="wavy" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000"></glissando>
+          <glissando type="start" number="1" line-type="wavy" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000"></glissando>
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">wavy</text>
@@ -375,7 +375,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <glissando type="stop" line-type="wavy" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000"></glissando>
+          <glissando type="stop" number="1" line-type="wavy" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000"></glissando>
         </notations>
       </note>
       
@@ -389,7 +389,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <slide type="start" line-type="solid" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000" accelerate="no" beats="4" first-beat="25" last-beat="75"></slide>
+          <slide type="start" number="1" line-type="solid" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000" accelerate="no" beats="4" first-beat="25" last-beat="75"></slide>
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">normal</text>
@@ -406,7 +406,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <slide type="stop" line-type="solid" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000" accelerate="no" beats="4" first-beat="25" last-beat="75"></slide>
+          <slide type="stop" number="1" line-type="solid" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000" accelerate="no" beats="4" first-beat="25" last-beat="75"></slide>
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">slide</text>
@@ -472,7 +472,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <slide type="start" line-type="solid" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000" accelerate="no" beats="4" first-beat="25" last-beat="75">text</slide>
+          <slide type="start" number="1" line-type="solid" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000" accelerate="no" beats="4" first-beat="25" last-beat="75">text</slide>
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">solid</text>
@@ -489,7 +489,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <slide type="stop" line-type="solid" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000" accelerate="no" beats="4" first-beat="25" last-beat="75"></slide>
+          <slide type="stop" number="1" line-type="solid" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000" accelerate="no" beats="4" first-beat="25" last-beat="75"></slide>
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">(+text)</text>
@@ -506,7 +506,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <slide type="start" line-type="dashed" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000" accelerate="no" beats="4" first-beat="25" last-beat="75"></slide>
+          <slide type="start" number="1" line-type="dashed" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000" accelerate="no" beats="4" first-beat="25" last-beat="75"></slide>
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">dashed</text>
@@ -523,7 +523,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <slide type="stop" line-type="solid" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000" accelerate="no" beats="4" first-beat="25" last-beat="75"></slide>
+          <slide type="stop" number="1" line-type="solid" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000" accelerate="no" beats="4" first-beat="25" last-beat="75"></slide>
         </notations>
       </note>
       
@@ -586,7 +586,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <slide type="start" line-type="dotted" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000" accelerate="no" beats="4" first-beat="25" last-beat="75"></slide>
+          <slide type="start" number="1" line-type="dotted" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000" accelerate="no" beats="4" first-beat="25" last-beat="75"></slide>
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">dotted</text>
@@ -603,7 +603,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <slide type="stop" line-type="dotted" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000" accelerate="no" beats="4" first-beat="25" last-beat="75"></slide>
+          <slide type="stop" number="1" line-type="dotted" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000" accelerate="no" beats="4" first-beat="25" last-beat="75"></slide>
         </notations>
       </note>
       
@@ -617,7 +617,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <slide type="start" line-type="wavy" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000" accelerate="no" beats="4" first-beat="25" last-beat="75"></slide>
+          <slide type="start" number="1" line-type="wavy" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000" accelerate="no" beats="4" first-beat="25" last-beat="75"></slide>
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">wavy</text>
@@ -634,7 +634,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <slide type="stop" line-type="wavy" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000" accelerate="no" beats="4" first-beat="25" last-beat="75"></slide>
+          <slide type="stop" number="1" line-type="wavy" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000" accelerate="no" beats="4" first-beat="25" last-beat="75"></slide>
         </notations>
       </note>
       

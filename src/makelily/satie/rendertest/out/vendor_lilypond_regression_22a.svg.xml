@@ -6,8 +6,8 @@
   <identification>
     <encoding>
       <encoding-date>2016-01-01</encoding-date>
-      <software>Songhaus Satie</software>
-      <supports type="yes" element="satie-collaboration" />
+      <software>Satie</software>
+      <supports type="yes" element="satie-ext" />
     </encoding>
     <miscellaneous>
       <miscellaneous-field name="description">Different note styles, using the 
@@ -95,7 +95,7 @@
           <fifths>0</fifths>
           <mode>major</mode>
         </key>
-        <time symbol="common" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
+        <time number="1" symbol="common" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
           <beats>4</beats>
           <beat-type>4</beat-type>
         </time>
@@ -133,7 +133,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">slash</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">slash</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">slash</text>
@@ -148,7 +148,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">slash</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">slash</notehead>
         <staff>1</staff>
       </note>
       
@@ -160,7 +160,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">slash</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">slash</notehead>
         <staff>1</staff>
       </note>
       
@@ -172,7 +172,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">slash</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">slash</notehead>
         <staff>1</staff>
       </note>
       
@@ -233,7 +233,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">triangle</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">triangle</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">triangle</text>
@@ -248,7 +248,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">triangle</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">triangle</notehead>
         <staff>1</staff>
       </note>
       
@@ -260,7 +260,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">triangle</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">triangle</notehead>
         <staff>1</staff>
       </note>
       
@@ -272,7 +272,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">triangle</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">triangle</notehead>
         <staff>1</staff>
       </note>
       
@@ -333,7 +333,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">diamond</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">diamond</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">diamond</text>
@@ -348,7 +348,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">diamond</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">diamond</notehead>
         <staff>1</staff>
       </note>
       
@@ -360,7 +360,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">diamond</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">diamond</notehead>
         <staff>1</staff>
       </note>
       
@@ -372,7 +372,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">diamond</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">diamond</notehead>
         <staff>1</staff>
       </note>
       
@@ -433,7 +433,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">square</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">square</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">square</text>
@@ -448,7 +448,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">square</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">square</notehead>
         <staff>1</staff>
       </note>
       
@@ -460,7 +460,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">square</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">square</notehead>
         <staff>1</staff>
       </note>
       
@@ -472,7 +472,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">square</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">square</notehead>
         <staff>1</staff>
       </note>
       
@@ -533,7 +533,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">cross</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">cross</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">cross</text>
@@ -548,7 +548,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">cross</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">cross</notehead>
         <staff>1</staff>
       </note>
       
@@ -560,7 +560,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">cross</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">cross</notehead>
         <staff>1</staff>
       </note>
       
@@ -572,7 +572,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">cross</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">cross</notehead>
         <staff>1</staff>
       </note>
       
@@ -633,7 +633,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">x</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">x</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">x</text>
@@ -648,7 +648,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">x</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">x</notehead>
         <staff>1</staff>
       </note>
       
@@ -660,7 +660,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">x</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">x</notehead>
         <staff>1</staff>
       </note>
       
@@ -672,7 +672,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">x</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">x</notehead>
         <staff>1</staff>
       </note>
       
@@ -733,7 +733,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">circle x</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">circle x</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">circle-x</text>
@@ -748,7 +748,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">circle x</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">circle x</notehead>
         <staff>1</staff>
       </note>
       
@@ -760,7 +760,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">circle x</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">circle x</notehead>
         <staff>1</staff>
       </note>
       
@@ -772,7 +772,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">circle x</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">circle x</notehead>
         <staff>1</staff>
       </note>
       
@@ -833,7 +833,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">inverted triangle</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">inverted triangle</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">inverted triangle</text>
@@ -848,7 +848,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">inverted triangle</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">inverted triangle</notehead>
         <staff>1</staff>
       </note>
       
@@ -860,7 +860,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">inverted triangle</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">inverted triangle</notehead>
         <staff>1</staff>
       </note>
       
@@ -872,7 +872,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">inverted triangle</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">inverted triangle</notehead>
         <staff>1</staff>
       </note>
       
@@ -933,7 +933,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">arrow down</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">arrow down</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">arrow down</text>
@@ -948,7 +948,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">arrow down</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">arrow down</notehead>
         <staff>1</staff>
       </note>
       
@@ -960,7 +960,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">arrow down</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">arrow down</notehead>
         <staff>1</staff>
       </note>
       
@@ -972,7 +972,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">arrow down</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">arrow down</notehead>
         <staff>1</staff>
       </note>
       
@@ -1033,7 +1033,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">arrow up</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">arrow up</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">arrow up</text>
@@ -1048,7 +1048,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">arrow up</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">arrow up</notehead>
         <staff>1</staff>
       </note>
       
@@ -1060,7 +1060,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">arrow up</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">arrow up</notehead>
         <staff>1</staff>
       </note>
       
@@ -1072,7 +1072,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">arrow up</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">arrow up</notehead>
         <staff>1</staff>
       </note>
       
@@ -1133,7 +1133,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">slashed</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">slashed</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">slashed</text>
@@ -1148,7 +1148,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">slashed</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">slashed</notehead>
         <staff>1</staff>
       </note>
       
@@ -1160,7 +1160,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">slashed</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">slashed</notehead>
         <staff>1</staff>
       </note>
       
@@ -1172,7 +1172,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">slashed</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">slashed</notehead>
         <staff>1</staff>
       </note>
       
@@ -1233,7 +1233,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">back slashed</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">back slashed</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">back slashed</text>
@@ -1248,7 +1248,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">back slashed</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">back slashed</notehead>
         <staff>1</staff>
       </note>
       
@@ -1260,7 +1260,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">back slashed</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">back slashed</notehead>
         <staff>1</staff>
       </note>
       
@@ -1272,7 +1272,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">back slashed</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">back slashed</notehead>
         <staff>1</staff>
       </note>
       
@@ -1333,7 +1333,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">normal</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">normal</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">normal</text>
@@ -1348,7 +1348,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">normal</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">normal</notehead>
         <staff>1</staff>
       </note>
       
@@ -1360,7 +1360,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">normal</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">normal</notehead>
         <staff>1</staff>
       </note>
       
@@ -1372,7 +1372,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">normal</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">normal</notehead>
         <staff>1</staff>
       </note>
       
@@ -1433,7 +1433,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">cluster</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">cluster</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">cluster</text>
@@ -1448,7 +1448,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">cluster</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">cluster</notehead>
         <staff>1</staff>
       </note>
       
@@ -1460,7 +1460,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">cluster</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">cluster</notehead>
         <staff>1</staff>
       </note>
       
@@ -1472,7 +1472,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">cluster</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">cluster</notehead>
         <staff>1</staff>
       </note>
       
@@ -1533,7 +1533,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">none</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">none</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">none</text>
@@ -1548,7 +1548,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">none</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">none</notehead>
         <staff>1</staff>
       </note>
       
@@ -1560,7 +1560,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">none</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">none</notehead>
         <staff>1</staff>
       </note>
       
@@ -1572,7 +1572,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">none</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">none</notehead>
         <staff>1</staff>
       </note>
       
@@ -1633,7 +1633,7 @@
         <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
-        <notehead font-style="normal" font-weight="normal">slash</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">slash</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">slash</text>
@@ -1648,7 +1648,7 @@
         <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
-        <notehead font-style="normal" font-weight="normal">triangle</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">triangle</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">triangle</text>
@@ -1712,7 +1712,7 @@
         <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
-        <notehead font-style="normal" font-weight="normal">diamond</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">diamond</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">diamond</text>
@@ -1727,7 +1727,7 @@
         <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
-        <notehead font-style="normal" font-weight="normal">square</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">square</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">square</text>
@@ -1791,7 +1791,7 @@
         <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
-        <notehead font-style="normal" font-weight="normal">cross</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">cross</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">cross</text>
@@ -1806,7 +1806,7 @@
         <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
-        <notehead font-style="normal" font-weight="normal">x</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">x</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">x</text>
@@ -1870,7 +1870,7 @@
         <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
-        <notehead font-style="normal" font-weight="normal">circle x</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">circle x</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">circle-x</text>
@@ -1885,7 +1885,7 @@
         <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
-        <notehead font-style="normal" font-weight="normal">inverted triangle</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">inverted triangle</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">inverted triangle</text>
@@ -1949,7 +1949,7 @@
         <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
-        <notehead font-style="normal" font-weight="normal">arrow down</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">arrow down</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">arrow down</text>
@@ -1964,7 +1964,7 @@
         <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
-        <notehead font-style="normal" font-weight="normal">arrow up</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">arrow up</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">arrow up</text>
@@ -2028,7 +2028,7 @@
         <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
-        <notehead font-style="normal" font-weight="normal">slashed</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">slashed</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">slashed</text>
@@ -2043,7 +2043,7 @@
         <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
-        <notehead font-style="normal" font-weight="normal">back slashed</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">back slashed</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">back slashed</text>
@@ -2107,7 +2107,7 @@
         <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
-        <notehead font-style="normal" font-weight="normal">normal</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">normal</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">normal</text>
@@ -2122,7 +2122,7 @@
         <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
-        <notehead font-style="normal" font-weight="normal">cluster</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">cluster</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">cluster</text>
@@ -2186,7 +2186,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">do</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">do</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">do</text>
@@ -2201,7 +2201,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">do</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">do</notehead>
         <staff>1</staff>
       </note>
       
@@ -2213,7 +2213,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">do</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">do</notehead>
         <staff>1</staff>
       </note>
       
@@ -2225,7 +2225,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">do</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">do</notehead>
         <staff>1</staff>
       </note>
       
@@ -2286,7 +2286,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">re</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">re</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">re</text>
@@ -2301,7 +2301,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">re</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">re</notehead>
         <staff>1</staff>
       </note>
       
@@ -2313,7 +2313,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">re</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">re</notehead>
         <staff>1</staff>
       </note>
       
@@ -2325,7 +2325,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">re</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">re</notehead>
         <staff>1</staff>
       </note>
       
@@ -2386,7 +2386,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">mi</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">mi</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">mi</text>
@@ -2401,7 +2401,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">mi</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">mi</notehead>
         <staff>1</staff>
       </note>
       
@@ -2413,7 +2413,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">mi</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">mi</notehead>
         <staff>1</staff>
       </note>
       
@@ -2425,7 +2425,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">mi</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">mi</notehead>
         <staff>1</staff>
       </note>
       
@@ -2486,7 +2486,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">fa</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">fa</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">fa</text>
@@ -2501,7 +2501,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">fa</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">fa</notehead>
         <staff>1</staff>
       </note>
       
@@ -2513,7 +2513,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">fa</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">fa</notehead>
         <staff>1</staff>
       </note>
       
@@ -2525,7 +2525,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">fa</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">fa</notehead>
         <staff>1</staff>
       </note>
       
@@ -2586,7 +2586,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">so</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">so</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">so</text>
@@ -2601,7 +2601,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">so</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">so</notehead>
         <staff>1</staff>
       </note>
       
@@ -2613,7 +2613,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">so</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">so</notehead>
         <staff>1</staff>
       </note>
       
@@ -2625,7 +2625,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">so</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">so</notehead>
         <staff>1</staff>
       </note>
       
@@ -2686,7 +2686,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">la</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">la</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">la</text>
@@ -2701,7 +2701,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">la</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">la</notehead>
         <staff>1</staff>
       </note>
       
@@ -2713,7 +2713,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">la</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">la</notehead>
         <staff>1</staff>
       </note>
       
@@ -2725,7 +2725,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">la</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">la</notehead>
         <staff>1</staff>
       </note>
       
@@ -2786,7 +2786,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">ti</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">ti</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">ti</text>
@@ -2801,7 +2801,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">ti</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">ti</notehead>
         <staff>1</staff>
       </note>
       
@@ -2813,7 +2813,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">ti</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">ti</notehead>
         <staff>1</staff>
       </note>
       
@@ -2825,7 +2825,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" filled="no">ti</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" filled="no">ti</notehead>
         <staff>1</staff>
       </note>
       
@@ -2887,7 +2887,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">do</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">do</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">do</text>
@@ -2902,7 +2902,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">re</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">re</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">re</text>
@@ -2918,7 +2918,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">mi</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">mi</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">mi</text>
@@ -2933,7 +2933,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">fa</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">fa</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">fa</text>
@@ -2997,7 +2997,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">so</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">so</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">so</text>
@@ -3013,7 +3013,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">la</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">la</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">la</text>
@@ -3029,7 +3029,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">ti</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">ti</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">ti</text>
@@ -3044,7 +3044,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">do</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">do</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">do</text>
@@ -3109,7 +3109,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">do</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">do</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">do</text>
@@ -3124,7 +3124,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">re</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">re</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">re</text>
@@ -3139,7 +3139,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">mi</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">mi</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">mi</text>
@@ -3154,7 +3154,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">fa</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">fa</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">fa</text>
@@ -3218,7 +3218,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">so</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">so</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">so</text>
@@ -3233,7 +3233,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">la</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">la</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">la</text>
@@ -3248,7 +3248,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">ti</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">ti</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">ti</text>
@@ -3263,7 +3263,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">do</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">do</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">do</text>

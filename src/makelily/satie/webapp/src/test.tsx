@@ -5,7 +5,7 @@ import { Application, ISong, Song } from "../../src/satie";
 import { find } from "lodash";
 
 import { prefix } from "./config";
-import STYLES from "./test.css";
+import * as STYLES from "./test.css";
 
 export const satieApplication = new Application({
   satieRoot: location.protocol + "//" + location.host + prefix + "/vendor/",

@@ -6,8 +6,8 @@
   <identification>
     <encoding>
       <encoding-date>2016-01-01</encoding-date>
-      <software>Songhaus Satie</software>
-      <supports type="yes" element="satie-collaboration" />
+      <software>Satie</software>
+      <supports type="yes" element="satie-ext" />
     </encoding>
     <miscellaneous>
       <miscellaneous-field name="description">Chords in the 
@@ -92,7 +92,7 @@
           <fifths>-4</fifths>
           <mode>major</mode>
         </key>
-        <time symbol="common" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
+        <time number="1" symbol="common" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
           <beats>4</beats>
           <beat-type>4</beat-type>
         </time>
@@ -116,7 +116,7 @@
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <words justify="left" default-x="0" default-y="60" relative-x="0" relative-y="-5.337679815758129" font-style="normal" font-size="18" font-weight="bold" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" line-height="normal" dir="ltr" enclosure="none">Largo</words>
+          <words justify="left" default-x="0" default-y="60" relative-x="0" relative-y="-0.15000049999999732" font-style="normal" font-size="18" font-weight="bold" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" line-height="normal" dir="ltr" enclosure="none">Largo</words>
         </direction-type>
       </direction>
       <forward><duration>0</duration></forward>

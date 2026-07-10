@@ -6,8 +6,8 @@
   <identification>
     <encoding>
       <encoding-date>2016-01-01</encoding-date>
-      <software>Songhaus Satie</software>
-      <supports type="yes" element="satie-collaboration" />
+      <software>Satie</software>
+      <supports type="yes" element="satie-ext" />
     </encoding>
     <miscellaneous>
       <miscellaneous-field name="description">Different note styles for 
@@ -91,7 +91,7 @@
           <fifths>0</fifths>
           <mode>major</mode>
         </key>
-        <time symbol="common" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
+        <time number="1" symbol="common" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
           <beats>4</beats>
           <beat-type>4</beat-type>
         </time>
@@ -143,7 +143,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">triangle</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">triangle</notehead>
         <staff>1</staff>
         <lyric number="2" justify="left" default-x="NaN" default-y="NaN" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">triangle</text>
@@ -158,7 +158,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">slash</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">slash</notehead>
         <staff>1</staff>
         <lyric number="3" justify="left" default-x="NaN" default-y="NaN" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">slash</text>
@@ -173,7 +173,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">cross</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">cross</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">cross</text>
@@ -188,7 +188,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">square</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">square</notehead>
         <staff>1</staff>
         <lyric number="2" justify="left" default-x="NaN" default-y="NaN" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">square</text>
@@ -203,7 +203,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">diamond</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">diamond</notehead>
         <staff>1</staff>
         <lyric number="3" justify="left" default-x="NaN" default-y="NaN" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">diamond</text>
@@ -218,7 +218,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">inverted triangle</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">inverted triangle</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">inverted triangle</text>
@@ -233,7 +233,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">circle x</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">circle x</notehead>
         <staff>1</staff>
         <lyric number="2" justify="left" default-x="NaN" default-y="NaN" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">circle-x</text>
@@ -248,7 +248,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">x</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">x</notehead>
         <staff>1</staff>
         <lyric number="3" justify="left" default-x="NaN" default-y="NaN" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">x</text>
@@ -263,7 +263,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">slashed</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">slashed</notehead>
         <staff>1</staff>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">slashed</text>
@@ -278,7 +278,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">arrow up</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">arrow up</notehead>
         <staff>1</staff>
         <lyric number="2" justify="left" default-x="NaN" default-y="NaN" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">arrow up</text>
@@ -293,7 +293,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal">arrow down</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000">arrow down</notehead>
         <staff>1</staff>
         <lyric number="3" justify="left" default-x="NaN" default-y="NaN" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">arrow down</text>

@@ -6,8 +6,8 @@
   <identification>
     <encoding>
       <encoding-date>2016-01-01</encoding-date>
-      <software>Songhaus Satie</software>
-      <supports type="yes" element="satie-collaboration" />
+      <software>Satie</software>
+      <supports type="yes" element="satie-ext" />
     </encoding>
     <miscellaneous>
       <miscellaneous-field name="description">Different Arpeggio directions 
@@ -133,7 +133,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" color="#000000" />
+          <arpeggiate number="1" type="up" color="#000000" />
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">normal</text>
@@ -150,7 +150,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" color="#000000" />
+          <arpeggiate number="1" type="up" color="#000000" />
         </notations>
       </note>
       <note default-y="25" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -164,7 +164,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" color="#000000" />
+          <arpeggiate number="1" type="up" color="#000000" />
         </notations>
       </note>
       
@@ -178,7 +178,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" color="#000000" />
+          <arpeggiate number="1" type="up" color="#000000" />
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">up</text>
@@ -195,7 +195,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" color="#000000" />
+          <arpeggiate number="1" type="up" color="#000000" />
         </notations>
       </note>
       <note default-y="25" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -209,7 +209,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" color="#000000" />
+          <arpeggiate number="1" type="up" color="#000000" />
         </notations>
       </note>
       
@@ -223,7 +223,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" color="#000000" />
+          <arpeggiate number="1" type="up" color="#000000" />
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">normal</text>
@@ -240,7 +240,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" color="#000000" />
+          <arpeggiate number="1" type="up" color="#000000" />
         </notations>
       </note>
       <note default-y="25" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -254,7 +254,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" color="#000000" />
+          <arpeggiate number="1" type="up" color="#000000" />
         </notations>
       </note>
       
@@ -268,7 +268,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" color="#000000" />
+          <arpeggiate number="1" type="down" color="#000000" />
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">down</text>
@@ -285,7 +285,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" color="#000000" />
+          <arpeggiate number="1" type="down" color="#000000" />
         </notations>
       </note>
       <note default-y="25" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -299,7 +299,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" color="#000000" />
+          <arpeggiate number="1" type="down" color="#000000" />
         </notations>
       </note>
       
@@ -362,7 +362,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" color="#000000" />
+          <arpeggiate number="1" type="up" color="#000000" />
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">normal</text>
@@ -379,7 +379,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" color="#000000" />
+          <arpeggiate number="1" type="up" color="#000000" />
         </notations>
       </note>
       <note default-y="25" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -393,7 +393,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" color="#000000" />
+          <arpeggiate number="1" type="up" color="#000000" />
         </notations>
       </note>
       
@@ -449,7 +449,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" color="#000000" />
+          <arpeggiate number="1" type="up" color="#000000" />
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">normal</text>
@@ -466,7 +466,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" color="#000000" />
+          <arpeggiate number="1" type="up" color="#000000" />
         </notations>
       </note>
       <note default-y="25" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -480,7 +480,7 @@
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" color="#000000" />
+          <arpeggiate number="1" type="up" color="#000000" />
         </notations>
       </note>
       

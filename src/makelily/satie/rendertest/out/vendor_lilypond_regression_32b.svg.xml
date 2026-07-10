@@ -6,8 +6,8 @@
   <identification>
     <encoding>
       <encoding-date>2016-01-01</encoding-date>
-      <software>Songhaus Satie</software>
-      <supports type="yes" element="satie-collaboration" />
+      <software>Satie</software>
+      <supports type="yes" element="satie-ext" />
     </encoding>
     <miscellaneous>
       <miscellaneous-field name="description">Text markup: 
@@ -89,7 +89,7 @@
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
         </key>
-        <time symbol="normal" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
+        <time number="1" symbol="normal" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
           <beats>4</beats>
           <beat-type>4</beat-type>
         </time>
@@ -113,7 +113,7 @@
           <div-count>384</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <words justify="left" default-x="0" default-y="60" font-style="normal" font-size="medium" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" line-height="normal" dir="ltr" enclosure="none">Normal, Medium</words>
+          <words justify="left" default-x="0" default-y="60" relative-x="0" relative-y="0" font-style="normal" font-size="medium" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" line-height="normal" dir="ltr" enclosure="none">Normal, Medium</words>
         </direction-type>
       </direction>
       <forward><duration>384</duration></forward>
@@ -123,7 +123,7 @@
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <words justify="left" default-x="0" default-y="-60" font-style="normal" font-size="medium" font-weight="bold" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" line-height="normal" dir="ltr" enclosure="none">Bold, Medium</words>
+          <words justify="left" default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-size="medium" font-weight="bold" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" line-height="normal" dir="ltr" enclosure="none">Bold, Medium</words>
         </direction-type>
       </direction>
       <forward><duration>0</duration></forward>
@@ -193,7 +193,7 @@
           <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <words justify="left" default-x="0" default-y="60" font-style="normal" font-size="large" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" line-height="normal" dir="ltr" enclosure="none">Normal, Large</words>
+          <words justify="left" default-x="0" default-y="60" relative-x="0" relative-y="0" font-style="normal" font-size="large" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" line-height="normal" dir="ltr" enclosure="none">Normal, Large</words>
         </direction-type>
       </direction>
       <forward><duration>3072</duration></forward>
@@ -203,7 +203,7 @@
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <words justify="left" default-x="0" default-y="-60" font-style="normal" font-size="large" font-weight="bold" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" line-height="normal" dir="ltr" enclosure="none">Bold, Large</words>
+          <words justify="left" default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-size="large" font-weight="bold" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" line-height="normal" dir="ltr" enclosure="none">Bold, Large</words>
         </direction-type>
       </direction>
       <forward><duration>0</duration></forward>
@@ -270,7 +270,7 @@
           <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <words justify="left" default-x="0" default-y="60" font-style="normal" font-size="small" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" line-height="normal" dir="ltr" enclosure="none">Normal, Small</words>
+          <words justify="left" default-x="0" default-y="60" relative-x="0" relative-y="0" font-style="normal" font-size="small" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" line-height="normal" dir="ltr" enclosure="none">Normal, Small</words>
         </direction-type>
       </direction>
       <forward><duration>3072</duration></forward>
@@ -280,7 +280,7 @@
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <words justify="left" default-x="0" default-y="-60" font-style="normal" font-size="small" font-weight="bold" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" line-height="normal" dir="ltr" enclosure="none">Bold, Small</words>
+          <words justify="left" default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-size="small" font-weight="bold" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" line-height="normal" dir="ltr" enclosure="none">Bold, Small</words>
         </direction-type>
       </direction>
       <forward><duration>0</duration></forward>
@@ -290,7 +290,7 @@
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <words justify="left" default-x="0" default-y="-60" font-style="normal" font-size="small" font-weight="normal" color="#FF8000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" line-height="normal" dir="ltr" enclosure="none">Normal, Small, Colored, Below</words>
+          <words justify="left" default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-size="small" font-weight="normal" color="#FF8000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" line-height="normal" dir="ltr" enclosure="none">Normal, Small, Colored, Below</words>
         </direction-type>
       </direction>
       <forward><duration>0</duration></forward>

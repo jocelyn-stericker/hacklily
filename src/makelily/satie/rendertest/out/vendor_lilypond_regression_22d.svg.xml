@@ -6,8 +6,8 @@
   <identification>
     <encoding>
       <encoding-date>2016-01-01</encoding-date>
-      <software>Songhaus Satie</software>
-      <supports type="yes" element="satie-collaboration" />
+      <software>Satie</software>
+      <supports type="yes" element="satie-ext" />
     </encoding>
     <miscellaneous>
       <miscellaneous-field name="description">Parenthesized note heads. First,
@@ -92,7 +92,7 @@
           <fifths>0</fifths>
           <mode>major</mode>
         </key>
-        <time symbol="common" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
+        <time number="1" symbol="common" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
           <beats>6</beats>
           <beat-type>4</beat-type>
         </time>
@@ -130,7 +130,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" parentheses="yes">normal</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" parentheses="yes">normal</notehead>
         <staff>1</staff>
       </note>
       
@@ -142,7 +142,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" parentheses="yes">x</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" parentheses="yes">x</notehead>
         <staff>1</staff>
       </note>
       
@@ -165,7 +165,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" parentheses="yes">normal</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" parentheses="yes">normal</notehead>
         <staff>1</staff>
       </note>
       <note default-y="15" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
@@ -188,7 +188,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" parentheses="yes">normal</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" parentheses="yes">normal</notehead>
         <staff>1</staff>
       </note>
       <note default-y="5" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
@@ -200,7 +200,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" parentheses="yes">normal</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" parentheses="yes">normal</notehead>
         <staff>1</staff>
       </note>
       <note default-y="15" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
@@ -212,7 +212,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" parentheses="yes">normal</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" parentheses="yes">normal</notehead>
         <staff>1</staff>
       </note>
       
@@ -223,7 +223,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" parentheses="yes">normal</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" parentheses="yes">normal</notehead>
         <staff>1</staff>
       </note>
       
@@ -235,7 +235,7 @@
         <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <notehead font-style="normal" font-weight="normal" parentheses="yes">normal</notehead>
+        <notehead font-style="normal" font-weight="normal" color="#000000" parentheses="yes">normal</notehead>
         <staff>1</staff>
       </note>
       

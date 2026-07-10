@@ -6,8 +6,8 @@
   <identification>
     <encoding>
       <encoding-date>2016-01-01</encoding-date>
-      <software>Songhaus Satie</software>
-      <supports type="yes" element="satie-collaboration" />
+      <software>Satie</software>
+      <supports type="yes" element="satie-ext" />
     </encoding>
     <miscellaneous>
       <miscellaneous-field name="description">A piece with 
@@ -101,7 +101,7 @@
           <fifths>1</fifths>
           <mode>major</mode>
         </key>
-        <time symbol="normal" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
+        <time number="1" symbol="normal" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
           <beats>4</beats>
           <beat-type>4</beat-type>
         </time>
@@ -192,7 +192,7 @@
           <fifths>1</fifths>
           <mode>major</mode>
         </key>
-        <time symbol="normal" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
+        <time number="1" symbol="normal" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
           <beats>4</beats>
           <beat-type>4</beat-type>
         </time>
@@ -283,7 +283,7 @@
           <fifths>1</fifths>
           <mode>major</mode>
         </key>
-        <time symbol="normal" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
+        <time number="1" symbol="normal" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
           <beats>4</beats>
           <beat-type>4</beat-type>
         </time>
@@ -374,7 +374,7 @@
           <fifths>1</fifths>
           <mode>major</mode>
         </key>
-        <time symbol="normal" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
+        <time number="1" symbol="normal" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
           <beats>4</beats>
           <beat-type>4</beat-type>
         </time>

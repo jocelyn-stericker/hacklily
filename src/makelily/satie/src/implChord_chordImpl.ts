@@ -272,9 +272,9 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
   /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
   /** set in validate */
-  divCount: number;
+  declare divCount: number;
 
-  divisions: number;
+  declare divisions: number;
 
   get staffIdx(): number {
     return this[0].staff || 1;
@@ -291,26 +291,26 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
 
   /*---- II. Ext ------------------------------------------------------------------------------*/
 
-  wholebar: boolean;
+  declare wholebar: boolean;
 
-  satieStem: {
+  declare satieStem: {
     direction: number;
     stemHeight: number;
     stemStart: number;
     tremolo?: Tremolo;
   };
 
-  satieFlag: string;
-  satieDirection: StemType;
-  satieMultipleRest: MultipleRest;
-  noteheadGlyph: string[];
-  satieUnbeamedTuplet: IBeamLayout;
-  _clef: Clef;
-  key: string;
+  declare satieFlag: string;
+  declare satieDirection: StemType;
+  declare satieMultipleRest: MultipleRest;
+  declare noteheadGlyph: string[];
+  declare satieUnbeamedTuplet: IBeamLayout;
+  declare _clef: Clef;
+  declare key: string;
 
-  stem: Stem;
+  declare stem: Stem;
 
-  private _layout: Layout;
+  declare private _layout: Layout;
 
   get satieLedger(): number[] {
     return ledgerLines(this, this._clef);

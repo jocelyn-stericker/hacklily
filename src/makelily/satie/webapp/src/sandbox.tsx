@@ -5,7 +5,7 @@ import { defer, find, isEqual } from "lodash";
 import { Pitch, Note, Count, MxmlAccidental } from "#/musicxml-interfaces";
 import { IAny } from "#/musicxml-interfaces/operations";
 
-const STYLES = require("./tests.css");
+import * as STYLES from "./tests.css";
 
 import { ISong, Song, Patch, Type, IMouseEvent } from "../../src/satie";
 

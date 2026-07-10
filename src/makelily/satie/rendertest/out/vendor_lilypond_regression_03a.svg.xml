@@ -6,8 +6,8 @@
   <identification>
     <encoding>
       <encoding-date>2016-01-01</encoding-date>
-      <software>Songhaus Satie</software>
-      <supports type="yes" element="satie-collaboration" />
+      <software>Satie</software>
+      <supports type="yes" element="satie-ext" />
     </encoding>
     <miscellaneous>
       <miscellaneous-field name="description">All note durations, from long, 
@@ -91,7 +91,7 @@
           <fifths>0</fifths>
           <mode>major</mode>
         </key>
-        <time symbol="normal" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
+        <time number="1" symbol="normal" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
           <beats>16</beats>
           <beat-type>4</beat-type>
         </time>
@@ -128,7 +128,7 @@
         </pitch>
         <duration>12288</duration>
         <voice>1</voice>
-        <type>undefined</type>
+        <type>long</type>
         <staff>1</staff>
       </note>
       
@@ -191,7 +191,7 @@
         </pitch>
         <duration>12288</duration>
         <voice>1</voice>
-        <type>undefined</type>
+        <type>breve</type>
         <staff>1</staff>
       </note>
       
@@ -420,7 +420,7 @@
       
       <attributes>
         <divisions>768</divisions>
-        <time symbol="normal" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
+        <time number="1" symbol="normal" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
           <beats>24</beats>
           <beat-type>4</beat-type>
         </time>
@@ -449,7 +449,7 @@
         </pitch>
         <duration>18432</duration>
         <voice>1</voice>
-        <type>undefined</type>
+        <type>long</type>
         <dot />
         <staff>1</staff>
       </note>
@@ -513,7 +513,7 @@
         </pitch>
         <duration>18432</duration>
         <voice>1</voice>
-        <type>undefined</type>
+        <type>breve</type>
         <dot />
         <staff>1</staff>
       </note>
@@ -752,7 +752,7 @@
       
       <attributes>
         <divisions>768</divisions>
-        <time symbol="normal" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
+        <time number="1" symbol="normal" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
           <beats>28</beats>
           <beat-type>4</beat-type>
         </time>
@@ -781,7 +781,7 @@
         </pitch>
         <duration>21504</duration>
         <voice>1</voice>
-        <type>undefined</type>
+        <type>long</type>
         <dot />
         <dot />
         <staff>1</staff>
@@ -846,7 +846,7 @@
         </pitch>
         <duration>21504</duration>
         <voice>1</voice>
-        <type>undefined</type>
+        <type>breve</type>
         <dot />
         <dot />
         <staff>1</staff>

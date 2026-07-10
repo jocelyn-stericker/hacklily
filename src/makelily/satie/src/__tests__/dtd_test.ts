@@ -45,7 +45,7 @@ function mkdirp(path: string) {
 }
 
 describe("Import/export tests", function () {
-  const lilyRoot = "src/makelily/satie/vendor";
+  const lilyRoot = "static/playground/lilypond-regression";
   const lilyFiles = fs.readdirSync(lilyRoot); // needs to be setup before leaving 'describe'
   forEach(lilyFiles, (file) => {
     if (file.match(/[0-9]..\.xml$/)) {
@@ -66,17 +66,25 @@ describe("Import/export tests", function () {
 
   function testFile(root: string, file: string) {
     const outname =
-      `${root.replace(/^.*vendor\//, "vendor_").replace("-", "_")}_${file.replace(
+      `${root.replace(/^.*(vendor|playground)\//, "vendor_").replace("-", "_")}_${file.replace(
         "-",
         "_",
       )}`.replace(".xml", ".svg");
     it(file, function (done) {
       readFile(root + "/" + file, function (musicXML) {
+        let countedErr = false
         const song = new SongImpl({
           baseSrc: musicXML,
 
-          onError: done,
+          onError: err => {
+            done(err)
+            countedErr = true
+          },
           onLoaded: () => {
+            if (countedErr) {
+              return
+            }
+
             try {
               // HACK: Overwrite encoding date to always be the same, so test results don't change overnight.
               // Note: this is not the correct way of modifying a document -- use patches!

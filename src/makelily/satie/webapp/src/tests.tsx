@@ -5,7 +5,7 @@ import { reduce } from "lodash";
 import Test from "./test";
 
 import { prefix } from "./config";
-const STYLES = require("./tests.css");
+import * as STYLES from "./tests.css";
 
 const TEST_CATEGORIES: { [key: string]: string } = {
   "01": "Pitches",
@@ -160,7 +160,6 @@ const TESTS = [
   "72c",
   "73a",
   "75a",
-  "90a",
   "99a",
   "99b",
 ];

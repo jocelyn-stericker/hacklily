@@ -16,10 +16,9 @@ export default function Home() {
         </a>
       </aside>
       <p>
-        Satie is created by <a href="https://nettek.ca">Josh Netterfield</a> and
-        is a component of <a href="https://ripieno.io">Ripieno</a>, a
-        collaborative sheet music editor. Satie isn&pos;t ready for production
-        use, yet.
+        Satie is created by <a href="https://nettek.ca">Jocelyn Stericker</a> and
+        is a component of <a href="https://hacklily.org">Hacklily</a>, a
+        sheet music editor.
       </p>
       <Test
         singleLine={false}
