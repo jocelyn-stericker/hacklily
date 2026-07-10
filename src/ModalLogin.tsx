@@ -68,12 +68,7 @@ export default class ModalLogin extends React.PureComponent<Props> {
     }
 
     return (
-      <Dialog
-        icon="log-in"
-        title="Sign in to continue"
-        isOpen={true}
-        onClose={onHide}
-      >
+      <Dialog title="Sign in to continue" isOpen={true} onClose={onHide}>
         <div className={Classes.DIALOG_BODY}>
           <p className={Classes.TEXT_LARGE + " " + Classes.RUNNING_TEXT}>
             <strong>

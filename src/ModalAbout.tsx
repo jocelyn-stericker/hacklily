@@ -39,7 +39,6 @@ class ModalAbout extends React.PureComponent<Props> {
   render(): JSX.Element {
     return (
       <Dialog
-        icon="info-sign"
         isOpen={true}
         onClose={this.props.onHide}
         title="About Hacklily"

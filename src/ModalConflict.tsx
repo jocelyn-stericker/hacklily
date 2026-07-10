@@ -32,7 +32,7 @@ interface Props {
 export default class ModalConflict extends React.PureComponent<Props> {
   render(): JSX.Element {
     return (
-      <Dialog isOpen={true} title="Keep unsaved changes?" icon="git-merge">
+      <Dialog isOpen={true} title="Keep unsaved changes?">
         <div className={Classes.DIALOG_BODY}>
           <p style={{ marginTop: 0 }}>
             <strong>This song was edited outside of this browser.</strong> You

@@ -19,6 +19,19 @@
  */
 
 import { Menu, MenuDivider, MenuItem } from "@blueprintjs/core";
+import {
+  CirclePlus,
+  Code,
+  Copy,
+  Download,
+  FileText,
+  FolderOpen,
+  Import,
+  LogOut,
+  Music,
+  Save,
+  Sun,
+} from "lucide-react";
 import React from "react";
 
 import { Auth } from "./auth";
@@ -72,7 +85,13 @@ export default class FileMenu extends React.PureComponent<Props> {
 
     let signOut: React.ReactNode;
     if (auth) {
-      signOut = <MenuItem onClick={onSignOut} icon="log-out" text="Sign out" />;
+      signOut = (
+        <MenuItem
+          onClick={onSignOut}
+          icon={<LogOut size="1em" />}
+          text="Sign out"
+        />
+      );
     }
 
     const tutorial: React.ReactNode = (
@@ -85,55 +104,69 @@ export default class FileMenu extends React.PureComponent<Props> {
         rel="noopener noreferrer"
         target="_blank"
         text="LilyPond manual&hellip;"
-        icon="help"
       />
     );
 
     const about: React.ReactNode = (
-      <MenuItem onClick={onShowAbout} text="About Hacklily" icon="info-sign" />
+      <MenuItem onClick={onShowAbout} text="About Hacklily" />
     );
 
     return (
       <Menu>
         <MenuItem
-          icon="add"
+          icon={<CirclePlus size="1em" />}
           text="New song"
           onClick={onShowNew}
           disabled={!canCreateNew}
         />
         <MenuDivider />
         <MenuItem
-          icon="document-open"
+          icon={<FolderOpen size="1em" />}
           text="Open&hellip;"
           onClick={onShowOpen}
         />
         <MenuItem
-          icon="import"
+          icon={<Import size="1em" />}
           text="Import MusicXML&hellip;"
           href="/musicxml2ly.html"
         />
         <MenuItem
-          icon="floppy-disk"
+          icon={<Save size="1em" />}
           text="Save"
           disabled={!canSave}
           onClick={onShowPublish}
         />
         <MenuItem
-          icon="duplicate"
+          icon={<Copy size="1em" />}
           text="Save as&hellip;"
           onClick={onShowClone}
           disabled={!canSaveAs}
         />
-        <MenuItem icon="download" text="Export" disabled={!canExport}>
-          <MenuItem onClick={onExportLy} icon="code" text="LilyPond source" />
-          <MenuItem onClick={onExportPDF} icon="document-share" text="PDF" />
-          <MenuItem onClick={onExportMIDI} icon="music" text="MIDI" />
+        <MenuItem
+          icon={<Download size="1em" />}
+          text="Export"
+          disabled={!canExport}
+        >
+          <MenuItem
+            onClick={onExportLy}
+            icon={<Code size="1em" />}
+            text="LilyPond source"
+          />
+          <MenuItem
+            onClick={onExportPDF}
+            icon={<FileText size="1em" />}
+            text="PDF"
+          />
+          <MenuItem
+            onClick={onExportMIDI}
+            icon={<Music size="1em" />}
+            text="MIDI"
+          />
           {songURL && <MenuDivider />}
           {songURL && (
             <MenuItem
               href={songURL.replace(/\.ly$/, ".pdf")}
-              icon="git-repo"
-              text="View on GitHub"
+              text="View on GitHub&hellip;"
             />
           )}
         </MenuItem>
@@ -163,7 +196,7 @@ export default class FileMenu extends React.PureComponent<Props> {
     return (
       <MenuItem
         onClick={this.handleColourSchemeToggled}
-        icon="lightbulb"
+        icon={<Sun size="1em" />}
         text={text}
       />
     );

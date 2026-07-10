@@ -19,6 +19,7 @@
  */
 
 import { Button, Classes, Dialog, Intent } from "@blueprintjs/core";
+import { Save, Trash } from "lucide-react";
 import React from "react";
 
 interface Props {
@@ -60,12 +61,12 @@ export default class ModalUnsavedChangesInterstitial extends React.PureComponent
               <Button
                 intent={Intent.DANGER}
                 onClick={this.props.discardChanges}
-                icon="trash"
+                icon={<Trash size="1em" />}
               >
                 Discard changes
               </Button>
               <Button
-                icon="floppy-disk"
+                icon={<Save size="1em" />}
                 intent={Intent.PRIMARY}
                 onClick={this.props.save}
               >

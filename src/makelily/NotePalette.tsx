@@ -19,6 +19,7 @@
  */
 
 import { css, StyleSheet } from "aphrodite";
+import { Undo, Redo, Plus } from "lucide-react";
 import { chunk, isEqual, times } from "lodash";
 import {
   Count,
@@ -309,11 +310,11 @@ export default class NotePalette extends React.Component<Props> {
           <ul className={css(styles.controls)}>
             <div className={css(styles.controlSeperator)} />
             <a href="#" onClick={this.props.undo} className={cls} role="button">
-              <i className="fa-undo fa" />
+              <Undo />
             </a>
             <div className={css(styles.controlSeperator)} />
             <a href="#" onClick={this.props.redo} className={cls} role="button">
-              <i className="fa-undo fa-flip-horizontal fa" />
+              <Redo />
             </a>
             <div className={css(styles.controlSeperator)} />
             <a
@@ -322,7 +323,7 @@ export default class NotePalette extends React.Component<Props> {
               className={cls}
               role="button"
             >
-              <i className="fa-plus fa" /> Add Bar
+              <Plus /> Add Bar
             </a>
           </ul>
         </div>
@@ -756,7 +757,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 0,
     color: "white",
     cursor: "pointer",
-    display: "block",
+    display: "inline-flex",
+    alignItems: "center",
     fontSize: 14,
     height: 40,
     lineHeight: "36px",
@@ -781,7 +783,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 0,
     color: "rgb(0, 0, 238)",
     cursor: "pointer",
-    display: "block",
+    display: "inline-flex",
+    alignItems: "center",
     fontSize: 14,
     height: 40,
     lineHeight: "36px",

@@ -19,6 +19,7 @@
  */
 
 import { AnchorButton, Classes, Dialog, Intent } from "@blueprintjs/core";
+import { RefreshCw } from "lucide-react";
 import React from "react";
 
 /**
@@ -29,7 +30,6 @@ export default class ModalLocked extends React.PureComponent {
   render(): JSX.Element {
     return (
       <Dialog
-        icon="lock"
         title="Locked"
         isOpen={true}
         canOutsideClickClose={false}
@@ -39,14 +39,14 @@ export default class ModalLocked extends React.PureComponent {
         <div className={Classes.DIALOG_BODY}>
           This song was opened in another tab. You can only edit in one tab at
           once. If you have closed the other tab, you may{" "}
-          <a href={window.location.toString()}>resume editing here</a>.
+          <a onClick={() => window.location.reload()}>resume editing here</a>.
         </div>
         <div className={Classes.DIALOG_FOOTER}>
           <div className={Classes.DIALOG_FOOTER_ACTIONS}>
             <AnchorButton
-              href={window.location.toString()}
+              onClick={() => window.location.reload()}
               intent={Intent.PRIMARY}
-              icon="refresh"
+              icon={<RefreshCw size="1em" />}
             >
               Reload
             </AnchorButton>

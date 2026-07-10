@@ -18,7 +18,6 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { Icon } from "@blueprintjs/core";
 import { css } from "aphrodite";
 import Makelily from "./makelily/Makelily"; // note: use for types only
 import * as monacoEditor from "monaco-editor";
@@ -50,6 +49,7 @@ import ModalUnsavedChangesInterstitial from "./ModalUnsavedChangesInterstitial";
 import Preview from "./Preview";
 import RPCClient from "./RPCClient";
 import { APP_STYLE } from "./styles";
+import { TriangleAlert } from "lucide-react";
 
 function last<T>(t: T[]): T {
   return t[t.length - 1];
@@ -1318,7 +1318,7 @@ export default class App extends React.PureComponent<Props, State> {
           }}
         >
           <div className={css(APP_STYLE.sheetMusicError)}>
-            <Icon icon="warning-sign" /> Could not connect to server.
+            <TriangleAlert size="1em" /> Could not connect to server.
             <br />
             Trying again in {reconnectTimeout}
             &hellip;

@@ -23,7 +23,6 @@ import {
   Classes,
   Dialog,
   HTMLTable,
-  Icon,
   Intent,
   Menu,
   MenuItem,
@@ -37,6 +36,7 @@ import React from "react";
 
 import { Auth } from "./auth";
 import { File, ls } from "./gitfs";
+import { Trash, File as FileIcon, Ellipsis } from "lucide-react";
 
 interface Props {
   auth: Auth | null;
@@ -93,7 +93,7 @@ class GitHubOpen extends React.Component<Props, GitHubState> {
                 <MenuItem
                   text="Delete"
                   intent={Intent.DANGER}
-                  icon="trash"
+                  icon={<Trash size="1em" />}
                   onClick={this.handleSongDeleteClick}
                 />
               </Menu>
@@ -105,12 +105,16 @@ class GitHubOpen extends React.Component<Props, GitHubState> {
                   onClick={this.handleSongLiClick}
                   title={song.path}
                 >
-                  <Icon icon="document" className={css(styles.docIcon)} />
+                  <FileIcon size="1em" className={css(styles.docIcon)} />
                   {song.path}
                 </td>
                 <td className={css(styles.tableIcon)}>
                   <Popover content={menu}>
-                    <Button minimal={true} icon="more" small={true} />
+                    <Button
+                      minimal={true}
+                      icon={<Ellipsis size="1em" />}
+                      small={true}
+                    />
                   </Popover>
                 </td>
               </tr>
@@ -207,29 +211,18 @@ class ModalOpen extends React.PureComponent<Props, {}> {
         isOpen={true}
         onClose={onHide}
         className={css(styles.modal)}
-        icon="document-open"
       >
         <div className={Classes.DIALOG_BODY}>
           <Tabs vertical={true} animate={true} renderActiveTabPanelOnly={true}>
             <Tab
               id="github"
-              title={
-                <div>
-                  <Icon icon="git-repo" className={css(styles.methodIcon)} />{" "}
-                  GitHub
-                </div>
-              }
+              title={<div>GitHub</div>}
               panel={<GitHubOpen {...this.props} />}
               panelClassName={css(styles.panel)}
             />
             <Tab
               id="more-soon"
-              title={
-                <div>
-                  <Icon icon="time" className={css(styles.methodIcon)} />
-                  More soon&hellip;
-                </div>
-              }
+              title={<div>More soon&hellip;</div>}
               disabled={true}
             />
           </Tabs>
@@ -310,5 +303,6 @@ const styles = StyleSheet.create({
   },
   docIcon: {
     marginRight: 8,
+    verticalAlign: "middle",
   },
 });

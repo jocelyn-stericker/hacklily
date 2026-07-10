@@ -684,9 +684,7 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
       }
       n = Math.round(n);
 
-      /* tslint:disable */
       return !!n && !(n & (n - 1));
-      /* tslint:enable */
     }
 
     return count;

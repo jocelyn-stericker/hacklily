@@ -18,7 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { Icon } from "@blueprintjs/core";
+import { Lock, TriangleAlert } from "lucide-react";
 import { css } from "aphrodite";
 import * as monacoEditor from "monaco-editor";
 import React from "react";
@@ -277,7 +277,7 @@ export default class Editor extends React.PureComponent<Props> {
             className={css(APP_STYLE.urgentEditorNotification)}
             style={{ width }}
           >
-            <Icon icon="lock" /> to edit, save a copy of this song to your
+            <Lock size="1em" /> to edit, save a copy of this song to your
             library.
           </div>
         );
@@ -287,7 +287,7 @@ export default class Editor extends React.PureComponent<Props> {
             className={css(APP_STYLE.urgentEditorNotification)}
             style={{ width }}
           >
-            <Icon icon="lock" /> read-only &mdash; to edit, log in as the owner
+            <Lock size="1em" /> read-only &mdash; to edit, log in as the owner
             or save a copy
           </div>
         );
@@ -301,7 +301,7 @@ export default class Editor extends React.PureComponent<Props> {
           className={css(APP_STYLE.urgentEditorNotification)}
           style={{ width }}
         >
-          <Icon icon="warning-sign" /> This song uses LilyPond 2.27, which is an
+          <TriangleAlert size="1em" /> This song uses LilyPond 2.27, which is an
           unstable development version and may change without notice.{" "}
           <a
             onClick={onHideUnstableNotification}

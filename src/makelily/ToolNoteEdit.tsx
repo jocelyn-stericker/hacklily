@@ -19,6 +19,7 @@
  */
 
 import { css, StyleSheet } from "aphrodite";
+import { Info } from "lucide-react";
 import invariant from "invariant";
 import {
   find,
@@ -261,8 +262,7 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
             this.state.showHelp && tabStyles.helpVisible,
           )}
         >
-          {/*tslint:disable:react-a11y-anchors*/}
-          <i className="fa-info-circle fa" /> Generate markup
+          <Info size="1em" /> Generate markup
           <sup>
             <a href="#" onClick={this.handleShowHelpWhyNotEdit} role="button">
               ?
@@ -328,7 +328,6 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
         </div>
       </div>
     );
-    // tslint:enable:react-a11y-anchors
   }
 
   private applyPreviewPatch = (
@@ -1116,7 +1115,6 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
     }
   };
 
-  // tslint:disable-next-line cyclomatic-complexity max-func-body-length
   private handleVoiceEvent(
     doc: Document,
     measure: IMeasure,

@@ -165,12 +165,10 @@ function toBase64(buffer: ArrayBuffer) {
   let base64 = "";
 
   for (let i = 0; i < len; i += 3) {
-    /* tslint:disable */
     base64 += CHARS[bytes[i] >> 2];
     base64 += CHARS[((bytes[i] & 3) << 4) | (bytes[i + 1] >> 4)];
     base64 += CHARS[((bytes[i + 1] & 15) << 2) | (bytes[i + 2] >> 6)];
     base64 += CHARS[bytes[i + 2] & 63];
-    /* tslint:enable */
   }
 
   if (len % 3 === 2) {

@@ -24,7 +24,6 @@ import {
   Colors,
   ControlGroup,
   Dialog,
-  Icon,
   InputGroup,
   Intent,
 } from "@blueprintjs/core";
@@ -37,6 +36,7 @@ import { Conflict, File, FileNotFound, ls, rm, write } from "./gitfs";
 import { renderVersionFor } from "./lilypondVersion";
 import ModalSaving from "./ModalSaving";
 import RPCClient from "./RPCClient";
+import { Save, TriangleAlert } from "lucide-react";
 
 interface Props {
   auth: Auth;
@@ -84,7 +84,7 @@ class ModalPublish extends React.PureComponent<Props, State> {
       disabled = true;
       error = (
         <span className={css(styles.error)}>
-          <Icon icon="error" /> Please enter a filename.
+          <TriangleAlert size="1em" /> Please enter a filename.
         </span>
       );
     } else if (
@@ -94,7 +94,7 @@ class ModalPublish extends React.PureComponent<Props, State> {
       disabled = true;
       error = (
         <span className={css(styles.error)}>
-          <Icon icon="error" /> That filename is taken.
+          <TriangleAlert size="1em" /> That filename is taken.
         </span>
       );
     } else if (invitationRequired) {
@@ -156,7 +156,7 @@ class ModalPublish extends React.PureComponent<Props, State> {
               onClick={this.handleSave}
               disabled={disabled}
               intent={Intent.PRIMARY}
-              icon="floppy-disk"
+              icon={<Save size="1em" />}
             >
               Save
             </Button>

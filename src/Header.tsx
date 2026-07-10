@@ -32,6 +32,16 @@ import {
   Tooltip,
 } from "@blueprintjs/core";
 import { css, StyleSheet } from "aphrodite";
+import {
+  Play,
+  Pause,
+  File as FileIcon,
+  PenLine,
+  Eye,
+  Music,
+  Rewind,
+  FastForward,
+} from "lucide-react";
 import React from "react";
 
 import logoSvg from "./logo.svg";
@@ -161,12 +171,12 @@ export default class Header extends React.PureComponent<Props> {
         <Button
           onClick={this.handleSetView}
           active={mode === MODE_VIEW}
-          icon="eye-open"
+          icon={<Eye size="1em" />}
         />
         <Button
           onClick={this.handleSetEdit}
           active={mode === MODE_EDIT}
-          icon="edit"
+          icon={<PenLine size="1em" />}
         />
       </React.Fragment>
     );
@@ -174,7 +184,7 @@ export default class Header extends React.PureComponent<Props> {
     let playButton: React.ReactNode = (
       <Button
         onClick={playing ? this.handlePause : this.handlePlay}
-        icon={playing ? "pause" : "play"}
+        icon={playing ? <Pause size="1em" /> : <Play size="1em" />}
         disabled={!midi}
       >
         {playing ? "Pause" : "Play"}
@@ -232,7 +242,7 @@ export default class Header extends React.PureComponent<Props> {
               }
               autoFocus={false}
             >
-              <Button icon="document" rightIcon="caret-down">
+              <Button icon={<FileIcon size="1em" />} rightIcon="caret-down">
                 {windowWidth >= MIN_REASONABLE_WIDTH && <span>File</span>}
               </Button>
             </Popover>
@@ -241,22 +251,19 @@ export default class Header extends React.PureComponent<Props> {
                 content={
                   <Menu>
                     <MenuItem
-                      icon="blank"
                       text="Clef&hellip;"
                       onClick={this.handleShowClef}
                     />
                     <MenuItem
-                      icon="blank"
                       text="Key Signature&hellip;"
                       onClick={this.handleShowKey}
                     />
                     <MenuItem
-                      icon="blank"
                       text="Time Signature&hellip;"
                       onClick={this.handleShowTime}
                     />
                     <MenuItem
-                      icon="music"
+                      icon={<Music size="1em" />}
                       text="Notes&hellip;"
                       onClick={this.handleShowNotes}
                     />
@@ -264,7 +271,7 @@ export default class Header extends React.PureComponent<Props> {
                 }
                 autoFocus={false}
               >
-                <Button icon="draw" rightIcon="caret-down">
+                <Button icon={<PenLine size="1em" />} rightIcon="caret-down">
                   Insert
                 </Button>
               </Popover>
@@ -404,13 +411,13 @@ export default class Header extends React.PureComponent<Props> {
       <React.Fragment>
         <Button
           title="Rewind"
-          icon="fast-backward"
+          icon={<Rewind size="1em" />}
           onClick={this.handleRewind}
         />
         <Button
           title={playing ? "Pause" : "Play"}
           onClick={playing ? this.handlePause : this.handlePlay}
-          icon={playing ? "pause" : "play"}
+          icon={playing ? <Pause size="1em" /> : <Play size="1em" />}
         />
         {windowWidth >= MIN_REASONABLE_WIDTH && (
           <Button
@@ -421,7 +428,7 @@ export default class Header extends React.PureComponent<Props> {
           </Button>
         )}
         <Button
-          icon="fast-forward"
+          icon={<FastForward size="1em" />}
           title="Fast-forward"
           onClick={this.handleFastForward}
         />
