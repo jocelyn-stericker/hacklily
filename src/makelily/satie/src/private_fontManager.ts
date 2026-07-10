@@ -304,6 +304,11 @@ const _toPathData = memoize(function (
     console.warn(`${fullName} was loaded without path data`);
     return "";
   }
+  if (!text) {
+    // opentype.js's tokenizer calls Array.from(text) and throws on
+    // undefined/null (e.g. when a glyph name has no SMuFL codepoint).
+    return "";
+  }
   return font.getPath(text, x, y, fontSize, { kerning: true }).toPathData(3);
 }, resolvePDKey);
 

@@ -252,6 +252,10 @@ export function getBoundingRects(
           let y: number;
           const noteheadGlyph = chord.model.noteheadGlyph[0];
 
+          if (!bboxes[glyph] || !bboxes[noteheadGlyph]) {
+            console.warn("no bbox for", glyph, noteheadGlyph);
+            return;
+          }
           const center =
             (getLeft(noteheadGlyph) + getRight(noteheadGlyph)) / 2 -
             (getLeft(glyph) + getRight(glyph)) / 2 -
@@ -368,6 +372,10 @@ export function getBoundingRects(
           let y: number;
           const noteheadGlyph = chord.model.noteheadGlyph[0];
 
+          if (!bboxes[glyph] || !bboxes[noteheadGlyph]) {
+            return;
+          }
+
           const center =
             (getLeft(noteheadGlyph) + getRight(noteheadGlyph)) / 2 -
             (getLeft(glyph) + getRight(glyph)) / 2 -
@@ -412,7 +420,6 @@ export function getBoundingRects(
     defaultX = 0,
     defaultY: number = NaN,
   ): IGeneralNotation {
-    console.log("PUSH", glyphName);
     const box = bboxes[glyphName];
     if (!box) {
       console.warn("Unknown glyph", glyphName);

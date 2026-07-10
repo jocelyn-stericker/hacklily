@@ -90,7 +90,7 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -115,7 +115,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -125,7 +125,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="5" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -133,7 +133,7 @@
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -144,13 +144,13 @@
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -161,7 +161,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -186,7 +186,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -196,7 +196,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="5" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -205,7 +205,7 @@
           <alter>1</alter>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
@@ -218,14 +218,14 @@
           <alter>-1</alter>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -236,7 +236,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -261,7 +261,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -271,7 +271,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="10" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -280,7 +280,7 @@
           <alter>-1</alter>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
@@ -293,14 +293,14 @@
           <alter>1</alter>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -311,7 +311,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -336,7 +336,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -346,7 +346,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="10" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -354,7 +354,7 @@
           <step>D</step>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
@@ -366,14 +366,14 @@
           <step>B</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -384,7 +384,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -409,7 +409,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -419,7 +419,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="10" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -428,7 +428,7 @@
           <alter>1</alter>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
@@ -441,14 +441,14 @@
           <alter>-1</alter>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -459,7 +459,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -484,7 +484,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -494,7 +494,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="15" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -503,7 +503,7 @@
           <alter>-1</alter>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
@@ -516,14 +516,14 @@
           <alter>1</alter>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -534,7 +534,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -559,7 +559,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -569,7 +569,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="15" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -577,7 +577,7 @@
           <step>E</step>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
@@ -589,14 +589,14 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -607,7 +607,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -632,7 +632,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -642,7 +642,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="15" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -651,7 +651,7 @@
           <alter>1</alter>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
@@ -664,14 +664,14 @@
           <alter>-1</alter>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -682,7 +682,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -707,7 +707,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -717,7 +717,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="20" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -726,7 +726,7 @@
           <alter>-1</alter>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
@@ -739,14 +739,14 @@
           <alter>1</alter>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -757,7 +757,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -782,7 +782,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -792,7 +792,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="20" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -800,7 +800,7 @@
           <step>F</step>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
@@ -812,14 +812,14 @@
           <step>G</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -830,7 +830,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -855,7 +855,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -865,7 +865,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="20" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -874,7 +874,7 @@
           <alter>1</alter>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
@@ -887,14 +887,14 @@
           <alter>-1</alter>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -905,7 +905,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -930,7 +930,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -940,7 +940,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="25" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -949,7 +949,7 @@
           <alter>-1</alter>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
@@ -962,14 +962,14 @@
           <alter>1</alter>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -980,7 +980,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -1005,7 +1005,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1015,7 +1015,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="25" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1023,7 +1023,7 @@
           <step>G</step>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
@@ -1035,14 +1035,14 @@
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1053,7 +1053,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -1078,7 +1078,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1088,7 +1088,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="25" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1097,7 +1097,7 @@
           <alter>1</alter>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
@@ -1110,14 +1110,14 @@
           <alter>-1</alter>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1128,7 +1128,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -1153,7 +1153,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1163,7 +1163,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1172,7 +1172,7 @@
           <alter>-1</alter>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
@@ -1185,14 +1185,14 @@
           <alter>1</alter>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1203,7 +1203,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -1228,7 +1228,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1238,7 +1238,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1246,7 +1246,7 @@
           <step>A</step>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
@@ -1258,14 +1258,14 @@
           <step>E</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1276,7 +1276,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -1301,7 +1301,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1311,7 +1311,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1320,7 +1320,7 @@
           <alter>1</alter>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
@@ -1333,14 +1333,14 @@
           <alter>-1</alter>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1351,7 +1351,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -1376,7 +1376,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1386,7 +1386,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="35" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1395,7 +1395,7 @@
           <alter>-1</alter>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
@@ -1408,14 +1408,14 @@
           <alter>1</alter>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1426,7 +1426,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -1451,7 +1451,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1461,7 +1461,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="35" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1469,7 +1469,7 @@
           <step>B</step>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
@@ -1481,14 +1481,14 @@
           <step>D</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1499,7 +1499,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -1524,7 +1524,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1534,7 +1534,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="35" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1543,7 +1543,7 @@
           <alter>1</alter>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
@@ -1556,14 +1556,14 @@
           <alter>-1</alter>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1574,7 +1574,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -1599,7 +1599,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1609,7 +1609,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="40" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1618,7 +1618,7 @@
           <alter>-1</alter>
           <octave>6</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
@@ -1631,14 +1631,14 @@
           <alter>1</alter>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1649,7 +1649,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -1674,7 +1674,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1684,7 +1684,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="40" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1692,7 +1692,7 @@
           <step>C</step>
           <octave>6</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
@@ -1704,14 +1704,14 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1722,7 +1722,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -1747,7 +1747,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1757,7 +1757,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="40" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1766,7 +1766,7 @@
           <alter>1</alter>
           <octave>6</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
@@ -1779,14 +1779,14 @@
           <alter>-1</alter>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1797,7 +1797,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -1822,7 +1822,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1832,7 +1832,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="45" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1841,7 +1841,7 @@
           <alter>-1</alter>
           <octave>6</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
@@ -1854,14 +1854,14 @@
           <alter>1</alter>
           <octave>3</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1872,7 +1872,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -1897,7 +1897,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1907,7 +1907,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="45" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1915,7 +1915,7 @@
           <step>D</step>
           <octave>6</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
@@ -1927,14 +1927,14 @@
           <step>B</step>
           <octave>3</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1945,7 +1945,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -1970,7 +1970,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1980,7 +1980,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="45" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1989,7 +1989,7 @@
           <alter>1</alter>
           <octave>6</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
@@ -2002,14 +2002,14 @@
           <alter>-1</alter>
           <octave>3</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2020,7 +2020,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -2045,7 +2045,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2055,7 +2055,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="50" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -2064,7 +2064,7 @@
           <alter>-1</alter>
           <octave>6</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
@@ -2077,14 +2077,14 @@
           <alter>1</alter>
           <octave>3</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2095,7 +2095,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -2120,7 +2120,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2130,7 +2130,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="50" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -2138,7 +2138,7 @@
           <step>E</step>
           <octave>6</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
@@ -2150,14 +2150,14 @@
           <step>A</step>
           <octave>3</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2168,7 +2168,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -2193,7 +2193,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2203,7 +2203,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="50" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -2212,7 +2212,7 @@
           <alter>1</alter>
           <octave>6</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
@@ -2225,14 +2225,14 @@
           <alter>-1</alter>
           <octave>3</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2243,7 +2243,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -2268,7 +2268,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2278,7 +2278,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="55" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -2287,7 +2287,7 @@
           <alter>-1</alter>
           <octave>6</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
@@ -2300,14 +2300,14 @@
           <alter>1</alter>
           <octave>3</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2318,7 +2318,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -2343,7 +2343,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2353,7 +2353,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="55" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -2361,7 +2361,7 @@
           <step>F</step>
           <octave>6</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
@@ -2373,14 +2373,14 @@
           <step>G</step>
           <octave>3</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2391,7 +2391,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -2416,7 +2416,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2426,7 +2426,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="55" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -2435,7 +2435,7 @@
           <alter>1</alter>
           <octave>6</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
@@ -2448,14 +2448,14 @@
           <alter>-1</alter>
           <octave>3</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2466,7 +2466,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -2491,7 +2491,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2501,7 +2501,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="60" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -2510,7 +2510,7 @@
           <alter>-1</alter>
           <octave>6</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
@@ -2523,14 +2523,14 @@
           <alter>1</alter>
           <octave>3</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2541,7 +2541,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -2566,7 +2566,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2576,7 +2576,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="60" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -2584,7 +2584,7 @@
           <step>G</step>
           <octave>6</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
@@ -2596,14 +2596,14 @@
           <step>F</step>
           <octave>3</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2614,7 +2614,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -2639,7 +2639,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2649,7 +2649,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="60" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -2658,7 +2658,7 @@
           <alter>1</alter>
           <octave>6</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
@@ -2671,14 +2671,14 @@
           <alter>-1</alter>
           <octave>3</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2689,7 +2689,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -2714,7 +2714,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2724,7 +2724,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="65" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -2733,7 +2733,7 @@
           <alter>-1</alter>
           <octave>6</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
@@ -2746,14 +2746,14 @@
           <alter>1</alter>
           <octave>3</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2764,7 +2764,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -2789,7 +2789,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2799,7 +2799,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="65" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -2807,7 +2807,7 @@
           <step>A</step>
           <octave>6</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
@@ -2819,14 +2819,14 @@
           <step>E</step>
           <octave>3</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2837,7 +2837,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -2862,7 +2862,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2872,7 +2872,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="65" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -2881,7 +2881,7 @@
           <alter>1</alter>
           <octave>6</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
@@ -2894,14 +2894,14 @@
           <alter>-1</alter>
           <octave>3</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2912,7 +2912,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -2937,7 +2937,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2947,7 +2947,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="70" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -2956,7 +2956,7 @@
           <alter>-1</alter>
           <octave>6</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
@@ -2969,14 +2969,14 @@
           <alter>1</alter>
           <octave>3</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2987,7 +2987,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -3012,7 +3012,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -3022,7 +3022,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="70" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -3030,7 +3030,7 @@
           <step>B</step>
           <octave>6</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
@@ -3042,14 +3042,14 @@
           <step>D</step>
           <octave>3</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -3060,7 +3060,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -3085,7 +3085,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -3095,7 +3095,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="70" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -3104,7 +3104,7 @@
           <alter>1</alter>
           <octave>6</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
@@ -3117,14 +3117,14 @@
           <alter>-1</alter>
           <octave>3</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>

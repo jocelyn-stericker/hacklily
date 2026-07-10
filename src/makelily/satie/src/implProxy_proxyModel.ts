@@ -24,6 +24,18 @@ import invariant from "invariant";
 import { IModel, Type, ILayout } from "./document";
 import { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
 
+/**
+ * Stands in for another model (Attributes/Print) inside a different staff's
+ * segment. Created only by engine_processors_validate.ts
+ *
+ * _target is the original (never mutated); _omTarget is a prototypal clone
+ * (Object.create(_target)) carrying per-staff overrides and its own
+ * _snapshot, so refresh/getLayout run independently per staff.
+ *
+ * toXML emits <forward><duration>; toJSON returns the target spec, so a
+ * proxy disappears on a clone round-trip and is rebuilt as a concrete model.
+ * Factory.identity exists to unwrap a proxy but has no callers.
+ */
 class ProxyModel implements IProxyModel {
   private _target: IModel;
   private _omTarget: IModel;
@@ -47,6 +59,13 @@ class ProxyModel implements IProxyModel {
     this._omTarget.staffIdx = staffIdx;
   }
 
+  /**
+   * Delegates to the proxied model's clone.
+   */
+  get _snapshot() {
+    return (this._omTarget as any)._snapshot;
+  }
+
   set target(target: IModel) {
     this._target = target;
     this._omTarget = Object.create(this._target);
@@ -57,6 +76,60 @@ class ProxyModel implements IProxyModel {
 
   constructor(target: IModel) {
     this._target = target;
+
+    // Rather than enumerate every field of every proxiable model, we wrap the
+    // instance in a JS Proxy.
+    return new Proxy(this, {
+      getPrototypeOf() {
+        return ProxyModel.prototype;
+      },
+      get(target, prop, receiver) {
+        if (prop in target) {
+          return Reflect.get(target, prop, receiver);
+        }
+        const om = target._omTarget;
+        return om ? Reflect.get(om, prop) : undefined;
+      },
+      set(target, prop, value, receiver) {
+        if (prop in target) {
+          return Reflect.set(target, prop, value, receiver);
+        }
+        const om = target._omTarget;
+        if (om) {
+          return Reflect.set(om, prop, value);
+        }
+        return Reflect.set(target, prop, value, receiver);
+      },
+      has(target, prop) {
+        const om = target._omTarget;
+        return prop in target || (om ? prop in om : false);
+      },
+      ownKeys(target) {
+        const om = target._omTarget;
+        return om ? Reflect.ownKeys(om) : Reflect.ownKeys(target);
+      },
+      getOwnPropertyDescriptor(target, prop) {
+        const om = target._omTarget;
+        return om
+          ? Reflect.getOwnPropertyDescriptor(om, prop)
+          : Reflect.getOwnPropertyDescriptor(target, prop);
+      },
+    });
+  }
+
+  /**
+   * Serialize as the *target* model, not as a proxy. The engine clones models
+   * via `JSON.parse(JSON.stringify(model))` (see cloneObject) and later
+   * rebuilds them with `factory.fromSpec`.
+   */
+  toJSON() {
+    if (
+      this._omTarget &&
+      typeof (this._omTarget as any).toJSON === "function"
+    ) {
+      return (this._omTarget as any).toJSON();
+    }
+    return this._target;
   }
 
   toXML(): string {

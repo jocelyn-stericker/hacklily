@@ -173,10 +173,16 @@ export function _extractMXMLPartsAndMeasures(
       version: 0,
     };
 
-    if (Object.keys(inMeasure.parts).length === 1 && "" in inMeasure.parts) {
-      // See LilyPond-regression >> 41g.
-      inMeasure.parts[parts[0]] = inMeasure.parts[""];
-      delete inMeasure.parts[""];
+    if (
+      Object.keys(inMeasure.parts).length === 1 &&
+      ("" in inMeasure.parts || "null" in inMeasure.parts)
+    ) {
+      // See LilyPond-regression >> 41g. A part with no id attribute parses
+      // to a key of "" (older builds) or "null"; map it onto the single
+      // declared score-part.
+      const missingKey = "" in inMeasure.parts ? "" : "null";
+      inMeasure.parts[parts[0]] = inMeasure.parts[missingKey];
+      delete inMeasure.parts[missingKey];
     }
     let linkedParts = map(inMeasure.parts, (val, key) => {
       if (!some(parts, (part) => part === key)) {
@@ -211,22 +217,27 @@ export function _extractMXMLPartsAndMeasures(
 
     linkedParts = filter(linkedParts, (p) => !!p);
 
-    const commonDivisions = reduce(
-      linkedParts,
-      (memo, part) => {
-        return reduce(
-          part.input,
-          (memo, input) => {
-            if (input._class === "Attributes" && input.divisions) {
-              return lcm(memo, input.divisions);
-            }
-            return memo;
-          },
-          memo,
-        );
-      },
-      divisions,
-    );
+    const commonDivisions =
+      reduce(
+        linkedParts,
+        (memo, part) => {
+          return reduce(
+            part.input,
+            (memo, input) => {
+              if (input._class === "Attributes" && input.divisions) {
+                return lcm(memo, input.divisions);
+              }
+              return memo;
+            },
+            memo,
+          );
+        },
+        0,
+      ) || divisions; // fall back to the default (768) only when no
+    // <divisions> is declared anywhere (e.g. 41g). Starting the lcm at the
+    // 768 default instead of 0 previously inflated every score that declared
+    // a smaller <divisions> (e.g. 24a's 4) up to 768, producing bars of 3072
+    // divisions and a rest-cleanup pattern the solver could not converge on.
 
     // Lets normalize divisions here.
     forEach(linkedParts, (part) => {

@@ -654,16 +654,29 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
       if (beats === ts.beats && !!this[0].rest) {
         count = Count.Whole;
       } else {
-        const nextPO2 = Math.pow(
-          2,
-          Math.ceil(Math.log(this.count) / Math.log(2)),
-        );
+        // NOTE: use the locally computed `count` here, not `this.count`. At this
+        // point in the flow the note's `noteType` has not been set yet (we are
+        // computing the value that will *become* the noteType), so `this.count`
+        // (a getter over `this[0].noteType.duration`) is still null. Reading
+        // `this.count` would feed null into Math.log, yielding 0 and corrupting
+        // the implied duration. The original 2015 implementation read the
+        // locally computed value (`this._count`), which is what `count` holds.
+        const nextPO2 = Math.pow(2, Math.ceil(Math.log(count) / Math.log(2)));
         count = nextPO2;
         // TODO: Add 1+ tie.
       }
     }
 
     // TODO: Find the best match for performance data
+
+    // SMuFL only renders notes down to a 1024th and up to a maxima. Clamp the
+    // implied count into that range so absurdly short (e.g. 2048th) or long
+    // values don't yield an unknown rest/notehead glyph.
+    if (count > Count._1024th) {
+      count = Count._1024th;
+    } else if (count < Count.Whole) {
+      count = Count.Whole;
+    }
 
     function isPO2(n: number) {
       if (Math.abs(Math.round(n) - n) > 0.00001) {

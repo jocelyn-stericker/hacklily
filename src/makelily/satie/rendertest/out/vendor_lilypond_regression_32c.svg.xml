@@ -87,7 +87,7 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <divisions>768</divisions>
+        <divisions>4</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
         </key>
@@ -108,7 +108,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>2304</duration></forward>
+      <forward><duration>12</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -118,7 +118,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2304</duration></backup>
+      <backup><duration>12</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="-5" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -126,7 +126,7 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>4</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental editorial="no" cautionary="no">sharp</accidental>
@@ -144,7 +144,7 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>4</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental editorial="no" cautionary="no">sharp</accidental>
@@ -162,7 +162,7 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>4</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental editorial="no" cautionary="no">sharp</accidental>
@@ -175,7 +175,7 @@
         </notations>
       </note>
       
-      <backup><duration>2304</duration></backup>
+      <backup><duration>12</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>

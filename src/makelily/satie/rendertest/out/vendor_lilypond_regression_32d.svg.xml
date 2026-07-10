@@ -85,7 +85,7 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -110,7 +110,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>3072</duration></forward>
+      <forward><duration>4</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -120,7 +120,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>4</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -128,12 +128,12 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" type="up" color="#000000" />
+          <arpeggiate number="1" direction="up" color="#000000" />
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">normal</text>
@@ -145,12 +145,12 @@
           <step>E</step>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" type="up" color="#000000" />
+          <arpeggiate number="1" direction="up" color="#000000" />
         </notations>
       </note>
       <note default-y="25" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -159,12 +159,12 @@
           <step>G</step>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" type="up" color="#000000" />
+          <arpeggiate number="1" direction="up" color="#000000" />
         </notations>
       </note>
       
@@ -173,12 +173,12 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" type="up" color="#000000" />
+          <arpeggiate number="1" direction="up" color="#000000" />
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">up</text>
@@ -190,12 +190,12 @@
           <step>E</step>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" type="up" color="#000000" />
+          <arpeggiate number="1" direction="up" color="#000000" />
         </notations>
       </note>
       <note default-y="25" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -204,12 +204,12 @@
           <step>G</step>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" type="up" color="#000000" />
+          <arpeggiate number="1" direction="up" color="#000000" />
         </notations>
       </note>
       
@@ -218,12 +218,12 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" type="up" color="#000000" />
+          <arpeggiate number="1" direction="up" color="#000000" />
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">normal</text>
@@ -235,12 +235,12 @@
           <step>E</step>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" type="up" color="#000000" />
+          <arpeggiate number="1" direction="up" color="#000000" />
         </notations>
       </note>
       <note default-y="25" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -249,12 +249,12 @@
           <step>G</step>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" type="up" color="#000000" />
+          <arpeggiate number="1" direction="up" color="#000000" />
         </notations>
       </note>
       
@@ -263,12 +263,12 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" type="down" color="#000000" />
+          <arpeggiate number="1" direction="down" color="#000000" />
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">down</text>
@@ -280,12 +280,12 @@
           <step>E</step>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" type="down" color="#000000" />
+          <arpeggiate number="1" direction="down" color="#000000" />
         </notations>
       </note>
       <note default-y="25" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -294,16 +294,16 @@
           <step>G</step>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" type="down" color="#000000" />
+          <arpeggiate number="1" direction="down" color="#000000" />
         </notations>
       </note>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>4</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -314,7 +314,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -339,7 +339,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>3072</duration></forward>
+      <forward><duration>4</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -349,7 +349,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>4</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -357,12 +357,12 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" type="up" color="#000000" />
+          <arpeggiate number="1" direction="up" color="#000000" />
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">normal</text>
@@ -374,12 +374,12 @@
           <step>E</step>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" type="up" color="#000000" />
+          <arpeggiate number="1" direction="up" color="#000000" />
         </notations>
       </note>
       <note default-y="25" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -388,12 +388,12 @@
           <step>G</step>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" type="up" color="#000000" />
+          <arpeggiate number="1" direction="up" color="#000000" />
         </notations>
       </note>
       
@@ -402,7 +402,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -419,7 +419,7 @@
           <step>E</step>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -430,7 +430,7 @@
           <step>G</step>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -444,12 +444,12 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" type="up" color="#000000" />
+          <arpeggiate number="1" direction="up" color="#000000" />
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">normal</text>
@@ -461,12 +461,12 @@
           <step>E</step>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" type="up" color="#000000" />
+          <arpeggiate number="1" direction="up" color="#000000" />
         </notations>
       </note>
       <note default-y="25" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -475,16 +475,16 @@
           <step>G</step>
           <octave>5</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
         <notations print-object="yes">
-          <arpeggiate number="1" type="up" color="#000000" />
+          <arpeggiate number="1" direction="up" color="#000000" />
         </notations>
       </note>
       
-      <backup><duration>2304</duration></backup>
+      <backup><duration>3</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>

@@ -6,8 +6,8 @@
   <identification>
     <encoding>
       <encoding-date>2016-01-01</encoding-date>
-      <software>Songhaus Satie</software>
-      <supports type="yes" element="satie-collaboration" />
+      <software>Satie</software>
+      <supports type="yes" element="satie-ext" />
     </encoding>
     <miscellaneous>
       <miscellaneous-field name="description">In some cases, a rest might 
@@ -70,23 +70,13 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":42};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
-            <left-margin>0</left-margin>
+            <left-margin>70</left-margin>
             <right-margin>0</right-margin>
           </system-margins>
           <system-distance>131</system-distance>
@@ -97,15 +87,12 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>1</div-count>
-        </musicxml-interfaces:debug-->
         <divisions>1</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
         </key>
-        <time symbol="common" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
+        <time number="1" symbol="common" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
           <beats>4</beats>
           <beat-type>4</beat-type>
         </time>
@@ -115,12 +102,36 @@
           <sign>G</sign>
           <line>2</line>
         </clef>
-        <clef number="2" additional="no" size="full" after-barline="no" font-style="normal" font-weight="normal" color="#000000" print-object="yes">
+        <clef number="2">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="3">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="4">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="1" additional="no" size="full" after-barline="no" font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <sign>F</sign>
           <line>4</line>
         </clef>
         <staff-details number="1">
           <staff-lines>5</staff-lines>
+        </staff-details>
+        <staff-details number="2">
+          
+        </staff-details>
+        <staff-details number="3">
+          
+        </staff-details>
+        <staff-details number="4">
+          
+        </staff-details>
+        <staff-details number="5">
+          
         </staff-details>
       </attributes>
       <forward><duration>1</duration></forward>
@@ -139,23 +150,13 @@
       <backup><duration>4</duration></backup>
       <!-- end of staff 1 -->
       <!-- staff 2 -->
-      <!-- proxy for <print new-system="no" new-page="no" page-number="1">
+      <!-- proxy for <print page-number="1">
         <!\-\-musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug\-\->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
-            <left-margin>0</left-margin>
+            <left-margin>70</left-margin>
             <right-margin>0</right-margin>
           </system-margins>
           <system-distance>131</system-distance>
@@ -168,15 +169,12 @@
       <forward><duration>0</duration></forward>
       
       <!-- proxy for <attributes>
-        <!\-\-musicxml-interfaces:debug>
-          <div-count>1</div-count>
-        </musicxml-interfaces:debug\-\->
         <divisions>1</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
         </key>
-        <time symbol="common" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
+        <time number="1" symbol="common" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
           <beats>4</beats>
           <beat-type>4</beat-type>
         </time>
@@ -186,12 +184,36 @@
           <sign>G</sign>
           <line>2</line>
         </clef>
-        <clef number="2" additional="no" size="full" after-barline="no" font-style="normal" font-weight="normal" color="#000000" print-object="yes">
+        <clef number="2">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="3">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="4">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="1" additional="no" size="full" after-barline="no" font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <sign>F</sign>
           <line>4</line>
         </clef>
         <staff-details number="1">
           <staff-lines>5</staff-lines>
+        </staff-details>
+        <staff-details number="2">
+          
+        </staff-details>
+        <staff-details number="3">
+          
+        </staff-details>
+        <staff-details number="4">
+          
+        </staff-details>
+        <staff-details number="5">
+          
         </staff-details>
       </attributes>
       <forward><duration>1</duration></forward>
@@ -215,7 +237,7 @@
       <backup><duration>4</duration></backup>
       <!-- end of staff 2 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
@@ -229,7 +251,7 @@
       <backup><duration>1</duration></backup>
       <!-- end of voice 1 -->
       <!-- voice 2 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="0" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <rest measure="no">
           
         </rest>
@@ -250,30 +272,24 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>0</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
+          
+        </staff-details>
+        <staff-details number="2">
           <staff-lines>5</staff-lines>
+        </staff-details>
+        <staff-details number="3">
+          
         </staff-details>
       </attributes>
       <forward><duration>0</duration></forward>
       
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -301,32 +317,26 @@
       <!-- end of staff 1 -->
       <!-- staff 2 -->
       <!-- proxy for <attributes>
-        <!\-\-musicxml-interfaces:debug>
-          <div-count>0</div-count>
-        </musicxml-interfaces:debug\-\->
+        <divisions>1</divisions>
         <staves>1</staves>
         <staff-details number="1">
+          
+        </staff-details>
+        <staff-details number="2">
           <staff-lines>5</staff-lines>
+        </staff-details>
+        <staff-details number="3">
+          
         </staff-details>
       </attributes>
       <forward><duration>0</duration></forward>
        -->
       <forward><duration>0</duration></forward>
       
-      <!-- proxy for <print new-system="no" new-page="no" page-number="1">
+      <!-- proxy for <print page-number="1">
         <!\-\-musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug\-\->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -344,20 +354,10 @@
       <!-- spacer -->
       <forward><duration>4</duration></forward>
       
-      <!-- proxy for <print new-system="no" new-page="no" page-number="1">
+      <!-- proxy for <print page-number="1">
         <!\-\-musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug\-\->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -383,7 +383,7 @@
       <backup><duration>4</duration></backup>
       <!-- end of staff 2 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-5" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>A</step>
           <octave>4</octave>
@@ -397,7 +397,7 @@
       <backup><duration>4</duration></backup>
       <!-- end of voice 1 -->
       <!-- voice 2 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-55" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>E</step>
           <octave>3</octave>
@@ -411,8 +411,8 @@
       <backup><duration>4</duration></backup>
       <!-- end of voice 2 -->
       <!-- voice 3 -->
-      <note color="#000000">
-        <rest measure="yes">
+      <note default-y="10" relative-x="0">
+        <rest>
           
         </rest>
         <duration>4</duration>

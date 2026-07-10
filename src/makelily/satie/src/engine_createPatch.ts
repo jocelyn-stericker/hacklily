@@ -67,16 +67,20 @@ import {
 
 import {
   IChord,
+  IDurationDescription,
   count,
   dots,
   timeModification,
   divisions as calcDivisions,
+  FractionalDivisionsException,
   rest,
   countToIsBeamable,
   beams,
 } from "./private_chordUtil";
 import { IAttributesSnapshot } from "./private_attributesSnapshot";
 import { getBeamingPattern } from "./private_metre_checkBeaming";
+import { lcm } from "./private_util";
+import { normalizeDivisionsInPlace } from "./engine_divisions";
 import { simplifyRests } from "./private_metre_modifyRest";
 import { cloneObject } from "./private_util";
 
@@ -623,6 +627,30 @@ export class ModelMetreMutationSpec {
   }
 }
 
+// Computes divisions for metre cleanup WITHOUT throwing when `<divisions>`
+// is too coarse to represent the chord. `getMutationInfo` is run once to
+// detect that a bump is needed (see `fixMetre`); during that detection pass a
+// `FractionalDivisionsException` would otherwise abort the whole patch. Fall
+// back to the fractional value (the value `calcDivisions` returns when
+// `allowFractional` is set). `fixMetre` then bumps `<divisions>` to the
+// required integer and re-runs `getMutationInfo`, so the fractional value is
+// only ever used transiently for the detection pass and never reaches
+// `simplifyRests` (which builds a per-integer-division character grid and
+// cannot tolerate fractional counts).
+function safeCalcDivisions(
+  chord: IChord | IDurationDescription,
+  attributes: { time: any; divisions: number },
+): number {
+  try {
+    return calcDivisions(chord, attributes);
+  } catch (err) {
+    if (err instanceof FractionalDivisionsException) {
+      return calcDivisions(chord, attributes, true);
+    }
+    throw err;
+  }
+}
+
 function getMutationInfo(document: Document, patches: IAny[]) {
   const segments: { [key: string]: ISegment } = {};
   const attributes: { [key: string]: IAttributesSnapshot } = {};
@@ -662,9 +690,19 @@ function getMutationInfo(document: Document, patches: IAny[]) {
     if (!segments[segID]) {
       segments[segID] = voice;
       let currDiv = 0;
-      attributes[segID] = (
-        document.search(part.staves[1], 0, Type.Attributes)[0] as any
-      )._snapshot as IAttributesSnapshot;
+      const attribsModel = document.search(
+        part.staves[1],
+        0,
+        Type.Attributes,
+      )[0] as any;
+      // During validation the staff Attributes may not have a snapshot yet
+      // (e.g. multi-staff parts where staff 1's attributes are a proxy that
+      // hasn't been refreshed for this segment). Skip metre cleanup for this
+      // segment in that case rather than crashing.
+      if (!attribsModel || !attribsModel._snapshot) {
+        return;
+      }
+      attributes[segID] = attribsModel._snapshot as IAttributesSnapshot;
       const time = attributes[segID].time; // TODO: TS changes
       const divisions = attributes[segID].divisions;
 
@@ -691,7 +729,17 @@ function getMutationInfo(document: Document, patches: IAny[]) {
             ),
           );
         }
-        const divs = calcDivisions(model, { time, divisions });
+        const divs = (() => {
+          try {
+            return calcDivisions(model, { time, divisions });
+          } catch (_e) {
+            // The chord may not have a noteType yet (its duration is still
+            // being implied), in which case calcDivisions can't compute a
+            // value. Fall back to 0 so metre cleanup doesn't abort the whole
+            // patch.
+            return 0;
+          }
+        })();
         const theRest = rest(model);
         const info = new ModelMetreMutationSpec(
           {
@@ -727,7 +775,10 @@ function getMutationInfo(document: Document, patches: IAny[]) {
         const tm = isChord ? timeModification(patch.li) : null;
         const theRest = rest(patch.li);
         const divs = isChord
-          ? calcDivisions(patch.li, { time: attributes[segID].time, divisions })
+          ? safeCalcDivisions(patch.li, {
+              time: attributes[segID].time,
+              divisions,
+            })
           : 0;
         let start: number;
         const spliceIdx = parseInt(patch.p[5] as string, 10);
@@ -770,7 +821,7 @@ function getMutationInfo(document: Document, patches: IAny[]) {
       if (patch.ld) {
         const divs =
           patch.ld._class === "Chord"
-            ? calcDivisions(patch.ld, {
+            ? safeCalcDivisions(patch.ld, {
                 time: attributes[segID].time,
                 divisions,
               })
@@ -788,10 +839,13 @@ function getMutationInfo(document: Document, patches: IAny[]) {
     }
 
     const el = voice[patch.p[5] as number];
-    invariant(
-      el,
-      `expected to find element $${patch.p[5]} in part ${patch.p[2]} in voice ${patch.p[4]} in measure ${measureUUID}`,
-    );
+    if (!el) {
+      // The patch references an element index that doesn't exist in the
+      // current voice (e.g. a stale index left over after rest cleanup
+      // inserted/removed elements). Skip it rather than aborting all metre
+      // cleanup.
+      return;
+    }
 
     if (
       !document.modelHasType(el, Type.Chord) ||
@@ -836,17 +890,19 @@ function getMutationInfo(document: Document, patches: IAny[]) {
         info.newDots = 0;
       }
     }
-    info.newDivisions = calcDivisions(
-      {
-        count: info.newCount,
-        dots: info.newDots,
-        timeModification: info.newTimeModification,
-      },
-      {
-        time: info.time,
-        divisions,
-      },
-    );
+    if (!isNaN(info.newCount)) {
+      info.newDivisions = safeCalcDivisions(
+        {
+          count: info.newCount,
+          dots: info.newDots,
+          timeModification: info.newTimeModification,
+        },
+        {
+          time: info.time,
+          divisions,
+        },
+      );
+    }
     if (info.newDivisions !== info.previousDivisions) {
       info.touched = true;
     }
@@ -859,10 +915,94 @@ function getMutationInfo(document: Document, patches: IAny[]) {
   };
 }
 
+// Returns the finest `<divisions>` required by any chord in the mutation
+// info, or 0 if the current per-segment divisions already represent every
+// chord. `calcDivisions` throws `FractionalDivisionsException` precisely when
+// `(divisions * 4) % count !== 0`; the required divisions is
+// `lcm(divisions * 4, count) / 4` (the same computation `divisions()` performs
+// when constructing the exception). Dots/time-modification do not trigger that
+// check, so only `count` is considered here.
+function requiredDivisionsFor(mi: ReturnType<typeof getMutationInfo>): number {
+  let required = 0;
+  let current = 0;
+  forEach(mi.elementInfos, (voiceInfo, key) => {
+    const divisions = mi.attributes[key] && mi.attributes[key].divisions;
+    if (!divisions) {
+      return;
+    }
+    current = Math.max(current, divisions);
+    forEach(voiceInfo, (info) => {
+      const count = (info as any).newCount;
+      if (typeof count !== "number" || !count || count < 1) {
+        return;
+      }
+      if ((divisions * 4) % count !== 0) {
+        required = Math.max(required, lcm(divisions * 4, count) / 4);
+      }
+    });
+  });
+  // Never coarsen: a bump is only needed if it exceeds every segment's current
+  // divisions (divisions are document-wide in practice).
+  return required > current ? required : 0;
+}
+
+// Gathers every voice/staff segment across the document, matching the
+// `path.length === 1 && path[0] === "divisions"` branch of `applyOp`.
+function allSegments(document: Document): ISegment[] {
+  const segments: ISegment[] = [];
+  forEach(document.measures, (measure) => {
+    forEach(measure.parts, (part) => {
+      if (part.staves && part.staves[1]) {
+        segments.push(part.staves[1]);
+      }
+      if (part.voices && part.voices[1]) {
+        segments.push(part.voices[1]);
+      }
+    });
+  });
+  return segments;
+}
+
 function fixMetre(document: Document, patches: IAny[]): IAny[] {
   patches = patches.slice();
 
-  const mi = getMutationInfo(document, patches);
+  let mi = getMutationInfo(document, patches);
+
+  // If any chord the patch creates/modifies requires finer `<divisions>` than
+  // the document currently has, bump `<divisions>` BEFORE rest cleanup.
+  // `simplifyRests` builds a per-integer-division character grid
+  // (`times(divCount, ...)`), so it cannot tolerate fractional division
+  // counts, and `calcDivisions` throws `FractionalDivisionsException` when
+  // `(divisions * 4) % count !== 0`. The mouse path avoids this because the
+  // preview render bumps `snapshot.divisions` via `refresh`'s `cursor.fixup`
+  // before the commit runs; a direct commit (e.g. ToolNoteEdit's keyboard
+  // `handleKeyPress`, which runs no preview first) has no such chance, so the
+  // exception escaped unhandled.
+  //
+  // Mirror the preview/refresh mechanism here: bump the attributes
+  // *snapshot* that `getMutationInfo` reads (it reads `attribsModel._snapshot`,
+  // not the live divisions) and emit a `["divisions"]` patch so the live
+  // document is rescaled when `_rectify$`/`applyOp` applies the patch stream.
+  // The snapshot is rebuilt on the next render, so the in-place mutation is
+  // transient. Everything then runs on an integer grid and the bar is filled.
+  const required = requiredDivisionsFor(mi);
+  if (required > 0) {
+    // Bump both the snapshot that `getMutationInfo` reads and the live models
+    // so `simplifyRests` captures `ld` specs that match the rescaled document
+    // (otherwise `_rectify$`'s later rescale makes the remove-specs stale and
+    // `applyOp` warns "Your patch is broken"). The emitted `["divisions"]`
+    // patch re-applies idempotently (ratio 1) during `_rectify$`/`applyOp` and
+    // records the bump for undo/redo.
+    forEach(mi.attributes, (snapshot) => {
+      if (snapshot) {
+        snapshot.divisions = required;
+      }
+    });
+    normalizeDivisionsInPlace(document, allSegments(document), required);
+    patches = [{ p: ["divisions"], oi: required } as IAny].concat(patches);
+    mi = getMutationInfo(document, patches);
+  }
+
   const attributes = mi.attributes;
   const elementInfos = mi.elementInfos;
 
@@ -873,7 +1013,6 @@ function fixMetre(document: Document, patches: IAny[]): IAny[] {
     }
 
     const restSpecs = simplifyRests(voiceInfo, document, attributes[key]);
-
     patches = patches.concat(
       restSpecs.map((spec) =>
         extend({}, spec, {
@@ -1088,7 +1227,7 @@ function addBeams(document: Document, patches: IAny[]): IAny[] {
           divisionsInCurrentBucket = Infinity;
           return;
         }
-        const next = calcDivisions(beamingPattern[bpIDX], {
+        const next = safeCalcDivisions(beamingPattern[bpIDX], {
           time,
           divisions: segment.divisions,
         });

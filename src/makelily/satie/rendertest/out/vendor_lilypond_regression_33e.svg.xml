@@ -85,7 +85,7 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <divisions>768</divisions>
+        <divisions>1</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -107,17 +107,17 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>768</duration></forward>
+      <forward><duration>1</duration></forward>
       
       <direction>
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
           <octave-shift type="down" size="27" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000" />
         </direction-type>
       </direction>
-      <forward><duration>768</duration></forward>
+      <forward><duration>1</duration></forward>
       
       <direction>
         <!--musicxml-interfaces:debug>
@@ -131,13 +131,13 @@
       
       <direction>
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
           <octave-shift type="up" size="11" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000" />
         </direction-type>
       </direction>
-      <forward><duration>768</duration></forward>
+      <forward><duration>1</duration></forward>
       
       <direction>
         <!--musicxml-interfaces:debug>
@@ -157,7 +157,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2304</duration></backup>
+      <backup><duration>3</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="-5" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -165,7 +165,7 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -176,7 +176,7 @@
           <step>A</step>
           <octave>7</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -187,13 +187,13 @@
           <step>C</step>
           <octave>3</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2304</duration></backup>
+      <backup><duration>3</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>

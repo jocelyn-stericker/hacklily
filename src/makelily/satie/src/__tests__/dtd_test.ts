@@ -72,17 +72,17 @@ describe("Import/export tests", function () {
       )}`.replace(".xml", ".svg");
     it(file, function (done) {
       readFile(root + "/" + file, function (musicXML) {
-        let countedErr = false
+        let countedErr = false;
         const song = new SongImpl({
           baseSrc: musicXML,
 
-          onError: err => {
-            done(err)
-            countedErr = true
+          onError: (err) => {
+            done(err);
+            countedErr = true;
           },
           onLoaded: () => {
             if (countedErr) {
-              return
+              return;
             }
 
             try {

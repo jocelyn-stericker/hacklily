@@ -87,7 +87,7 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <divisions>768</divisions>
+        <divisions>8</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>-4</fifths>
           <mode>major</mode>
@@ -116,14 +116,14 @@
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <words justify="left" default-x="0" default-y="60" relative-x="0" relative-y="-0.15000049999999732" font-style="normal" font-size="18" font-weight="bold" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" line-height="normal" dir="ltr" enclosure="none">Largo</words>
+          <words justify="left" default-x="0" default-y="60" relative-x="0" relative-y="-5.337679815758129" font-style="normal" font-size="18" font-weight="bold" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" line-height="normal" dir="ltr" enclosure="none">Largo</words>
         </direction-type>
       </direction>
       <forward><duration>0</duration></forward>
       
       <direction placement="below">
         <!--musicxml-interfaces:debug>
-          <div-count>3072</div-count>
+          <div-count>32</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
           <dynamics font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
@@ -132,7 +132,7 @@
         </direction-type>
         <offset sound="no">3</offset>
       </direction>
-      <forward><duration>3072</duration></forward>
+      <forward><duration>32</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -142,7 +142,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>32</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="-15" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -150,7 +150,7 @@
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>3072</duration>
+        <duration>32</duration>
         <voice>1</voice>
         <type>whole</type>
         <staff>1</staff>
@@ -162,7 +162,7 @@
         </notations>
       </note>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>32</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -173,7 +173,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>8</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -199,7 +199,7 @@
       
       <direction placement="below">
         <!--musicxml-interfaces:debug>
-          <div-count>3072</div-count>
+          <div-count>32</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
           <dynamics font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
@@ -207,7 +207,7 @@
           </dynamics>
         </direction-type>
       </direction>
-      <forward><duration>3072</duration></forward>
+      <forward><duration>32</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -217,7 +217,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>32</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="-15" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -225,7 +225,7 @@
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>1152</duration>
+        <duration>12</duration>
         <voice>1</voice>
         <type>quarter</type>
         <dot />
@@ -238,7 +238,7 @@
           <alter>-1</alter>
           <octave>4</octave>
         </pitch>
-        <duration>1152</duration>
+        <duration>12</duration>
         <voice>1</voice>
         <type>quarter</type>
         <dot />
@@ -250,7 +250,7 @@
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>384</duration>
+        <duration>4</duration>
         <voice>1</voice>
         <type>eighth</type>
         <staff>1</staff>
@@ -262,7 +262,7 @@
           <alter>-1</alter>
           <octave>4</octave>
         </pitch>
-        <duration>384</duration>
+        <duration>4</duration>
         <voice>1</voice>
         <type>eighth</type>
         <staff>1</staff>
@@ -273,7 +273,7 @@
           <step>G</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>8</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -285,7 +285,7 @@
           <alter>-1</alter>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>8</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -296,7 +296,7 @@
           <step>G</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>8</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -308,13 +308,13 @@
           <alter>-1</alter>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>8</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>32</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>

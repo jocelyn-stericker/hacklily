@@ -726,20 +726,11 @@ export function divisions(
   invariant(!!attributesTime, "A time signature must be specified.");
 
   if (chordCount >= Count.Breve || chordCount === Count.Whole) {
-    // TODO: What if beatType isn't consistent?
-    const tsBeats = reduce(
-      attributesTime.beats,
-      (memo, durr) =>
-        memo + reduce(durr.split("+"), (m, l) => m + parseInt(l, 10), 0),
-      0,
-    );
-    const tsBeatType = attributesTime.beatTypes.reduce(
-      (memo, bt) => (memo === bt ? bt : NaN),
-      attributesTime.beatTypes[0],
-    );
-    invariant(!isNaN(tsBeatType), "Time signature must be consistent");
-    const total = (attributeDivisions * tsBeats * 4) / tsBeatType;
-    return total;
+    // A breve/whole spans the entire bar. Compute the bar's total divisions
+    // the same way `barDivisionsDI` does, summing per time-signature
+    // component so compound metres (e.g. 3/8+2/8+3/4, 5/2+1/8) work instead
+    // of throwing "Time signature must be consistent".
+    return barDivisionsDI(attributesTime, attributeDivisions);
   }
 
   if ((attributeDivisions * 4) % chordCount > 0 && !allowFractional) {

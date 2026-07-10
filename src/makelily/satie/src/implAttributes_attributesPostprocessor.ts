@@ -117,7 +117,12 @@ function attributes(
                   return false;
                 }
                 const newDetails = newAttributes.staffDetails[detailIndex];
-                return details.staffLines !== newDetails.staffLines;
+                // A staff may have details in the old attributes but none in the
+                // new (e.g. when a proxy mirrors a subset of staves). Guard the
+                // lookup rather than crashing on undefined/null.
+                return (
+                  details.staffLines !== (newDetails && newDetails.staffLines)
+                );
               },
             );
           }

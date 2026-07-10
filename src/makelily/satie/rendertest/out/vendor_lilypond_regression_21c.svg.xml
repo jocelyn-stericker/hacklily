@@ -85,7 +85,7 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <divisions>3840</divisions>
+        <divisions>960</divisions>
         <key>
           <fifths>0</fifths>
           <mode>major</mode>
@@ -107,7 +107,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>15360</duration></forward>
+      <forward><duration>3840</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -117,7 +117,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>15360</duration></backup>
+      <backup><duration>3840</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="-15" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -125,7 +125,7 @@
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>5760</duration>
+        <duration>1440</duration>
         <voice>1</voice>
         <type>quarter</type>
         <dot />
@@ -137,7 +137,7 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>5760</duration>
+        <duration>1440</duration>
         <voice>1</voice>
         <type>quarter</type>
         <dot />
@@ -149,7 +149,7 @@
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>5760</duration>
+        <duration>1440</duration>
         <voice>1</voice>
         <type>quarter</type>
         <dot />
@@ -161,7 +161,7 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>1920</duration>
+        <duration>480</duration>
         <voice>1</voice>
         <type>eighth</type>
         <staff>1</staff>
@@ -172,7 +172,7 @@
           <step>G</step>
           <octave>5</octave>
         </pitch>
-        <duration>1920</duration>
+        <duration>480</duration>
         <voice>1</voice>
         <type>eighth</type>
         <staff>1</staff>
@@ -183,7 +183,7 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>3840</duration>
+        <duration>960</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -194,7 +194,7 @@
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>3840</duration>
+        <duration>960</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -205,7 +205,7 @@
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>3840</duration>
+        <duration>960</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -216,7 +216,7 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>3840</duration>
+        <duration>960</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -227,7 +227,7 @@
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>3840</duration>
+        <duration>960</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -238,13 +238,13 @@
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>3840</duration>
+        <duration>960</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>15360</duration></backup>
+      <backup><duration>3840</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -255,7 +255,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>3840</divisions>
+        <divisions>960</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -280,7 +280,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>15360</duration></forward>
+      <forward><duration>3840</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -290,7 +290,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>15360</duration></backup>
+      <backup><duration>3840</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="-5" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -298,7 +298,7 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>3840</duration>
+        <duration>960</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -309,7 +309,7 @@
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>3840</duration>
+        <duration>960</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -320,7 +320,7 @@
           <step>E</step>
           <octave>5</octave>
         </pitch>
-        <duration>3840</duration>
+        <duration>960</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -331,7 +331,7 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>3840</duration>
+        <duration>960</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -342,7 +342,7 @@
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>3840</duration>
+        <duration>960</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -353,7 +353,7 @@
           <step>F</step>
           <octave>5</octave>
         </pitch>
-        <duration>3840</duration>
+        <duration>960</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -364,7 +364,7 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>7680</duration>
+        <duration>1920</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
@@ -375,7 +375,7 @@
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>7680</duration>
+        <duration>1920</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
@@ -386,13 +386,13 @@
           <step>D</step>
           <octave>5</octave>
         </pitch>
-        <duration>7680</duration>
+        <duration>1920</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>15360</duration></backup>
+      <backup><duration>3840</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>

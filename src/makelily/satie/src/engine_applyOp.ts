@@ -207,6 +207,21 @@ export default function applyOp(
       printMutator(preview, element as any, localOp);
     } else if (factory.modelHasType(element, Type.Spacer)) {
       mutate(element as any, localOp);
+    } else if (
+      factory.modelHasType(
+        element,
+        Type.Direction,
+        Type.Harmony,
+        Type.Sound,
+        Type.Grouping,
+        Type.FiguredBass,
+      )
+    ) {
+      // These staff-located models are plain data containers; a generic
+      // property replace/insert/delete is sufficient. Without this, any
+      // validation fixup targeting one of them (e.g. a Direction placement
+      // adjustment) would throw "No staff reducer".
+      mutate(element as any, localOp);
     } else {
       throw new Error(
         "Invalid operation path: No staff reducer for " + element,

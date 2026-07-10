@@ -433,7 +433,7 @@ export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
       }
       if (vCursor.factory.modelHasType(model, Type.Chord)) {
         forEach(model, (note) => {
-          if (note.rest) {
+          if (note.rest || !note.pitch) {
             return;
           }
           const pitch = note.pitch;

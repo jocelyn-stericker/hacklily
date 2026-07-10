@@ -141,7 +141,7 @@ class NoteImpl implements Note {
       "timeOnly",
       "dots",
       "noteType",
-      "timeModificiation",
+      "timeModification",
       "rest",
     ];
 

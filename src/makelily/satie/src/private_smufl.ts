@@ -67,21 +67,26 @@ export const distances = {
 };
 
 export function getWidth(glyph: string) {
-  return bboxes[glyph][0] * 10 - bboxes[glyph][2] * 10;
+  const box = bboxes[glyph];
+  return box ? box[0] * 10 - box[2] * 10 : 0;
 }
 
 export function getRight(glyph: string) {
-  return bboxes[glyph][0] * 10;
+  const box = bboxes[glyph];
+  return box ? box[0] * 10 : undefined;
 }
 
 export function getLeft(glyph: string) {
-  return bboxes[glyph][2] * 10;
+  const box = bboxes[glyph];
+  return box ? box[2] * 10 : undefined;
 }
 
 export function getTop(glyph: string) {
-  return bboxes[glyph][1] * 10;
+  const box = bboxes[glyph];
+  return box ? box[1] * 10 : undefined;
 }
 
 export function getBottom(glyph: string) {
-  return bboxes[glyph][3] * 10;
+  const box = bboxes[glyph];
+  return box ? box[3] * 10 : undefined;
 }

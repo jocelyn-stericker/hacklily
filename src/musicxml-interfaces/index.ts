@@ -30462,14 +30462,18 @@ function clefToXML(clef: Clef): string {
 
   attribs += printStyleToXML(clef) + printObjectToXML(clef);
 
-  if (defined(clef.sign)) {
-    // <!ELEMENT sign (#PCDATA)>
-    children.push(xml`<sign>${clef.sign}</sign>`);
-  }
+  // The DTD requires <sign>. Satie renders a clef with no sign as a treble
+  // clef, so default to G on line 2 to match what is rendered.
+  // <!ELEMENT sign (#PCDATA)>
+  const sign = defined(clef.sign) ? clef.sign : "G";
+  children.push(xml`<sign>${sign}</sign>`);
 
   if (defined(clef.line)) {
     // <!ELEMENT line (#PCDATA)>
     children.push(xml`<line>${clef.line}</line>`);
+  } else if (!defined(clef.sign)) {
+    // Placeholder clef with no sign — render as treble (G, line 2).
+    children.push(xml`<line>2</line>`);
   }
 
   if (defined(clef.clefOctaveChange)) {
@@ -31315,7 +31319,7 @@ function upDownToXML(upDown: { type?: UpDown }): string {
 
 function upDownDirectionToXML(direction: { direction?: UpDown }): string {
   if (defined(direction.direction)) {
-    return xml` type="${direction.direction ? "down" : "up"}"`;
+    return xml` direction="${direction.direction ? "down" : "up"}"`;
   }
   return "";
 }

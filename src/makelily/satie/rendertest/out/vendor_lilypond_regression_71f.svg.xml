@@ -92,7 +92,7 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <divisions>768</divisions>
+        <divisions>2</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -118,7 +118,7 @@
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -127,11 +127,11 @@
         major</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -140,11 +140,11 @@
         minor</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -153,11 +153,11 @@
         augmented</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -166,7 +166,7 @@
         diminished</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -176,7 +176,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>8</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -184,7 +184,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -198,7 +198,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -212,7 +212,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -226,7 +226,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -235,7 +235,7 @@
         </lyric>
       </note>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>8</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -246,7 +246,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>2</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -272,7 +272,7 @@
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -281,11 +281,11 @@
         dominant</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -294,11 +294,11 @@
         major-seventh</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -307,11 +307,11 @@
         minor-seventh</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -320,7 +320,7 @@
         diminished-seventh</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -330,7 +330,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>8</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -338,7 +338,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -352,7 +352,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -366,7 +366,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -380,7 +380,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -389,7 +389,7 @@
         </lyric>
       </note>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>8</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -400,7 +400,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>2</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -426,7 +426,7 @@
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -435,11 +435,11 @@
         augmented-seventh</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -448,11 +448,11 @@
         half-diminished</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -461,11 +461,11 @@
         major-minor</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -474,7 +474,7 @@
         major-sixth</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -484,7 +484,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>8</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -492,7 +492,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -506,7 +506,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -520,7 +520,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -534,7 +534,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -543,7 +543,7 @@
         </lyric>
       </note>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>8</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -554,7 +554,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>2</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -580,7 +580,7 @@
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -589,11 +589,11 @@
         minor-sixth</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -602,11 +602,11 @@
         dominant-ninth</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -615,11 +615,11 @@
         major-ninth</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -628,7 +628,7 @@
         minor-ninth</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -638,7 +638,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>8</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -646,7 +646,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -660,7 +660,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -674,7 +674,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -688,7 +688,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -697,7 +697,7 @@
         </lyric>
       </note>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>8</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -708,7 +708,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>2</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -734,7 +734,7 @@
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -743,11 +743,11 @@
         dominant-11th</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -756,11 +756,11 @@
         major-11th</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -769,11 +769,11 @@
         minor-11th</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -782,7 +782,7 @@
         dominant-13th</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -792,7 +792,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>8</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -800,7 +800,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -814,7 +814,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -828,7 +828,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -842,7 +842,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -851,7 +851,7 @@
         </lyric>
       </note>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>8</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -862,7 +862,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>2</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -888,7 +888,7 @@
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -897,11 +897,11 @@
         major-13th</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -910,11 +910,11 @@
         minor-13th</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -923,11 +923,11 @@
         suspended-second</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -936,7 +936,7 @@
         suspended-fourth</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -946,7 +946,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>8</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -954,7 +954,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -968,7 +968,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -982,7 +982,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -996,7 +996,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1005,7 +1005,7 @@
         </lyric>
       </note>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>8</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1016,7 +1016,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>2</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -1042,7 +1042,7 @@
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -1051,11 +1051,11 @@
         Neapolitan</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -1064,11 +1064,11 @@
         Italian</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -1077,11 +1077,11 @@
         French</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -1090,7 +1090,7 @@
         German</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1100,7 +1100,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>8</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1108,7 +1108,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1122,7 +1122,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1136,7 +1136,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1150,7 +1150,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1159,7 +1159,7 @@
         </lyric>
       </note>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>8</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1170,7 +1170,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>2</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -1196,7 +1196,7 @@
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -1205,11 +1205,11 @@
         pedal</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -1218,11 +1218,11 @@
         power</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -1231,11 +1231,11 @@
         Tristan</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -1244,7 +1244,7 @@
         other</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1254,7 +1254,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>8</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1262,7 +1262,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1276,7 +1276,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1290,7 +1290,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1304,7 +1304,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1313,7 +1313,7 @@
         </lyric>
       </note>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>8</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1324,7 +1324,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>2</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -1350,7 +1350,7 @@
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>1536</div-count>
+          <div-count>4</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">F</root-step>
@@ -1361,11 +1361,11 @@
         <inversion font-style="normal" font-weight="normal" color="#000000">2</inversion>
         <staff>null</staff>
       </harmony>
-      <forward><duration>1536</duration></forward>
+      <forward><duration>4</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>384</div-count>
+          <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">F</root-step>
@@ -1378,11 +1378,11 @@
         </bass>
         <staff>null</staff>
       </harmony>
-      <forward><duration>384</duration></forward>
+      <forward><duration>1</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>384</div-count>
+          <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">G</root-step>
@@ -1396,11 +1396,11 @@
         </bass>
         <staff>null</staff>
       </harmony>
-      <forward><duration>384</duration></forward>
+      <forward><duration>1</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -1409,7 +1409,7 @@
         major</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1419,7 +1419,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>8</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1427,7 +1427,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>1536</duration>
+        <duration>4</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
@@ -1441,7 +1441,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>384</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>eighth</type>
         <staff>1</staff>
@@ -1455,7 +1455,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>384</duration>
+        <duration>1</duration>
         <voice>1</voice>
         <type>eighth</type>
         <staff>1</staff>
@@ -1468,7 +1468,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1477,7 +1477,7 @@
         </lyric>
       </note>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>8</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1488,7 +1488,7 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <divisions>768</divisions>
+        <divisions>2</divisions>
         <staves>1</staves>
         <staff-details number="1">
           
@@ -1514,7 +1514,7 @@
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -1533,11 +1533,11 @@
         </degree>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>768</div-count>
+          <div-count>2</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
@@ -1556,10 +1556,10 @@
         </degree>
         <staff>null</staff>
       </harmony>
-      <forward><duration>768</duration></forward>
+      <forward><duration>2</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1536</duration></forward>
+      <forward><duration>4</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -1569,7 +1569,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>3072</duration></backup>
+      <backup><duration>8</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1577,7 +1577,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1591,7 +1591,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>768</duration>
+        <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1600,7 +1600,7 @@
         </lyric>
       </note>
       
-      <backup><duration>1536</duration></backup>
+      <backup><duration>4</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>

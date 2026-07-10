@@ -16,8 +16,8 @@ export default function Home() {
         </a>
       </aside>
       <p>
-        Satie is created by <a href="https://nettek.ca">Jocelyn Stericker</a> and
-        is a component of <a href="https://hacklily.org">Hacklily</a>, a
+        Satie is created by <a href="https://nettek.ca">Jocelyn Stericker</a>{" "}
+        and is a component of <a href="https://hacklily.org">Hacklily</a>, a
         sheet music editor.
       </p>
       <Test
