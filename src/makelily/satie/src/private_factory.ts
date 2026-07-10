@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
+import type {
   Print,
   Grouping,
   FiguredBass,
@@ -28,17 +28,15 @@ import {
   Note,
 } from "#/musicxml-interfaces";
 
-import { IModel, IMeasure, Type } from "./document";
-
-import { IProxyModel } from "./implProxy_proxyModel";
-import { ISpacerModel } from "./implSpacer_spacerModel";
-import { IVisualCursorModel } from "./implVisualCursor_visualCursorModel";
-
-import { IChord } from "./private_chordUtil";
-import { IAttributesSnapshot } from "./private_attributesSnapshot";
-import { IMeasureLayout } from "./private_measureLayout";
-import { ILayoutOptions } from "./private_layoutOptions";
-import { ILineBounds } from "./private_lineBounds";
+import type { IModel, IMeasure, Type } from "./document";
+import type { IProxyModel } from "./implProxy_proxyModel";
+import type { ISpacerModel } from "./implSpacer_spacerModel";
+import type { IVisualCursorModel } from "./implVisualCursor_visualCursorModel";
+import type { IAttributesSnapshot } from "./private_attributesSnapshot";
+import type { IChord } from "./private_chordUtil";
+import type { ILayoutOptions } from "./private_layoutOptions";
+import type { ILineBounds } from "./private_lineBounds";
+import type { IMeasureLayout } from "./private_measureLayout";
 
 export type IPreprocessor = (measures: IMeasure[]) => IMeasure[];
 

@@ -18,7 +18,7 @@
 
 import invariant from "invariant";
 
-import { Type, ILayout } from "./document";
+import type { Type, ILayout } from "./document";
 
 export interface ICombinedLayout {
   x: number;

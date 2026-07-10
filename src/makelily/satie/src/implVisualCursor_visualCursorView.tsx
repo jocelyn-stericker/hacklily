@@ -16,11 +16,12 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, { Component, ReactElement } from "react";
 import * as PropTypes from "prop-types";
+import type { ReactElement } from "react";
+import React, { Component } from "react";
 
+import type { IVisualCursorLayout } from "./implVisualCursor_visualCursorModel";
 import Line from "./private_views_line";
-import { IVisualCursorLayout } from "./implVisualCursor_visualCursorModel";
 
 export interface IProps {
   layout: IVisualCursorLayout;

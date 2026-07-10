@@ -20,11 +20,10 @@
  * @file part of Satie test suite
  */
 
-import Direction from "../implDirection_directionModel";
-
-import { IModel, Type } from "../document";
-
+import type { IModel } from "../document";
+import { Type } from "../document";
 import Factory from "../engine_factory";
+import Direction from "../implDirection_directionModel";
 
 describe("[direction.ts]", function () {
   describe("DirectionModel", function () {

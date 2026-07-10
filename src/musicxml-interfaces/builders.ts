@@ -396,7 +396,8 @@ export interface ITextSegmentBuilder {
   ) => ITextSegmentBuilder;
   text: (
     build:
-      DisplayText | ((builder: IDisplayTextBuilder) => IDisplayTextBuilder),
+      | DisplayText
+      | ((builder: IDisplayTextBuilder) => IDisplayTextBuilder),
   ) => ITextSegmentBuilder;
 }
 
@@ -410,7 +411,8 @@ class TextSegmentBuilder implements ITextSegmentBuilder {
   ) => ITextSegmentBuilder;
   text: (
     build:
-      DisplayText | ((builder: IDisplayTextBuilder) => IDisplayTextBuilder),
+      | DisplayText
+      | ((builder: IDisplayTextBuilder) => IDisplayTextBuilder),
   ) => ITextSegmentBuilder;
   constructor(original?: TextSegment) {
     const updates: TextSegment = {} as any;
@@ -470,7 +472,8 @@ class TextSegmentBuilder implements ITextSegmentBuilder {
 
     this.text = (
       build:
-        DisplayText | ((builder: IDisplayTextBuilder) => IDisplayTextBuilder),
+        | DisplayText
+        | ((builder: IDisplayTextBuilder) => IDisplayTextBuilder),
     ): ITextSegmentBuilder => {
       if (typeof build === "function") {
         delete updates["text"];
@@ -6040,7 +6043,8 @@ export interface IPartNameDisplayBuilder {
   nameAt: (
     idx: number,
     build:
-      TextSegment | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
+      | TextSegment
+      | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
   ) => IPartNameDisplayBuilder;
   nameSplice: (
     start: number,
@@ -6057,7 +6061,8 @@ class PartNameDisplayBuilder implements IPartNameDisplayBuilder {
   nameAt: (
     idx: number,
     build:
-      TextSegment | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
+      | TextSegment
+      | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
   ) => IPartNameDisplayBuilder;
   nameSplice: (
     start: number,
@@ -6119,7 +6124,8 @@ class PartNameDisplayBuilder implements IPartNameDisplayBuilder {
     this.nameAt = (
       idx: number,
       build:
-        TextSegment | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
+        | TextSegment
+        | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
     ): IPartNameDisplayBuilder => {
       makeReference("name");
       if (frozen["name"][idx]) {
@@ -6235,7 +6241,8 @@ export interface IPartAbbreviationDisplayBuilder {
   nameAt: (
     idx: number,
     build:
-      TextSegment | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
+      | TextSegment
+      | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
   ) => IPartAbbreviationDisplayBuilder;
   nameSplice: (
     start: number,
@@ -6252,7 +6259,8 @@ class PartAbbreviationDisplayBuilder implements IPartAbbreviationDisplayBuilder 
   nameAt: (
     idx: number,
     build:
-      TextSegment | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
+      | TextSegment
+      | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
   ) => IPartAbbreviationDisplayBuilder;
   nameSplice: (
     start: number,
@@ -6314,7 +6322,8 @@ class PartAbbreviationDisplayBuilder implements IPartAbbreviationDisplayBuilder 
     this.nameAt = (
       idx: number,
       build:
-        TextSegment | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
+        | TextSegment
+        | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
     ): IPartAbbreviationDisplayBuilder => {
       makeReference("name");
       if (frozen["name"][idx]) {
@@ -7086,7 +7095,8 @@ export interface IPageLayoutBuilder {
   pageMarginsAt: (
     idx: number,
     build:
-      PageMargins | ((builder: IPageMarginsBuilder) => IPageMarginsBuilder),
+      | PageMargins
+      | ((builder: IPageMarginsBuilder) => IPageMarginsBuilder),
   ) => IPageLayoutBuilder;
   pageMarginsSplice: (
     start: number,
@@ -7104,7 +7114,8 @@ class PageLayoutBuilder implements IPageLayoutBuilder {
   pageMarginsAt: (
     idx: number,
     build:
-      PageMargins | ((builder: IPageMarginsBuilder) => IPageMarginsBuilder),
+      | PageMargins
+      | ((builder: IPageMarginsBuilder) => IPageMarginsBuilder),
   ) => IPageLayoutBuilder;
   pageMarginsSplice: (
     start: number,
@@ -7172,7 +7183,8 @@ class PageLayoutBuilder implements IPageLayoutBuilder {
     this.pageMarginsAt = (
       idx: number,
       build:
-        PageMargins | ((builder: IPageMarginsBuilder) => IPageMarginsBuilder),
+        | PageMargins
+        | ((builder: IPageMarginsBuilder) => IPageMarginsBuilder),
     ): IPageLayoutBuilder => {
       makeReference("pageMargins");
       if (frozen["pageMargins"][idx]) {
@@ -7510,11 +7522,13 @@ export interface ISystemDividersBuilder {
   patch: () => IAny[];
   rightDivider: (
     build:
-      RightDivider | ((builder: IRightDividerBuilder) => IRightDividerBuilder),
+      | RightDivider
+      | ((builder: IRightDividerBuilder) => IRightDividerBuilder),
   ) => ISystemDividersBuilder;
   leftDivider: (
     build:
-      LeftDivider | ((builder: ILeftDividerBuilder) => ILeftDividerBuilder),
+      | LeftDivider
+      | ((builder: ILeftDividerBuilder) => ILeftDividerBuilder),
   ) => ISystemDividersBuilder;
 }
 
@@ -7523,11 +7537,13 @@ class SystemDividersBuilder implements ISystemDividersBuilder {
   patch: () => IAny[];
   rightDivider: (
     build:
-      RightDivider | ((builder: IRightDividerBuilder) => IRightDividerBuilder),
+      | RightDivider
+      | ((builder: IRightDividerBuilder) => IRightDividerBuilder),
   ) => ISystemDividersBuilder;
   leftDivider: (
     build:
-      LeftDivider | ((builder: ILeftDividerBuilder) => ILeftDividerBuilder),
+      | LeftDivider
+      | ((builder: ILeftDividerBuilder) => ILeftDividerBuilder),
   ) => ISystemDividersBuilder;
   constructor(original?: SystemDividers) {
     const updates: SystemDividers = {} as any;
@@ -7600,7 +7616,8 @@ class SystemDividersBuilder implements ISystemDividersBuilder {
 
     this.leftDivider = (
       build:
-        LeftDivider | ((builder: ILeftDividerBuilder) => ILeftDividerBuilder),
+        | LeftDivider
+        | ((builder: ILeftDividerBuilder) => ILeftDividerBuilder),
     ): ISystemDividersBuilder => {
       if (typeof build === "function") {
         delete updates["leftDivider"];
@@ -9687,7 +9704,8 @@ export interface IEncodingBuilder {
   encodingDescriptions: (encodingDescriptions: string[]) => IEncodingBuilder;
   encodingDate: (
     build:
-      EncodingDate | ((builder: IEncodingDateBuilder) => IEncodingDateBuilder),
+      | EncodingDate
+      | ((builder: IEncodingDateBuilder) => IEncodingDateBuilder),
   ) => IEncodingBuilder;
   set: (key: string, val: Supports) => IEncodingBuilder;
   encodersAt: (
@@ -9709,7 +9727,8 @@ class EncodingBuilder implements IEncodingBuilder {
   encodingDescriptions: (encodingDescriptions: string[]) => IEncodingBuilder;
   encodingDate: (
     build:
-      EncodingDate | ((builder: IEncodingDateBuilder) => IEncodingDateBuilder),
+      | EncodingDate
+      | ((builder: IEncodingDateBuilder) => IEncodingDateBuilder),
   ) => IEncodingBuilder;
   set: (key: string, val: Supports) => IEncodingBuilder;
   encodersAt: (
@@ -11428,7 +11447,8 @@ export interface IStaffDetailsBuilder {
   staffTuningsAt: (
     idx: number,
     build:
-      StaffTuning | ((builder: IStaffTuningBuilder) => IStaffTuningBuilder),
+      | StaffTuning
+      | ((builder: IStaffTuningBuilder) => IStaffTuningBuilder),
   ) => IStaffDetailsBuilder;
   staffTuningsSplice: (
     start: number,
@@ -11452,7 +11472,8 @@ class StaffDetailsBuilder implements IStaffDetailsBuilder {
   staffTuningsAt: (
     idx: number,
     build:
-      StaffTuning | ((builder: IStaffTuningBuilder) => IStaffTuningBuilder),
+      | StaffTuning
+      | ((builder: IStaffTuningBuilder) => IStaffTuningBuilder),
   ) => IStaffDetailsBuilder;
   staffTuningsSplice: (
     start: number,
@@ -11520,7 +11541,8 @@ class StaffDetailsBuilder implements IStaffDetailsBuilder {
     this.staffTuningsAt = (
       idx: number,
       build:
-        StaffTuning | ((builder: IStaffTuningBuilder) => IStaffTuningBuilder),
+        | StaffTuning
+        | ((builder: IStaffTuningBuilder) => IStaffTuningBuilder),
     ): IStaffDetailsBuilder => {
       makeReference("staffTunings");
       if (frozen["staffTunings"][idx]) {
@@ -12707,7 +12729,8 @@ export interface IMeasureStyleBuilder {
   ) => IMeasureStyleBuilder;
   multipleRest: (
     build:
-      MultipleRest | ((builder: IMultipleRestBuilder) => IMultipleRestBuilder),
+      | MultipleRest
+      | ((builder: IMultipleRestBuilder) => IMultipleRestBuilder),
   ) => IMeasureStyleBuilder;
   slash: (
     build: Slash | ((builder: ISlashBuilder) => ISlashBuilder),
@@ -12733,7 +12756,8 @@ class MeasureStyleBuilder implements IMeasureStyleBuilder {
   ) => IMeasureStyleBuilder;
   multipleRest: (
     build:
-      MultipleRest | ((builder: IMultipleRestBuilder) => IMultipleRestBuilder),
+      | MultipleRest
+      | ((builder: IMultipleRestBuilder) => IMultipleRestBuilder),
   ) => IMeasureStyleBuilder;
   slash: (
     build: Slash | ((builder: ISlashBuilder) => ISlashBuilder),
@@ -12931,7 +12955,8 @@ export interface IAttributesBuilder {
   measureStylesAt: (
     idx: number,
     build:
-      MeasureStyle | ((builder: IMeasureStyleBuilder) => IMeasureStyleBuilder),
+      | MeasureStyle
+      | ((builder: IMeasureStyleBuilder) => IMeasureStyleBuilder),
   ) => IAttributesBuilder;
   measureStylesSplice: (
     start: number,
@@ -12952,7 +12977,8 @@ export interface IAttributesBuilder {
   staffDetailsAt: (
     idx: number,
     build:
-      StaffDetails | ((builder: IStaffDetailsBuilder) => IStaffDetailsBuilder),
+      | StaffDetails
+      | ((builder: IStaffDetailsBuilder) => IStaffDetailsBuilder),
   ) => IAttributesBuilder;
   staffDetailsSplice: (
     start: number,
@@ -13020,7 +13046,8 @@ class AttributesBuilder implements IAttributesBuilder {
   measureStylesAt: (
     idx: number,
     build:
-      MeasureStyle | ((builder: IMeasureStyleBuilder) => IMeasureStyleBuilder),
+      | MeasureStyle
+      | ((builder: IMeasureStyleBuilder) => IMeasureStyleBuilder),
   ) => IAttributesBuilder;
   measureStylesSplice: (
     start: number,
@@ -13041,7 +13068,8 @@ class AttributesBuilder implements IAttributesBuilder {
   staffDetailsAt: (
     idx: number,
     build:
-      StaffDetails | ((builder: IStaffDetailsBuilder) => IStaffDetailsBuilder),
+      | StaffDetails
+      | ((builder: IStaffDetailsBuilder) => IStaffDetailsBuilder),
   ) => IAttributesBuilder;
   staffDetailsSplice: (
     start: number,
@@ -14716,7 +14744,8 @@ export interface INoteBuilder {
   patch: () => IAny[];
   noteheadText: (
     build:
-      NoteheadText | ((builder: INoteheadTextBuilder) => INoteheadTextBuilder),
+      | NoteheadText
+      | ((builder: INoteheadTextBuilder) => INoteheadTextBuilder),
   ) => INoteBuilder;
   timeModification: (
     build:
@@ -14842,7 +14871,8 @@ class NoteBuilder implements INoteBuilder {
   patch: () => IAny[];
   noteheadText: (
     build:
-      NoteheadText | ((builder: INoteheadTextBuilder) => INoteheadTextBuilder),
+      | NoteheadText
+      | ((builder: INoteheadTextBuilder) => INoteheadTextBuilder),
   ) => INoteBuilder;
   timeModification: (
     build:
@@ -16855,7 +16885,8 @@ export interface INoteheadTextBuilder {
   textAt: (
     idx: number,
     build:
-      TextSegment | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
+      | TextSegment
+      | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
   ) => INoteheadTextBuilder;
   textSplice: (
     start: number,
@@ -16871,7 +16902,8 @@ class NoteheadTextBuilder implements INoteheadTextBuilder {
   textAt: (
     idx: number,
     build:
-      TextSegment | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
+      | TextSegment
+      | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
   ) => INoteheadTextBuilder;
   textSplice: (
     start: number,
@@ -16932,7 +16964,8 @@ class NoteheadTextBuilder implements INoteheadTextBuilder {
     this.textAt = (
       idx: number,
       build:
-        TextSegment | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
+        | TextSegment
+        | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
     ): INoteheadTextBuilder => {
       makeReference("text");
       if (frozen["text"][idx]) {
@@ -19482,13 +19515,15 @@ export interface ITupletBuilder {
   showNumber: (showNumber: ActualBothNone) => ITupletBuilder;
   tupletNormal: (
     build:
-      TupletNormal | ((builder: ITupletNormalBuilder) => ITupletNormalBuilder),
+      | TupletNormal
+      | ((builder: ITupletNormalBuilder) => ITupletNormalBuilder),
   ) => ITupletBuilder;
   type: (type: StartStop) => ITupletBuilder;
   showType: (showType: ActualBothNone) => ITupletBuilder;
   tupletActual: (
     build:
-      TupletActual | ((builder: ITupletActualBuilder) => ITupletActualBuilder),
+      | TupletActual
+      | ((builder: ITupletActualBuilder) => ITupletActualBuilder),
   ) => ITupletBuilder;
   defaultX: (defaultX: number) => ITupletBuilder;
   relativeY: (relativeY: number) => ITupletBuilder;
@@ -19506,13 +19541,15 @@ class TupletBuilder implements ITupletBuilder {
   showNumber: (showNumber: ActualBothNone) => ITupletBuilder;
   tupletNormal: (
     build:
-      TupletNormal | ((builder: ITupletNormalBuilder) => ITupletNormalBuilder),
+      | TupletNormal
+      | ((builder: ITupletNormalBuilder) => ITupletNormalBuilder),
   ) => ITupletBuilder;
   type: (type: StartStop) => ITupletBuilder;
   showType: (showType: ActualBothNone) => ITupletBuilder;
   tupletActual: (
     build:
-      TupletActual | ((builder: ITupletActualBuilder) => ITupletActualBuilder),
+      | TupletActual
+      | ((builder: ITupletActualBuilder) => ITupletActualBuilder),
   ) => ITupletBuilder;
   defaultX: (defaultX: number) => ITupletBuilder;
   relativeY: (relativeY: number) => ITupletBuilder;
@@ -19704,7 +19741,8 @@ export interface ITupletActualBuilder {
   patch: () => IAny[];
   tupletNumber: (
     build:
-      TupletNumber | ((builder: ITupletNumberBuilder) => ITupletNumberBuilder),
+      | TupletNumber
+      | ((builder: ITupletNumberBuilder) => ITupletNumberBuilder),
   ) => ITupletActualBuilder;
   tupletDotsAt: (
     idx: number,
@@ -19726,7 +19764,8 @@ class TupletActualBuilder implements ITupletActualBuilder {
   patch: () => IAny[];
   tupletNumber: (
     build:
-      TupletNumber | ((builder: ITupletNumberBuilder) => ITupletNumberBuilder),
+      | TupletNumber
+      | ((builder: ITupletNumberBuilder) => ITupletNumberBuilder),
   ) => ITupletActualBuilder;
   tupletDotsAt: (
     idx: number,
@@ -19939,7 +19978,8 @@ export interface ITupletNormalBuilder {
   patch: () => IAny[];
   tupletNumber: (
     build:
-      TupletNumber | ((builder: ITupletNumberBuilder) => ITupletNumberBuilder),
+      | TupletNumber
+      | ((builder: ITupletNumberBuilder) => ITupletNumberBuilder),
   ) => ITupletNormalBuilder;
   tupletDotsAt: (
     idx: number,
@@ -19961,7 +20001,8 @@ class TupletNormalBuilder implements ITupletNormalBuilder {
   patch: () => IAny[];
   tupletNumber: (
     build:
-      TupletNumber | ((builder: ITupletNumberBuilder) => ITupletNumberBuilder),
+      | TupletNumber
+      | ((builder: ITupletNumberBuilder) => ITupletNumberBuilder),
   ) => ITupletNormalBuilder;
   tupletDotsAt: (
     idx: number,
@@ -21328,7 +21369,8 @@ export interface IOrnamentsBuilder {
   ) => IOrnamentsBuilder;
   invertedTurn: (
     build:
-      InvertedTurn | ((builder: IInvertedTurnBuilder) => IInvertedTurnBuilder),
+      | InvertedTurn
+      | ((builder: IInvertedTurnBuilder) => IInvertedTurnBuilder),
   ) => IOrnamentsBuilder;
   otherOrnament: (
     build:
@@ -21337,11 +21379,13 @@ export interface IOrnamentsBuilder {
   ) => IOrnamentsBuilder;
   delayedTurn: (
     build:
-      DelayedTurn | ((builder: IDelayedTurnBuilder) => IDelayedTurnBuilder),
+      | DelayedTurn
+      | ((builder: IDelayedTurnBuilder) => IDelayedTurnBuilder),
   ) => IOrnamentsBuilder;
   verticalTurn: (
     build:
-      VerticalTurn | ((builder: IVerticalTurnBuilder) => IVerticalTurnBuilder),
+      | VerticalTurn
+      | ((builder: IVerticalTurnBuilder) => IVerticalTurnBuilder),
   ) => IOrnamentsBuilder;
   wavyLine: (
     build: WavyLine | ((builder: IWavyLineBuilder) => IWavyLineBuilder),
@@ -21410,7 +21454,8 @@ class OrnamentsBuilder implements IOrnamentsBuilder {
   ) => IOrnamentsBuilder;
   invertedTurn: (
     build:
-      InvertedTurn | ((builder: IInvertedTurnBuilder) => IInvertedTurnBuilder),
+      | InvertedTurn
+      | ((builder: IInvertedTurnBuilder) => IInvertedTurnBuilder),
   ) => IOrnamentsBuilder;
   otherOrnament: (
     build:
@@ -21419,11 +21464,13 @@ class OrnamentsBuilder implements IOrnamentsBuilder {
   ) => IOrnamentsBuilder;
   delayedTurn: (
     build:
-      DelayedTurn | ((builder: IDelayedTurnBuilder) => IDelayedTurnBuilder),
+      | DelayedTurn
+      | ((builder: IDelayedTurnBuilder) => IDelayedTurnBuilder),
   ) => IOrnamentsBuilder;
   verticalTurn: (
     build:
-      VerticalTurn | ((builder: IVerticalTurnBuilder) => IVerticalTurnBuilder),
+      | VerticalTurn
+      | ((builder: IVerticalTurnBuilder) => IVerticalTurnBuilder),
   ) => IOrnamentsBuilder;
   wavyLine: (
     build: WavyLine | ((builder: IWavyLineBuilder) => IWavyLineBuilder),
@@ -21612,7 +21659,8 @@ class OrnamentsBuilder implements IOrnamentsBuilder {
 
     this.delayedTurn = (
       build:
-        DelayedTurn | ((builder: IDelayedTurnBuilder) => IDelayedTurnBuilder),
+        | DelayedTurn
+        | ((builder: IDelayedTurnBuilder) => IDelayedTurnBuilder),
     ): IOrnamentsBuilder => {
       if (typeof build === "function") {
         delete updates["delayedTurn"];
@@ -24644,7 +24692,8 @@ export interface ITechnicalBuilder {
   patch: () => IAny[];
   tripleTongue: (
     build:
-      TripleTongue | ((builder: ITripleTongueBuilder) => ITripleTongueBuilder),
+      | TripleTongue
+      | ((builder: ITripleTongueBuilder) => ITripleTongueBuilder),
   ) => ITechnicalBuilder;
   toe: (
     build: Toe | ((builder: IToeBuilder) => IToeBuilder),
@@ -24689,7 +24738,8 @@ export interface ITechnicalBuilder {
   ) => ITechnicalBuilder;
   doubleTongue: (
     build:
-      DoubleTongue | ((builder: IDoubleTongueBuilder) => IDoubleTongueBuilder),
+      | DoubleTongue
+      | ((builder: IDoubleTongueBuilder) => IDoubleTongueBuilder),
   ) => ITechnicalBuilder;
   string: (
     build: String | ((builder: IStringBuilder) => IStringBuilder),
@@ -24699,7 +24749,8 @@ export interface ITechnicalBuilder {
   ) => ITechnicalBuilder;
   fingernails: (
     build:
-      Fingernails | ((builder: IFingernailsBuilder) => IFingernailsBuilder),
+      | Fingernails
+      | ((builder: IFingernailsBuilder) => IFingernailsBuilder),
   ) => ITechnicalBuilder;
   arrow: (
     build: Arrow | ((builder: IArrowBuilder) => IArrowBuilder),
@@ -24730,7 +24781,8 @@ class TechnicalBuilder implements ITechnicalBuilder {
   patch: () => IAny[];
   tripleTongue: (
     build:
-      TripleTongue | ((builder: ITripleTongueBuilder) => ITripleTongueBuilder),
+      | TripleTongue
+      | ((builder: ITripleTongueBuilder) => ITripleTongueBuilder),
   ) => ITechnicalBuilder;
   toe: (
     build: Toe | ((builder: IToeBuilder) => IToeBuilder),
@@ -24775,7 +24827,8 @@ class TechnicalBuilder implements ITechnicalBuilder {
   ) => ITechnicalBuilder;
   doubleTongue: (
     build:
-      DoubleTongue | ((builder: IDoubleTongueBuilder) => IDoubleTongueBuilder),
+      | DoubleTongue
+      | ((builder: IDoubleTongueBuilder) => IDoubleTongueBuilder),
   ) => ITechnicalBuilder;
   string: (
     build: String | ((builder: IStringBuilder) => IStringBuilder),
@@ -24785,7 +24838,8 @@ class TechnicalBuilder implements ITechnicalBuilder {
   ) => ITechnicalBuilder;
   fingernails: (
     build:
-      Fingernails | ((builder: IFingernailsBuilder) => IFingernailsBuilder),
+      | Fingernails
+      | ((builder: IFingernailsBuilder) => IFingernailsBuilder),
   ) => ITechnicalBuilder;
   arrow: (
     build: Arrow | ((builder: IArrowBuilder) => IArrowBuilder),
@@ -25159,7 +25213,8 @@ class TechnicalBuilder implements ITechnicalBuilder {
 
     this.fingernails = (
       build:
-        Fingernails | ((builder: IFingernailsBuilder) => IFingernailsBuilder),
+        | Fingernails
+        | ((builder: IFingernailsBuilder) => IFingernailsBuilder),
     ): ITechnicalBuilder => {
       if (typeof build === "function") {
         delete updates["fingernails"];
@@ -29087,7 +29142,8 @@ export interface IArticulationsBuilder {
   ) => IArticulationsBuilder;
   strongAccent: (
     build:
-      StrongAccent | ((builder: IStrongAccentBuilder) => IStrongAccentBuilder),
+      | StrongAccent
+      | ((builder: IStrongAccentBuilder) => IStrongAccentBuilder),
   ) => IArticulationsBuilder;
   staccato: (
     build: Staccato | ((builder: IStaccatoBuilder) => IStaccatoBuilder),
@@ -29156,7 +29212,8 @@ class ArticulationsBuilder implements IArticulationsBuilder {
   ) => IArticulationsBuilder;
   strongAccent: (
     build:
-      StrongAccent | ((builder: IStrongAccentBuilder) => IStrongAccentBuilder),
+      | StrongAccent
+      | ((builder: IStrongAccentBuilder) => IStrongAccentBuilder),
   ) => IArticulationsBuilder;
   staccato: (
     build: Staccato | ((builder: IStaccatoBuilder) => IStaccatoBuilder),
@@ -33889,7 +33946,8 @@ export interface IFigureBuilder {
   ) => IFigureBuilder;
   figureNumber: (
     build:
-      FigureNumber | ((builder: IFigureNumberBuilder) => IFigureNumberBuilder),
+      | FigureNumber
+      | ((builder: IFigureNumberBuilder) => IFigureNumberBuilder),
   ) => IFigureBuilder;
   extend: (
     build: Extend | ((builder: IExtendBuilder) => IExtendBuilder),
@@ -33916,7 +33974,8 @@ class FigureBuilder implements IFigureBuilder {
   ) => IFigureBuilder;
   figureNumber: (
     build:
-      FigureNumber | ((builder: IFigureNumberBuilder) => IFigureNumberBuilder),
+      | FigureNumber
+      | ((builder: IFigureNumberBuilder) => IFigureNumberBuilder),
   ) => IFigureBuilder;
   extend: (
     build: Extend | ((builder: IExtendBuilder) => IExtendBuilder),
@@ -36087,7 +36146,8 @@ export interface IDirectionTypeBuilder {
   ) => IDirectionTypeBuilder;
   octaveShift: (
     build:
-      OctaveShift | ((builder: IOctaveShiftBuilder) => IOctaveShiftBuilder),
+      | OctaveShift
+      | ((builder: IOctaveShiftBuilder) => IOctaveShiftBuilder),
   ) => IDirectionTypeBuilder;
   wordsAt: (
     idx: number,
@@ -36202,7 +36262,8 @@ class DirectionTypeBuilder implements IDirectionTypeBuilder {
   ) => IDirectionTypeBuilder;
   octaveShift: (
     build:
-      OctaveShift | ((builder: IOctaveShiftBuilder) => IOctaveShiftBuilder),
+      | OctaveShift
+      | ((builder: IOctaveShiftBuilder) => IOctaveShiftBuilder),
   ) => IDirectionTypeBuilder;
   wordsAt: (
     idx: number,
@@ -36854,7 +36915,8 @@ class DirectionTypeBuilder implements IDirectionTypeBuilder {
 
     this.octaveShift = (
       build:
-        OctaveShift | ((builder: IOctaveShiftBuilder) => IOctaveShiftBuilder),
+        | OctaveShift
+        | ((builder: IOctaveShiftBuilder) => IOctaveShiftBuilder),
     ): IDirectionTypeBuilder => {
       if (typeof build === "function") {
         delete updates["octaveShift"];
@@ -38340,7 +38402,8 @@ export interface IMetronomeBuilder {
   beatUnitDotsAt: (
     idx: number,
     build:
-      BeatUnitDot | ((builder: IBeatUnitDotBuilder) => IBeatUnitDotBuilder),
+      | BeatUnitDot
+      | ((builder: IBeatUnitDotBuilder) => IBeatUnitDotBuilder),
   ) => IMetronomeBuilder;
   beatUnitDotsSplice: (
     start: number,
@@ -38352,7 +38415,8 @@ export interface IMetronomeBuilder {
   beatUnitDotsChangeAt: (
     idx: number,
     build:
-      BeatUnitDot | ((builder: IBeatUnitDotBuilder) => IBeatUnitDotBuilder),
+      | BeatUnitDot
+      | ((builder: IBeatUnitDotBuilder) => IBeatUnitDotBuilder),
   ) => IMetronomeBuilder;
   beatUnitDotsChangeSplice: (
     start: number,
@@ -38398,7 +38462,8 @@ class MetronomeBuilder implements IMetronomeBuilder {
   beatUnitDotsAt: (
     idx: number,
     build:
-      BeatUnitDot | ((builder: IBeatUnitDotBuilder) => IBeatUnitDotBuilder),
+      | BeatUnitDot
+      | ((builder: IBeatUnitDotBuilder) => IBeatUnitDotBuilder),
   ) => IMetronomeBuilder;
   beatUnitDotsSplice: (
     start: number,
@@ -38410,7 +38475,8 @@ class MetronomeBuilder implements IMetronomeBuilder {
   beatUnitDotsChangeAt: (
     idx: number,
     build:
-      BeatUnitDot | ((builder: IBeatUnitDotBuilder) => IBeatUnitDotBuilder),
+      | BeatUnitDot
+      | ((builder: IBeatUnitDotBuilder) => IBeatUnitDotBuilder),
   ) => IMetronomeBuilder;
   beatUnitDotsChangeSplice: (
     start: number,
@@ -38672,7 +38738,8 @@ class MetronomeBuilder implements IMetronomeBuilder {
     this.beatUnitDotsAt = (
       idx: number,
       build:
-        BeatUnitDot | ((builder: IBeatUnitDotBuilder) => IBeatUnitDotBuilder),
+        | BeatUnitDot
+        | ((builder: IBeatUnitDotBuilder) => IBeatUnitDotBuilder),
     ): IMetronomeBuilder => {
       makeReference("beatUnitDots");
       if (frozen["beatUnitDots"][idx]) {
@@ -38792,7 +38859,8 @@ class MetronomeBuilder implements IMetronomeBuilder {
     this.beatUnitDotsChangeAt = (
       idx: number,
       build:
-        BeatUnitDot | ((builder: IBeatUnitDotBuilder) => IBeatUnitDotBuilder),
+        | BeatUnitDot
+        | ((builder: IBeatUnitDotBuilder) => IBeatUnitDotBuilder),
     ): IMetronomeBuilder => {
       makeReference("beatUnitDotsChange");
       if (frozen["beatUnitDotsChange"][idx]) {
@@ -39174,7 +39242,8 @@ export interface IMetronomeNoteBuilder {
   metronomeDotsAt: (
     idx: number,
     build:
-      MetronomeDot | ((builder: IMetronomeDotBuilder) => IMetronomeDotBuilder),
+      | MetronomeDot
+      | ((builder: IMetronomeDotBuilder) => IMetronomeDotBuilder),
   ) => IMetronomeNoteBuilder;
   metronomeDotsSplice: (
     start: number,
@@ -39208,7 +39277,8 @@ class MetronomeNoteBuilder implements IMetronomeNoteBuilder {
   metronomeDotsAt: (
     idx: number,
     build:
-      MetronomeDot | ((builder: IMetronomeDotBuilder) => IMetronomeDotBuilder),
+      | MetronomeDot
+      | ((builder: IMetronomeDotBuilder) => IMetronomeDotBuilder),
   ) => IMetronomeNoteBuilder;
   metronomeDotsSplice: (
     start: number,
@@ -40196,7 +40266,8 @@ export interface IHarpPedalsBuilder {
   pedalTuningsAt: (
     idx: number,
     build:
-      PedalTuning | ((builder: IPedalTuningBuilder) => IPedalTuningBuilder),
+      | PedalTuning
+      | ((builder: IPedalTuningBuilder) => IPedalTuningBuilder),
   ) => IHarpPedalsBuilder;
   pedalTuningsSplice: (
     start: number,
@@ -40223,7 +40294,8 @@ class HarpPedalsBuilder implements IHarpPedalsBuilder {
   pedalTuningsAt: (
     idx: number,
     build:
-      PedalTuning | ((builder: IPedalTuningBuilder) => IPedalTuningBuilder),
+      | PedalTuning
+      | ((builder: IPedalTuningBuilder) => IPedalTuningBuilder),
   ) => IHarpPedalsBuilder;
   pedalTuningsSplice: (
     start: number,
@@ -40295,7 +40367,8 @@ class HarpPedalsBuilder implements IHarpPedalsBuilder {
     this.pedalTuningsAt = (
       idx: number,
       build:
-        PedalTuning | ((builder: IPedalTuningBuilder) => IPedalTuningBuilder),
+        | PedalTuning
+        | ((builder: IPedalTuningBuilder) => IPedalTuningBuilder),
     ): IHarpPedalsBuilder => {
       makeReference("pedalTunings");
       if (frozen["pedalTunings"][idx]) {
@@ -45186,11 +45259,13 @@ export interface IDegreeBuilder {
   patch: () => IAny[];
   degreeAlter: (
     build:
-      DegreeAlter | ((builder: IDegreeAlterBuilder) => IDegreeAlterBuilder),
+      | DegreeAlter
+      | ((builder: IDegreeAlterBuilder) => IDegreeAlterBuilder),
   ) => IDegreeBuilder;
   degreeValue: (
     build:
-      DegreeValue | ((builder: IDegreeValueBuilder) => IDegreeValueBuilder),
+      | DegreeValue
+      | ((builder: IDegreeValueBuilder) => IDegreeValueBuilder),
   ) => IDegreeBuilder;
   degreeType: (
     build: DegreeType | ((builder: IDegreeTypeBuilder) => IDegreeTypeBuilder),
@@ -45203,11 +45278,13 @@ class DegreeBuilder implements IDegreeBuilder {
   patch: () => IAny[];
   degreeAlter: (
     build:
-      DegreeAlter | ((builder: IDegreeAlterBuilder) => IDegreeAlterBuilder),
+      | DegreeAlter
+      | ((builder: IDegreeAlterBuilder) => IDegreeAlterBuilder),
   ) => IDegreeBuilder;
   degreeValue: (
     build:
-      DegreeValue | ((builder: IDegreeValueBuilder) => IDegreeValueBuilder),
+      | DegreeValue
+      | ((builder: IDegreeValueBuilder) => IDegreeValueBuilder),
   ) => IDegreeBuilder;
   degreeType: (
     build: DegreeType | ((builder: IDegreeTypeBuilder) => IDegreeTypeBuilder),
@@ -45270,7 +45347,8 @@ class DegreeBuilder implements IDegreeBuilder {
 
     this.degreeAlter = (
       build:
-        DegreeAlter | ((builder: IDegreeAlterBuilder) => IDegreeAlterBuilder),
+        | DegreeAlter
+        | ((builder: IDegreeAlterBuilder) => IDegreeAlterBuilder),
     ): IDegreeBuilder => {
       if (typeof build === "function") {
         delete updates["degreeAlter"];
@@ -45289,7 +45367,8 @@ class DegreeBuilder implements IDegreeBuilder {
 
     this.degreeValue = (
       build:
-        DegreeValue | ((builder: IDegreeValueBuilder) => IDegreeValueBuilder),
+        | DegreeValue
+        | ((builder: IDegreeValueBuilder) => IDegreeValueBuilder),
     ): IDegreeBuilder => {
       if (typeof build === "function") {
         delete updates["degreeValue"];
@@ -46939,13 +47018,15 @@ export interface IPrintBuilder {
   ) => IPrintBuilder;
   systemLayout: (
     build:
-      SystemLayout | ((builder: ISystemLayoutBuilder) => ISystemLayoutBuilder),
+      | SystemLayout
+      | ((builder: ISystemLayoutBuilder) => ISystemLayoutBuilder),
   ) => IPrintBuilder;
   staffSpacing: (staffSpacing: number) => IPrintBuilder;
   staffLayoutsAt: (
     idx: number,
     build:
-      StaffLayout | ((builder: IStaffLayoutBuilder) => IStaffLayoutBuilder),
+      | StaffLayout
+      | ((builder: IStaffLayoutBuilder) => IStaffLayoutBuilder),
   ) => IPrintBuilder;
   staffLayoutsSplice: (
     start: number,
@@ -46989,13 +47070,15 @@ class PrintBuilder implements IPrintBuilder {
   ) => IPrintBuilder;
   systemLayout: (
     build:
-      SystemLayout | ((builder: ISystemLayoutBuilder) => ISystemLayoutBuilder),
+      | SystemLayout
+      | ((builder: ISystemLayoutBuilder) => ISystemLayoutBuilder),
   ) => IPrintBuilder;
   staffSpacing: (staffSpacing: number) => IPrintBuilder;
   staffLayoutsAt: (
     idx: number,
     build:
-      StaffLayout | ((builder: IStaffLayoutBuilder) => IStaffLayoutBuilder),
+      | StaffLayout
+      | ((builder: IStaffLayoutBuilder) => IStaffLayoutBuilder),
   ) => IPrintBuilder;
   staffLayoutsSplice: (
     start: number,
@@ -47273,7 +47356,8 @@ class PrintBuilder implements IPrintBuilder {
     this.staffLayoutsAt = (
       idx: number,
       build:
-        StaffLayout | ((builder: IStaffLayoutBuilder) => IStaffLayoutBuilder),
+        | StaffLayout
+        | ((builder: IStaffLayoutBuilder) => IStaffLayoutBuilder),
     ): IPrintBuilder => {
       makeReference("staffLayouts");
       if (frozen["staffLayouts"][idx]) {
@@ -48512,7 +48596,8 @@ export interface IDefaultsBuilder {
   ) => IDefaultsBuilder;
   systemLayout: (
     build:
-      SystemLayout | ((builder: ISystemLayoutBuilder) => ISystemLayoutBuilder),
+      | SystemLayout
+      | ((builder: ISystemLayoutBuilder) => ISystemLayoutBuilder),
   ) => IDefaultsBuilder;
   appearance: (
     build: Appearance | ((builder: IAppearanceBuilder) => IAppearanceBuilder),
@@ -48523,7 +48608,8 @@ export interface IDefaultsBuilder {
   staffLayoutsAt: (
     idx: number,
     build:
-      StaffLayout | ((builder: IStaffLayoutBuilder) => IStaffLayoutBuilder),
+      | StaffLayout
+      | ((builder: IStaffLayoutBuilder) => IStaffLayoutBuilder),
   ) => IDefaultsBuilder;
   staffLayoutsSplice: (
     start: number,
@@ -48569,7 +48655,8 @@ class DefaultsBuilder implements IDefaultsBuilder {
   ) => IDefaultsBuilder;
   systemLayout: (
     build:
-      SystemLayout | ((builder: ISystemLayoutBuilder) => ISystemLayoutBuilder),
+      | SystemLayout
+      | ((builder: ISystemLayoutBuilder) => ISystemLayoutBuilder),
   ) => IDefaultsBuilder;
   appearance: (
     build: Appearance | ((builder: IAppearanceBuilder) => IAppearanceBuilder),
@@ -48580,7 +48667,8 @@ class DefaultsBuilder implements IDefaultsBuilder {
   staffLayoutsAt: (
     idx: number,
     build:
-      StaffLayout | ((builder: IStaffLayoutBuilder) => IStaffLayoutBuilder),
+      | StaffLayout
+      | ((builder: IStaffLayoutBuilder) => IStaffLayoutBuilder),
   ) => IDefaultsBuilder;
   staffLayoutsSplice: (
     start: number,
@@ -49004,7 +49092,8 @@ class DefaultsBuilder implements IDefaultsBuilder {
     this.staffLayoutsAt = (
       idx: number,
       build:
-        StaffLayout | ((builder: IStaffLayoutBuilder) => IStaffLayoutBuilder),
+        | StaffLayout
+        | ((builder: IStaffLayoutBuilder) => IStaffLayoutBuilder),
     ): IDefaultsBuilder => {
       makeReference("staffLayouts");
       if (frozen["staffLayouts"][idx]) {
@@ -49543,7 +49632,8 @@ export interface ICreditBuilder {
   creditWordsAt: (
     idx: number,
     build:
-      CreditWords | ((builder: ICreditWordsBuilder) => ICreditWordsBuilder),
+      | CreditWords
+      | ((builder: ICreditWordsBuilder) => ICreditWordsBuilder),
   ) => ICreditBuilder;
   creditWordsSplice: (
     start: number,
@@ -49553,7 +49643,8 @@ export interface ICreditBuilder {
   creditWords: (creditWords: CreditWords[]) => ICreditBuilder;
   creditImage: (
     build:
-      CreditImage | ((builder: ICreditImageBuilder) => ICreditImageBuilder),
+      | CreditImage
+      | ((builder: ICreditImageBuilder) => ICreditImageBuilder),
   ) => ICreditBuilder;
   page: (page: number) => ICreditBuilder;
 }
@@ -49565,7 +49656,8 @@ class CreditBuilder implements ICreditBuilder {
   creditWordsAt: (
     idx: number,
     build:
-      CreditWords | ((builder: ICreditWordsBuilder) => ICreditWordsBuilder),
+      | CreditWords
+      | ((builder: ICreditWordsBuilder) => ICreditWordsBuilder),
   ) => ICreditBuilder;
   creditWordsSplice: (
     start: number,
@@ -49575,7 +49667,8 @@ class CreditBuilder implements ICreditBuilder {
   creditWords: (creditWords: CreditWords[]) => ICreditBuilder;
   creditImage: (
     build:
-      CreditImage | ((builder: ICreditImageBuilder) => ICreditImageBuilder),
+      | CreditImage
+      | ((builder: ICreditImageBuilder) => ICreditImageBuilder),
   ) => ICreditBuilder;
   page: (page: number) => ICreditBuilder;
   constructor(original?: Credit) {
@@ -49656,7 +49749,8 @@ class CreditBuilder implements ICreditBuilder {
     this.creditWordsAt = (
       idx: number,
       build:
-        CreditWords | ((builder: ICreditWordsBuilder) => ICreditWordsBuilder),
+        | CreditWords
+        | ((builder: ICreditWordsBuilder) => ICreditWordsBuilder),
     ): ICreditBuilder => {
       makeReference("creditWords");
       if (frozen["creditWords"][idx]) {
@@ -49755,7 +49849,8 @@ class CreditBuilder implements ICreditBuilder {
 
     this.creditImage = (
       build:
-        CreditImage | ((builder: ICreditImageBuilder) => ICreditImageBuilder),
+        | CreditImage
+        | ((builder: ICreditImageBuilder) => ICreditImageBuilder),
     ): ICreditBuilder => {
       if (typeof build === "function") {
         delete updates["creditImage"];
@@ -51186,7 +51281,8 @@ export interface IPartGroupBuilder {
   ) => IPartGroupBuilder;
   groupSymbol: (
     build:
-      GroupSymbol | ((builder: IGroupSymbolBuilder) => IGroupSymbolBuilder),
+      | GroupSymbol
+      | ((builder: IGroupSymbolBuilder) => IGroupSymbolBuilder),
   ) => IPartGroupBuilder;
   groupName: (
     build: GroupName | ((builder: IGroupNameBuilder) => IGroupNameBuilder),
@@ -51200,7 +51296,8 @@ export interface IPartGroupBuilder {
   ) => IPartGroupBuilder;
   groupBarline: (
     build:
-      GroupBarline | ((builder: IGroupBarlineBuilder) => IGroupBarlineBuilder),
+      | GroupBarline
+      | ((builder: IGroupBarlineBuilder) => IGroupBarlineBuilder),
   ) => IPartGroupBuilder;
   number: (number: number) => IPartGroupBuilder;
   groupAbbreviation: (
@@ -51230,7 +51327,8 @@ class PartGroupBuilder implements IPartGroupBuilder {
   ) => IPartGroupBuilder;
   groupSymbol: (
     build:
-      GroupSymbol | ((builder: IGroupSymbolBuilder) => IGroupSymbolBuilder),
+      | GroupSymbol
+      | ((builder: IGroupSymbolBuilder) => IGroupSymbolBuilder),
   ) => IPartGroupBuilder;
   groupName: (
     build: GroupName | ((builder: IGroupNameBuilder) => IGroupNameBuilder),
@@ -51244,7 +51342,8 @@ class PartGroupBuilder implements IPartGroupBuilder {
   ) => IPartGroupBuilder;
   groupBarline: (
     build:
-      GroupBarline | ((builder: IGroupBarlineBuilder) => IGroupBarlineBuilder),
+      | GroupBarline
+      | ((builder: IGroupBarlineBuilder) => IGroupBarlineBuilder),
   ) => IPartGroupBuilder;
   number: (number: number) => IPartGroupBuilder;
   groupAbbreviation: (
@@ -51375,7 +51474,8 @@ class PartGroupBuilder implements IPartGroupBuilder {
 
     this.groupSymbol = (
       build:
-        GroupSymbol | ((builder: IGroupSymbolBuilder) => IGroupSymbolBuilder),
+        | GroupSymbol
+        | ((builder: IGroupSymbolBuilder) => IGroupSymbolBuilder),
     ): IPartGroupBuilder => {
       if (typeof build === "function") {
         delete updates["groupSymbol"];
@@ -51726,7 +51826,8 @@ export interface IGroupNameDisplayBuilder {
   nameAt: (
     idx: number,
     build:
-      TextSegment | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
+      | TextSegment
+      | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
   ) => IGroupNameDisplayBuilder;
   nameSplice: (
     start: number,
@@ -51743,7 +51844,8 @@ class GroupNameDisplayBuilder implements IGroupNameDisplayBuilder {
   nameAt: (
     idx: number,
     build:
-      TextSegment | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
+      | TextSegment
+      | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
   ) => IGroupNameDisplayBuilder;
   nameSplice: (
     start: number,
@@ -51805,7 +51907,8 @@ class GroupNameDisplayBuilder implements IGroupNameDisplayBuilder {
     this.nameAt = (
       idx: number,
       build:
-        TextSegment | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
+        | TextSegment
+        | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
     ): IGroupNameDisplayBuilder => {
       makeReference("name");
       if (frozen["name"][idx]) {
@@ -52084,7 +52187,8 @@ export interface IGroupAbbreviationDisplayBuilder {
   nameAt: (
     idx: number,
     build:
-      TextSegment | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
+      | TextSegment
+      | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
   ) => IGroupAbbreviationDisplayBuilder;
   nameSplice: (
     start: number,
@@ -52101,7 +52205,8 @@ class GroupAbbreviationDisplayBuilder implements IGroupAbbreviationDisplayBuilde
   nameAt: (
     idx: number,
     build:
-      TextSegment | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
+      | TextSegment
+      | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
   ) => IGroupAbbreviationDisplayBuilder;
   nameSplice: (
     start: number,
@@ -52163,7 +52268,8 @@ class GroupAbbreviationDisplayBuilder implements IGroupAbbreviationDisplayBuilde
     this.nameAt = (
       idx: number,
       build:
-        TextSegment | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
+        | TextSegment
+        | ((builder: ITextSegmentBuilder) => ITextSegmentBuilder),
     ): IGroupAbbreviationDisplayBuilder => {
       makeReference("name");
       if (frozen["name"][idx]) {

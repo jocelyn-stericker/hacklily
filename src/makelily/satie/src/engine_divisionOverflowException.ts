@@ -16,13 +16,11 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { IAny } from "#/musicxml-interfaces/operations";
+import type { IAny } from "#/musicxml-interfaces/operations";
 
-import { IMeasure, IMeasurePart, ISegment } from "./document";
-
-import { IAttributesSnapshot } from "./private_attributesSnapshot";
-import { MAX_SAFE_INTEGER } from "./private_util";
-import { cloneObject } from "./private_util";
+import type { IMeasure, IMeasurePart, ISegment } from "./document";
+import type { IAttributesSnapshot } from "./private_attributesSnapshot";
+import { MAX_SAFE_INTEGER, cloneObject } from "./private_util";
 
 function getSplit(segment: ISegment, maxDiv: number, isVoice: boolean): number {
   let divs = 0;

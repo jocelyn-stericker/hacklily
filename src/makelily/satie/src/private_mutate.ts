@@ -18,7 +18,8 @@
 
 import invariant from "invariant";
 import { last, isEqual } from "lodash";
-import {
+
+import type {
   IAny,
   IObjectReplace,
   IObjectDelete,

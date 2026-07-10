@@ -22,14 +22,13 @@
  * number of these notes may be rests.
  */
 
-import { MultipleRest, Tremolo } from "#/musicxml-interfaces";
+import type { MultipleRest, Tremolo } from "#/musicxml-interfaces";
 
-import { IModel, ILayout, Type } from "./document";
-
-import { IChord } from "./private_chordUtil";
-
-import { IBeamLayout } from "./implChord_beamLayout";
+import type { IModel, ILayout } from "./document";
+import { Type } from "./document";
+import type { IBeamLayout } from "./implChord_beamLayout";
 import ChordModelImpl from "./implChord_chordImpl";
+import type { IChord } from "./private_chordUtil";
 
 /**
  * Registers Chord in the factory structure passed in.

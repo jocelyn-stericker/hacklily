@@ -25,9 +25,9 @@
  * Free Documentation License".
  */
 
-import * as monacoEditor from "monaco-editor";
+import type * as monacoEditor from "monaco-editor";
 
-const REGEX_COMMAND_SLASH: RegExp = /^\\/;
+const REGEX_COMMAND_SLASH = /^\\/;
 
 interface ItemSubset {
   label: string;

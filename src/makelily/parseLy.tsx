@@ -18,19 +18,17 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { Clef, Key, Time } from "#/musicxml-interfaces";
-import {
-  buildClef,
-  buildKey,
-  buildTime,
+import type { Clef, Key, Time } from "#/musicxml-interfaces";
+import type {
   IClefBuilder,
   IKeyBuilder,
   ITimeBuilder,
 } from "#/musicxml-interfaces/builders";
+import { buildClef, buildKey, buildTime } from "#/musicxml-interfaces/builders";
 
 export function parseClef(clefLy: string): Clef {
-  let sign: string = "G";
-  let line: number = 2;
+  let sign = "G";
+  let line = 2;
   let clefOctaveChange: string | undefined;
 
   if (clefLy.indexOf("treble") > -1) {
@@ -66,8 +64,9 @@ export function parseClef(clefLy: string): Clef {
     clefOctaveChange = "-2";
   }
 
-  return buildClef((clef: IClefBuilder): IClefBuilder =>
-    clef.clefOctaveChange(clefOctaveChange).line(line).sign(sign),
+  return buildClef(
+    (clef: IClefBuilder): IClefBuilder =>
+      clef.clefOctaveChange(clefOctaveChange).line(line).sign(sign),
   );
 }
 
@@ -95,8 +94,8 @@ const roots: string[] = [
 export function parseKeySig(keyLy: string): Key {
   const root: string = keyLy.toLowerCase().trim().split(" ")[0];
   const rootIdx: number = roots.indexOf(root);
-  let fifths: number = 0;
-  let mode: string = "major";
+  let fifths = 0;
+  let mode = "major";
 
   if (rootIdx !== -1 && keyLy.indexOf("\\minor") !== -1) {
     mode = "minor";
@@ -106,8 +105,8 @@ export function parseKeySig(keyLy: string): Key {
     fifths = rootIdx - 7;
   }
 
-  return buildKey((key: IKeyBuilder): IKeyBuilder =>
-    key.fifths(fifths).mode(mode),
+  return buildKey(
+    (key: IKeyBuilder): IKeyBuilder => key.fifths(fifths).mode(mode),
   );
 }
 
@@ -121,7 +120,8 @@ export function parseTime(timeLy: string): Time {
     beatTypes = [parseInt(match[2], 10)];
   }
 
-  return buildTime((time: ITimeBuilder): ITimeBuilder =>
-    time.beatTypes(beatTypes).beats(beats),
+  return buildTime(
+    (time: ITimeBuilder): ITimeBuilder =>
+      time.beatTypes(beatTypes).beats(beats),
   );
 }

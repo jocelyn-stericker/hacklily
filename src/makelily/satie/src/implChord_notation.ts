@@ -16,23 +16,21 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
+import { forEach } from "lodash";
+
+import type {
   Articulations,
   Placement,
   Notations,
-  AboveBelow,
-  UprightInverted,
   PrintStyle,
   Note,
-  StemType,
   Technical,
 } from "#/musicxml-interfaces";
-import { forEach } from "lodash";
+import { AboveBelow, UprightInverted, StemType } from "#/musicxml-interfaces";
 
-import { IBoundingRect } from "./private_boundingRect";
+import type { IChordLayout } from "./implChord_chordModel";
+import type { IBoundingRect } from "./private_boundingRect";
 import { bboxes, getLeft, getRight } from "./private_smufl";
-
-import { IChordLayout } from "./implChord_chordModel";
 
 const PADDING = 1.5;
 

@@ -16,14 +16,16 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
-import { PartSymbol, PartSymbolType } from "#/musicxml-interfaces";
-import { Component } from "react";
 import * as PropTypes from "prop-types";
+import * as React from "react";
+import { Component } from "react";
 
-import Line from "./private_views_line";
-import Glyph from "./private_views_glyph";
+import type { PartSymbol } from "#/musicxml-interfaces";
+import { PartSymbolType } from "#/musicxml-interfaces";
+
 import { bravura } from "./private_smufl";
+import Glyph from "./private_views_glyph";
+import Line from "./private_views_line";
 
 const BRACE_H_SCALE = 2.9;
 

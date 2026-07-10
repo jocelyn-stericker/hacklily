@@ -19,10 +19,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* eslint-disable no-shadow */
+
 import invariant from "invariant";
 
-import { IModel, Type, ILayout } from "./document";
-import { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
+import type { IModel, ILayout } from "./document";
+import { Type } from "./document";
+import type { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
 
 /**
  * Stands in for another model (Attributes/Print) inside a different staff's

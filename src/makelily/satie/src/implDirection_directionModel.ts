@@ -16,26 +16,31 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-  AboveBelow,
+/* eslint-disable no-shadow */
+
+import { forEach } from "lodash";
+
+import type {
   DirectionType,
   Offset,
   Sound,
   Footnote,
   Level,
   Direction,
-  NormalBold,
   Segno,
+} from "#/musicxml-interfaces";
+import {
+  AboveBelow,
+  NormalBold,
   serializeDirection,
 } from "#/musicxml-interfaces";
-import { forEach } from "lodash";
 
-import { IModel, ILayout, Type } from "./document";
-
-import { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
-import { IBoundingRect } from "./private_boundingRect";
-import { mmToTenths, ptPerMM } from "./private_renderUtil";
+import type { IModel, ILayout } from "./document";
+import { Type } from "./document";
+import type { IBoundingRect } from "./private_boundingRect";
+import type { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
 import { getTextBB } from "./private_fontManager";
+import { mmToTenths, ptPerMM } from "./private_renderUtil";
 import { bboxes as glyphBoxes } from "./private_smufl";
 
 class DirectionModel implements IDirectionModel {
@@ -43,8 +48,8 @@ class DirectionModel implements IDirectionModel {
 
   /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
-  divCount: number = 0;
-  divisions: number = 0;
+  divCount = 0;
+  divisions = 0;
 
   /** defined externally */
   staffIdx: number;
@@ -236,7 +241,7 @@ class DirectionModel implements IDirectionModel {
 
     boundingBoxes: IBoundingRect[] = [];
     renderClass: Type = Type.Direction;
-    expandPolicy: "none" = "none";
+    expandPolicy = "none" as const;
   };
 }
 

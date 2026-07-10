@@ -16,14 +16,17 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* eslint-disable @typescript-eslint/prefer-for-of */
+/* eslint-disable no-shadow */
+
 import { reduce, map, max, times, last, forEach } from "lodash";
 
-import { IMeasureLayout } from "./private_measureLayout";
-import { ILayoutOptions } from "./private_layoutOptions";
-import { ILineBounds } from "./private_lineBounds";
-import { MAX_SAFE_INTEGER } from "./private_util";
 import { barDivisions } from "./private_chordUtil";
+import type { ILayoutOptions } from "./private_layoutOptions";
+import type { ILineBounds } from "./private_lineBounds";
+import type { IMeasureLayout } from "./private_measureLayout";
 import { scoreParts } from "./private_part";
+import { MAX_SAFE_INTEGER } from "./private_util";
 
 const UNDERFILLED_EXPANSION_WEIGHT = 0.1;
 

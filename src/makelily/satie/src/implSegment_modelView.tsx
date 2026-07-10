@@ -16,17 +16,17 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, { Component } from "react";
 import * as PropTypes from "prop-types";
+import React, { Component } from "react";
 
-import { ILayout, Type } from "./document";
-import { Targetable } from "./private_views_metadata";
-
+import type { ILayout } from "./document";
+import { Type } from "./document";
 import AttributesView from "./implAttributes_attributesView";
 import BarlineView from "./implBarline_barlineView";
 import ChordView from "./implChord_chordView";
 import DirectionView from "./implDirection_directionView";
 import VisualCursorView from "./implVisualCursor_visualCursorView";
+import { Targetable } from "./private_views_metadata";
 
 const NUMBER_ARRAY = PropTypes.arrayOf(PropTypes.number);
 

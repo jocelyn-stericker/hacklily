@@ -18,9 +18,9 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import * as monacoEditor from "monaco-editor";
+import type * as monacoEditor from "monaco-editor";
 
-import Commands from "./Commands";
+import type Commands from "./Commands";
 
 /**
  * Provides codelens shortcuts for lilypond.

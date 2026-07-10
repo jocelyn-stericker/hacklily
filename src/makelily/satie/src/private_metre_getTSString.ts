@@ -16,9 +16,10 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Time } from "#/musicxml-interfaces";
-import { reduce } from "lodash";
 import invariant from "invariant";
+import { reduce } from "lodash";
+
+import type { Time } from "#/musicxml-interfaces";
 
 /**
  * @returns a TS string for lookup in the BEAMING_PATTERNS array.

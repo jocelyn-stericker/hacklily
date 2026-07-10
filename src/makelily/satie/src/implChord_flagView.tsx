@@ -16,11 +16,11 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, { Component } from "react";
 import * as PropTypes from "prop-types";
+import React, { Component } from "react";
 
-import Glyph from "./private_views_glyph";
 import { getFontOffset } from "./private_smufl";
+import Glyph from "./private_views_glyph";
 
 export interface IProps {
   key?: string | number;

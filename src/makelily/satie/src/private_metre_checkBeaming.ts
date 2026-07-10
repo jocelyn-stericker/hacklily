@@ -16,14 +16,14 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { reduce, forEach } from "lodash";
 import invariant from "invariant";
+import { reduce, forEach } from "lodash";
 
-import * as D from "./private_metre_metreDurations";
-import { IChord } from "./private_chordUtil";
+import type { Time } from "#/musicxml-interfaces";
+
+import type { IChord } from "./private_chordUtil";
 import getTSString from "./private_metre_getTSString";
-
-import { Time } from "#/musicxml-interfaces";
+import * as D from "./private_metre_metreDurations";
 
 // Adapted from Behind Bars (E. Gould) page 155
 const BEAMING_PATTERNS: { [key: string]: IChord[] } = {

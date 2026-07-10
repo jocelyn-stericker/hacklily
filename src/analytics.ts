@@ -107,6 +107,7 @@ let initialized = false;
 const pending: GoatCounterVars[] = [];
 
 function flush(): void {
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const count = window.goatcounter?.count;
   if (!count) {
     return;
@@ -121,6 +122,7 @@ function send(vars: GoatCounterVars): void {
   if (!enabled) {
     return;
   }
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const count = window.goatcounter?.count;
   if (count) {
     count(vars);
@@ -139,6 +141,7 @@ function send(vars: GoatCounterVars): void {
 // real URLs never leave the browser, without patching the vendored count.js.
 function scrubSensitiveData(): void {
   const gc = window.goatcounter;
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const getData = gc?.get_data;
   if (!gc || !getData) {
     return;

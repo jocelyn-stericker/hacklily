@@ -18,11 +18,11 @@
 
 import invariant from "invariant";
 import { isEqual } from "lodash";
-import { IAny, IListInsert } from "#/musicxml-interfaces/operations";
 
-import { Document, ISegment } from "./document";
+import type { IAny, IListInsert } from "#/musicxml-interfaces/operations";
 
-import { IFactory } from "./private_factory";
+import type { Document, ISegment } from "./document";
+import type { IFactory } from "./private_factory";
 import { cloneObject } from "./private_util";
 
 export default function segmentMutator(

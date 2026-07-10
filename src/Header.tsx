@@ -44,18 +44,17 @@ import {
 } from "lucide-react";
 import React from "react";
 
-import logoSvg from "./logo.svg";
-
 import { track } from "./analytics";
-import { Auth } from "./auth";
+import type { Auth } from "./auth";
 import FileMenu from "./FileMenu";
+import logoSvg from "./logo.svg";
 
 export type ViewMode = "view" | "edit" | "both";
 export const MODE_VIEW: ViewMode = "view";
 export const MODE_BOTH: ViewMode = "both";
 export const MODE_EDIT: ViewMode = "edit";
-export const MIN_BOTH_WIDTH: number = 630;
-export const MIN_REASONABLE_WIDTH: number = 470;
+export const MIN_BOTH_WIDTH = 630;
+export const MIN_REASONABLE_WIDTH = 470;
 
 interface Player {
   // TODO(jocelyn): Export hackmidi types :(
@@ -123,6 +122,7 @@ export default class Header extends React.PureComponent<Props> {
     timeInSeconds: 0,
   };
 
+  // eslint-disable-next-line react/no-unsafe
   UNSAFE_componentWillReceiveProps(props: Props): void {
     if (props.midi !== this.props.midi && this.state.player) {
       const player: Player = this.state.player;
@@ -399,7 +399,7 @@ export default class Header extends React.PureComponent<Props> {
   private renderTime(): React.ReactNode {
     const { playing, timeInSeconds } = this.state;
     const { windowWidth } = this.props;
-    let fmtTime: string = String(Math.floor(timeInSeconds * 100) / 100);
+    let fmtTime = String(Math.floor(timeInSeconds * 100) / 100);
     if (fmtTime.split(".")[1] == null) {
       fmtTime += ".00";
     }

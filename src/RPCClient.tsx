@@ -18,9 +18,9 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { Auth } from "./auth";
+import type { Auth } from "./auth";
 
-const PING_INTERVAL: number = 2500;
+const PING_INTERVAL = 2500;
 
 // -------------------------------------------------------------------------
 // JSON-RPC 2.0 definitions

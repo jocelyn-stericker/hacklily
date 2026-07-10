@@ -16,15 +16,17 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as PropTypes from "prop-types";
 import * as React from "react";
-import {
+import type { ReactElement } from "react";
+import { Component } from "react";
+
+import type {
   PrintStyle,
   Placement,
   Articulations,
-  AboveBelow,
 } from "#/musicxml-interfaces";
-import { Component, ReactElement } from "react";
-import * as PropTypes from "prop-types";
+import { AboveBelow } from "#/musicxml-interfaces";
 
 import Glyph from "./private_views_glyph";
 

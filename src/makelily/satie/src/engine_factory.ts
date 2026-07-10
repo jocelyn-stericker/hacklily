@@ -19,7 +19,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
+import invariant from "invariant";
+import { forEach, some } from "lodash";
+
+import type {
   Print,
   Grouping,
   FiguredBass,
@@ -30,18 +33,20 @@ import {
   Barline,
   Note,
 } from "#/musicxml-interfaces";
-import invariant from "invariant";
-import { forEach, some } from "lodash";
 
-import { IModel, Type } from "./document";
-import { IProxyModel } from "./implProxy_proxyModel";
-import { ISpacerModel } from "./implSpacer_spacerModel";
-import { IVisualCursorModel } from "./implVisualCursor_visualCursorModel";
-
-import { IFactory, IPreprocessor, IPostprocessor } from "./private_factory";
+import type { IModel } from "./document";
+import { Type } from "./document";
+import type { IProxyModel } from "./implProxy_proxyModel";
+import type { ISpacerModel } from "./implSpacer_spacerModel";
+import type { IVisualCursorModel } from "./implVisualCursor_visualCursorModel";
+import type { IAttributesSnapshot } from "./private_attributesSnapshot";
+import type { IChord } from "./private_chordUtil";
+import type {
+  IFactory,
+  IPreprocessor,
+  IPostprocessor,
+} from "./private_factory";
 import { cloneObject } from "./private_util";
-import { IChord } from "./private_chordUtil";
-import { IAttributesSnapshot } from "./private_attributesSnapshot";
 
 export type ModelInstaller = (constructors: {
   [key: number]: any;
@@ -80,12 +85,12 @@ class Factory implements IFactory {
   create(modelType: Type, options?: any): IModel;
   create(modelType: Type, options?: any): IModel {
     invariant(
-      <number>modelType in this._constructors,
+      modelType in this._constructors,
       "The type with id=%s does not have a factory.",
       modelType,
     );
 
-    return new (<any>this._constructors[modelType])(options);
+    return new this._constructors[modelType](options);
   }
 
   modelHasType(model: IModel, modelType: Type.Chord): model is IChord & IModel;
@@ -125,7 +130,7 @@ class Factory implements IFactory {
   modelHasType(model: IModel, ...modelTypes: Type[]): boolean {
     return some(modelTypes, (modelType) => {
       invariant(
-        <number>modelType in this._constructors,
+        modelType in this._constructors,
         "The type with id=%s does not have a factory.",
         modelType,
       );

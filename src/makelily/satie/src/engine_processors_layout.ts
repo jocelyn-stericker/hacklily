@@ -16,22 +16,23 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Print } from "#/musicxml-interfaces";
-import { map, reduce, find, last } from "lodash";
-import invariant from "invariant";
+/* eslint-disable no-shadow */
 
+import invariant from "invariant";
+import { map, reduce, find, last } from "lodash";
+
+import type { Print } from "#/musicxml-interfaces";
+
+import type { IMeasure } from "./document";
 import {
-  IMeasure,
   getMeasureSegments,
   Type,
   reduceToShortestInSegments,
 } from "./document";
-
-import { ILayoutOptions } from "./private_layoutOptions";
-import { calculateLineBounds } from "./private_lineBounds";
-import { IMeasureLayout } from "./private_measureLayout";
-
 import { layoutLine } from "./engine_processors_line";
+import type { ILayoutOptions } from "./private_layoutOptions";
+import { calculateLineBounds } from "./private_lineBounds";
+import type { IMeasureLayout } from "./private_measureLayout";
 
 const SQUISHINESS = 0.8;
 
@@ -66,7 +67,7 @@ function findPrint(options: ILayoutOptions, measure: IMeasure): Print {
       partWithPrint.staves[1],
       0,
       Type.Print,
-    )[0]._snapshot as any;
+    )[0]._snapshot;
   }
   return null;
 }

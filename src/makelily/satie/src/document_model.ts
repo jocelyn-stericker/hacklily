@@ -16,10 +16,9 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Type } from "./document";
-
-import { IBoundingRect } from "./private_boundingRect";
-import { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
+import type { Type } from "./document";
+import type { IBoundingRect } from "./private_boundingRect";
+import type { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
 import { MAX_SAFE_INTEGER } from "./private_util";
 
 /**

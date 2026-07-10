@@ -20,9 +20,10 @@
  * @file part of Satie test suite
  */
 
-import { forEach } from "lodash";
 import * as child_process from "child_process";
 import * as fs from "fs";
+
+import { forEach } from "lodash";
 
 import SongImpl from "../engine_songImpl";
 
@@ -70,14 +71,17 @@ describe("Import/export tests", function () {
         "-",
         "_",
       )}`.replace(".xml", ".svg");
-    it(file, function (done) {
-      readFile(root + "/" + file, function (musicXML) {
+    it(file, async function () {
+      const musicXML = await new Promise<string>((resolve, _reject) => {
+        readFile(root + "/" + file, (data) => resolve(data));
+      });
+      await new Promise<void>((resolve, reject) => {
         let countedErr = false;
         const song = new SongImpl({
           baseSrc: musicXML,
 
           onError: (err) => {
-            done(err);
+            reject(err);
             countedErr = true;
           },
           onLoaded: () => {
@@ -126,17 +130,17 @@ describe("Import/export tests", function () {
                 const error = "" + proc.error;
                 if (proc.error) {
                   // xmllint not available; skip validation
-                  done();
+                  resolve();
                 } else if (stdout || stderr) {
-                  done(new Error(stderr || stdout || error));
+                  reject(new Error(stderr || stdout || error));
                 } else {
-                  done();
+                  resolve();
                 }
               } else {
-                done();
+                resolve();
               }
             } catch (err) {
-              done(err);
+              reject(err);
               return;
             }
           },

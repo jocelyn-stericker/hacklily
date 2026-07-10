@@ -17,11 +17,12 @@
  */
 
 import * as React from "react";
-import { ScoreHeader, Pitch } from "#/musicxml-interfaces";
-import { IAny } from "#/musicxml-interfaces/operations";
 
-import { Document } from "./document";
-import { PartBuilder, DocumentBuilder } from "./engine_createPatch";
+import type { ScoreHeader, Pitch } from "#/musicxml-interfaces";
+import type { IAny } from "#/musicxml-interfaces/operations";
+
+import type { Document } from "./document";
+import type { PartBuilder, DocumentBuilder } from "./engine_createPatch";
 
 export type PrivatePatches = { isPatches: boolean };
 

@@ -16,14 +16,15 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { forEach, max, map, times, findIndex, last } from "lodash";
+/* eslint-disable @typescript-eslint/prefer-for-of */
+
 import invariant from "invariant";
+import { forEach, max, map, times, findIndex, last } from "lodash";
 
 import { Type } from "./document";
-
-import { IMeasureLayout } from "./private_measureLayout";
-import { ILayoutOptions } from "./private_layoutOptions";
-import { ILineBounds } from "./private_lineBounds";
+import type { ILayoutOptions } from "./private_layoutOptions";
+import type { ILineBounds } from "./private_lineBounds";
+import type { IMeasureLayout } from "./private_measureLayout";
 
 /**
  * Centers elements marked as such

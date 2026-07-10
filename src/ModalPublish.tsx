@@ -28,15 +28,16 @@ import {
   Intent,
 } from "@blueprintjs/core";
 import { css, StyleSheet } from "aphrodite";
+import { Save, TriangleAlert } from "lucide-react";
 import React from "react";
 
 import { track } from "./analytics";
-import { Auth } from "./auth";
-import { Conflict, File, FileNotFound, ls, rm, write } from "./gitfs";
+import type { Auth } from "./auth";
+import type { File } from "./gitfs";
+import { Conflict, FileNotFound, ls, rm, write } from "./gitfs";
 import { renderVersionFor } from "./lilypondVersion";
 import ModalSaving from "./ModalSaving";
-import RPCClient from "./RPCClient";
-import { Save, TriangleAlert } from "lucide-react";
+import type RPCClient from "./RPCClient";
 
 interface Props {
   auth: Auth;
@@ -66,14 +67,14 @@ class ModalPublish extends React.PureComponent<Props, State> {
   };
 
   componentDidMount(): void {
-    this.loadExistingSongs();
+    void this.loadExistingSongs();
   }
 
   render(): JSX.Element {
     // TODO(jocelyn): Split this up
     const { auth, onHide } = this.props;
     const { filename, files, invitationRequired, saving } = this.state;
-    let disabled: boolean = false;
+    let disabled = false;
 
     if (saving) {
       return <ModalSaving />;
@@ -174,7 +175,7 @@ class ModalPublish extends React.PureComponent<Props, State> {
   };
 
   private handleSave = async (): Promise<void> => {
-    let didFail: boolean = false;
+    let didFail = false;
     try {
       this.setState({
         saving: true,

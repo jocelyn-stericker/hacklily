@@ -16,21 +16,19 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { reduce, map, times, maxBy, zipObject, forEach } from "lodash";
+/* eslint-disable no-shadow */
+
 import invariant from "invariant";
+import { reduce, map, times, maxBy, zipObject, forEach } from "lodash";
 
 import { getMeasureSegments, reduceToShortestInSegments } from "./document";
-
-import { ILayoutOptions } from "./private_layoutOptions";
-import { ILineBounds } from "./private_lineBounds";
-import {
-  IMeasureLayout,
-  detach as detachMeasureLayout,
-} from "./private_measureLayout";
-import { IAttributesSnapshot } from "./private_attributesSnapshot";
-import { scoreParts } from "./private_part";
-
 import { layoutMeasure } from "./engine_processors_measure";
+import type { IAttributesSnapshot } from "./private_attributesSnapshot";
+import type { ILayoutOptions } from "./private_layoutOptions";
+import type { ILineBounds } from "./private_lineBounds";
+import type { IMeasureLayout } from "./private_measureLayout";
+import { detach as detachMeasureLayout } from "./private_measureLayout";
+import { scoreParts } from "./private_part";
 
 function layoutMeasures(options: ILayoutOptions) {
   const { modelFactory, header, preview, fixup, document } = options;

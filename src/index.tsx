@@ -21,14 +21,16 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 
-import App, { QUERY_PROP_KEYS, QueryProps, Song } from "./App";
+import type { QueryProps, Song } from "./App";
+import App, { QUERY_PROP_KEYS } from "./App";
+import type { Auth } from "./auth";
+import { parseAuth } from "./auth";
 import ErrorBoundary from "./ErrorBoundary";
-import { Auth, parseAuth } from "./auth";
 import { parseQuery, toQueryString } from "./util/queryString";
 
 import "./index.css";
 
-const root = createRoot(document.getElementById("root")!);
+const root = createRoot(document.getElementById("root"));
 
 /**
  * Renders Hacklily, with props set.
@@ -130,7 +132,7 @@ function setQuery(
 
 function getDirtySongs(): { [key: string]: Song } {
   const songs: { [key: string]: Song } = {};
-  for (let i: number = 0; i < localStorage.length; i = i + 1) {
+  for (let i = 0; i < localStorage.length; i = i + 1) {
     const key: string | null = localStorage.key(i);
     if (!key) {
       continue;

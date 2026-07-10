@@ -18,20 +18,21 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { Lock, TriangleAlert } from "lucide-react";
 import { css } from "aphrodite";
+import { Lock, TriangleAlert } from "lucide-react";
 import * as monacoEditor from "monaco-editor";
 import React from "react";
 import ReactMonacoEditor from "react-monaco-editor";
 
-import { MODE_EDIT, MODE_VIEW, ViewMode } from "./Header";
+import type { ViewMode } from "./Header";
+import { MODE_EDIT, MODE_VIEW } from "./Header";
 import CodelensProvider from "./monacoConfig/CodelensProvider";
 import Commands from "./monacoConfig/Commands";
 import LILYPOND_COMPLETION_ITEM_PROVIDER from "./monacoConfig/LILYPOND_COMPLETION_ITEM_PROVIDER";
 import LILYPOND_MONARCH_PROVIDER from "./monacoConfig/LILYPOND_MONARCH_PROVIDER";
 import { APP_STYLE } from "./styles";
 
-let registeredMonacoComponents: boolean = false;
+let registeredMonacoComponents = false;
 
 export interface MakelilyProps {
   makelilyClef: string;
@@ -101,7 +102,7 @@ export default class Editor extends React.PureComponent<Props> {
     }
     if (prevProps.logs !== logs) {
       const errors: monacoEditor.editor.IModelDeltaDecoration[] = [];
-      const matchErrors: RegExp =
+      const matchErrors =
         /hacklily.ly:([0-9]*):(([0-9]*):([0-9]*))?\s*([ew].*)/g;
       const oldDecorations: string[] = this.oldDecorations || [];
       if (logs) {
@@ -168,9 +169,9 @@ export default class Editor extends React.PureComponent<Props> {
   }
 
   getMakelilyProperties(): MakelilyProps {
-    const timeRegex: RegExp = /\\time.*/g;
-    const clefRegex: RegExp = /\\clef.*/g;
-    const keyRegex: RegExp = /\\key.*/g;
+    const timeRegex = /\\time.*/g;
+    const clefRegex = /\\clef.*/g;
+    const keyRegex = /\\key.*/g;
     const code: string = this.props.code || "";
     function extractFirst(match: RegExpMatchArray | null): string | null {
       if (match) {
@@ -202,12 +203,12 @@ export default class Editor extends React.PureComponent<Props> {
       return meta;
     }
 
-    let codeBeforeCursor: string = "";
+    let codeBeforeCursor = "";
     const lines: string[] = code.split("\n");
     const line: monacoEditor.Position | null = this.editor.getPosition();
 
     if (line) {
-      for (let i: number = 0; i < line.lineNumber - 1; i += 1) {
+      for (let i = 0; i < line.lineNumber - 1; i += 1) {
         codeBeforeCursor += `${lines[i]}\n`;
       }
       codeBeforeCursor += lines[line.lineNumber - 1].slice(0, line.column);

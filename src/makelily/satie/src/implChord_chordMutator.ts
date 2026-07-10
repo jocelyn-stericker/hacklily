@@ -18,8 +18,10 @@
 
 import invariant from "invariant";
 import { cloneDeep } from "lodash";
-import { Note, serializeNote } from "#/musicxml-interfaces";
-import {
+
+import type { Note } from "#/musicxml-interfaces";
+import { serializeNote } from "#/musicxml-interfaces";
+import type {
   IAny,
   IObjectReplace,
   IListInsert,
@@ -27,11 +29,10 @@ import {
   IListReplace,
 } from "#/musicxml-interfaces/operations";
 
-import { replace, remove } from "./private_mutate";
-
-import ChordImpl from "./implChord_chordImpl";
+import type ChordImpl from "./implChord_chordImpl";
 import NoteImpl from "./implChord_noteImpl";
 import noteMutator from "./implChord_noteMutator";
+import { replace, remove } from "./private_mutate";
 
 export default function chordMutator(chord: ChordImpl, op: IAny) {
   const path = op.p;

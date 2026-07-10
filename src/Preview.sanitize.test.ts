@@ -192,6 +192,8 @@ describe("Preview DOMPurify sanitization", () => {
 // ─────────────────────────────────────────────────────────────
 // ID-prefix sanitization
 // ─────────────────────────────────────────────────────────────
+/* eslint-disable import/first */
+
 // Replicates the per-call hook setup in Preview.tsx's sanitizeSvg() so the
 // real production code path is exercised, not a test double.
 

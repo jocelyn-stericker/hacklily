@@ -22,13 +22,13 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 
 import { initAnalytics, trackPageview } from "../analytics";
-import MusicXML2Ly from "./MusicXML2Ly";
 import ErrorBoundary from "../ErrorBoundary";
+import MusicXML2Ly from "./MusicXML2Ly";
 
 initAnalytics();
 trackPageview("/musicxml2ly", "Import MusicXML — Hacklily");
 
-createRoot(document.getElementById("root")!).render(
+createRoot(document.getElementById("root")).render(
   <ErrorBoundary>
     <MusicXML2Ly />
   </ErrorBoundary>,

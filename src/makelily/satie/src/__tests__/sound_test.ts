@@ -20,11 +20,10 @@
  * @file part of Satie test suite
  */
 
-import Sound from "../implSound_soundModel";
-
-import { IModel, Type } from "../document";
-
+import type { IModel } from "../document";
+import { Type } from "../document";
 import Factory from "../engine_factory";
+import Sound from "../implSound_soundModel";
 
 describe("[sound.ts]", function () {
   describe("SoundModel", function () {

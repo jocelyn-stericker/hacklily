@@ -16,21 +16,13 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* eslint-disable no-shadow */
+
 /**
  * @file models/musicxml/import.ts tools for converting MXMLJSON to SatieJSON
  */
 
-import {
-  ScoreTimewise,
-  Attributes,
-  Note,
-  Backup,
-  Forward,
-  Time,
-  Direction,
-  parseScore,
-} from "#/musicxml-interfaces";
-import { buildNote } from "#/musicxml-interfaces/builders";
+import invariant from "invariant";
 import {
   map,
   reduce,
@@ -43,27 +35,34 @@ import {
   startsWith,
   endsWith,
 } from "lodash";
-import invariant from "invariant";
 
-import { Document } from "./document";
+import type {
+  ScoreTimewise,
+  Attributes,
+  Note,
+  Backup,
+  Forward,
+  Time,
+  Direction,
+} from "#/musicxml-interfaces";
+import { parseScore } from "#/musicxml-interfaces";
+import { buildNote } from "#/musicxml-interfaces/builders";
 
-import { IMeasure, IMeasurePart, IModel, Type } from "./document";
-
-import { IFactory } from "./private_factory";
-import { ILayoutOptions } from "./private_layoutOptions";
-import { MAX_SAFE_INTEGER } from "./private_util";
-import {
-  IChord,
-  barDivisionsDI,
-  divisions as calcDivisions,
-} from "./private_chordUtil";
-import { scoreParts } from "./private_part";
-import { lcm } from "./private_util";
-import { requireFont, whenReady } from "./private_fontManager";
-
+import { Document, Type } from "./document";
+import type { IMeasure, IMeasurePart, IModel } from "./document";
 import validate from "./engine_processors_validate";
 import ScoreHeader from "./engine_scoreHeader";
 import { makeFactory } from "./engine_setup";
+import type { IChord } from "./private_chordUtil";
+import {
+  barDivisionsDI,
+  divisions as calcDivisions,
+} from "./private_chordUtil";
+import type { IFactory } from "./private_factory";
+import { requireFont, whenReady } from "./private_fontManager";
+import type { ILayoutOptions } from "./private_layoutOptions";
+import { scoreParts } from "./private_part";
+import { MAX_SAFE_INTEGER, lcm } from "./private_util";
 
 /*---- Exports ----------------------------------------------------------------------------------*/
 
@@ -204,7 +203,7 @@ export function _extractMXMLPartsAndMeasures(
         id: key,
         idx: 0,
         input: val,
-        lastNote: <IChord>null,
+        lastNote: null,
         output: output,
         times: <Time[]>[
           {
@@ -444,7 +443,7 @@ export function _extractMXMLPartsAndMeasures(
         createStaff(staff, target.output);
         maxVoice++;
         const voice = createVoice(maxVoice, target.output);
-        const newNote: IChord = <any>factory.create(Type.Chord);
+        const newNote: IChord = factory.create(Type.Chord);
         newNote.push({
           duration: barDivisionsDI(lastAttribs.times[0], lastAttribs.divisions),
           rest: {},

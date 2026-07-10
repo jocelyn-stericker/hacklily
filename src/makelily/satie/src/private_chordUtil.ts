@@ -16,28 +16,29 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
+/* eslint-disable no-shadow */
+
+import invariant from "invariant";
+import { some, find, map, reduce, filter, chain, times } from "lodash";
+
+import type {
   Note,
-  Count,
   TimeModification,
   Tie,
   Clef,
   Rest,
   Time,
-  MxmlAccidental,
   Notehead,
-  NoteheadType,
   Notations,
   Articulations,
   Tied,
   Pitch,
   Beam,
 } from "#/musicxml-interfaces";
-import { some, find, map, reduce, filter, chain, times } from "lodash";
-import invariant from "invariant";
+import { Count, MxmlAccidental, NoteheadType } from "#/musicxml-interfaces";
 
-import { IAttributesSnapshot } from "./private_attributesSnapshot";
-import { ValidationCursor, LayoutCursor } from "./private_cursor";
+import type { IAttributesSnapshot } from "./private_attributesSnapshot";
+import type { ValidationCursor, LayoutCursor } from "./private_cursor";
 import { lcm } from "./private_util";
 
 export interface IChord {
@@ -393,8 +394,8 @@ export function barDivisions({ time, divisions }: IAttributesSnapshot) {
   return barDivisionsDI(time, divisions);
 }
 
-export const IDEAL_STEM_HEIGHT: number = 35;
-export const MIN_STEM_HEIGHT: number = 25;
+export const IDEAL_STEM_HEIGHT = 35;
+export const MIN_STEM_HEIGHT = 25;
 
 export const chromaticScale: { [key: string]: number } = {
   c: 0,
@@ -670,7 +671,7 @@ export function getNoteheadGlyph(notehead: Notehead, stdGlyph: string): string {
   }
   console.warn(
     `The custom notehead with ID ${type} cannot replace ` +
-      `${notehead}, probably because it's not implemented.`,
+      `${notehead}, probably because it's not implemented.`, // eslint-disable-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions
   );
   return stdGlyph;
 }

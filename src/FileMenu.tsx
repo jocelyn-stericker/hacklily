@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 import React from "react";
 
-import { Auth } from "./auth";
+import type { Auth } from "./auth";
 
 interface Props {
   auth: Auth | null;

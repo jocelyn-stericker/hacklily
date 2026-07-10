@@ -23,19 +23,17 @@
  * @file part of Satie test suite
  */
 
-import Chord from "../implChord_chordModel";
+import type { Note } from "#/musicxml-interfaces";
+import { Count } from "#/musicxml-interfaces";
 
-import { Note, Count } from "#/musicxml-interfaces";
-
-import { IModel, Type } from "../document";
-
-import { IFactory } from "../private_factory";
-import { IAttributesSnapshot } from "../private_attributesSnapshot";
-import { ValidationCursor, LayoutCursor } from "../private_cursor";
-
+import type { IModel } from "../document";
+import { Type } from "../document";
 import Factory from "../engine_factory";
-
 import AttributesExports from "../implAttributes_attributesModel";
+import Chord from "../implChord_chordModel";
+import type { IAttributesSnapshot } from "../private_attributesSnapshot";
+import type { ValidationCursor, LayoutCursor } from "../private_cursor";
+import type { IFactory } from "../private_factory";
 
 function getAttributes(): IAttributesSnapshot {
   return <any>{
@@ -128,6 +126,7 @@ describe("[chord.ts]", function () {
       cursor = getCursor(factory, chord);
       expect(cursor.segmentDivision).toEqual(0);
       const lCursor: LayoutCursor = {
+        // eslint-disable-next-line @typescript-eslint/no-misused-spread
         ...cursor,
         measureX: 100,
         lineShortest: 1,
@@ -179,12 +178,13 @@ describe("[chord.ts]", function () {
           octave: 4,
         },
         dots: [],
-      } as Note);
+      });
       let cursor = getCursor(factory, chord);
       chord.divCount = 2;
       chord.refresh(cursor);
       cursor = getCursor(factory, chord);
       const lCursor: LayoutCursor = {
+        // eslint-disable-next-line @typescript-eslint/no-misused-spread
         ...cursor,
         measureX: 100,
         lineShortest: 1,

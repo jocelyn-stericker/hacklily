@@ -16,9 +16,10 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Pitch } from "#/musicxml-interfaces";
+import type { Pitch } from "#/musicxml-interfaces";
 
-import { init, ISatieOptions } from "./engine_setup";
+import type { ISatieOptions } from "./engine_setup";
+import { init } from "./engine_setup";
 
 export type IHandler = (path: (string | number)[], pitch: Pitch) => void;
 

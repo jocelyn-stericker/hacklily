@@ -19,21 +19,19 @@
  */
 
 import { css } from "aphrodite";
-import Makelily from "./makelily/Makelily"; // note: use for types only
-import * as monacoEditor from "monaco-editor";
+import { TriangleAlert } from "lucide-react";
+import type * as monacoEditor from "monaco-editor";
 import React from "react";
 
 import { initAnalytics, track, trackPageview } from "./analytics";
-import { Auth, checkLogin, revokeGitHubAuth } from "./auth";
+import type { Auth } from "./auth";
+import { checkLogin, revokeGitHubAuth } from "./auth";
 import Editor from "./Editor";
 import { cat, FileNotFound, getDefaultBranch, getOrCreateRepo } from "./gitfs";
-import Header, {
-  MIN_BOTH_WIDTH,
-  MODE_BOTH,
-  MODE_VIEW,
-  ViewMode,
-} from "./Header";
+import type { ViewMode } from "./Header";
+import Header, { MIN_BOTH_WIDTH, MODE_BOTH, MODE_VIEW } from "./Header";
 import { renderVersionFor } from "./lilypondVersion";
+import type Makelily from "./makelily/Makelily"; // note: use for types only
 import Modal404 from "./Modal404";
 import ModalAbout from "./ModalAbout";
 import ModalConflict from "./ModalConflict";
@@ -49,15 +47,14 @@ import ModalUnsavedChangesInterstitial from "./ModalUnsavedChangesInterstitial";
 import Preview from "./Preview";
 import RPCClient from "./RPCClient";
 import { APP_STYLE } from "./styles";
-import { TriangleAlert } from "lucide-react";
 
 function last<T>(t: T[]): T {
   return t[t.length - 1];
 }
 
-const INITIAL_WS_COOLOFF: number = 2;
+const INITIAL_WS_COOLOFF = 2;
 const BACKEND_WS_URL: string | undefined = process.env.REACT_APP_BACKEND_WS_URL;
-const PUBLIC_READONLY: string = "PUBLIC_READONLY";
+const PUBLIC_READONLY = "PUBLIC_READONLY";
 
 /**
  * Properties derived from URL.
@@ -244,7 +241,7 @@ interface State {
   makelilyInsertCB?(ly: string): void;
 }
 
-const DEFAULT_SONG: string = `\\version "${
+const DEFAULT_SONG = `\\version "${
   process.env.REACT_APP_STABLE_LILYPOND_VERSION || "2.26.0"
 }"
 
@@ -318,7 +315,7 @@ export default class App extends React.PureComponent<Props, State> {
     }
     window.addEventListener("resize", this.handleWindowResize);
     this.connectToWS();
-    this.fetchSong();
+    void this.fetchSong();
     lock(this.props.edit || "null");
     window.addEventListener("beforeunload", this.handleBeforeUnload);
     setEditingNotificationHandler(this.handleEditingNotification);
@@ -326,7 +323,7 @@ export default class App extends React.PureComponent<Props, State> {
 
   componentDidUpdate(prevProps: Props): void {
     if (this.props.edit !== prevProps.edit) {
-      this.fetchSong();
+      void this.fetchSong();
       lock(this.props.edit || "null");
     }
     if (
@@ -499,7 +496,7 @@ export default class App extends React.PureComponent<Props, State> {
     }
 
     const path: string[] = edit.split("/");
-    const requestedRepo: string = `${path[0]}/${path[1]}`;
+    const requestedRepo = `${path[0]}/${path[1]}`;
     const requestedFile: string = path.slice(2).join("/");
 
     this.setState({
@@ -850,7 +847,7 @@ export default class App extends React.PureComponent<Props, State> {
       throw new Error("Expected rpc to be defined");
     }
 
-    this.rpc.call("notifySaved", {});
+    void this.rpc.call("notifySaved", {});
   };
 
   private handleResolveGitHub = (): void => {
@@ -869,7 +866,7 @@ export default class App extends React.PureComponent<Props, State> {
 
     this.props.editSong(this.props.edit, {
       baseSHA: this.state.cleanSongs[this.props.edit].baseSHA,
-      src: this.song()!.src,
+      src: this.song().src,
     });
   };
 
@@ -931,7 +928,7 @@ export default class App extends React.PureComponent<Props, State> {
         login: true,
       });
     } else if (this.props.edit) {
-      this.handleUpdateGitHub();
+      void this.handleUpdateGitHub();
     } else {
       this.setState({
         publish: true,
@@ -981,7 +978,7 @@ export default class App extends React.PureComponent<Props, State> {
     }
     const token: string = auth.accessToken;
     localStorage.clear();
-    revokeGitHubAuth(this.rpc, token);
+    void revokeGitHubAuth(this.rpc, token);
   };
 
   private handleUpdateGitHub = async (): Promise<void> => {

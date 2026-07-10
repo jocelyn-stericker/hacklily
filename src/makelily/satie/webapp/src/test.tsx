@@ -1,10 +1,13 @@
+/* eslint-disable no-shadow */
+import { find } from "lodash";
 import * as React from "react";
 import { Component } from "react";
 import { Link } from "react-router-dom";
-import { Application, ISong, Song } from "../../src/satie";
-import { find } from "lodash";
 
+import type { ISong } from "../../src/satie";
+import { Application, Song } from "../../src/satie";
 import { prefix } from "./config";
+
 import * as STYLES from "./test.css";
 
 export const satieApplication = new Application({
@@ -104,12 +107,16 @@ export default class Test extends Component<IProps, IState> {
     this.componentDidUpdate(null, {});
   }
 
+  // eslint-disable-next-line react/no-unsafe
+  // eslint-disable-next-line react/no-unsafe
   UNSAFE_componentWillMount() {
     this.setState({
       filename: this.props.filename,
     });
   }
 
+  // eslint-disable-next-line react/no-unsafe
+  // eslint-disable-next-line react/no-unsafe
   UNSAFE_componentWillReceiveProps(nextProps: IProps) {
     if (this.props.filename !== nextProps.filename) {
       this.setState({
@@ -143,7 +150,7 @@ export default class Test extends Component<IProps, IState> {
       };
       request.send();
       this._song = null;
-      this.setState({
+      this.setState({ // eslint-disable-line react/no-did-update-set-state
         loaded: false,
       });
     }

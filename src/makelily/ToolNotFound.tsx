@@ -22,7 +22,7 @@ import { css } from "aphrodite";
 import React from "react";
 
 import tabStyles from "./tabStyles";
-import { ToolProps } from "./tool";
+import type { ToolProps } from "./tool";
 
 /**
  * Placeholder for when a tool with an invalid name is requested.

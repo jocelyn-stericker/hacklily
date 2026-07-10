@@ -1,10 +1,12 @@
+/* eslint-disable no-shadow */
+
+import { buildNote, buildAccidental, patchNote, buildBeam } from "../builders";
 import {
   serializeNote,
   MxmlAccidental,
   BeamType,
   AccelRitNone,
 } from "../index";
-import { buildNote, buildAccidental, patchNote, buildBeam } from "../builders";
 
 const acc = buildAccidental((builder) =>
   builder.accidental(MxmlAccidental.Sharp),

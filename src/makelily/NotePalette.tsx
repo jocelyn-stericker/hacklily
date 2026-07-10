@@ -19,17 +19,21 @@
  */
 
 import { css, StyleSheet } from "aphrodite";
-import { Undo, Redo, Plus } from "lucide-react";
 import { chunk, isEqual, times } from "lodash";
-import {
-  Count,
+import { Undo, Redo, Plus } from "lucide-react";
+import * as React from "react";
+
+import type {
   Direction,
-  MxmlAccidental,
-  NormalAngledSquare,
   Notations,
   TimeModification,
 } from "#/musicxml-interfaces";
-import * as React from "react";
+import {
+  Count,
+  MxmlAccidental,
+  NormalAngledSquare,
+} from "#/musicxml-interfaces";
+
 import { Addons as SatieAddons } from "./satie/src/satie";
 
 export interface Props {

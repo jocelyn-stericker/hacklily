@@ -16,21 +16,20 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Time } from "#/musicxml-interfaces";
-import { IAny } from "#/musicxml-interfaces/operations";
 import invariant from "invariant";
 import { times, forEach } from "lodash";
 
-import { Document } from "./document";
-import { ModelMetreMutationSpec } from "./engine_createPatch";
+import type { Time } from "#/musicxml-interfaces";
+import type { IAny } from "#/musicxml-interfaces/operations";
 
-import { IFactory } from "./private_factory";
-import { IAttributesSnapshot } from "./private_attributesSnapshot";
-
+import type { Document } from "./document";
+import type { ModelMetreMutationSpec } from "./engine_createPatch";
+import type { IAttributesSnapshot } from "./private_attributesSnapshot";
+import { barDivisions } from "./private_chordUtil";
+import type { IFactory } from "./private_factory";
 import checkRests from "./private_metre_checkRests";
 import getTSString from "./private_metre_getTSString";
 import * as D from "./private_metre_metreDurations";
-import { barDivisions } from "./private_chordUtil";
 
 export interface IRestSpec {
   readonly song: string;
@@ -46,7 +45,7 @@ export function voiceToRestSpec(
   const emptyRestSpec: IRestSpec = { song: "", models: [], modelsToKill: [] };
   let divsToSuppress = 0;
   let killIdx: number;
-  let prevIdx: number = 0;
+  let prevIdx = 0;
   const spec = segment.reduce(
     (restSpec: IRestSpec, model: ModelMetreMutationSpec) => {
       const divCount = model.newDivisions || 0;
@@ -213,7 +212,7 @@ export function simplifyRests(
       patches.push({
         ld: model.toSpec(),
         p: [currIdx],
-      } as any);
+      });
       currIdxOffset -= 1;
     }
   }
@@ -303,7 +302,7 @@ export function simplifyRests(
           patches.push({
             ld: model.toSpec(),
             p: [currIdx],
-          } as any);
+          });
           currIdxOffset -= 1;
         }
       }

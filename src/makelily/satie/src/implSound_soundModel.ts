@@ -19,25 +19,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
+import { forEach } from "lodash";
+
+import type {
   MidiInstrument,
   Play,
   Offset,
   MidiDevice,
   Sound,
-  serializeSound,
 } from "#/musicxml-interfaces";
-import { forEach } from "lodash";
+import { serializeSound } from "#/musicxml-interfaces";
 
-import { IModel, ILayout, Type } from "./document";
-
-import { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
-import { IBoundingRect } from "./private_boundingRect";
+import type { IModel, ILayout } from "./document";
+import { Type } from "./document";
+import type { IBoundingRect } from "./private_boundingRect";
+import type { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
 
 class SoundModel implements ISoundModel {
   /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
-  divCount: number = 0;
+  divCount = 0;
 
   /** defined externally */
   staffIdx: number;
@@ -119,7 +120,7 @@ class SoundModel implements ISoundModel {
 
     boundingBoxes: IBoundingRect[] = [];
     renderClass: Type = Type.Sound;
-    expandPolicy: "none" = "none";
+    expandPolicy = "none" as const;
   };
 }
 

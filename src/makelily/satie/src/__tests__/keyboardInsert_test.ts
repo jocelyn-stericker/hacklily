@@ -18,7 +18,8 @@
 
 import { Count } from "#/musicxml-interfaces";
 
-import { Document, Type } from "../document";
+import type { Document } from "../document";
+import { Type } from "../document";
 import SongImpl from "../engine_songImpl";
 import { FractionalDivisionsException } from "../private_chordUtil";
 import { Patch } from "../satie";
@@ -93,14 +94,17 @@ const cases: Case[] = [
 
 describe("keyboard note insertion with coarse divisions", function () {
   let song: SongImpl;
-  beforeEach((done) => {
-    song = new SongImpl({
-      baseSrc: songTemplate,
-      onError: done,
-      onLoaded: () => done(),
-    });
-    song.run();
-  });
+  beforeEach(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        song = new SongImpl({
+          baseSrc: songTemplate,
+          onError: reject,
+          onLoaded: () => resolve(),
+        });
+        song.run();
+      }),
+  );
 
   cases.forEach(({ name, note, expectedDivisions, expectedNoteDivCount }) => {
     it(`inserts a ${name} note via insertChord without throwing and fills the bar`, function () {
@@ -162,7 +166,7 @@ describe("keyboard note insertion with coarse divisions", function () {
       expect(attributes.divisions).toBe(expectedDivisions);
 
       // ...the inserted note should have an integer, positive divCount...
-      const inserted = voice.find((m: any) => m[0] && !m[0].rest) as any;
+      const inserted = voice.find((m: any) => m[0] && !m[0].rest);
       expect(inserted).toBeDefined();
       expect(inserted.divCount).toBe(expectedNoteDivCount);
       expect(inserted.divCount % 1).toBe(0);

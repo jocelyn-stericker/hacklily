@@ -19,21 +19,22 @@
  */
 
 import { css } from "aphrodite";
-import { Clef, Key } from "#/musicxml-interfaces";
 import React from "react";
+
+import type { Clef, Key } from "#/musicxml-interfaces";
+
 import { Addons as SatieAddons } from "./satie/src/satie";
-
 import tabStyles from "./tabStyles";
-import { ToolProps } from "./tool";
+import type { ToolProps } from "./tool";
 
-const keyViewbox: string = "-2 -40 80 80";
+const keyViewbox = "-2 -40 80 80";
 
 const trebleClef: Clef = {
   line: 2,
   sign: "G",
 };
 
-const majors: string = "cgdaebFCGDAEBfcgda";
+const majors = "cgdaebFCGDAEBfcgda";
 function getEnglish(fifths: number, mode: "major" | "minor"): string {
   const englishMode: string = mode === "major" ? "major" : "minor";
 
@@ -91,7 +92,7 @@ export interface State {
 }
 
 function getInitialState(props: ToolProps): State {
-  let selectedKey: number = 8;
+  let selectedKey = 8;
   let selectedMode: "major" | "minor" = "major";
 
   if (props.keySig.mode === "minor") {

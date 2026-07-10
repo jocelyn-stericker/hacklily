@@ -27,16 +27,16 @@
 // Note that we use notehadBlack regardless of the notehead.
 // This keeps spacing consistent, even in beam groups with rests.
 
-import * as React from "react";
-import { AboveBelow } from "#/musicxml-interfaces";
-import { Component } from "react";
-import * as PropTypes from "prop-types";
 import { first, last } from "lodash";
+import * as PropTypes from "prop-types";
+import * as React from "react";
+import { Component } from "react";
 
-import { bravura, getFontOffset } from "./private_smufl";
+import { AboveBelow } from "#/musicxml-interfaces";
 
+import type { IBeamLayout } from "./implChord_beamLayout";
 import TupletNumberView from "./implChord_tupletNumberView";
-import { IBeamLayout } from "./implChord_beamLayout";
+import { bravura, getFontOffset } from "./private_smufl";
 
 export interface IProps {
   key?: string | number;

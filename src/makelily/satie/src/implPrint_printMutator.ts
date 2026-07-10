@@ -16,10 +16,9 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { IAny } from "#/musicxml-interfaces/operations";
+import type { IAny } from "#/musicxml-interfaces/operations";
 
-import { IPrintModel } from "./implPrint_printModel";
-
+import type { IPrintModel } from "./implPrint_printModel";
 import { mutate } from "./private_mutate";
 
 export default function printMutator(

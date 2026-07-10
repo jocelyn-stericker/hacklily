@@ -20,9 +20,10 @@
 
 import React from "react";
 
-import RPCClient, { Status as ServerStatus } from "../RPCClient";
+import type { Status as ServerStatus } from "../RPCClient";
+import RPCClient from "../RPCClient";
 
-const INITIAL_WS_COOLOFF: number = 1;
+const INITIAL_WS_COOLOFF = 1;
 const BACKEND_WS_URL: string | undefined = process.env.REACT_APP_BACKEND_WS_URL;
 
 interface State {
@@ -144,7 +145,7 @@ export default class Status extends React.Component<{}, State> {
     this.rpc = new RPCClient(this.socket);
 
     this.statusTimer = window.setInterval(this.handleGetStatusTimeout, 1000);
-    this.handleGetStatusTimeout();
+    void this.handleGetStatusTimeout();
   };
 
   private wsReconnectTick = (): void => {

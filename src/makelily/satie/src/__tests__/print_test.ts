@@ -20,11 +20,10 @@
  * @file part of Satie test suite
  */
 
-import Print from "../implPrint_printModel";
-
-import { IModel, Type } from "../document";
-
+import type { IModel } from "../document";
+import { Type } from "../document";
 import Factory from "../engine_factory";
+import Print from "../implPrint_printModel";
 
 describe("[print.ts]", function () {
   describe("PrintModel", function () {

@@ -16,34 +16,39 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* eslint-disable no-shadow */
+
 /**
  * @file engine/scoreHeader.ts holds default header information as well
  * as convienience utilites for score headers.
  */
 
-import {
+import { forEach, some, defaultsDeep } from "lodash";
+
+import type {
   ScoreHeader,
   Credit,
   Identification,
   Defaults,
+  Work,
+  PartList,
+} from "#/musicxml-interfaces";
+import {
   NormalItalic,
   NormalBold,
   OddEvenBoth,
-  Work,
-  PartList,
   LeftCenterRight,
   serializeScoreHeader,
 } from "#/musicxml-interfaces";
-import { forEach, some, defaultsDeep } from "lodash";
 
 import { getPageMargins } from "./private_print";
-import { distances, bravura } from "./private_smufl";
 import {
   mmToTenths,
   defaultStaveHeight,
   defaultPageSize,
   defaultMargins,
 } from "./private_renderUtil";
+import { distances, bravura } from "./private_smufl";
 
 /**
  * A header is a child of parts, and includes the title and other basic
@@ -186,8 +191,8 @@ class ScoreHeaderModel implements ScoreHeader {
     workTitle: "",
   };
 
-  movementTitle: string = "";
-  movementNumber: string = "";
+  movementTitle = "";
+  movementNumber = "";
 
   partList: PartList = [];
 
@@ -344,7 +349,7 @@ class ScoreHeaderModel implements ScoreHeader {
       const isComposer = c.creditTypes.indexOf(type) !== -1;
       if (isComposer) {
         if (!c.creditWords.length) {
-          delete this.credits[idx];
+          this.credits.splice(idx, 1);
         } else {
           c.creditWords.length = 1;
           c.creditWords[0].words = val;

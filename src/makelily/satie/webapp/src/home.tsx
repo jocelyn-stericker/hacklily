@@ -1,8 +1,8 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 
-import Test from "./test";
 import { prefix } from "./config";
+import Test from "./test";
 
 export default function Home() {
   return (

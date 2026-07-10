@@ -16,12 +16,8 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-  CreditWords,
-  Words,
-  DirectionMode,
-  LeftCenterRight,
-} from "#/musicxml-interfaces";
+import type { CreditWords, Words } from "#/musicxml-interfaces";
+import { DirectionMode, LeftCenterRight } from "#/musicxml-interfaces";
 
 import { cssSizeToTenths } from "./private_renderUtil";
 
@@ -53,16 +49,11 @@ export const Prototype: ITextMixin = {
   },
   getDY: function (words: CreditWords, initY: number, lineNum: number) {
     if (lineNum > 0) {
-      return (
-        V_SPACING +
-        cssSizeToTenths((this as any).context.scale40, words.fontSize)
-      );
+      return V_SPACING + cssSizeToTenths(this.context.scale40, words.fontSize);
     }
     if (words.defaultY || words.relativeY) {
       return (
-        (this as any).context.originY -
-        (words.defaultY + (words.relativeY || 0)) -
-        initY
+        this.context.originY - (words.defaultY + (words.relativeY || 0)) - initY
       );
     }
     return 0;

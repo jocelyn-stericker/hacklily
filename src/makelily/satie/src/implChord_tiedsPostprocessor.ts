@@ -16,18 +16,21 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Tied, StartStopContinue } from "#/musicxml-interfaces";
-import { forEach, times, find } from "lodash";
+/* eslint-disable no-shadow */
+
 import invariant from "invariant";
+import { forEach, times, find } from "lodash";
 
-import { Type, ILayout } from "./document";
+import type { Tied } from "#/musicxml-interfaces";
+import { StartStopContinue } from "#/musicxml-interfaces";
 
-import NoteImpl from "./implChord_noteImpl";
-
-import { IMeasureLayout } from "./private_measureLayout";
-import { ILayoutOptions } from "./private_layoutOptions";
-import { ILineBounds } from "./private_lineBounds";
+import type { ILayout } from "./document";
+import { Type } from "./document";
+import type NoteImpl from "./implChord_noteImpl";
 import { notationObj } from "./private_chordUtil";
+import type { ILayoutOptions } from "./private_layoutOptions";
+import type { ILineBounds } from "./private_lineBounds";
+import type { IMeasureLayout } from "./private_measureLayout";
 
 interface IMutableTied {
   number: number;

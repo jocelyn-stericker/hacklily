@@ -16,13 +16,16 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ScoreHeader, Print } from "#/musicxml-interfaces";
-import { IAny } from "#/musicxml-interfaces/operations";
+import type { ScoreHeader, Print } from "#/musicxml-interfaces";
+import type { IAny } from "#/musicxml-interfaces/operations";
 
-import { Document, IMeasure, ISegment } from "./document";
-
-import { IAttributesSnapshot } from "./private_attributesSnapshot";
-import { IFactory, IPreprocessor, IPostprocessor } from "./private_factory";
+import type { Document, IMeasure, ISegment } from "./document";
+import type { IAttributesSnapshot } from "./private_attributesSnapshot";
+import type {
+  IFactory,
+  IPreprocessor,
+  IPostprocessor,
+} from "./private_factory";
 
 export type IFixupFn = (
   segment: ISegment,

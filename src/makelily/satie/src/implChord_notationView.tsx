@@ -16,26 +16,26 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import invariant from "invariant";
+import { forEach } from "lodash";
+import * as PropTypes from "prop-types";
 import * as React from "react";
+import type { ReactElement } from "react";
+import { Component } from "react";
+
+import type { Notations } from "#/musicxml-interfaces";
 import {
   UprightInverted,
-  Notations,
   NormalAngledSquare,
   AboveBelow,
 } from "#/musicxml-interfaces";
-import { Component, ReactElement } from "react";
-import * as PropTypes from "prop-types";
-import { forEach } from "lodash";
-import invariant from "invariant";
-
-import Bezier from "./private_views_bezier";
-import Glyph from "./private_views_glyph";
-import { bboxes } from "./private_smufl";
 
 import Articulation from "./implChord_articulationView";
-import { IChordLayout } from "./implChord_chordModel";
-
+import type { IChordLayout } from "./implChord_chordModel";
 import { technicalGlyph } from "./implChord_notation";
+import { bboxes } from "./private_smufl";
+import Bezier from "./private_views_bezier";
+import Glyph from "./private_views_glyph";
 
 export interface IProps {
   spec: Notations;
@@ -218,7 +218,7 @@ export default class NotationView extends Component<IProps, {}> {
 
       const x2mx1: number = x2 - x1;
       const x1mx2: number = -x2mx1;
-      const relw: number = 3.2; // How "curved" it is
+      const relw = 3.2; // How "curved" it is
       const y1my2: number = y1 - y2;
       let absw: number = (-dir * 8.321228) / Math.max(1, Math.abs(y1my2));
       if ((y1my2 > 0 ? -1 : 1) * dir === 1) {

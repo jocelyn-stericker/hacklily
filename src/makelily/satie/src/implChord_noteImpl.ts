@@ -16,7 +16,13 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
+/* eslint-disable @typescript-eslint/prefer-for-of */
+/* eslint-disable no-shadow */
+
+import invariant from "invariant";
+import { forEach, reduce, map, isEqual } from "lodash";
+
+import type {
   Note,
   Chord,
   Rest,
@@ -55,23 +61,19 @@ import {
   Technical,
   Tied,
   Tuplet,
-  MxmlAccidental,
-  serializeNote,
 } from "#/musicxml-interfaces";
-import { forEach, reduce, map, isEqual } from "lodash";
-import invariant from "invariant";
+import { MxmlAccidental, serializeNote } from "#/musicxml-interfaces";
 
-import { IReadOnlyValidationCursor } from "./private_cursor";
+import type ChordModelImpl from "./implChord_chordImpl";
 import {
   accidentalGlyphs,
   onLedger,
   InvalidAccidental,
   lineForClef,
 } from "./private_chordUtil";
+import type { IReadOnlyValidationCursor } from "./private_cursor";
 import { bboxes as glyphBBoxes } from "./private_smufl";
 import { cloneObject } from "./private_util";
-
-import ChordModelImpl from "./implChord_chordImpl";
 
 /**
  * Represents a note in a ChordImpl.
@@ -91,7 +93,8 @@ class NoteImpl implements Note {
     note: Note,
     _updateParent: boolean = true,
   ) {
-    const self: { [key: string]: any } = this as any;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self: { [key: string]: any } = this;
 
     /* Link to parent */
     Object.defineProperty(this, "_parent", {
@@ -152,7 +155,7 @@ class NoteImpl implements Note {
         Object.prototype.hasOwnProperty.call(note, property) &&
         (<any>note)[property] !== undefined
       ) {
-        self[property] = <any>(<any>note)[property];
+        self[property] = (<any>note)[property];
       }
     }
   }
@@ -531,7 +534,7 @@ class NoteImpl implements Note {
       if (!array) {
         return null;
       }
-      const articulations: Articulations = <any>{};
+      const articulations: Articulations = {};
       for (let i = 0; i < array.length; ++i) {
         for (const akey in array[i]) {
           if (Object.prototype.hasOwnProperty.call(array[i], akey)) {

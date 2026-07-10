@@ -19,15 +19,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
-import { ReactElement, Component } from "react";
-import * as PropTypes from "prop-types";
-import { Direction } from "#/musicxml-interfaces";
 import { map } from "lodash";
+import * as PropTypes from "prop-types";
+import * as React from "react";
+import type { ReactElement } from "react";
+import { Component } from "react";
 
-import Glyph from "./private_views_glyph";
+import type { Direction } from "#/musicxml-interfaces";
+
 import Dynamics from "./implDirection_dynamicsView";
 import Words from "./implDirection_wordsView";
+import Glyph from "./private_views_glyph";
 
 export default class DirectionView extends Component<
   { layout: { model: Direction; overrideX?: number } },
@@ -110,7 +112,7 @@ export default class DirectionView extends Component<
         case !!type.words:
           return <Words key={`d_${idx}`} layout={this.props.layout} />;
         default:
-          throw new Error("Invalid direction in " + type);
+          throw new Error("Invalid direction in " + type); // eslint-disable-line @typescript-eslint/no-base-to-string
       }
     }).filter((el) => !!el);
 

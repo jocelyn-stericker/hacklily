@@ -16,27 +16,40 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
+/* eslint-disable no-shadow */
+
+import invariant from "invariant";
+import { forEach, times, reduce, map, max, some } from "lodash";
+
+import type {
   Clef,
-  Count,
   MultipleRest,
   Note,
-  NoteheadType,
   Stem,
-  StemType,
   Tremolo,
   TimeModification,
+} from "#/musicxml-interfaces";
+import {
+  Count,
+  NoteheadType,
+  StemType,
   serializeNote,
 } from "#/musicxml-interfaces";
-import { forEach, times, reduce, map, max, some } from "lodash";
-import invariant from "invariant";
 
 import { Type } from "./document";
-
-import { IBoundingRect } from "./private_boundingRect";
-import { getBeamingPattern } from "./private_metre_checkBeaming";
+import type { VoiceBuilder } from "./engine_createPatch";
+import type { IBeamLayout } from "./implChord_beamLayout";
+import type {
+  IChordModel,
+  IChordLayout,
+  IDetachedChordModel,
+} from "./implChord_chordModel";
+import { getChordLyricWidth } from "./implChord_lyrics";
+import { getBoundingRects } from "./implChord_notation";
+import NoteImpl from "./implChord_noteImpl";
+import type { IBoundingRect } from "./private_boundingRect";
+import type { IChord } from "./private_chordUtil";
 import {
-  IChord,
   ledgerLines,
   notationObj,
   countToIsBeamable,
@@ -52,19 +65,9 @@ import {
   FractionalDivisionsException,
   barDivisions,
 } from "./private_chordUtil";
-import { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
-import { VoiceBuilder } from "./engine_createPatch";
+import type { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
+import { getBeamingPattern } from "./private_metre_checkBeaming";
 import { getWidth as getGlyphWidth } from "./private_smufl";
-
-import {
-  IChordModel,
-  IChordLayout,
-  IDetachedChordModel,
-} from "./implChord_chordModel";
-import { IBeamLayout } from "./implChord_beamLayout";
-import NoteImpl from "./implChord_noteImpl";
-import { getChordLyricWidth } from "./implChord_lyrics";
-import { getBoundingRects } from "./implChord_notation";
 
 const IDEAL_STEM_HEIGHT = 35;
 const MIN_STEM_HEIGHT = 30;
@@ -287,7 +290,7 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
   /*---- I.2 IChord ---------------------------------------------------------------------------*/
 
   [key: number]: NoteImpl;
-  length: number = 0;
+  length = 0;
 
   /*---- II. Ext ------------------------------------------------------------------------------*/
 
@@ -379,7 +382,7 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
     }
   }
 
-  _init: boolean = false;
+  _init = false;
   refresh(cursor: IReadOnlyValidationCursor): void {
     if (!this[0].noteType || !this[0].noteType.duration) {
       const count = this._implyCountFromPerformanceData(cursor);
@@ -416,7 +419,7 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
         cursor.fixup([
           {
             p: ["divisions"],
-            oi: (err as FractionalDivisionsException).requiredDivisions,
+            oi: err.requiredDivisions,
             od: cursor.staffAttributes.divisions,
           },
         ]);

@@ -16,13 +16,14 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* eslint-disable no-shadow */
+
 /**
  * @file part of Satie test suite
  */
 
-import Factory from "../engine_factory";
-
 import { Type } from "../document";
+import Factory from "../engine_factory";
 
 class TestClass1 {}
 

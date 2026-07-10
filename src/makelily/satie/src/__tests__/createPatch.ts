@@ -1,9 +1,10 @@
-import { BarStyleType, Count, MxmlAccidental } from "#/musicxml-interfaces";
 import { find } from "lodash";
+
+import { BarStyleType, Count, MxmlAccidental } from "#/musicxml-interfaces";
 
 import { Type } from "../document";
 import SongImpl from "../engine_songImpl";
-import { IChord } from "../private_chordUtil";
+import type { IChord } from "../private_chordUtil";
 import { Patch } from "../satie";
 
 const songTemplate = `<?xml version="1.0" encoding="UTF-8"?>
@@ -69,19 +70,20 @@ const songTemplate = `<?xml version="1.0" encoding="UTF-8"?>
 
 describe("patches (1)", function () {
   let song: SongImpl;
-  beforeEach((done) => {
-    song = new SongImpl({
-      baseSrc: songTemplate,
+  beforeEach(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        song = new SongImpl({
+          baseSrc: songTemplate,
 
-      onError: done,
-      onLoaded: () => {
-        done();
-      },
-    });
-    song.run();
-  });
+          onError: reject,
+          onLoaded: () => resolve(),
+        });
+        song.run();
+      }),
+  );
 
-  it("can append a bar, and adjust barlines accordingly, and this can be undone", function (done) {
+  it("can append a bar, and adjust barlines accordingly, and this can be undone", function () {
     const patch = Patch.createPatch(false, song.getDocument(null), (document) =>
       document.insertMeasure(3, (measure) =>
         measure.part("P1", (part) =>
@@ -169,9 +171,8 @@ describe("patches (1)", function () {
     expect((barline as any).barStyle.data === BarStyleType.LightHeavy);
 
     // changed barline
-    done();
   });
-  it("can replace a rest with a shorter note", function (done) {
+  it("can replace a rest with a shorter note", function () {
     const measureUUID = song.getDocument(null).measures[0].uuid;
 
     const patch = Patch.createPatch(
@@ -210,6 +211,5 @@ describe("patches (1)", function () {
     });
 
     // changed barline
-    done();
   });
 });

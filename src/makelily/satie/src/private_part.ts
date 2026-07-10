@@ -16,13 +16,12 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* eslint-disable no-shadow */
+
 import { some, filter } from "lodash";
-import {
-  PartList,
-  PartGroup,
-  ScorePart,
-  StartStop,
-} from "#/musicxml-interfaces";
+
+import type { PartList, PartGroup, ScorePart } from "#/musicxml-interfaces";
+import { StartStop } from "#/musicxml-interfaces";
 
 export function scoreParts(scoreParts: PartList): ScorePart[] {
   return <ScorePart[]>(

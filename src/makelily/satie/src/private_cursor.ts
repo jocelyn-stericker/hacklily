@@ -16,17 +16,18 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Print, ScoreHeader } from "#/musicxml-interfaces";
-import { IAny } from "#/musicxml-interfaces/operations";
 import invariant from "invariant";
 
-import createPatch, { VoiceBuilder, StaffBuilder } from "./engine_createPatch";
+import type { Print, ScoreHeader } from "#/musicxml-interfaces";
+import type { IAny } from "#/musicxml-interfaces/operations";
 
-import { Document, ISegment, IMeasure, Type } from "./document";
-
-import { IFactory } from "./private_factory";
+import type { Document, ISegment, IMeasure } from "./document";
+import { Type } from "./document";
+import type { VoiceBuilder, StaffBuilder } from "./engine_createPatch";
+import createPatch from "./engine_createPatch";
+import type { IAttributesSnapshot } from "./private_attributesSnapshot";
+import type { IFactory } from "./private_factory";
 import { cloneObject } from "./private_util";
-import { IAttributesSnapshot } from "./private_attributesSnapshot";
 
 export interface IReadOnlyValidationCursor {
   readonly segmentInstance: ISegment;

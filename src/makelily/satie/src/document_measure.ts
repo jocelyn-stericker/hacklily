@@ -16,10 +16,10 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { flatten, map, values, filter } from "lodash";
 import invariant from "invariant";
+import { flatten, map, values, filter } from "lodash";
 
-import { IModel } from "./document";
+import type { IModel } from "./document";
 
 export interface ISegment extends Array<IModel> {
   owner: number;
@@ -56,12 +56,12 @@ export interface IMeasure {
 }
 
 export function getMeasureSegments(measure: IMeasure): ISegment[] {
-  const voiceSegments = <ISegment[]>(
-    flatten(map(values<IMeasurePart>(measure.parts), (part) => part.voices))
+  const voiceSegments = flatten(
+    map(values<IMeasurePart>(measure.parts), (part) => part.voices),
   );
 
-  const staffSegments = <ISegment[]>(
-    flatten(map(values<IMeasurePart>(measure.parts), (part) => part.staves))
+  const staffSegments = flatten(
+    map(values<IMeasurePart>(measure.parts), (part) => part.staves),
   );
 
   return filter(voiceSegments.concat(staffSegments), (s) => !!s);

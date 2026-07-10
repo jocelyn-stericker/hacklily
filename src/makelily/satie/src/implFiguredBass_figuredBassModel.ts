@@ -16,27 +16,28 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
+import { forEach } from "lodash";
+
+import type {
   FiguredBass,
   Figure,
   Footnote,
   Level,
   NormalBold,
   NormalItalic,
-  serializeFiguredBass,
 } from "#/musicxml-interfaces";
-import { forEach } from "lodash";
+import { serializeFiguredBass } from "#/musicxml-interfaces";
 
-import { IModel, ILayout, Type } from "./document";
-
-import { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
-import { IBoundingRect } from "./private_boundingRect";
+import type { IModel, ILayout } from "./document";
+import { Type } from "./document";
+import type { IBoundingRect } from "./private_boundingRect";
+import type { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
 
 class FiguredBassModel implements IFiguredBassModel {
   /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
-  divCount: number = 0;
-  divisions: number = 0;
+  divCount = 0;
+  divisions = 0;
 
   /** defined externally */
   staffIdx: number;
@@ -96,7 +97,7 @@ class FiguredBassModel implements IFiguredBassModel {
     }
   }
 
-  private _color: number = 0x000000;
+  private _color = 0x000000;
 
   /*---- Implementation -----------------------------------------------------------------------*/
 
@@ -149,7 +150,7 @@ class FiguredBassModel implements IFiguredBassModel {
 
     boundingBoxes: IBoundingRect[] = [];
     renderClass: Type = Type.FiguredBass;
-    expandPolicy: "none" = "none";
+    expandPolicy = "none" as const;
   };
 }
 

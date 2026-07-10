@@ -22,13 +22,13 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 
 import { initAnalytics, trackPageview } from "../analytics";
-import Status from "./Status";
 import ErrorBoundary from "../ErrorBoundary";
+import Status from "./Status";
 
 initAnalytics();
 trackPageview("/status", "Status — Hacklily");
 
-createRoot(document.getElementById("root")!).render(
+createRoot(document.getElementById("root")).render(
   <ErrorBoundary>
     <Status />
   </ErrorBoundary>,

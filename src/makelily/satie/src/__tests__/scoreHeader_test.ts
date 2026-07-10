@@ -20,9 +20,9 @@
  * @file part of Satie test suite
  */
 
-import ScoreHeader from "../engine_scoreHeader";
-
 import { parseScore, LeftCenterRight } from "#/musicxml-interfaces";
+
+import ScoreHeader from "../engine_scoreHeader";
 
 const headerTest = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.0 Partwise//EN"

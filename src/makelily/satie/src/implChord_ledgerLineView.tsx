@@ -16,12 +16,13 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { PrintStyle } from "#/musicxml-interfaces";
-import React, { Component } from "react";
 import * as PropTypes from "prop-types";
+import React, { Component } from "react";
 
-import Line from "./private_views_line";
+import type { PrintStyle } from "#/musicxml-interfaces";
+
 import { bboxes } from "./private_smufl";
+import Line from "./private_views_line";
 
 export interface IProps {
   key?: string | number;

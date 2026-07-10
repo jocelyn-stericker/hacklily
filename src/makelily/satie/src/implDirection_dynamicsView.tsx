@@ -16,10 +16,12 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Dynamics, Direction } from "#/musicxml-interfaces";
-import React, { ReactElement, Component } from "react";
-import * as PropTypes from "prop-types";
 import invariant from "invariant";
+import * as PropTypes from "prop-types";
+import type { ReactElement } from "react";
+import React, { Component } from "react";
+
+import type { Dynamics, Direction } from "#/musicxml-interfaces";
 
 import Glyph from "./private_views_glyph";
 

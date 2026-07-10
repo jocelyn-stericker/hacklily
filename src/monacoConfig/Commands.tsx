@@ -24,10 +24,10 @@ import * as monacoEditor from "monaco-editor";
  * These are monaco commands. So far we use them in codelens actions (see codelensProvider)
  */
 export default class Commands {
-  insertNotes: string = "";
-  setClef: string = "";
-  setKey: string = "";
-  setTime: string = "";
+  insertNotes = "";
+  setClef = "";
+  setKey = "";
+  setTime = "";
   showMakelily: (tool: string, cb?: (ly: string) => void) => void;
 
   constructor(showMakelily: (tool: string) => void) {

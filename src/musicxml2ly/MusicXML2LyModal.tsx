@@ -22,7 +22,7 @@ import { Classes, Dialog } from "@blueprintjs/core";
 import React from "react";
 
 import { track } from "../analytics";
-import RPCClient from "../RPCClient";
+import type RPCClient from "../RPCClient";
 
 interface Props {
   rpc: RPCClient;
@@ -47,7 +47,7 @@ export default class MusicXML2LyModal extends React.PureComponent<Props> {
     }
     const reader = new FileReader();
     reader.onload = () => {
-      this.doLoad(reader.result as any);
+      void this.doLoad(reader.result as any);
       reader.onload = null;
     };
     reader.readAsText(ev.target.files[0]);

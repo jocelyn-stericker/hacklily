@@ -20,10 +20,10 @@
  * @file part of Satie test suite
  */
 
-import { ISegment, IModel, ILayout, Type } from "../document";
-
-import { IFactory } from "../private_factory";
-import { ValidationCursor, LayoutCursor } from "../private_cursor";
+import type { ISegment, IModel, ILayout } from "../document";
+import { Type } from "../document";
+import type { ValidationCursor, LayoutCursor } from "../private_cursor";
+import type { IFactory } from "../private_factory";
 
 export const fakeFactory: IFactory = {
   create: (_modelType: Type): IModel => {

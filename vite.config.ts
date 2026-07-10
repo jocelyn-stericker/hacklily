@@ -3,28 +3,32 @@ import path from "node:path";
 
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
-   import { type Plugin } from "vite";
+import type { Plugin } from "vite";
 import monacoEditorPlugin from "vite-plugin-monaco-editor-esm";
 
- // Serve `editor.html` for every URL under /editor (e.g. /editor, /editor/42).
- function htmlFallback(prefix: string, htmlFile: string): Plugin {
-   const file = htmlFile.startsWith("/") ? htmlFile : `/${htmlFile}`;
-   return {
-     name: "html-fallback",
-     configureServer(server) {
-       // Registered as a pre-middleware: runs before Vite's static/transform stack.
-       server.middlewares.use((req, res, next) => {
-         const url = (req.url ?? "").split("?")[0];
-         // Exact path or anything nested under it.
-         if (url === prefix || url.startsWith(prefix + "/") && !url.endsWith(".otf") && !url.endsWith(".xml")) {
-           req.url = file; // rewrite so Vite serves editor.html w/ HMR transform
-         }
-         next();
-       });
-     },
-   };
- }
-
+// Serve `editor.html` for every URL under /editor (e.g. /editor, /editor/42).
+function htmlFallback(prefix: string, htmlFile: string): Plugin {
+  const file = htmlFile.startsWith("/") ? htmlFile : `/${htmlFile}`;
+  return {
+    name: "html-fallback",
+    configureServer(server) {
+      // Registered as a pre-middleware: runs before Vite's static/transform stack.
+      server.middlewares.use((req, res, next) => {
+        const url = (req.url ?? "").split("?")[0];
+        // Exact path or anything nested under it.
+        if (
+          url === prefix ||
+          (url.startsWith(prefix + "/") &&
+            !url.endsWith(".otf") &&
+            !url.endsWith(".xml"))
+        ) {
+          req.url = file; // rewrite so Vite serves editor.html w/ HMR transform
+        }
+        next();
+      });
+    },
+  };
+}
 
 function readLilyPondVersion(dockerfilePath: string): string {
   const content = fs.readFileSync(
@@ -33,16 +37,14 @@ function readLilyPondVersion(dockerfilePath: string): string {
   );
   const match = content.match(/^ARG LILYPOND_VERSION=(.+)/m);
   if (!match) {
-    throw new Error(
-      `Could not find ARG LILYPOND_VERSION in ${dockerfilePath}`,
-    );
+    throw new Error(`Could not find ARG LILYPOND_VERSION in ${dockerfilePath}`);
   }
   return match[1].trim();
 }
 
 export default defineConfig({
   publicDir: "static",
-  appType: 'mpa',
+  appType: "mpa",
   build: {
     rollupOptions: {
       input: {
@@ -67,13 +69,13 @@ export default defineConfig({
     "process.env.REACT_APP_UNSTABLE_LILYPOND_VERSION": JSON.stringify(
       readLilyPondVersion("server/renderer-unstable/Dockerfile"),
     ),
-    "process.env.PLAYGROUND_PREFIX": JSON.stringify("/playground")
+    "process.env.PLAYGROUND_PREFIX": JSON.stringify("/playground"),
   },
   plugins: [
     react(),
     monacoEditorPlugin({
       languageWorkers: ["editorWorkerService"],
     }),
-    htmlFallback('/playground', '/playground.html')
+    htmlFallback("/playground", "/playground.html"),
   ],
 });

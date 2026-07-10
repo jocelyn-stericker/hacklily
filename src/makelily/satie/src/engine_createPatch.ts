@@ -16,33 +16,9 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-  Time,
-  BeamType,
-  Beam,
-  Count,
-  TimeModification,
-  Direction,
-} from "#/musicxml-interfaces";
-import { IAny } from "#/musicxml-interfaces/operations";
-import {
-  buildNote,
-  patchNote,
-  INoteBuilder,
-  buildBarline,
-  patchBarline,
-  IBarlineBuilder,
-  buildBeam,
-  buildAttributes,
-  patchAttributes,
-  IAttributesBuilder,
-  buildDirection,
-  patchDirection,
-  IDirectionBuilder,
-  buildPrint,
-  patchPrint,
-  IPrintBuilder,
-} from "#/musicxml-interfaces/builders";
+/* eslint-disable no-shadow */
+
+import invariant from "invariant";
 import {
   find,
   forEach,
@@ -54,20 +30,48 @@ import {
   extend,
   isInteger,
 } from "lodash";
-import invariant from "invariant";
 
+import type {
+  Time,
+  Beam,
+  TimeModification,
+  Direction,
+} from "#/musicxml-interfaces";
+import { BeamType, Count } from "#/musicxml-interfaces";
+import type {
+  INoteBuilder,
+  IBarlineBuilder,
+  IAttributesBuilder,
+  IDirectionBuilder,
+  IPrintBuilder,
+} from "#/musicxml-interfaces/builders";
 import {
+  buildNote,
+  patchNote,
+  buildBarline,
+  patchBarline,
+  buildBeam,
+  buildAttributes,
+  patchAttributes,
+  buildDirection,
+  patchDirection,
+  buildPrint,
+  patchPrint,
+} from "#/musicxml-interfaces/builders";
+import type { IAny } from "#/musicxml-interfaces/operations";
+
+import type {
   Document,
   IMeasure,
   IMeasurePart,
   ISegment,
-  Type,
   IModel,
 } from "./document";
-
+import { Type } from "./document";
+import { normalizeDivisionsInPlace } from "./engine_divisions";
+import type { IAttributesSnapshot } from "./private_attributesSnapshot";
+import type { IChord, IDurationDescription } from "./private_chordUtil";
 import {
-  IChord,
-  IDurationDescription,
   count,
   dots,
   timeModification,
@@ -77,12 +81,9 @@ import {
   countToIsBeamable,
   beams,
 } from "./private_chordUtil";
-import { IAttributesSnapshot } from "./private_attributesSnapshot";
 import { getBeamingPattern } from "./private_metre_checkBeaming";
-import { lcm } from "./private_util";
-import { normalizeDivisionsInPlace } from "./engine_divisions";
 import { simplifyRests } from "./private_metre_modifyRest";
-import { cloneObject } from "./private_util";
+import { lcm, cloneObject } from "./private_util";
 
 function _prependPatch(...prefix: any[]) {
   return function __prependPatch(patch: IAny) {
@@ -1321,7 +1322,9 @@ export default function createPatch(
   isPreview: boolean,
   document: Document,
   builderOrMeasure:
-    number | ((build: DocumentBuilder) => DocumentBuilder) | IAny[],
+    | number
+    | ((build: DocumentBuilder) => DocumentBuilder)
+    | IAny[],
   part?: string,
   partBuilder?: (partBuilder: PartBuilder) => PartBuilder,
 ) {
@@ -1333,15 +1336,13 @@ export default function createPatch(
       part === undefined && partBuilder === undefined,
       "createPatch: invalid usage",
     );
-    const builder = builderOrMeasure as (
-      build: DocumentBuilder,
-    ) => DocumentBuilder;
+    const builder = builderOrMeasure;
     patches = builder(new DocumentBuilder(document)).patches;
     if (!isPreview) {
       patches = cleanupPatches(document, patches);
     }
   } else {
-    const measure = builderOrMeasure as any as number;
+    const measure = builderOrMeasure;
     const builder = partBuilder;
     patches = createPatch(isPreview, document, (document) =>
       document.measure(measure, (measure) => measure.part(part, builder)),

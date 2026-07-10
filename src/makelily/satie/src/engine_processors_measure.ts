@@ -21,8 +21,6 @@
  */
 
 import invariant from "invariant";
-import { IAny } from "#/musicxml-interfaces/operations";
-import { ScoreHeader, Print } from "#/musicxml-interfaces";
 import {
   keyBy,
   filter,
@@ -35,30 +33,22 @@ import {
   last,
 } from "lodash";
 
-import {
-  Document,
-  IMeasure,
-  ISegment,
-  IModel,
-  Type,
-  ILayout,
-} from "./document";
+import type { ScoreHeader, Print } from "#/musicxml-interfaces";
+import type { IAny } from "#/musicxml-interfaces/operations";
 
+import type { Document, IMeasure, ISegment, IModel, ILayout } from "./document";
+import { Type } from "./document";
+import DivisionOverflowException from "./engine_divisionOverflowException";
 import { getNativeKeyAccidentals } from "./implAttributes_attributesData";
-
-import { IAttributesSnapshot } from "./private_attributesSnapshot";
-import {
-  ICombinedLayout,
-  mergeSegmentsInPlace,
-} from "./private_combinedLayout";
+import type { IAttributesSnapshot } from "./private_attributesSnapshot";
+import { barDivisions, InvalidAccidental } from "./private_chordUtil";
+import type { ICombinedLayout } from "./private_combinedLayout";
+import { mergeSegmentsInPlace } from "./private_combinedLayout";
 import { ValidationCursor, LayoutCursor } from "./private_cursor";
-import { IFactory } from "./private_factory";
-import { IMeasureLayout } from "./private_measureLayout";
+import type { IFactory } from "./private_factory";
+import type { IMeasureLayout } from "./private_measureLayout";
 import { scoreParts } from "./private_part";
 import { cloneObject } from "./private_util";
-import { barDivisions, InvalidAccidental } from "./private_chordUtil";
-
-import DivisionOverflowException from "./engine_divisionOverflowException";
 
 export interface IMeasureLayoutOptions {
   document: Document;
@@ -185,7 +175,7 @@ export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
       );
       if (localSegment.ownerType === "voice") {
         if (typeof op.p[4] === "string") {
-          op.p[4] = parseInt(op.p[4] as string, 10);
+          op.p[4] = parseInt(op.p[4], 10);
         }
         invariant(
           op.p[3] === "voices",
@@ -213,7 +203,7 @@ export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
           Number(op.p[5]) < vCursor.segmentPosition
         );
       }
-      throw new Error(`Invalid segment owner type ${localSegment.ownerType}`);
+      throw new Error(`Invalid segment owner type ${localSegment.ownerType}`); // eslint-disable-line @typescript-eslint/restrict-template-expressions
     });
 
     spec.fixup(localSegment, operations, restartRequired);
@@ -240,12 +230,12 @@ export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
       staffIdx: NaN,
 
       fixup,
-    } as any); // TODO
+    }); // TODO
     const lCursor = new LayoutCursor({
       ...spec,
       validationCursor: vCursor,
       x: spec.measureX,
-    } as any); // TODO
+    }); // TODO
 
     /**
      * Processes a staff model within this voice's context.
@@ -535,9 +525,7 @@ export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
   }
 
   // Get an ideal voice layout for each voice-staff combination
-  const gStaffLayoutsUnkeyed: ILayout[][][] = values(
-    gStaffLayouts,
-  ) as ILayout[][][];
+  const gStaffLayoutsUnkeyed: ILayout[][][] = values(gStaffLayouts);
   const gStaffLayoutsCombined: ILayout[][] = flatten(gStaffLayoutsUnkeyed);
 
   // Create a layout that satisfies the constraints in every single voice.
@@ -689,12 +677,8 @@ export function layoutMeasure({
   attributes,
 }: IMeasureLayoutOptions): IMeasureLayout {
   const parts = map(scoreParts(header.partList), (part) => part.id);
-  const staves = flatten(
-    map(parts, (partId) => measure.parts[partId].staves),
-  ) as ISegment[];
-  const voices = flatten(
-    map(parts, (partId) => measure.parts[partId].voices),
-  ) as ISegment[];
+  const staves = flatten(map(parts, (partId) => measure.parts[partId].staves));
+  const voices = flatten(map(parts, (partId) => measure.parts[partId].voices));
 
   const segments = filter(voices.concat(staves), (s) => !!s);
 

@@ -19,7 +19,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
+import { some, forEach } from "lodash";
+
+import type {
   Barline,
   Segno,
   Coda,
@@ -31,38 +33,33 @@ import {
   Repeat,
   Footnote,
   Level,
-  BarStyleType,
   PartGroup,
   PartSymbol,
-  serializeBarline,
   Attributes,
 } from "#/musicxml-interfaces";
+import { BarStyleType, serializeBarline } from "#/musicxml-interfaces";
 import { buildBarStyle } from "#/musicxml-interfaces/builders";
-import { some, forEach } from "lodash";
 
-import { IModel, ILayout, Type } from "./document";
-
-import { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
-import { IBoundingRect } from "./private_boundingRect";
-import { groupsForPart } from "./private_part";
-import { bravura } from "./private_smufl";
-
-import {
-  IAttributesLayout,
-  createWarningLayout,
-} from "./implAttributes_attributesModel";
+import type { IModel, ILayout } from "./document";
+import { Type } from "./document";
 import {
   needsWarning,
   clefsEqual,
   CLEF_INDENTATION,
 } from "./implAttributes_attributesData";
+import type { IAttributesLayout } from "./implAttributes_attributesModel";
+import { createWarningLayout } from "./implAttributes_attributesModel";
+import type { IBoundingRect } from "./private_boundingRect";
+import type { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
+import { groupsForPart } from "./private_part";
+import { bravura } from "./private_smufl";
 
 class BarlineModel implements IBarlineModel {
   _class = "Barline";
 
   /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
-  divCount: number = 0;
+  divCount = 0;
 
   /** defined externally */
   staffIdx: number;
@@ -330,7 +327,7 @@ class BarlineModel implements IBarlineModel {
 
     boundingBoxes: IBoundingRect[] = [];
     renderClass: Type = Type.Barline;
-    expandPolicy: "none" = "none";
+    expandPolicy = "none" as const;
 
     /*---- Extensions ---------------------------------------------------*/
 

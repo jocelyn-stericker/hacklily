@@ -19,12 +19,13 @@
  */
 
 import { css } from "aphrodite";
-import { Clef } from "#/musicxml-interfaces";
 import React from "react";
-import { Addons as SatieAddons } from "./satie/src/satie";
 
+import type { Clef } from "#/musicxml-interfaces";
+
+import { Addons as SatieAddons } from "./satie/src/satie";
 import tabStyles from "./tabStyles";
-import { ToolProps } from "./tool";
+import type { ToolProps } from "./tool";
 
 interface LyClef {
   clefViewbox: string;

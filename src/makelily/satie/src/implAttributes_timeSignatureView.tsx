@@ -16,15 +16,16 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
-import { Time, TimeSymbolType } from "#/musicxml-interfaces";
-import { Component } from "react";
-import * as PropTypes from "prop-types";
 import { map } from "lodash";
+import * as PropTypes from "prop-types";
+import * as React from "react";
+import { Component } from "react";
 
-import Glyph from "./private_views_glyph";
+import type { Time } from "#/musicxml-interfaces";
+import { TimeSymbolType } from "#/musicxml-interfaces";
 
 import { NUMBER_SPACING, PLUS_SPACING } from "./implAttributes_attributesData";
+import Glyph from "./private_views_glyph";
 
 /* private */
 class TimeSignatureNumber extends Component<ITSNumProps, {}> {

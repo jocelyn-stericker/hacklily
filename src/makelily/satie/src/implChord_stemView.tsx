@@ -16,15 +16,17 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
-import { Stem, StemType, Tremolo } from "#/musicxml-interfaces";
-import { Component } from "react";
-import * as PropTypes from "prop-types";
 import invariant from "invariant";
+import * as PropTypes from "prop-types";
+import * as React from "react";
+import { Component } from "react";
 
-import Line from "./private_views_line";
-import Glyph from "./private_views_glyph";
+import type { Stem, Tremolo } from "#/musicxml-interfaces";
+import { StemType } from "#/musicxml-interfaces";
+
 import { getFontOffset } from "./private_smufl";
+import Glyph from "./private_views_glyph";
+import Line from "./private_views_line";
 
 export interface IProps {
   key?: string | number;

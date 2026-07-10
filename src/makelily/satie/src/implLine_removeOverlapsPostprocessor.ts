@@ -16,6 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { forEach } from "lodash";
 import {
   Variable,
   Rectangle,
@@ -23,13 +24,12 @@ import {
   generateYConstraints,
   generateXConstraints,
 } from "webcola";
-import { forEach } from "lodash";
 
-import { ILayout } from "./document";
-import { IBoundingRect } from "./private_boundingRect";
-import { IMeasureLayout } from "./private_measureLayout";
-import { ILayoutOptions } from "./private_layoutOptions";
-import { ILineBounds } from "./private_lineBounds";
+import type { ILayout } from "./document";
+import type { IBoundingRect } from "./private_boundingRect";
+import type { ILayoutOptions } from "./private_layoutOptions";
+import type { ILineBounds } from "./private_lineBounds";
+import type { IMeasureLayout } from "./private_measureLayout";
 
 interface IVPSCLayoutRect extends Rectangle {
   mxmlBox: IBoundingRect;

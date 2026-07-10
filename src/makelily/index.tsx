@@ -20,8 +20,11 @@
 
 import * as React from "react";
 import { createRoot } from "react-dom/client";
-import App, { QUERY_PROP_KEYS, QueryProps } from "./App";
+
 import ErrorBoundary from "#/ErrorBoundary";
+
+import type { QueryProps } from "./App";
+import App, { QUERY_PROP_KEYS } from "./App";
 
 // http://stackoverflow.com/a/8648962
 export function parseQuery(qstr: string): { [key: string]: string } {
@@ -50,7 +53,7 @@ export function toQueryString(obj: { [key: string]: string }): string {
   return parts.join("&").replace(/%2F/g, "/"); // because we can, and it's less ugly.
 }
 
-const root = createRoot(document.getElementById("root")!);
+const root = createRoot(document.getElementById("root"));
 
 /**
  * Renders Hacklily, with props set.
@@ -83,6 +86,7 @@ function getQueryProps(): QueryProps {
     }
     // Note: queryPropKey === key, just typed correctly
     const queryPropKey: keyof QueryProps = QUERY_PROP_KEYS[queryPropIdx];
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     query[queryPropKey] = queryObj[key];
   });
@@ -100,6 +104,7 @@ function setQuery(
   const query: QueryProps = getQueryProps();
   Object.keys(queryUpdates).forEach((key: keyof QueryProps): void => {
     if (key in queryUpdates) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       query[key] = queryUpdates[key];
     }

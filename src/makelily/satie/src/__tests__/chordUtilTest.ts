@@ -16,9 +16,16 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* eslint-disable no-shadow */
+
 /**
  * @file part of Satie test suite
  */
+
+import type { Note } from "#/musicxml-interfaces";
+import { Count } from "#/musicxml-interfaces";
+import type { INoteBuilder } from "#/musicxml-interfaces/builders";
+import { buildClef, buildNote } from "#/musicxml-interfaces/builders";
 
 import {
   hasAccidental,
@@ -29,14 +36,6 @@ import {
   onLedger,
   ledgerLines,
 } from "../private_chordUtil";
-
-import { Note, Count } from "#/musicxml-interfaces";
-import {
-  buildClef,
-  buildNote,
-  INoteBuilder,
-} from "#/musicxml-interfaces/builders";
-
 import { makeCursor } from "./attributes_test";
 
 describe("[engine/ichord.ts]", function () {

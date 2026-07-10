@@ -18,7 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import * as monacoEditor from "monaco-editor";
+import type * as monacoEditor from "monaco-editor";
 
 // Note: object literal order is meaningful to monarch in tokenizer!
 

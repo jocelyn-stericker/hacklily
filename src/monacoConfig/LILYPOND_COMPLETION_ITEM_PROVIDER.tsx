@@ -18,7 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import * as monacoEditor from "monaco-editor";
+import type * as monacoEditor from "monaco-editor";
 
 import NOTATION_SYMBOLS from "./NOTATION_SYMBOLS";
 
@@ -48,7 +48,7 @@ const LILYPOND_COMPLETION_ITEM_PROVIDER: monacoEditor.languages.CompletionItemPr
             kind: 0, // text
             label: "",
             insertText: "",
-            range: null as any,
+            range: null,
           },
         ],
       };

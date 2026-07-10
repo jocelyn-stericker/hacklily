@@ -1,13 +1,16 @@
+/* eslint-disable no-shadow */
+import { defer, find, isEqual } from "lodash";
 import * as React from "react";
 import { Component } from "react";
-import { defer, find, isEqual } from "lodash";
 
-import { Pitch, Note, Count, MxmlAccidental } from "#/musicxml-interfaces";
-import { IAny } from "#/musicxml-interfaces/operations";
+import type { Pitch, Note } from "#/musicxml-interfaces";
+import { Count, MxmlAccidental } from "#/musicxml-interfaces";
+import type { IAny } from "#/musicxml-interfaces/operations";
+
+import type { ISong, IMouseEvent } from "../../src/satie";
+import { Song, Patch, Type } from "../../src/satie";
 
 import * as STYLES from "./tests.css";
-
-import { ISong, Song, Patch, Type, IMouseEvent } from "../../src/satie";
 
 interface IState {
   error?: Error;

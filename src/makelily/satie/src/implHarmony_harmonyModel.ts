@@ -16,7 +16,9 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
+import { forEach } from "lodash";
+
+import type {
   Frame,
   ExplicitImpliedAlternate,
   Root,
@@ -32,20 +34,19 @@ import {
   AboveBelow,
   Harmony,
   Offset,
-  serializeHarmony,
 } from "#/musicxml-interfaces";
-import { forEach } from "lodash";
+import { serializeHarmony } from "#/musicxml-interfaces";
 
-import { IModel, ILayout, Type } from "./document";
-
-import { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
-import { IBoundingRect } from "./private_boundingRect";
+import type { IModel, ILayout } from "./document";
+import { Type } from "./document";
+import type { IBoundingRect } from "./private_boundingRect";
+import type { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
 
 class HarmonyModel implements IHarmonyModel {
   /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
-  divCount: number = 0;
-  divisions: number = 0;
+  divCount = 0;
+  divisions = 0;
 
   /** defined externally */
   staffIdx: number;
@@ -119,7 +120,7 @@ class HarmonyModel implements IHarmonyModel {
 
   /*---- Private ------------------------------------------------------------------------------*/
 
-  private _color: number = 0x000000;
+  private _color = 0x000000;
 
   /*---- Implementation -----------------------------------------------------------------------*/
 
@@ -172,7 +173,7 @@ class HarmonyModel implements IHarmonyModel {
 
     boundingBoxes: IBoundingRect[] = [];
     renderClass: Type = Type.Harmony;
-    expandPolicy: "none" = "none";
+    expandPolicy = "none" as const;
   };
 }
 

@@ -19,19 +19,19 @@
  */
 
 // The module keeps process-wide state (queue, "initialized" latch), so each
-// test loads a fresh copy via jest.resetModules() + a fresh require().
-function freshModule(): typeof import("./analytics") {
-  jest.resetModules();
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  return require("./analytics");
+// test loads a fresh copy via vi.resetModules() + a fresh require().
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+async function freshModule(): Promise<typeof import("./analytics")> {
+  vi.resetModules();
+  return import("./analytics");
 }
 
 // count.js is never actually loaded in tests; simulate it becoming ready by
 // assigning window.goatcounter.count and firing the script's load event.
 function simulateCountJsLoaded(count: (vars: unknown) => void): void {
-  window.goatcounter!.count = count;
+  window.goatcounter.count = count;
   document.head
-    .querySelector("script[data-goatcounter]")!
+    .querySelector("script[data-goatcounter]")
     .dispatchEvent(new Event("load"));
 }
 
@@ -47,14 +47,14 @@ describe("analytics", () => {
     process.env.NODE_ENV = originalNodeEnv;
   });
 
-  it("queues events fired before count.js loads, then flushes them", () => {
+  it("queues events fired before count.js loads, then flushes them", async () => {
     process.env.NODE_ENV = "production";
-    const { initAnalytics, track } = freshModule();
+    const { initAnalytics, track } = await freshModule();
     initAnalytics();
 
     // count.js not ready yet -> the event must be buffered, not dropped.
     track("render/stable");
-    const count = jest.fn();
+    const count = vi.fn();
     simulateCountJsLoaded(count);
 
     expect(count).toHaveBeenCalledWith({
@@ -65,11 +65,11 @@ describe("analytics", () => {
     });
   });
 
-  it("sends straight through once count.js is ready", () => {
+  it("sends straight through once count.js is ready", async () => {
     process.env.NODE_ENV = "production";
-    const { initAnalytics, track, trackPageview } = freshModule();
+    const { initAnalytics, track, trackPageview } = await freshModule();
     initAnalytics();
-    const count = jest.fn();
+    const count = vi.fn();
     simulateCountJsLoaded(count);
 
     track("midi-playback");
@@ -89,11 +89,11 @@ describe("analytics", () => {
     });
   });
 
-  it("strips a leading slash from event names (GoatCounter rejects it)", () => {
+  it("strips a leading slash from event names (GoatCounter rejects it)", async () => {
     process.env.NODE_ENV = "production";
-    const { initAnalytics, track } = freshModule();
+    const { initAnalytics, track } = await freshModule();
     initAnalytics();
-    const count = jest.fn();
+    const count = vi.fn();
     simulateCountJsLoaded(count);
 
     track("/github/save");
@@ -106,25 +106,26 @@ describe("analytics", () => {
     });
   });
 
-  it("strips the query string and same-origin referrer from every hit", () => {
+  it("strips the query string and same-origin referrer from every hit", async () => {
     process.env.NODE_ENV = "production";
-    const { initAnalytics } = freshModule();
+    const { initAnalytics } = await freshModule();
     initAnalytics();
 
     // Simulate count.js installing its get_data, which unconditionally puts
     // location.search in `q` and a referrer in `r`; echo the referrer we pass
     // so we can exercise same-origin vs external.
-    window.goatcounter!.get_data = (vars) => ({
+    window.goatcounter.get_data = (vars) => ({
       p: "/",
       q: "?edit=user/repo/song.ly",
       r: vars?.referrer,
       s: 1920,
     });
-    window.goatcounter!.count = jest.fn();
+    window.goatcounter.count = vi.fn();
     document.head
-      .querySelector("script[data-goatcounter]")!
+      .querySelector("script[data-goatcounter]")
       .dispatchEvent(new Event("load"));
-    const getData = window.goatcounter!.get_data!;
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    const getData = window.goatcounter.get_data;
 
     // The wrapper drops `q` (real, PII-bearing URL) and a same-origin referrer
     // (which after a full reload is that same URL) but keeps everything else.
@@ -141,9 +142,9 @@ describe("analytics", () => {
     expect(external).toHaveProperty("r", "https://example.com/");
   });
 
-  it("does nothing outside production builds", () => {
+  it("does nothing outside production builds", async () => {
     process.env.NODE_ENV = "test";
-    const { initAnalytics, track } = freshModule();
+    const { initAnalytics, track } = await freshModule();
     initAnalytics();
     track("render/stable");
 

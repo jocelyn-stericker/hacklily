@@ -194,9 +194,7 @@ ${score.measures
   if (!parttime) {
     return timewise;
   }
-  return new XMLSerializer().serializeToString(
-    xmlToTimepartDoc(timewise)
-  )
+  return new XMLSerializer().serializeToString(xmlToTimepartDoc(timewise));
 }
 
 export function serializeScoreHeader(scoreHeader: ScoreHeader) {
@@ -254,7 +252,9 @@ declare class XSLTProcessor {
 
 const isNode = typeof window === "undefined" || !!process.versions?.node;
 
-const DOMParser: typeof window.DOMParser = isNode ? require("@xmldom/xmldom").DOMParser : window.DOMParser
+const DOMParser: typeof window.DOMParser = isNode
+  ? require("@xmldom/xmldom").DOMParser
+  : window.DOMParser;
 
 function xmlToParttimeDoc(src: string): Document {
   const doc = new DOMParser().parseFromString(src, "text/xml");
@@ -282,7 +282,9 @@ function xmlToParttimeDoc(src: string): Document {
     }
     const number = template.getAttribute("number");
     for (const part of parts) {
-      const src = measuresOf(part).find((m) => m.getAttribute("number") === number);
+      const src = measuresOf(part).find(
+        (m) => m.getAttribute("number") === number,
+      );
       const p = out.createElement("part");
       p.setAttribute("id", part.getAttribute("id"));
       for (const node of Array.from(src?.childNodes ?? [])) {
@@ -333,7 +335,6 @@ function xmlToTimepartDoc(src: string): Document {
   }
   return out;
 }
-
 
 function xmlToDoc(str: string): Document {
   return new DOMParser().parseFromString(str, "text/xml");

@@ -16,10 +16,14 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* eslint-disable no-shadow */
+
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="./opentypedist.d.ts" />
 
-import { Font, parse as parseFont } from "opentype.js/dist/opentype.js";
 import { memoize, forEach } from "lodash";
+import type { Font } from "opentype.js/dist/opentype.js";
+import { parse as parseFont } from "opentype.js/dist/opentype.js";
 
 const IS_BROWSER = typeof process === "undefined" || "browser" in process;
 const NO_PATH_DATA = <Font>{};
@@ -32,9 +36,7 @@ const State = {
   remaining: 0,
   err: null as Error,
   canvasContext: IS_BROWSER
-    ? <CanvasRenderingContext2D>(
-        document.createElement("canvas").getContext("2d")
-      )
+    ? document.createElement("canvas").getContext("2d")
     : null,
   root: IS_BROWSER
     ? location.protocol + "//" + location.host + "/vendor/"
@@ -78,7 +80,7 @@ function loadFont(name: string, url: string, style: string, full?: boolean) {
       const font = parseFont(buffer);
       State.fonts[fullName] = font;
       if (IS_BROWSER) {
-        const styleSheet = <CSSStyleSheet>document.styleSheets[0];
+        const styleSheet = document.styleSheets[0];
         const fontFaceStyle = `@font-face{
                     font-family: ${name};
                     src: url(data:font/truetype;charset=utf-8;base64,${toBase64(

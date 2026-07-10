@@ -16,17 +16,17 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
-import { PartSymbolType } from "#/musicxml-interfaces";
-import { Component, ReactElement } from "react";
-import * as PropTypes from "prop-types";
 import { some, map } from "lodash";
+import * as PropTypes from "prop-types";
+import * as React from "react";
+import type { ReactElement } from "react";
+import { Component } from "react";
 
-import Line from "./private_views_line";
+import { PartSymbolType } from "#/musicxml-interfaces";
 
 import AttributesView from "./implAttributes_attributesView";
-
-import { IBarlineLayout } from "./implBarline_barlineModel";
+import type { IBarlineLayout } from "./implBarline_barlineModel";
+import Line from "./private_views_line";
 
 /**
  * Renders a full-stave-height barline at (x,y).

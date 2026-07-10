@@ -16,11 +16,13 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* eslint-disable @typescript-eslint/prefer-for-of */
+
 import { forEach, max, map, times } from "lodash";
 
-import { IMeasureLayout } from "./private_measureLayout";
-import { ILayoutOptions } from "./private_layoutOptions";
-import { ILineBounds } from "./private_lineBounds";
+import type { ILayoutOptions } from "./private_layoutOptions";
+import type { ILineBounds } from "./private_lineBounds";
+import type { IMeasureLayout } from "./private_measureLayout";
 
 /**
  * Respects the minSpaceBefore and minSpaceAfter of elements. minSpaceBefore and minSpaceAfter

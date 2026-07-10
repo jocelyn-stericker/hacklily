@@ -33,7 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * https://developer.mozilla.org/en/JavaScript_typed_arrays/Uint8Array
  */
 
-const keyStr: string =
+const keyStr =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 
 /* will return a  Uint8Array type */
@@ -73,9 +73,9 @@ export function decode(inputStr: string, arrayBuffer: ArrayBuffer): Uint8Array {
   let enc2: number;
   let enc3: number;
   let enc4: number;
-  let j: number = 0;
+  let j = 0;
 
-  for (let i: number = 0; i < bytes; i += 3) {
+  for (let i = 0; i < bytes; i += 3) {
     // get the 3 octects in 4 ascii chars
     enc1 = keyStr.indexOf(input.charAt(j));
     j += 1;

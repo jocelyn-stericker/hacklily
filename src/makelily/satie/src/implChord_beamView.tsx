@@ -16,15 +16,15 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
-import { Component, ReactElement } from "react";
-import * as PropTypes from "prop-types";
 import { times, map } from "lodash";
+import * as PropTypes from "prop-types";
+import * as React from "react";
+import type { ReactElement } from "react";
+import { Component } from "react";
 
-import { bravura, getFontOffset } from "./private_smufl";
-
-import { IBeamLayout } from "./implChord_beamLayout";
+import type { IBeamLayout } from "./implChord_beamLayout";
 import TupletNumber from "./implChord_tupletNumberView";
+import { bravura, getFontOffset } from "./private_smufl";
 
 export interface IProps {
   key?: string | number;

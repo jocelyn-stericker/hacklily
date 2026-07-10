@@ -16,34 +16,33 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, SyntheticEvent } from "react";
+/* eslint-disable no-shadow */
 
-import { forEach, isEqual, throttle, find, extend } from "lodash";
-import { createElement, ReactElement } from "react";
-import { Pitch, ScoreHeader } from "#/musicxml-interfaces";
-import { IAny, invert } from "#/musicxml-interfaces/operations";
 import invariant from "invariant";
+import { forEach, isEqual, throttle, find, extend } from "lodash";
+import { Component, createElement } from "react";
+import type { SyntheticEvent, ReactElement } from "react";
 
-import {
+import type { Pitch, ScoreHeader } from "#/musicxml-interfaces";
+import type { IAny } from "#/musicxml-interfaces/operations";
+import { invert } from "#/musicxml-interfaces/operations";
+
+import type {
   Document,
   ISong,
   IPatchSpec,
-  specIsDocBuilder,
-  specIsPartBuilder,
-  specIsRaw,
   IProps,
   IMouseEvent,
 } from "./document";
-import createPatch from "./engine_createPatch";
-
-import { pitchForClef } from "./private_chordUtil";
-import { get as getByPosition } from "./private_views_metadata";
-import { IFactory } from "./private_factory";
-import PatchImpl from "./private_patchImpl";
-
-import { importXML } from "./engine_import";
-import { exportXML } from "./engine_export";
+import { specIsDocBuilder, specIsPartBuilder, specIsRaw } from "./document";
 import applyOp from "./engine_applyOp";
+import createPatch from "./engine_createPatch";
+import { exportXML } from "./engine_export";
+import { importXML } from "./engine_import";
+import { pitchForClef } from "./private_chordUtil";
+import type { IFactory } from "./private_factory";
+import PatchImpl from "./private_patchImpl";
+import { get as getByPosition } from "./private_views_metadata";
 
 export type Handler = (ev: IMouseEvent) => void;
 
@@ -238,7 +237,7 @@ export default class SongImpl
   };
 
   run() {
-    this.setState = (state: any, cb: Function) => {
+    this.setState = (state: any, cb: () => void) => {
       extend(this.state, state);
       if (cb) {
         cb();

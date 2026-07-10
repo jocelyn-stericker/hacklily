@@ -16,24 +16,28 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
-import { Note, Lyric, Text, StemType } from "#/musicxml-interfaces";
-import { Component, ReactElement } from "react";
-import * as PropTypes from "prop-types";
-import { map, some, chain, maxBy } from "lodash";
+/* eslint-disable @typescript-eslint/prefer-for-of */
 
-import { bboxes, bravura, getRight } from "./private_smufl";
+import { map, some, chain, maxBy } from "lodash";
+import * as PropTypes from "prop-types";
+import * as React from "react";
+import type { ReactElement } from "react";
+import { Component } from "react";
+
+import type { Note, Lyric, Text } from "#/musicxml-interfaces";
+import { StemType } from "#/musicxml-interfaces";
 
 import BeamView from "./implChord_beamView";
-import { IChordLayout } from "./implChord_chordModel";
+import type { IChordLayout } from "./implChord_chordModel";
 import FlagView from "./implChord_flagView";
 import LedgerLineView from "./implChord_ledgerLineView";
 import { DEFAULT_LYRIC_SIZE, DEFAULT_FONT } from "./implChord_lyrics";
-import NoteView from "./implChord_noteView";
 import NotationView from "./implChord_notationView";
+import NoteView from "./implChord_noteView";
 import RestView from "./implChord_restView";
 import StemView from "./implChord_stemView";
 import UnbeamedTupletView from "./implChord_unbeamedTupletView";
+import { bboxes, bravura, getRight } from "./private_smufl";
 
 const stemThickness: number = bravura.engravingDefaults.stemThickness * 10;
 

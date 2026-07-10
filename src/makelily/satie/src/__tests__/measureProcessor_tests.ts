@@ -20,17 +20,15 @@
  * @file part of Satie test suite
  */
 
+import { Type } from "../document";
+import { normalizeDivisionsInPlace } from "../engine_divisions";
+import { getApproximateMeasureWidth } from "../engine_processors_layout";
+import type { IRefreshMeasureOpts } from "../engine_processors_measure";
 import {
-  IRefreshMeasureOpts,
   refreshMeasure,
   layoutMeasure,
   RefreshMode,
 } from "../engine_processors_measure";
-import { getApproximateMeasureWidth } from "../engine_processors_layout";
-
-import { Type } from "../document";
-import { normalizeDivisionsInPlace } from "../engine_divisions";
-
 import {
   createFakeVoiceSegment,
   createFakeStaffSegment,

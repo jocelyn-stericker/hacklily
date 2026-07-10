@@ -16,17 +16,21 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* eslint-disable no-shadow */
+
 /**
  * @file Renders a tuplet number, for tuplets in beams and unbeamed tuplets.
  */
 
-import * as React from "react";
-import { AboveBelow, Tuplet } from "#/musicxml-interfaces";
-import { Component } from "react";
 import { last, map, reduce } from "lodash";
+import * as React from "react";
+import { Component } from "react";
 
-import Glyph from "./private_views_glyph";
+import type { Tuplet } from "#/musicxml-interfaces";
+import { AboveBelow } from "#/musicxml-interfaces";
+
 import { bboxes } from "./private_smufl";
+import Glyph from "./private_views_glyph";
 
 export interface IProps {
   tuplet: Tuplet;

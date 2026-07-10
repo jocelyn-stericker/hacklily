@@ -16,16 +16,17 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
-import { MultipleRest, Note } from "#/musicxml-interfaces";
-import { Component } from "react";
-import * as PropTypes from "prop-types";
-import { map } from "lodash";
 import invariant from "invariant";
+import { map } from "lodash";
+import * as PropTypes from "prop-types";
+import * as React from "react";
+import { Component } from "react";
 
+import type { MultipleRest, Note } from "#/musicxml-interfaces";
+
+import { bboxes } from "./private_smufl";
 import Dot from "./private_views_dot";
 import Glyph from "./private_views_glyph";
-import { bboxes } from "./private_smufl";
 
 export interface IProps {
   multipleRest?: MultipleRest;

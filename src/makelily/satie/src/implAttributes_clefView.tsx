@@ -16,13 +16,15 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
-import { Clef, SymbolSize } from "#/musicxml-interfaces";
-import { Component } from "react";
 import * as PropTypes from "prop-types";
+import * as React from "react";
+import { Component } from "react";
 
-import Glyph from "./private_views_glyph";
+import type { Clef } from "#/musicxml-interfaces";
+import { SymbolSize } from "#/musicxml-interfaces";
+
 import { bboxes } from "./private_smufl";
+import Glyph from "./private_views_glyph";
 
 /**
  * Responsible for the rendering of a clef.

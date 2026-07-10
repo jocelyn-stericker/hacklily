@@ -22,12 +22,9 @@
 
 import { times, reduce } from "lodash";
 
-import {
-  ICombinedLayout,
-  mergeSegmentsInPlace,
-} from "../private_combinedLayout";
 import { Type } from "../document";
-
+import type { ICombinedLayout } from "../private_combinedLayout";
+import { mergeSegmentsInPlace } from "../private_combinedLayout";
 import { createFakeLayout } from "./etestutil";
 
 describe("[private/combinedLayout.ts]", function () {

@@ -20,16 +20,18 @@
 
 import { css } from "aphrodite";
 import DOMPurify from "dompurify";
-import * as monacoEditor from "monaco-editor";
-import React from "react";
 import { debounce } from "lodash";
+import type * as monacoEditor from "monaco-editor";
+import React from "react";
 
 import { track } from "./analytics";
 import { decodeArrayBuffer } from "./base64Binary";
-import { MODE_BOTH, MODE_VIEW, ViewMode } from "./Header";
+import type { ViewMode } from "./Header";
+import { MODE_BOTH, MODE_VIEW } from "./Header";
 import { renderVersionFor } from "./lilypondVersion";
 import Logs from "./Logs";
-import RPCClient, { RenderResponse } from "./RPCClient";
+import type { RenderResponse } from "./RPCClient";
+import type RPCClient from "./RPCClient";
 import { APP_STYLE } from "./styles";
 
 // ─────────────────────────────────────────────────────────────
@@ -139,14 +141,14 @@ export function sanitizeSvg(dirty: string, idPrefix: string): string {
 /**
  * How long the code must not be edited for a preview to render.
  */
-const DEBOUNCE_REFERSH_TIMEOUT: number = 1000;
+const DEBOUNCE_REFERSH_TIMEOUT = 1000;
 
 /**
  * HTML with a #root element under which the svgs will be inserted.
  *
  * Note: Chrome doesn't render font-face in inline CSS.
  */
-const BODY_IFRAME_TEMPLATE: string = `
+const BODY_IFRAME_TEMPLATE = `
 <link rel="stylesheet" type="text/css" href="/preview.css">
 <div id="root"></div>
 `;
@@ -237,17 +239,17 @@ export default class Preview extends React.PureComponent<Props, State> {
     previewAlreadyDirty: false,
   };
 
-  private iframeLoaded: boolean = false;
+  private iframeLoaded = false;
   private previousMIDIData: string | null = null;
   private sheetMusicView: HTMLIFrameElement | null = null;
 
   componentDidMount(): void {
-    this.fetchNewPreview();
+    void this.fetchNewPreview();
   }
 
   componentDidUpdate(prevProps: Props): void {
     if (prevProps.code !== this.props.code) {
-      this.fetchNewPreview();
+      void this.fetchNewPreview();
     }
     if (prevProps.mode !== this.props.mode) {
       this.handleModeDidChange();
@@ -397,7 +399,7 @@ export default class Preview extends React.PureComponent<Props, State> {
           error: null,
           previewAlreadyDirty: false,
         });
-        this.fetchNewPreview();
+        void this.fetchNewPreview();
       }
 
       return;

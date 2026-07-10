@@ -19,37 +19,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { forEach, once } from "lodash";
 import invariant from "invariant";
+import { forEach, once } from "lodash";
 
-import { markPreloaded, setRoot } from "./private_fontManager";
-
+import Factory from "./engine_factory";
 import AttributesExports from "./implAttributes_attributesModel";
 import AttributesPostprocessor from "./implAttributes_attributesPostprocessor";
-
 import Barline from "./implBarline_barlineModel";
-
-import Chord from "./implChord_chordModel";
-import VoiceStaffStemDirection from "./implChord_voiceStaffStemDirectionPreprocessor";
 import BeamPostprocessor from "./implChord_beamPostprocessor";
+import Chord from "./implChord_chordModel";
 import TiedsPostprocessor from "./implChord_tiedsPostprocessor";
-
+import VoiceStaffStemDirection from "./implChord_voiceStaffStemDirectionPreprocessor";
 import Direction from "./implDirection_directionModel";
 import FiguredBass from "./implFiguredBass_figuredBassModel";
 import Grouping from "./implGrouping_groupingModel";
 import Harmony from "./implHarmony_harmonyModel";
+import CenterPostprocessor from "./implLine_centerPostprocessor";
+import JustifyPostprocessor from "./implLine_justifyPostprocessor";
+import PadPostprocessor from "./implLine_padPostprocessor";
+import RemoveOverlapsPostprocessor from "./implLine_removeOverlapsPostprocessor";
 import Print from "./implPrint_printModel";
 import Proxy from "./implProxy_proxyModel";
 import Sound from "./implSound_soundModel";
 import Spacer from "./implSpacer_spacerModel";
 import VisualCursorModel from "./implVisualCursor_visualCursorModel";
-
-import CenterPostprocessor from "./implLine_centerPostprocessor";
-import JustifyPostprocessor from "./implLine_justifyPostprocessor";
-import PadPostprocessor from "./implLine_padPostprocessor";
-import RemoveOverlapsPostprocessor from "./implLine_removeOverlapsPostprocessor";
-
-import Factory from "./engine_factory";
+import { markPreloaded, setRoot } from "./private_fontManager";
 
 const BrowserSetup = {
   cssInjected: false,

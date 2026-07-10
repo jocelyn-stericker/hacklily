@@ -16,24 +16,21 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-  Feature,
-  StartStopSingle,
-  Grouping,
-  serializeGrouping,
-} from "#/musicxml-interfaces";
 import { forEach } from "lodash";
 
-import { IModel, ILayout, Type } from "./document";
+import type { Feature, StartStopSingle, Grouping } from "#/musicxml-interfaces";
+import { serializeGrouping } from "#/musicxml-interfaces";
 
-import { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
-import { IBoundingRect } from "./private_boundingRect";
+import type { IModel, ILayout } from "./document";
+import { Type } from "./document";
+import type { IBoundingRect } from "./private_boundingRect";
+import type { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
 
 class GroupingModel implements IGroupingModel {
   /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
-  divCount: number = 0;
-  divisions: number = 0;
+  divCount = 0;
+  divisions = 0;
 
   /** defined externally */
   staffIdx: number;
@@ -96,7 +93,7 @@ class GroupingModel implements IGroupingModel {
 
     boundingBoxes: IBoundingRect[] = [];
     renderClass: Type = Type.Grouping;
-    expandPolicy: "none" = "none";
+    expandPolicy = "none" as const;
   };
 }
 

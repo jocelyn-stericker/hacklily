@@ -16,11 +16,13 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { times } from "lodash";
 import invariant from "invariant";
-import { TimeModification, Time } from "#/musicxml-interfaces";
+import { times } from "lodash";
 
-import { IChord, divisions } from "./private_chordUtil";
+import type { TimeModification, Time } from "#/musicxml-interfaces";
+
+import type { IChord } from "./private_chordUtil";
+import { divisions } from "./private_chordUtil";
 
 /**
  * Information needed to create a duration using makeDuration().

@@ -20,11 +20,10 @@
  * @file part of Satie test suite
  */
 
-import BarlineModel from "../implBarline_barlineModel";
-
-import { IModel, Type } from "../document";
-
+import type { IModel } from "../document";
+import { Type } from "../document";
 import Factory from "../engine_factory";
+import BarlineModel from "../implBarline_barlineModel";
 
 describe("[barline.ts]", function () {
   describe("BarlineModel", function () {

@@ -20,17 +20,16 @@
 
 import { css, StyleSheet } from "aphrodite";
 import React from "react";
-import { Application, requireFont } from "./satie/src/satie";
 
-import { ToolProps } from "./tool";
+import { parseClef, parseKeySig, parseTime } from "./parseLy";
+import { Application, requireFont } from "./satie/src/satie";
+import type { ToolProps } from "./tool";
 import ToolError from "./ToolError";
 import ToolNoteEdit from "./ToolNoteEdit";
 import ToolNotFound from "./ToolNotFound";
 import ToolSetClef from "./ToolSetClef";
 import ToolSetKey from "./ToolSetKey";
 import ToolSetTime from "./ToolSetTime";
-
-import { parseClef, parseKeySig, parseTime } from "./parseLy";
 
 export const satieApplication: Application = new Application({
   preloadedFonts: ["Alegreya", "Alegreya (bold)"],
@@ -193,7 +192,7 @@ export default class Makelily extends React.Component<Props, State> {
   };
 }
 
-const modeBarWidth: number = 180;
+const modeBarWidth = 180;
 
 const styles = StyleSheet.create({
   close: {

@@ -18,7 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { Auth, Repo } from "./auth";
+import type { Auth, Repo } from "./auth";
 
 export interface File {
   path: string;
@@ -29,7 +29,7 @@ export interface File {
  * Token that is thrown when we cannot cat a file becasue it does not exist.
  */
 export class FileNotFound {
-  message: string = "This file does not exist.";
+  message = "This file does not exist.";
 }
 
 export async function getRepo(
@@ -161,7 +161,7 @@ export async function ls(accessToken: string, repo: string): Promise<File[]> {
  * exists, or was modified between when we got the SHA and when we made the save request.
  */
 export class Conflict {
-  message: string = "Cannot save file because it conflicts with another file.";
+  message = "Cannot save file because it conflicts with another file.";
 }
 
 // https://stackoverflow.com/questions/30106476/using-javascripts-atob-to-decode-base64-doesnt-properly-decode-utf-8-strings

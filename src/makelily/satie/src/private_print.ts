@@ -16,7 +16,10 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { PageMargins, OddEvenBoth } from "#/musicxml-interfaces";
+/* eslint-disable @typescript-eslint/prefer-for-of */
+
+import type { PageMargins } from "#/musicxml-interfaces";
+import { OddEvenBoth } from "#/musicxml-interfaces";
 
 export function getPageMargins(
   pageMargins: PageMargins[],

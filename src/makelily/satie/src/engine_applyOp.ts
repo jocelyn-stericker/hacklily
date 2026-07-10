@@ -16,6 +16,8 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* eslint-disable no-shadow */
+
 import invariant from "invariant";
 import {
   find,
@@ -29,20 +31,20 @@ import {
   isNumber,
   isString,
 } from "lodash";
-import { IAny } from "#/musicxml-interfaces/operations";
 
-import { Document, Type, IMeasure, IMeasurePart, ISegment } from "./document";
+import type { IAny } from "#/musicxml-interfaces/operations";
+
+import type { Document, IMeasure, IMeasurePart, ISegment } from "./document";
+import { Type } from "./document";
 import { normalizeDivisionsInPlace } from "./engine_divisions";
-
-import { IFactory } from "./private_factory";
-import { cloneObject } from "./private_util";
-import { mutate } from "./private_mutate";
-
 import attributesMutator from "./implAttributes_attributesMutator";
 import barlineMutator from "./implBarline_barlineMutator";
 import chordMutator from "./implChord_chordMutator";
 import printMutator from "./implPrint_printMutator";
 import segmentMutator from "./implSegment_segmentMutator";
+import type { IFactory } from "./private_factory";
+import { mutate } from "./private_mutate";
+import { cloneObject } from "./private_util";
 
 /**
  * Checks whether this object is safe to JSON.stringify and JSON.parse.
@@ -60,7 +62,7 @@ function isSerializable(obj: any): boolean {
   ) {
     return true;
   } else if (isArray(obj)) {
-    return (obj as Array<any>).every(isSerializable);
+    return obj.every(isSerializable);
   } else if (isPlainObject(obj)) {
     return Object.keys(obj).every((key) => isSerializable(obj[key]));
   }
@@ -127,7 +129,7 @@ export default function applyOp(
   );
 
   const part = measure.parts[path[2]];
-  invariant(Boolean(part), `Invalid operation path: no such part ${part}`);
+  invariant(Boolean(part), `Invalid operation path: no such part ${part}`); // eslint-disable-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions
   ++measure.version;
 
   invariant(
@@ -165,7 +167,7 @@ export default function applyOp(
       chordMutator(element as any, localOp);
     } else {
       throw new Error(
-        "Invalid operation path: No voice reducer for " + element,
+        "Invalid operation path: No voice reducer for " + element, // eslint-disable-line @typescript-eslint/no-base-to-string
       );
     }
   } else if (path[3] === "staves") {
@@ -204,7 +206,7 @@ export default function applyOp(
       }
       attributesMutator(preview, element as any, localOp);
     } else if (factory.modelHasType(element, Type.Print)) {
-      printMutator(preview, element as any, localOp);
+      printMutator(preview, element, localOp);
     } else if (factory.modelHasType(element, Type.Spacer)) {
       mutate(element as any, localOp);
     } else if (

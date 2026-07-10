@@ -16,15 +16,16 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
-import { Accidental } from "#/musicxml-interfaces";
-import { Component } from "react";
-import * as PropTypes from "prop-types";
 import invariant from "invariant";
+import * as PropTypes from "prop-types";
+import * as React from "react";
+import { Component } from "react";
 
-import Glyph from "./private_views_glyph";
+import type { Accidental } from "#/musicxml-interfaces";
+
 import { accidentalGlyphs } from "./private_chordUtil";
 import { bboxes } from "./private_smufl";
+import Glyph from "./private_views_glyph";
 
 export interface IProps {
   spec: Accidental;

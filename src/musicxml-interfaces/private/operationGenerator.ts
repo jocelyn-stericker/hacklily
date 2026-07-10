@@ -2,11 +2,12 @@
 /* eslint-disable */
 
 import * as fs from "fs";
-import * as mkdirp from "mkdirp";
 import * as os from "os";
 import * as pathUtil from "path";
-import * as ts from "typescript";
+
 import { flatten, find } from "lodash";
+import * as mkdirp from "mkdirp";
+import * as ts from "typescript";
 
 type SyntaxKind = ts.SyntaxKind;
 const SyntaxKind = ts.SyntaxKind;

@@ -18,7 +18,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import RPCClient, { SignInResponse } from "./RPCClient";
+import type { SignInResponse } from "./RPCClient";
+import type RPCClient from "./RPCClient";
 
 export interface Repo {
   ["private"]: boolean;
@@ -50,7 +51,7 @@ export interface Auth {
 
 export const CLIENT_ID: string | undefined =
   process.env.REACT_APP_GITHUB_CLIENT_ID;
-const SCOPE: string = "public_repo";
+const SCOPE = "public_repo";
 export function getOauthRedirect(csrf: string): string {
   return (
     "https://github.com/login/oauth/authorize" +

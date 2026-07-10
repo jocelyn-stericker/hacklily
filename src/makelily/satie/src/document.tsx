@@ -16,10 +16,14 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, { ReactElement } from "react";
+/* eslint-disable import/first */
+
+import { find } from "lodash";
+import type { ReactElement } from "react";
+import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import {
+import type {
   ScoreHeader,
   Print,
   Grouping,
@@ -30,34 +34,29 @@ import {
   Harmony,
   Barline,
 } from "#/musicxml-interfaces";
-import { IAny } from "#/musicxml-interfaces/operations";
-import { find } from "lodash";
+import type { IAny } from "#/musicxml-interfaces/operations";
 
-import { IProxyModel } from "./implProxy_proxyModel";
-import { ISpacerModel } from "./implSpacer_spacerModel";
-import { IVisualCursorModel } from "./implVisualCursor_visualCursorModel";
-
-import { IFactory } from "./private_factory";
-
-import { IAttributesSnapshot } from "./private_attributesSnapshot";
-import { ILayoutOptions } from "./private_layoutOptions";
-import { IChord } from "./private_chordUtil";
-
-import validate from "./engine_processors_validate";
-import layoutSong, { ILinePlacementHint } from "./engine_processors_layout";
-
-import PageView from "./implPage_pageView";
-
-import { IMeasure } from "./document_measure";
-import { IModel } from "./document_model";
+import type { IMeasure } from "./document_measure";
+import type { IModel } from "./document_model";
 import Type from "./document_types";
+import type { ILinePlacementHint } from "./engine_processors_layout";
+import layoutSong from "./engine_processors_layout";
+import validate from "./engine_processors_validate";
+import PageView from "./implPage_pageView";
+import type { IProxyModel } from "./implProxy_proxyModel";
+import type { ISpacerModel } from "./implSpacer_spacerModel";
+import type { IVisualCursorModel } from "./implVisualCursor_visualCursorModel";
+import type { IAttributesSnapshot } from "./private_attributesSnapshot";
+import type { IChord } from "./private_chordUtil";
+import type { IFactory } from "./private_factory";
+import type { ILayoutOptions } from "./private_layoutOptions";
 
 export * from "./document_measure";
 export * from "./document_model";
 export * from "./document_song";
 export { default as Type } from "./document_types";
 
-import { IMeasureLayout } from "./private_measureLayout";
+import type { IMeasureLayout } from "./private_measureLayout";
 
 export interface ICleanlinessTracking {
   measures: {

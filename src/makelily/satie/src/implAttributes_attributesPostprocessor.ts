@@ -16,14 +16,17 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* eslint-disable no-shadow */
+
 import { forEach, sortedIndex, some } from "lodash";
-import { Attributes } from "#/musicxml-interfaces";
 
-import { ILayout, Type } from "./document";
+import type { Attributes } from "#/musicxml-interfaces";
 
-import { IMeasureLayout } from "./private_measureLayout";
-import { ILayoutOptions } from "./private_layoutOptions";
-import { ILineBounds } from "./private_lineBounds";
+import type { ILayout } from "./document";
+import { Type } from "./document";
+import type { ILayoutOptions } from "./private_layoutOptions";
+import type { ILineBounds } from "./private_lineBounds";
+import type { IMeasureLayout } from "./private_measureLayout";
 
 /**
  * Sets the width of attributes w.r.t. staff lines.

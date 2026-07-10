@@ -20,17 +20,14 @@
  * @file part of Satie test suite
  */
 
-import { Attributes } from "#/musicxml-interfaces";
+import type { Attributes } from "#/musicxml-interfaces";
 
-import AttributesModel, {
-  IAttributesLayout,
-} from "../implAttributes_attributesModel";
-
-import { ISegment, IModel, Type } from "../document";
-
-import { ValidationCursor, LayoutCursor } from "../private_cursor";
-
+import type { ISegment, IModel } from "../document";
+import { Type } from "../document";
 import Factory from "../engine_factory";
+import type { IAttributesLayout } from "../implAttributes_attributesModel";
+import AttributesModel from "../implAttributes_attributesModel";
+import type { ValidationCursor, LayoutCursor } from "../private_cursor";
 
 export function makeCursor(
   factory: Factory,
@@ -47,7 +44,7 @@ export function makeCursor(
     patch: () => null,
     advance: null,
 
-    segmentInstance: <any>models,
+    segmentInstance: models,
     segmentPosition: 0,
 
     staffAttributes: <any>{
@@ -134,6 +131,7 @@ describe("[attributes.ts]", function () {
       attributes.times = [{ beats: ["4"], beatTypes: [4] }];
       attributes.refresh(cursor);
       const lCursor: LayoutCursor = {
+        // eslint-disable-next-line @typescript-eslint/no-misused-spread
         ...cursor,
         measureX: 0,
         lineShortest: Number.MAX_VALUE,

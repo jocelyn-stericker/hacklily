@@ -16,10 +16,11 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { serializeScoreHeader } from "#/musicxml-interfaces";
 import { forEach, map } from "lodash";
 
-import { Document } from "./document";
+import { serializeScoreHeader } from "#/musicxml-interfaces";
+
+import type { Document } from "./document";
 
 export function exportXML(score: Document): string {
   let out = "";

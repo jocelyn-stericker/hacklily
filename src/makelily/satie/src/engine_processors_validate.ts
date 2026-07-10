@@ -16,6 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import invariant from "invariant";
 import {
   reduce,
   forEach,
@@ -26,22 +27,20 @@ import {
   toPairs,
   last,
 } from "lodash";
-import invariant from "invariant";
-import { Print, BarStyleType } from "#/musicxml-interfaces";
-import { IAny } from "#/musicxml-interfaces/operations";
 
-import { Type, ISegment } from "./document";
+import type { Print } from "#/musicxml-interfaces";
+import { BarStyleType } from "#/musicxml-interfaces";
+import type { IAny } from "#/musicxml-interfaces/operations";
 
-import { IAttributesSnapshot } from "./private_attributesSnapshot";
-import { ILayoutOptions, IFixupFn } from "./private_layoutOptions";
-
-import createPatch from "./engine_createPatch";
-
+import type { ISegment } from "./document";
+import { Type } from "./document";
 import applyOp from "./engine_applyOp";
-import { normalizeDivisionsInPlace } from "./engine_divisions";
-
+import createPatch from "./engine_createPatch";
 import DivisionOverflowException from "./engine_divisionOverflowException";
+import { normalizeDivisionsInPlace } from "./engine_divisions";
 import { refreshMeasure, RefreshMode } from "./engine_processors_measure";
+import type { IAttributesSnapshot } from "./private_attributesSnapshot";
+import type { ILayoutOptions, IFixupFn } from "./private_layoutOptions";
 
 /**
  * Reducer for a collection of functions, calling each one.
@@ -65,7 +64,7 @@ class RestartMeasureValidation {
  * Validate the measure.
  */
 export default function validate(options: ILayoutOptions): void {
-  options.measures = <any>reduce(options.preprocessors, call, options.measures);
+  options.measures = reduce(options.preprocessors, call, options.measures);
 
   let shouldTryAgain: boolean;
 
@@ -119,7 +118,7 @@ export default function validate(options: ILayoutOptions): void {
       tryValidate(options, rootFixupOpts);
     } catch (err) {
       if (err instanceof DivisionOverflowException) {
-        const ops = (<DivisionOverflowException>err).getOperations();
+        const ops = err.getOperations();
         // The restartRequired flag is false because we restart manually.
         rootFixup(null, createPatch(false, options.document, ops), false);
 
@@ -153,20 +152,16 @@ function tryValidate(
   // Normalize divisions on a line:
   let allSegments: ISegment[] = [];
   forEach(options.measures, function validateMeasure(measure) {
-    const voiceSegments = <ISegment[]>(
-      flatten(
-        map(toPairs(measure.parts), (partx) =>
-          withPart(partx[1].voices, partx[0]),
-        ),
-      )
+    const voiceSegments = flatten(
+      map(toPairs(measure.parts), (partx) =>
+        withPart(partx[1].voices, partx[0]),
+      ),
     );
 
-    const staffSegments = <ISegment[]>(
-      flatten(
-        map(toPairs(measure.parts), (partx) =>
-          withPart(partx[1].staves, partx[0]),
-        ),
-      )
+    const staffSegments = flatten(
+      map(toPairs(measure.parts), (partx) =>
+        withPart(partx[1].staves, partx[0]),
+      ),
     );
 
     allSegments = allSegments.concat(
@@ -201,20 +196,16 @@ function tryValidate(
       }
       tryAgain = false;
       try {
-        const voiceSegments = <ISegment[]>(
-          flatten(
-            map(toPairs(measure.parts), (partx) =>
-              withPart(partx[1].voices, partx[0]),
-            ),
-          )
+        const voiceSegments = flatten(
+          map(toPairs(measure.parts), (partx) =>
+            withPart(partx[1].voices, partx[0]),
+          ),
         );
 
-        const staffSegments = <ISegment[]>(
-          flatten(
-            map(toPairs(measure.parts), (partx) =>
-              withPart(partx[1].staves, partx[0]),
-            ),
-          )
+        const staffSegments = flatten(
+          map(toPairs(measure.parts), (partx) =>
+            withPart(partx[1].staves, partx[0]),
+          ),
         );
 
         const segments = filter(

@@ -1,4 +1,5 @@
-import { Count, Note } from "#/musicxml-interfaces";
+import type { Note } from "#/musicxml-interfaces";
+import { Count } from "#/musicxml-interfaces";
 
 import { Type } from "../document";
 import SongImpl from "../engine_songImpl";
@@ -88,17 +89,18 @@ function insertNote(
 
 describe("patch metre", function () {
   let song: SongImpl;
-  beforeEach((done) => {
-    song = new SongImpl({
-      baseSrc: songTemplate,
+  beforeEach(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        song = new SongImpl({
+          baseSrc: songTemplate,
 
-      onError: done,
-      onLoaded: () => {
-        done();
-      },
-    });
-    song.run();
-  });
+          onError: reject,
+          onLoaded: () => resolve(),
+        });
+        song.run();
+      }),
+  );
 
   it("4/4, whole note", function () {
     const patch = insertNote(song, null, 0, Count.Whole);

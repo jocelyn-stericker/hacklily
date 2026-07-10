@@ -16,9 +16,10 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
+import { clone, forEach } from "lodash";
+
+import type {
   Attributes,
-  StartStop,
   PartSymbol,
   Clef,
   Time,
@@ -28,7 +29,7 @@ import {
   Directive,
   MeasureStyle,
 } from "#/musicxml-interfaces";
-import { clone, forEach } from "lodash";
+import { StartStop } from "#/musicxml-interfaces";
 
 import { cloneObject } from "./private_util";
 

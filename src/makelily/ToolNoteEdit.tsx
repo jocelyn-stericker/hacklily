@@ -19,7 +19,6 @@
  */
 
 import { css, StyleSheet } from "aphrodite";
-import { Info } from "lucide-react";
 import invariant from "invariant";
 import {
   find,
@@ -32,20 +31,18 @@ import {
   some,
   times,
 } from "lodash";
-import {
-  AboveBelow,
+import { Info } from "lucide-react";
+import React from "react";
+
+import type {
   Articulations,
   Attributes,
-  BarStyleType,
-  Count,
   Direction,
   DirectionType,
   Dot,
   Dynamics,
   Fermata,
   Key,
-  MxmlAccidental,
-  NormalAngledSquare,
   Notations,
   Note,
   Pitch,
@@ -53,16 +50,25 @@ import {
   TimeModification,
 } from "#/musicxml-interfaces";
 import {
+  AboveBelow,
+  BarStyleType,
+  Count,
+  MxmlAccidental,
+  NormalAngledSquare,
+} from "#/musicxml-interfaces";
+import type {
   IAttributesBuilder,
   IBarlineBuilder,
   IBarStyleBuilder,
   INoteBuilder,
   ITypeBuilder,
 } from "#/musicxml-interfaces/builders";
-import { IAny } from "#/musicxml-interfaces/operations";
-import React from "react";
-import {
-  Addons as SatieAddons,
+import type { IAny } from "#/musicxml-interfaces/operations";
+
+import NoteAdditionalHelp from "./NoteAdditionalHelp";
+import NotePalette from "./NotePalette";
+import type { PartBuilder } from "./satie/src/engine_createPatch";
+import type {
   Document,
   DocumentBuilder,
   IMeasure,
@@ -72,21 +78,15 @@ import {
   ISegment,
   ISong,
   MeasureBuilder,
-  Patch,
-  Song,
   StaffBuilder,
-  Type,
   VoiceBuilder,
 } from "./satie/src/satie";
-
-import NoteAdditionalHelp from "./NoteAdditionalHelp";
-import NotePalette from "./NotePalette";
-import { PartBuilder } from "./satie/src/engine_createPatch";
+import { Addons as SatieAddons, Patch, Song, Type } from "./satie/src/satie";
 import tabStyles from "./tabStyles";
-import { ToolProps } from "./tool";
+import type { ToolProps } from "./tool";
 
 export function toSerializable<T>(obj: T): T {
-  return JSON.parse(JSON.stringify(obj)) as any;
+  return JSON.parse(JSON.stringify(obj));
 }
 
 function getOctaveDifference(ours: string, theirs: string): number {
@@ -94,7 +94,7 @@ function getOctaveDifference(ours: string, theirs: string): number {
     return a - b * Math.floor(a / b);
   }
 
-  const pitchNames: string = "CDEFGAB";
+  const pitchNames = "CDEFGAB";
   const ourIndex: number = pitchNames.indexOf(ours.toUpperCase());
   const theirIndex: number = pitchNames.indexOf(theirs.toUpperCase());
   const up: boolean = mod(ourIndex - theirIndex, 7) > 3;
@@ -108,7 +108,7 @@ function getOctaveDifference(ours: string, theirs: string): number {
   return 0;
 }
 
-const songTemplate: string = `<?xml version="1.0" encoding="UTF-8"?>
+const songTemplate = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.0 Partwise//EN"
                                 "http://www.musicxml.org/dtds/partwise.dtd">
 <score-partwise>
@@ -186,7 +186,12 @@ export interface State {
   redoStack: IAny[][];
   relativeMode: boolean;
   showAdditionalHelp:
-    "keyboard" | "midi" | "mouse" | "relative" | "whyNotEdit" | null;
+    | "keyboard"
+    | "midi"
+    | "mouse"
+    | "relative"
+    | "whyNotEdit"
+    | null;
   showHelp: boolean;
   src: string;
   timeModification: TimeModification;
@@ -391,14 +396,14 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
     let prevDuration: Count | null = null;
 
     const doc: Document = this.song.getDocument(this.state.canonicalOperations);
-    let ly: string = "";
+    let ly = "";
     doc.measures.forEach((measure: IMeasure) => {
       const part: IMeasurePart = measure.parts.P1;
       const voice: ISegment = part.voices[1];
       const staff: ISegment = part.staves[1];
-      let voiceDiv: number = 0;
-      let staffDiv: number = 0;
-      let staffModelIdx: number = 0;
+      let voiceDiv = 0;
+      let staffDiv = 0;
+      let staffModelIdx = 0;
       voice.forEach((model: IModel): void => {
         if (doc.modelHasType(model, Type.Chord)) {
           if (model.length < 1) {
@@ -411,11 +416,11 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
           if (noteForRythm.rest) {
             ly += "r";
           } else {
-            let pitches: string = "";
+            let pitches = "";
             if (model.length > 1) {
               pitches += "<";
             }
-            for (let i: number = 0; i < model.length; i += 1) {
+            for (let i = 0; i < model.length; i += 1) {
               const note: Note = model[i];
               pitches += note.pitch.step.toLowerCase();
               if (note.pitch.alter === -1) {
@@ -431,11 +436,11 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
                   : 0
                 : note.pitch.octave - 3;
               if (octaveOffset > 0) {
-                for (let j: number = 0; j < octaveOffset; j += 1) {
+                for (let j = 0; j < octaveOffset; j += 1) {
                   pitches += "'";
                 }
               } else if (octaveOffset < 0) {
-                for (let j: number = 0; j < -octaveOffset; j += 1) {
+                for (let j = 0; j < -octaveOffset; j += 1) {
                   pitches += ",";
                 }
               }
@@ -499,7 +504,8 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
             ly += ".";
           }
 
-          for (let i: number = 0; i < model.length; i += 1) {
+          // eslint-disable-next-line @typescript-eslint/prefer-for-of
+          for (let i = 0; i < model.length; i += 1) {
             if (model[i].notations) {
               model[i].notations.forEach((notations: Notations): void => {
                 if (notations.fermatas) {
@@ -692,14 +698,14 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
     const el: IModel =
       (path[3] === "staves" && staffSegment[elIdx]) ||
       (path[3] === "voices" && voiceSegment[elIdx]);
-    let div: number = 0;
+    let div = 0;
 
     if (!el || path[3] === "staves") {
       // XXX: We should also allow placing on top of staff elements
       return false;
     }
 
-    for (let i: number = 0; i < segment.length && segment[i] !== el; i += 1) {
+    for (let i = 0; i < segment.length && segment[i] !== el; i += 1) {
       div += segment[i].divCount;
     }
 
@@ -872,11 +878,11 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
       // Get the previous pitch
       // HACK -- this does not support multiple voices, parts, non-linear measures
       let previousPitch: Pitch;
-      for (let i: number = 0; i <= currMeasure.idx; i += 1) {
+      for (let i = 0; i <= currMeasure.idx; i += 1) {
         const measure: IMeasure = doc.measures[i];
         const voice: ISegment = measure.parts.P1.voices[1];
 
-        for (let j: number = 0; j < voice.length; j += 1) {
+        for (let j = 0; j < voice.length; j += 1) {
           if (i === currMeasure.idx && j === parseInt(path[5], 10)) {
             break;
           }
@@ -1582,8 +1588,8 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
     );
 
     const currSegment: ISegment = measure.parts[part].voices[voiceNum];
-    let div: number = 0;
-    for (let i: number = 0; i < elIdx && i < currSegment.length; i += 1) {
+    let div = 0;
+    for (let i = 0; i < elIdx && i < currSegment.length; i += 1) {
       div += currSegment[i].divCount;
     }
 
@@ -1656,19 +1662,23 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
         "P1",
         (part: PartBuilder): PartBuilder =>
           part
-            .staff(1, (staff: StaffBuilder): StaffBuilder =>
-              staff
-                .at(1)
-                .attributes(
-                  (attributes: IAttributesBuilder): IAttributesBuilder =>
-                    attributes
-                      .clefs([this.props.clef])
-                      .keySignatures([this.props.keySig])
-                      .times([this.props.time]),
-                ),
+            .staff(
+              1,
+              (staff: StaffBuilder): StaffBuilder =>
+                staff
+                  .at(1)
+                  .attributes(
+                    (attributes: IAttributesBuilder): IAttributesBuilder =>
+                      attributes
+                        .clefs([this.props.clef])
+                        .keySignatures([this.props.keySig])
+                        .times([this.props.time]),
+                  ),
             )
-            .voice(1, (voice: VoiceBuilder): VoiceBuilder =>
-              voice.at(0).addVisualCursor(),
+            .voice(
+              1,
+              (voice: VoiceBuilder): VoiceBuilder =>
+                voice.at(0).addVisualCursor(),
             ),
       );
       this.applyUndoablePatch(patch);
@@ -1717,11 +1727,11 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
     let oldNumberOfNotes: number;
     let oldDuration: Count;
 
-    for (let i: number = 0; i <= currMeasure.idx; i += 1) {
+    for (let i = 0; i <= currMeasure.idx; i += 1) {
       const measure: IMeasure = doc.measures[i];
       const voice: ISegment = measure.parts.P1.voices[1];
 
-      for (let j: number = 0; j < voice.length; j += 1) {
+      for (let j = 0; j < voice.length; j += 1) {
         if (i === currMeasure.idx && j === parseInt(path[5], 10)) {
           break;
         }
@@ -1805,11 +1815,11 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
     let oldIdx: number;
     let oldNoteNumber: number;
 
-    for (let i: number = 0; i <= currMeasure.idx; i += 1) {
+    for (let i = 0; i <= currMeasure.idx; i += 1) {
       const measure: IMeasure = doc.measures[i];
       const voice: ISegment = measure.parts.P1.voices[1];
 
-      for (let j: number = 0; j < voice.length; j += 1) {
+      for (let j = 0; j < voice.length; j += 1) {
         if (i === currMeasure.idx && j === parseInt(path[5], 10)) {
           break;
         }

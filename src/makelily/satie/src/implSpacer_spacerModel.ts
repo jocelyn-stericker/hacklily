@@ -19,10 +19,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { IModel, ILayout, Type } from "./document";
-
-import { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
-import { IBoundingRect } from "./private_boundingRect";
+import type { IModel, ILayout } from "./document";
+import { Type } from "./document";
+import type { IBoundingRect } from "./private_boundingRect";
+import type { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
 
 class SpacerModel implements ISpacerModel {
   _class = "Spacer";
@@ -31,9 +31,9 @@ class SpacerModel implements ISpacerModel {
 
   divCount: number;
 
-  divisions: number = 0;
+  divisions = 0;
 
-  staffIdx: number = 0;
+  staffIdx = 0;
 
   /*---- Implementation -----------------------------------------------------------------------*/
 
@@ -92,7 +92,7 @@ class SpacerModel implements ISpacerModel {
 
     boundingBoxes: IBoundingRect[] = [];
     renderClass: Type = Type.Spacer;
-    expandPolicy: "none" = "none";
+    expandPolicy = "none" as const;
   };
 }
 

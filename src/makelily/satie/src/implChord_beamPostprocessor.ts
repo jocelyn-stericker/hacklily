@@ -16,18 +16,13 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* eslint-disable no-shadow */
+
 /**
  * @file Creates beams and tuplets
  */
 
-import {
-  Attributes,
-  Beam,
-  BeamType,
-  StartStop,
-  Tuplet,
-  AboveBelow,
-} from "#/musicxml-interfaces";
+import invariant from "invariant";
 import {
   some,
   chain,
@@ -39,23 +34,24 @@ import {
   first,
   last,
 } from "lodash";
-import invariant from "invariant";
 
-import { ILayout, Type } from "./document";
+import type { Attributes, Beam, Tuplet } from "#/musicxml-interfaces";
+import { BeamType, StartStop, AboveBelow } from "#/musicxml-interfaces";
 
-import { IDetachedChordModel, IChordLayout } from "./implChord_chordModel";
-
-import { IMeasureLayout } from "./private_measureLayout";
-import { ILayoutOptions } from "./private_layoutOptions";
-import { ILineBounds } from "./private_lineBounds";
-import { IAttributesSnapshot } from "./private_attributesSnapshot";
+import type { ILayout } from "./document";
+import { Type } from "./document";
+import type { IDetachedChordModel, IChordLayout } from "./implChord_chordModel";
+import type { IAttributesSnapshot } from "./private_attributesSnapshot";
+import type { IChord } from "./private_chordUtil";
 import {
-  IChord,
   averageLine,
   startingLine,
   linesForClef,
   heightDeterminingLine,
 } from "./private_chordUtil";
+import type { ILayoutOptions } from "./private_layoutOptions";
+import type { ILineBounds } from "./private_lineBounds";
+import type { IMeasureLayout } from "./private_measureLayout";
 
 interface IMutableBeam {
   number: number;
@@ -308,7 +304,7 @@ function beam(
                 }
                 break;
               default:
-                throw new Error(`Unknown type ${beam.type}`);
+                throw new Error(`Unknown type ${beam.type}`); // eslint-disable-line @typescript-eslint/restrict-template-expressions
             }
           })
           .value();
@@ -345,7 +341,7 @@ function terminateBeam(
     layoutBeam(voice, idx, beamSet, isUnbeamedTuplet);
   }
 
-  delete beamSet[voice][idx];
+  beamSet[voice].splice(idx, 1);
 }
 
 function layoutBeam(

@@ -19,10 +19,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
-import { Position } from "#/musicxml-interfaces";
-import { Component } from "react";
 import * as PropTypes from "prop-types";
+import * as React from "react";
+import { Component } from "react";
+
+import type { Position } from "#/musicxml-interfaces";
 
 export interface IProps {
   spec: Position;

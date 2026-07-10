@@ -16,14 +16,15 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
-import { StaffDetails } from "#/musicxml-interfaces";
-import { Component } from "react";
-import * as PropTypes from "prop-types";
 import { times } from "lodash";
+import * as PropTypes from "prop-types";
+import * as React from "react";
+import { Component } from "react";
 
-import Line from "./private_views_line";
+import type { StaffDetails } from "#/musicxml-interfaces";
+
 import { bravura } from "./private_smufl";
+import Line from "./private_views_line";
 
 export interface IProps {
   key?: string | number;

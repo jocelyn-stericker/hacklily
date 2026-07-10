@@ -19,12 +19,14 @@
  */
 
 import { css } from "aphrodite";
-import { Time, TimeSymbolType } from "#/musicxml-interfaces";
 import React from "react";
-import { Addons as SatieAddons } from "./satie/src/satie";
 
+import type { Time } from "#/musicxml-interfaces";
+import { TimeSymbolType } from "#/musicxml-interfaces";
+
+import { Addons as SatieAddons } from "./satie/src/satie";
 import tabStyles from "./tabStyles";
-import { ToolProps } from "./tool";
+import type { ToolProps } from "./tool";
 
 interface LyTime {
   tsViewbox: string;

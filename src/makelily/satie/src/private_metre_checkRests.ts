@@ -16,6 +16,9 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* eslint-disable @typescript-eslint/prefer-for-of */
+/* eslint-disable no-shadow */
+
 /**
  * r_ = a single rest can fit here
  * *  = any combination of rests can go here

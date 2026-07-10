@@ -16,17 +16,18 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* eslint-disable no-shadow */
+
+import invariant from "invariant";
+import { chain, flatten, mapValues, map, forEach } from "lodash";
+import * as PropTypes from "prop-types";
 import * as React from "react";
 import { Component } from "react";
-import * as PropTypes from "prop-types";
-import { chain, flatten, mapValues, map, forEach } from "lodash";
-import invariant from "invariant";
 
-import { ILayout } from "./document";
-import { IMeasureLayout } from "./private_measureLayout";
-import { MAX_SAFE_INTEGER } from "./private_util";
-
+import type { ILayout } from "./document";
 import ModelView from "./implSegment_modelView";
+import type { IMeasureLayout } from "./private_measureLayout";
+import { MAX_SAFE_INTEGER } from "./private_util";
 
 export interface IProps {
   layout: IMeasureLayout;

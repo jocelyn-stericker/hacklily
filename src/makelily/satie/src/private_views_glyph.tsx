@@ -16,12 +16,12 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as PropTypes from "prop-types";
 import * as React from "react";
 import { Component } from "react";
-import * as PropTypes from "prop-types";
 
-import { getGlyphCode } from "./private_smufl";
 import { toPathData } from "./private_fontManager";
+import { getGlyphCode } from "./private_smufl";
 
 export interface IProps {
   key?: string | number;

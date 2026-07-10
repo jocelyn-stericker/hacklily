@@ -17,10 +17,11 @@
  */
 
 import { reduce, forEach } from "lodash";
-import { lcm } from "./private_util";
-import { IFactory } from "./private_factory";
 
-import { IModel, ISegment, Document, Type } from "./document";
+import type { IModel, ISegment, Document } from "./document";
+import { Type } from "./document";
+import type { IFactory } from "./private_factory";
+import { lcm } from "./private_util";
 
 /**
  * Given a set of segments, scales divisions so that they are compatible.

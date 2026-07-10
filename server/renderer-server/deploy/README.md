@@ -8,14 +8,14 @@ remote `ws-worker` peers to add capacity.
 
 Files:
 
-| file | purpose |
-| --- | --- |
-| `hacklily-renderer.service` | systemd *user* unit (coordinator + local pool) |
-| `env.example`              | configuration + GitHub OAuth secrets, copied to `~/.config/hacklily-renderer/env` |
-| `install.sh`               | one-time install: cargo registry, crate, images, unit, lingering, **and the nginx reverse proxy + Let's Encrypt cert** |
-| `update.sh`                | pull latest crate + images, then restart (installed as `hacklily-renderer-update`) |
-| `nginx/render.hacklily.org.conf`         | nginx site: `wss://…/rpc` -> `ws://127.0.0.1:2000`, everything else -> `https://hacklily.org` |
-| `nginx/render.hacklily.org.http-only.conf` | temporary HTTP-only site used only for the initial Let's Encrypt challenge |
+| file                                       | purpose                                                                                                                |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `hacklily-renderer.service`                | systemd _user_ unit (coordinator + local pool)                                                                         |
+| `env.example`                              | configuration + GitHub OAuth secrets, copied to `~/.config/hacklily-renderer/env`                                      |
+| `install.sh`                               | one-time install: cargo registry, crate, images, unit, lingering, **and the nginx reverse proxy + Let's Encrypt cert** |
+| `update.sh`                                | pull latest crate + images, then restart (installed as `hacklily-renderer-update`)                                     |
+| `nginx/render.hacklily.org.conf`           | nginx site: `wss://…/rpc` -> `ws://127.0.0.1:2000`, everything else -> `https://hacklily.org`                          |
+| `nginx/render.hacklily.org.http-only.conf` | temporary HTTP-only site used only for the initial Let's Encrypt challenge                                             |
 
 ## No credentials on the host
 
@@ -34,7 +34,7 @@ The only prerequisite is that the owning Codeberg account
 (`jocelyn-stericker`) stays **public**. If it is ever made private,
 anonymous pulls will start returning `401` and you will need to
 `docker login codeberg.org` and add a `read:package` token to
-`~/.cargo/credentials.toml`. The only secrets that *must* live on the
+`~/.cargo/credentials.toml`. The only secrets that _must_ live on the
 host are the GitHub OAuth values in the `env` file.
 
 ## Prerequisites on the host
@@ -150,6 +150,7 @@ find faith's public IPs and add A/AAAA records directly:
 dig +short faith.nettek.ca A      # faith's IPv4
 dig +short faith.nettek.ca AAAA    # faith's IPv6, if any
 ```
+
 ```dns
 render.hacklily.org.   3600   IN A      FAITH_IPV4
 render.hacklily.org.   3600   IN AAAA   FAITH_IPV6   ; only if present
@@ -174,7 +175,7 @@ checks this and aborts with a helpful message if it doesn't match.
 4. Replaces the site with `nginx/render.hacklily.org.conf` and reloads.
 5. Enables the certbot renewal timer (`certbot-renew.timer` on Fedora,
    `certbot.timer` on Debian/Ubuntu) so renewals are automatic; the `--deploy-hook
-   "systemctl reload nginx"` saved at issuance reloads nginx after each
+"systemctl reload nginx"` saved at issuance reloads nginx after each
    renewal.
 
 ### The site, in one breath
@@ -196,6 +197,7 @@ files.
 ### Verify
 
 From another machine:
+
 ```sh
 curl -i https://render.hacklily.org/        # expect 301 -> https://hacklily.org
 # a bare GET on /rpc without an Upgrade header: the coordinator's WS
@@ -212,9 +214,11 @@ The SPA reads `REACT_APP_BACKEND_WS_URL` at build time. The production
 `wss://render.hacklily.org/rpc`, so a normal `npm run build` (as CI
 does) produces a bundle that talks to this coordinator. To point a
 one-off build elsewhere, override it:
+
 ```sh
 REACT_APP_BACKEND_WS_URL=wss://render.hacklily.org/rpc npm run build
 ```
+
 This is a frontend concern, separate from this deploy package.
 
 ## One-time install
@@ -291,7 +295,7 @@ crash are fast and offline-safe.
 
 `Restart=on-failure` restarts the process on a non-zero exit or a
 killing signal (segfault, abort). A clean shutdown after
-`systemctl --user stop` is *not* a failure, so stopping does not loop.
+`systemctl --user stop` is _not_ a failure, so stopping does not loop.
 `StartLimitBurst=20` / `StartLimitIntervalSec=60` keep the restart rate
 sane if docker is briefly unavailable at boot (`ExecStartPre=docker info`
 gates startup on the daemon being reachable).

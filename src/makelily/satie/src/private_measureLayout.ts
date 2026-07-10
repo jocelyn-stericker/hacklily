@@ -16,11 +16,13 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Print } from "#/musicxml-interfaces";
 import { map, mapValues } from "lodash";
 
-import { IAttributesSnapshot } from "./private_attributesSnapshot";
-import { ILayout, detach as detachLayout } from "./document";
+import type { Print } from "#/musicxml-interfaces";
+
+import type { ILayout } from "./document";
+import { detach as detachLayout } from "./document";
+import type { IAttributesSnapshot } from "./private_attributesSnapshot";
 
 export interface IMeasureLayout {
   attributes: { [part: string]: IAttributesSnapshot[] };

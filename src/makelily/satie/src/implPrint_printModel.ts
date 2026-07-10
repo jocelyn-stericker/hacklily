@@ -16,7 +16,10 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
+import invariant from "invariant";
+import { forEach, defaultsDeep } from "lodash";
+
+import type {
   ScoreHeader,
   MeasureNumbering,
   PartNameDisplay,
@@ -26,18 +29,18 @@ import {
   SystemLayout,
   StaffLayout,
   Print,
+} from "#/musicxml-interfaces";
+import {
   NormalItalic,
   NormalBold,
   serializePrint,
   OddEvenBoth,
 } from "#/musicxml-interfaces";
-import { forEach, defaultsDeep } from "lodash";
-import invariant from "invariant";
 
-import { IModel, ILayout, Type } from "./document";
-
-import { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
-import { IBoundingRect } from "./private_boundingRect";
+import type { IModel, ILayout } from "./document";
+import { Type } from "./document";
+import type { IBoundingRect } from "./private_boundingRect";
+import type { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
 import { calculateLineBounds } from "./private_lineBounds";
 
 class PrintModel implements IPrintModel {
@@ -45,9 +48,9 @@ class PrintModel implements IPrintModel {
 
   /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
-  divCount: number = 0;
+  divCount = 0;
 
-  divisions: number = 0;
+  divisions = 0;
 
   /** defined externally */
   staffIdx: number;
@@ -148,9 +151,9 @@ class PrintModel implements IPrintModel {
         staffSpacing: this.staffSpacing,
         staffLayouts: this.staffLayouts,
         pageNumber: this.pageNumber,
-      } as Print,
+      },
       parent,
-    ) as any;
+    );
 
     if (singleLineMode) {
       const defaults = header.defaults;
@@ -263,7 +266,7 @@ class PrintModel implements IPrintModel {
 
     boundingBoxes: IBoundingRect[] = [];
     renderClass: Type = Type.Print;
-    expandPolicy: "none" = "none";
+    expandPolicy = "none" as const;
   };
 }
 

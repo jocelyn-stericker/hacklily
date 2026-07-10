@@ -20,7 +20,9 @@
 
 import React from "react";
 
-const INITIAL_WS_COOLOFF: number = 2;
+/* eslint-disable import/first */
+
+const INITIAL_WS_COOLOFF = 2;
 const BACKEND_WS_URL: string | undefined = process.env.REACT_APP_BACKEND_WS_URL;
 
 import "../index.css";

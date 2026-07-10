@@ -32,11 +32,12 @@ import {
   Tabs,
 } from "@blueprintjs/core";
 import { css, StyleSheet } from "aphrodite";
+import { Trash, File as FileIcon, Ellipsis } from "lucide-react";
 import React from "react";
 
-import { Auth } from "./auth";
-import { File, ls } from "./gitfs";
-import { Trash, File as FileIcon, Ellipsis } from "lucide-react";
+import type { Auth } from "./auth";
+import type { File } from "./gitfs";
+import { ls } from "./gitfs";
 
 interface Props {
   auth: Auth | null;
@@ -58,7 +59,7 @@ class GitHubOpen extends React.Component<Props, GitHubState> {
   };
 
   componentDidMount(): void {
-    this.fetchSongs();
+    void this.fetchSongs();
   }
 
   render() {
@@ -77,6 +78,7 @@ class GitHubOpen extends React.Component<Props, GitHubState> {
           </div>
         );
       } else {
+        // eslint-disable-next-line @typescript-eslint/require-array-sort-compare
         const lilySongs: File[] = repoTree
           .filter((song: File) => song.path.endsWith(".ly"))
           .sort();

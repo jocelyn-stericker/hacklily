@@ -16,11 +16,13 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* eslint-disable import/first */
+
 export const VERSION =
   (typeof process !== "undefined" && process.env.SATIE_VERSION) || "";
 
+import type { ISongClass } from "./document";
 import SongImpl from "./engine_songImpl";
-import { ISongClass } from "./document";
 
 /* The web application API */
 export { default as Application } from "./engine_application";
@@ -31,16 +33,15 @@ export { default as IHandler } from "./engine_application";
 export * from "./document";
 export const Song: ISongClass = SongImpl;
 
-/* Experimental addons */
-import { getGlyphCode as eGetGlyphCode } from "./private_smufl";
-import { pageSizes as ePageSizes } from "./private_renderUtil";
-
+import { getNativeKeyAccidentals } from "./implAttributes_attributesData";
 import EClef from "./implAttributes_clefView";
 import EKeySignature from "./implAttributes_keySignatureView";
 import ETimeSignature from "./implAttributes_timeSignatureView";
-import { getNativeKeyAccidentals } from "./implAttributes_attributesData";
-import EDirection from "./implDirection_directionView";
 import ENotation from "./implChord_notationView";
+import EDirection from "./implDirection_directionView";
+import { pageSizes as ePageSizes } from "./private_renderUtil";
+/* Experimental addons */
+import { getGlyphCode as eGetGlyphCode } from "./private_smufl";
 
 export { requireFont } from "./private_fontManager";
 

@@ -23,20 +23,20 @@
  * @file part of Satie test suite
  */
 
-import { Print, OddEvenBoth, PartSymbolType } from "#/musicxml-interfaces";
-
 import { map } from "lodash";
 
-import { IModel, ILayout, Type } from "../document";
+import type { Print } from "#/musicxml-interfaces";
+import { OddEvenBoth, PartSymbolType } from "#/musicxml-interfaces";
 
-import { IFactory } from "../private_factory";
-import { calculateLineBounds } from "../private_lineBounds";
-import { ILayoutOptions } from "../private_layoutOptions";
-import { ValidationCursor, LayoutCursor } from "../private_cursor";
-
-import { createFakeStaffSegment, createFakeVoiceSegment } from "./etestutil";
+import type { IModel, ILayout } from "../document";
+import { Type } from "../document";
 import validate from "../engine_processors_validate";
-import { IAttributesSnapshot } from "../private_attributesSnapshot";
+import type { IAttributesSnapshot } from "../private_attributesSnapshot";
+import type { ValidationCursor, LayoutCursor } from "../private_cursor";
+import type { IFactory } from "../private_factory";
+import type { ILayoutOptions } from "../private_layoutOptions";
+import { calculateLineBounds } from "../private_lineBounds";
+import { createFakeStaffSegment, createFakeVoiceSegment } from "./etestutil";
 
 describe("[engine.ts]", function () {
   describe("Options.ILineBounds.calculate", function () {
@@ -196,6 +196,7 @@ describe("[engine.ts]", function () {
 
       const contextOptions: ILayoutOptions = {
         document: {
+          // eslint-disable-next-line @typescript-eslint/unbound-method
           modelHasType: createAttributesChordFactory.modelHasType,
           __fakeDocument: true,
           cleanlinessTracking: {
@@ -217,7 +218,7 @@ describe("[engine.ts]", function () {
             uuid: 91015 + idx,
             number: String(idx + 1),
             version: 0,
-            parts: <{ [key: string]: any }>{
+            parts: {
               P1: {
                 voices: segment.voices,
                 staves: segment.staves,

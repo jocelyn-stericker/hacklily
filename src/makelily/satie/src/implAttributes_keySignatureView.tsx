@@ -16,14 +16,17 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
-import { Key, Clef, Accidental, MxmlAccidental } from "#/musicxml-interfaces";
-import { Component } from "react";
+/* eslint-disable @typescript-eslint/prefer-for-of */
+
 import { times, map } from "lodash";
+import * as React from "react";
+import { Component } from "react";
+
+import type { Key, Clef, Accidental } from "#/musicxml-interfaces";
+import { MxmlAccidental } from "#/musicxml-interfaces";
 
 import AccidentalView from "./implAttributes_accidentalView";
 import { keyWidths } from "./implAttributes_attributesData";
-
 import { lineForClef_ } from "./private_chordUtil";
 
 // TODO: this almost looks like logic -- move.

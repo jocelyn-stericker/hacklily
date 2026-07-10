@@ -2,12 +2,15 @@ import * as React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+// @ts-ignore: TS2307 - path alias not configured in this tsconfig
 import ErrorBoundary from "#/ErrorBoundary";
+
 import App from "./app";
 import Home from "./home";
-import Tests from "./tests";
 import Sandbox from "./sandbox";
+import Tests from "./tests";
 
+// @ts-ignore: TS2591 - process not typed in this context
 const prefix = process.env.PLAYGROUND_PREFIX || "";
 
 const root = createRoot(document.getElementById("root")!);

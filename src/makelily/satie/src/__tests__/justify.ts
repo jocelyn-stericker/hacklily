@@ -20,18 +20,18 @@
  * @file part of Satie test suite
  */
 
-import { OddEvenBoth } from "#/musicxml-interfaces";
 import { map, forEach } from "lodash";
 
+import { OddEvenBoth } from "#/musicxml-interfaces";
+
+import { layoutMeasure } from "../engine_processors_measure";
+import Justify from "../implLine_justifyPostprocessor";
 import { detach } from "../private_measureLayout";
 import {
   createFakeVoiceSegment,
   createFakeStaffSegment,
   fakeFactory,
 } from "./etestutil";
-
-import Justify from "../implLine_justifyPostprocessor";
-import { layoutMeasure } from "../engine_processors_measure";
 
 describe("[lineProcessor.ts]", function () {
   describe("justify", function () {

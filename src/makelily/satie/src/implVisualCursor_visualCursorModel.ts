@@ -16,20 +16,20 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { IModel, ILayout, Type } from "./document";
-
-import { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
-import { IBoundingRect } from "./private_boundingRect";
+import type { IModel, ILayout } from "./document";
+import { Type } from "./document";
+import type { IBoundingRect } from "./private_boundingRect";
+import type { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
 
 class VisualCursorModel implements IVisualCursorModel {
   _class = "VisualCursor";
 
   /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
-  divCount: number = 0;
-  divisions: number = 0;
+  divCount = 0;
+  divisions = 0;
 
-  staffIdx: number = 1;
+  staffIdx = 1;
 
   static _lastIdx = 1;
   _myIdx = ++VisualCursorModel._lastIdx;
@@ -90,7 +90,7 @@ class VisualCursorModel implements IVisualCursorModel {
 
     boundingBoxes: IBoundingRect[] = [];
     renderClass: Type = Type.VisualCursor;
-    expandPolicy: "none" = "none";
+    expandPolicy = "none" as const;
   };
 }
 

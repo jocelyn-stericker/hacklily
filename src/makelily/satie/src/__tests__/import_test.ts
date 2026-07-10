@@ -20,6 +20,8 @@
  * @file part of Satie test suite
  */
 
+import { forEach, some } from "lodash";
+
 import {
   DirectionMode,
   EnclosureShape,
@@ -29,14 +31,13 @@ import {
   TopMiddleBottomBaseline,
   parseScore,
 } from "#/musicxml-interfaces";
-import { forEach, some } from "lodash";
 
 import Factory from "../engine_factory";
 import {
   _extractMXMLHeader,
   _extractMXMLPartsAndMeasures,
 } from "../engine_import";
-
+import ScoreHeader from "../engine_scoreHeader";
 import AttributesExports from "../implAttributes_attributesModel";
 import Barline from "../implBarline_barlineModel";
 import Chord from "../implChord_chordModel";
@@ -44,8 +45,6 @@ import Direction from "../implDirection_directionModel";
 import Print from "../implPrint_printModel";
 import Sound from "../implSound_soundModel";
 import Spacer from "../implSpacer_spacerModel";
-
-import ScoreHeader from "../engine_scoreHeader";
 
 /*---- samples ----------------------------------------------------------------------------------*/
 
@@ -733,6 +732,6 @@ describe("[musicxml/import.ts]", function () {
     });
   });
   describe("toScore", function () {
-    // todo
+    it("todo", () => {});
   });
 });

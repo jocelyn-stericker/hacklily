@@ -16,11 +16,14 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Attributes, Key } from "#/musicxml-interfaces";
-import { times, forEach, map, reduce } from "lodash";
-import invariant from "invariant";
+/* eslint-disable no-shadow */
 
-import { IAttributesSnapshot } from "./private_attributesSnapshot";
+import invariant from "invariant";
+import { times, forEach, map, reduce } from "lodash";
+
+import type { Attributes, Key } from "#/musicxml-interfaces";
+
+import type { IAttributesSnapshot } from "./private_attributesSnapshot";
 
 export const NUMBER_SPACING = 28;
 export const PLUS_SPACING = 12;

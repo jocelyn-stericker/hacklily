@@ -16,21 +16,21 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
-import { ScoreHeader, Print } from "#/musicxml-interfaces";
-import { Component } from "react";
-import * as PropTypes from "prop-types";
-import { map, filter, forEach, last } from "lodash";
 import invariant from "invariant";
+import { map, filter, forEach, last } from "lodash";
+import * as PropTypes from "prop-types";
+import * as React from "react";
+import { Component } from "react";
 
-import { IModel, generateModelKey } from "./document";
+import type { ScoreHeader, Print } from "#/musicxml-interfaces";
 
-import { tenthsToMM } from "./private_renderUtil";
-import { getPageMargins } from "./private_print";
-import { IMeasureLayout } from "./private_measureLayout";
-
+import type { IModel } from "./document";
+import { generateModelKey } from "./document";
 import MeasureView from "./implMeasure_measureView";
 import CreditView from "./implPage_creditView";
+import type { IMeasureLayout } from "./private_measureLayout";
+import { getPageMargins } from "./private_print";
+import { tenthsToMM } from "./private_renderUtil";
 
 export interface IProps {
   scoreHeader: ScoreHeader;

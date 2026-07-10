@@ -122,6 +122,7 @@ export default class App extends React.Component<Props> {
           time={time || ""}
           singleTaskMode={String(singleTaskMode) === "true"}
           onHide={(): void => window.location.reload()}
+          // eslint-disable-next-line @typescript-eslint/unbound-method
           onInsertLy={this.handleInsertLy}
         />
       </div>

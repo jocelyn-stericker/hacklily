@@ -2,6 +2,7 @@ import * as React from "react";
 import { Link, useLocation, Outlet } from "react-router-dom";
 
 import { prefix } from "./config";
+
 import * as STYLES from "./app.css";
 
 export default function App() {

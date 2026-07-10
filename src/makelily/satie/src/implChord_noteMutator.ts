@@ -17,16 +17,16 @@
  */
 
 import invariant from "invariant";
-import {
+
+import type {
   IAny,
   IObjectReplace,
   IObjectDelete,
   IObjectInsert,
 } from "#/musicxml-interfaces/operations";
 
+import type NoteImpl from "./implChord_noteImpl";
 import { replace, remove, set, mutate } from "./private_mutate";
-
-import NoteImpl from "./implChord_noteImpl";
 
 export default function noteMutator(note: NoteImpl, op: IAny) {
   if (op.p.length > 2) {

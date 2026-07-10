@@ -16,12 +16,14 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Note, Lyric, Text, NormalBold } from "#/musicxml-interfaces";
 import { reduce } from "lodash";
 
-import { IChord } from "./private_chordUtil";
-import { cssSizeToTenths } from "./private_renderUtil";
+import type { Note, Lyric, Text } from "#/musicxml-interfaces";
+import { NormalBold } from "#/musicxml-interfaces";
+
+import type { IChord } from "./private_chordUtil";
 import { getTextBB } from "./private_fontManager";
+import { cssSizeToTenths } from "./private_renderUtil";
 
 export const DEFAULT_LYRIC_SIZE = "22";
 export const DEFAULT_FONT = "Alegreya";

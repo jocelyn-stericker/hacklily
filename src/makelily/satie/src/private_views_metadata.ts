@@ -16,11 +16,11 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, ComponentLifecycle } from "react";
 import invariant from "invariant";
 import { isEqual, sortedIndex, indexOf } from "lodash";
+import type { Component, ComponentLifecycle } from "react";
 
-import { ILayout } from "./document";
+import type { ILayout } from "./document";
 
 export interface IBaseProps {
   layout: ILayout;
@@ -107,7 +107,7 @@ export function Targetable<P extends IBaseProps, S>() {
     // ---- //
 
     const originalComponentWillMount =
-      component.prototype.UNSAFE_componentWillMount;
+      component.prototype.UNSAFE_componentWillMount; // eslint-disable-line @typescript-eslint/unbound-method
 
     component.prototype.UNSAFE_componentWillMount =
       function metaComponentWillMountWrapper() {
@@ -122,7 +122,7 @@ export function Targetable<P extends IBaseProps, S>() {
     // ---- //
 
     const originalComponentWillUnmount =
-      component.prototype.componentWillUnmount;
+      component.prototype.componentWillUnmount; // eslint-disable-line @typescript-eslint/unbound-method
 
     component.prototype.componentWillUnmount =
       function metaComponentWillUnmountWrapper() {
@@ -137,7 +137,7 @@ export function Targetable<P extends IBaseProps, S>() {
     // ---- //
 
     const originalComponentWillReceiveProps =
-      component.prototype.UNSAFE_componentWillReceiveProps;
+      component.prototype.UNSAFE_componentWillReceiveProps; // eslint-disable-line @typescript-eslint/unbound-method
 
     component.prototype.UNSAFE_componentWillReceiveProps =
       function metaComponentWillReceiveProps(nextProps: P) {

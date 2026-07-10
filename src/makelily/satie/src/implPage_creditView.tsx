@@ -16,21 +16,20 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
-import {
-  Credit,
-  NormalItalic,
-  NormalBold,
-  CreditWords,
-  Words,
-} from "#/musicxml-interfaces";
-import { Component } from "react";
-import * as PropTypes from "prop-types";
-import { map, extend } from "lodash";
+/* eslint-disable no-shadow */
+
 import invariant from "invariant";
+import { map, extend } from "lodash";
+import * as PropTypes from "prop-types";
+import * as React from "react";
+import { Component } from "react";
+
+import type { Credit, CreditWords, Words } from "#/musicxml-interfaces";
+import { NormalItalic, NormalBold } from "#/musicxml-interfaces";
 
 import { cssSizeToTenths } from "./private_renderUtil";
-import { ITextMixin, Prototype as TextMixin } from "./private_views_textMixin";
+import type { ITextMixin } from "./private_views_textMixin";
+import { Prototype as TextMixin } from "./private_views_textMixin";
 
 export default class CreditView
   extends Component<Credit, {}>

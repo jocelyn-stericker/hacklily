@@ -16,17 +16,18 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
-import { Component, ReactElement } from "react";
 import * as PropTypes from "prop-types";
+import * as React from "react";
+import type { ReactElement } from "react";
+import { Component } from "react";
 
-import { IAttributesLayout } from "./implAttributes_attributesModel";
+import type { IAttributesLayout } from "./implAttributes_attributesModel";
 import BarNumber from "./implAttributes_barNumberView";
 import Clef from "./implAttributes_clefView";
-import PartSymbol from "./implAttributes_partSymbolView";
 import KeySignature from "./implAttributes_keySignatureView";
-import TimeSignature from "./implAttributes_timeSignatureView";
+import PartSymbol from "./implAttributes_partSymbolView";
 import StaffLines from "./implAttributes_staffLinesView";
+import TimeSignature from "./implAttributes_timeSignatureView";
 
 export default class AttributesView extends Component<
   { layout: IAttributesLayout },

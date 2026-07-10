@@ -1,10 +1,10 @@
+import { reduce } from "lodash";
 import * as React from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { reduce } from "lodash";
-
-import Test from "./test";
 
 import { prefix } from "./config";
+import Test from "./test";
+
 import * as STYLES from "./tests.css";
 
 const TEST_CATEGORIES: { [key: string]: string } = {

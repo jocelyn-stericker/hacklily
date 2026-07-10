@@ -19,7 +19,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
+/* eslint-disable no-shadow */
+
+import invariant from "invariant";
+import { find, forEach, times, isEqual } from "lodash";
+
+import type {
   Clef,
   PartSymbol,
   MeasureStyle,
@@ -32,24 +37,16 @@ import {
   Level,
   Attributes,
   KeyOctave,
+} from "#/musicxml-interfaces";
+import {
   PartSymbolType,
   SymbolSize,
   TimeSymbolType,
   serializeAttributes,
 } from "#/musicxml-interfaces";
-import { find, forEach, times, isEqual } from "lodash";
-import invariant from "invariant";
 
-import { IModel, Type, ILayout } from "./document";
-
-import { IBoundingRect } from "./private_boundingRect";
-import { IAttributesSnapshot } from "./private_attributesSnapshot";
-import { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
-import { hasAccidental } from "./private_chordUtil";
-import { groupsForPart } from "./private_part";
-import { createAttributesSnapshot as createSnapshot } from "./private_attributesSnapshot";
-
-import { standardClefs } from "./implAttributes_clefData";
+import type { IModel, ILayout } from "./document";
+import { Type } from "./document";
 import {
   CLEF_INDENTATION,
   clefWidth,
@@ -59,6 +56,13 @@ import {
   timesEqual,
   keysEqual,
 } from "./implAttributes_attributesData";
+import { standardClefs } from "./implAttributes_clefData";
+import type { IAttributesSnapshot } from "./private_attributesSnapshot";
+import { createAttributesSnapshot as createSnapshot } from "./private_attributesSnapshot";
+import type { IBoundingRect } from "./private_boundingRect";
+import { hasAccidental } from "./private_chordUtil";
+import type { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
+import { groupsForPart } from "./private_part";
 
 class Layout implements IAttributesLayout {
   _refresh(
@@ -273,7 +277,7 @@ class Layout implements IAttributesLayout {
 
   boundingBoxes: IBoundingRect[] = [];
   renderClass: Type = Type.Attributes;
-  expandPolicy: "none" = "none";
+  expandPolicy = "none" as const;
   renderedWidth: number;
 
   /*---- AttributesModel ----------------------------------------------*/

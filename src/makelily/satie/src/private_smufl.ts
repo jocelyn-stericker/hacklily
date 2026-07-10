@@ -16,6 +16,8 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* eslint-disable no-shadow */
+
 import { keyBy, memoize } from "lodash";
 
 import bravura from "./private_smufl_bravura";
