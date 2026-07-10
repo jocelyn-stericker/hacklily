@@ -63,142 +63,143 @@ interface Props {
  * Renders the File menu.
  * The menu button is rendered by <Header />
  */
-export default class FileMenu extends React.PureComponent<Props> {
-  render(): JSX.Element {
-    const {
-      auth,
-      canCreateNew,
-      canExport,
-      canSave,
-      canSaveAs,
-      onSignOut,
-      onShowAbout,
-      onShowClone,
-      onShowOpen,
-      onExportLy,
-      onExportMIDI,
-      onExportPDF,
-      onShowNew,
-      onShowPublish,
-      songURL,
-    } = this.props;
+const FileMenu: React.FC<Props> = React.memo(function FileMenu(props) {
+  const {
+    auth,
+    canCreateNew,
+    canExport,
+    canSave,
+    canSaveAs,
+    onSignOut,
+    onShowAbout,
+    onShowClone,
+    onShowOpen,
+    onExportLy,
+    onExportMIDI,
+    onExportPDF,
+    onShowNew,
+    onShowPublish,
+    songURL,
+    setColourScheme,
+  } = props;
 
-    let signOut: React.ReactNode;
-    if (auth) {
-      signOut = (
-        <MenuItem
-          onClick={onSignOut}
-          icon={<LogOut size="1em" />}
-          text="Sign out"
-        />
-      );
-    }
-
-    const tutorial: React.ReactNode = (
-      <MenuItem
-        href={`http://lilypond.org/doc/v${
-          process.env.REACT_APP_STABLE_LILYPOND_VERSION?.split(".")
-            .slice(0, 2)
-            .join(".") ?? "2.26"
-        }/Documentation/learning/index`}
-        rel="noopener noreferrer"
-        target="_blank"
-        text="LilyPond manual&hellip;"
-      />
-    );
-
-    const about: React.ReactNode = (
-      <MenuItem onClick={onShowAbout} text="About Hacklily" />
-    );
-
-    return (
-      <Menu>
-        <MenuItem
-          icon={<CirclePlus size="1em" />}
-          text="New song"
-          onClick={onShowNew}
-          disabled={!canCreateNew}
-        />
-        <MenuDivider />
-        <MenuItem
-          icon={<FolderOpen size="1em" />}
-          text="Open&hellip;"
-          onClick={onShowOpen}
-        />
-        <MenuItem
-          icon={<Import size="1em" />}
-          text="Import MusicXML&hellip;"
-          href="/musicxml2ly.html"
-        />
-        <MenuItem
-          icon={<Save size="1em" />}
-          text="Save"
-          disabled={!canSave}
-          onClick={onShowPublish}
-        />
-        <MenuItem
-          icon={<Copy size="1em" />}
-          text="Save as&hellip;"
-          onClick={onShowClone}
-          disabled={!canSaveAs}
-        />
-        <MenuItem
-          icon={<Download size="1em" />}
-          text="Export"
-          disabled={!canExport}
-        >
-          <MenuItem
-            onClick={onExportLy}
-            icon={<Code size="1em" />}
-            text="LilyPond source"
-          />
-          <MenuItem
-            onClick={onExportPDF}
-            icon={<FileText size="1em" />}
-            text="PDF"
-          />
-          <MenuItem
-            onClick={onExportMIDI}
-            icon={<Music size="1em" />}
-            text="MIDI"
-          />
-          {songURL && <MenuDivider />}
-          {songURL && (
-            <MenuItem
-              href={songURL.replace(/\.ly$/, ".pdf")}
-              text="View on GitHub&hellip;"
-            />
-          )}
-        </MenuItem>
-        <MenuDivider />
-        {this.renderSetColourScheme()}
-        {signOut}
-        <MenuDivider />
-        {tutorial}
-        {about}
-      </Menu>
-    );
-  }
-
-  private handleColourSchemeToggled = (): void => {
+  const handleColourSchemeToggled = React.useCallback((): void => {
     const newColourScheme: "vs-dark" | "vs" =
-      this.props.colourScheme === "vs-dark" ? "vs" : "vs-dark";
+      props.colourScheme === "vs-dark" ? "vs" : "vs-dark";
 
-    this.props.setColourScheme(newColourScheme);
-  };
+    setColourScheme(newColourScheme);
+  }, [setColourScheme, props.colourScheme]);
 
-  private renderSetColourScheme(): React.ReactNode {
+  function renderSetColourScheme(): React.ReactNode {
     const text: string =
-      this.props.colourScheme === "vs-dark"
+      props.colourScheme === "vs-dark"
         ? "Use light colour scheme"
         : "Use dark colour scheme";
 
     return (
       <MenuItem
-        onClick={this.handleColourSchemeToggled}
+        onClick={handleColourSchemeToggled}
         icon={<Sun size="1em" />}
         text={text}
       />
     );
   }
-}
+
+  let signOut: React.ReactNode;
+  if (auth) {
+    signOut = (
+      <MenuItem
+        onClick={onSignOut}
+        icon={<LogOut size="1em" />}
+        text="Sign out"
+      />
+    );
+  }
+
+  const tutorial: React.ReactNode = (
+    <MenuItem
+      href={`http://lilypond.org/doc/v${
+        process.env.REACT_APP_STABLE_LILYPOND_VERSION?.split(".")
+          .slice(0, 2)
+          .join(".") ?? "2.26"
+      }/Documentation/learning/index`}
+      rel="noopener noreferrer"
+      target="_blank"
+      text="LilyPond manual&hellip;"
+    />
+  );
+
+  const about: React.ReactNode = (
+    <MenuItem onClick={onShowAbout} text="About Hacklily" />
+  );
+
+  return (
+    <Menu>
+      <MenuItem
+        icon={<CirclePlus size="1em" />}
+        text="New song"
+        onClick={onShowNew}
+        disabled={!canCreateNew}
+      />
+      <MenuDivider />
+      <MenuItem
+        icon={<FolderOpen size="1em" />}
+        text="Open&hellip;"
+        onClick={onShowOpen}
+      />
+      <MenuItem
+        icon={<Import size="1em" />}
+        text="Import MusicXML&hellip;"
+        href="/musicxml2ly.html"
+      />
+      <MenuItem
+        icon={<Save size="1em" />}
+        text="Save"
+        disabled={!canSave}
+        onClick={onShowPublish}
+      />
+      <MenuItem
+        icon={<Copy size="1em" />}
+        text="Save as&hellip;"
+        onClick={onShowClone}
+        disabled={!canSaveAs}
+      />
+      <MenuItem
+        icon={<Download size="1em" />}
+        text="Export"
+        disabled={!canExport}
+      >
+        <MenuItem
+          onClick={onExportLy}
+          icon={<Code size="1em" />}
+          text="LilyPond source"
+        />
+        <MenuItem
+          onClick={onExportPDF}
+          icon={<FileText size="1em" />}
+          text="PDF"
+        />
+        <MenuItem
+          onClick={onExportMIDI}
+          icon={<Music size="1em" />}
+          text="MIDI"
+        />
+        {songURL && <MenuDivider />}
+        {songURL && (
+          <MenuItem
+            href={songURL.replace(/\.ly$/, ".pdf")}
+            text="View on GitHub&hellip;"
+          />
+        )}
+      </MenuItem>
+      <MenuDivider />
+      {renderSetColourScheme()}
+      {signOut}
+      <MenuDivider />
+      {tutorial}
+      {about}
+    </Menu>
+  );
+});
+
+export default FileMenu;

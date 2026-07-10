@@ -31,25 +31,25 @@ interface Props {
  * 404.html (which GitHub pages will render for every unmatched URL) redirects to
  * '/?404=1', which renders <App 404="1" />, which results in this modal being shown.
  */
-export default class Modal404 extends React.PureComponent<Props> {
-  render(): JSX.Element {
-    return (
-      <Dialog title="Page not found" isOpen={true} onClose={this.props.onHide}>
-        <div className={Classes.DIALOG_BODY}>
-          <p>The requested page may have been moved or deleted.</p>
-          <p>
-            Hacklily is a free online sheet-music editor and publishing tool.
-            While you are here, why not give it a try?
-          </p>
+const Modal404: React.FC<Props> = React.memo(function Modal404(props) {
+  return (
+    <Dialog title="Page not found" isOpen={true} onClose={props.onHide}>
+      <div className={Classes.DIALOG_BODY}>
+        <p>The requested page may have been moved or deleted.</p>
+        <p>
+          Hacklily is a free online sheet-music editor and publishing tool.
+          While you are here, why not give it a try?
+        </p>
+      </div>
+      <div className={Classes.DIALOG_FOOTER}>
+        <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+          <Button onClick={props.onHide} intent={Intent.PRIMARY}>
+            Continue
+          </Button>
         </div>
-        <div className={Classes.DIALOG_FOOTER}>
-          <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-            <Button onClick={this.props.onHide} intent={Intent.PRIMARY}>
-              Continue
-            </Button>
-          </div>
-        </div>
-      </Dialog>
-    );
-  }
-}
+      </div>
+    </Dialog>
+  );
+});
+
+export default Modal404;

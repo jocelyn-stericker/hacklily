@@ -17,7 +17,7 @@
  */
 
 import * as React from "react";
-import { Component } from "react";
+import type { FC } from "react";
 
 export interface IProps {
   key?: string | number;
@@ -33,18 +33,18 @@ export interface IProps {
 /**
  * Renders a straight line.
  */
-export default class Line extends Component<IProps, {}> {
-  render(): any {
-    return (
-      <line
-        className={this.props.className}
-        stroke={this.props.stroke}
-        strokeWidth={this.props.strokeWidth}
-        x1={this.props.x1}
-        x2={this.props.x2}
-        y1={this.props.y1}
-        y2={this.props.y2}
-      />
-    );
-  }
-}
+const Line: FC<IProps> = (props) => {
+  return (
+    <line
+      className={props.className}
+      stroke={props.stroke}
+      strokeWidth={props.strokeWidth}
+      x1={props.x1}
+      x2={props.x2}
+      y1={props.y1}
+      y2={props.y2}
+    />
+  );
+};
+
+export default Line;

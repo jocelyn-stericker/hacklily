@@ -41,10 +41,10 @@ interface Props {
  *
  * This modal requests to be closed by calling one of the three callbacks.
  */
-export default class ModalUnsavedChangesInterstitial extends React.PureComponent<Props> {
-  render(): JSX.Element {
+const ModalUnsavedChangesInterstitial: React.FC<Props> = React.memo(
+  function ModalUnsavedChangesInterstitial(props) {
     return (
-      <Dialog title="Unsaved changes" isOpen={true} onClose={this.props.cancel}>
+      <Dialog title="Unsaved changes" isOpen={true} onClose={props.cancel}>
         <div className={Classes.DIALOG_BODY}>
           <p className={Classes.TEXT_LARGE}>
             Your changes have not been saved.
@@ -57,10 +57,10 @@ export default class ModalUnsavedChangesInterstitial extends React.PureComponent
         <div className={Classes.DIALOG_FOOTER}>
           <div className={Classes.DIALOG_FOOTER_ACTIONS}>
             <div>
-              <Button onClick={this.props.cancel}>Cancel</Button>
+              <Button onClick={props.cancel}>Cancel</Button>
               <Button
                 intent={Intent.DANGER}
-                onClick={this.props.discardChanges}
+                onClick={props.discardChanges}
                 icon={<Trash size="1em" />}
               >
                 Discard changes
@@ -68,7 +68,7 @@ export default class ModalUnsavedChangesInterstitial extends React.PureComponent
               <Button
                 icon={<Save size="1em" />}
                 intent={Intent.PRIMARY}
-                onClick={this.props.save}
+                onClick={props.save}
               >
                 Save
               </Button>
@@ -77,5 +77,7 @@ export default class ModalUnsavedChangesInterstitial extends React.PureComponent
         </div>
       </Dialog>
     );
-  }
-}
+  },
+);
+
+export default ModalUnsavedChangesInterstitial;

@@ -17,7 +17,7 @@
  */
 
 import * as React from "react";
-import { Component } from "react";
+import type { FC } from "react";
 
 export interface IProps {
   key?: number | string;
@@ -31,18 +31,13 @@ export interface IProps {
  * Responsible for the rendering of a dot as part of a dotted note.
  * This is not used to render staccatos.
  */
-export default class Dot extends Component<IProps, {}> {
-  render(): any {
-    // See rationale for hidden rect in _glyph.jsx
-    return (
-      <g>
-        <circle
-          cx={this.props.x}
-          cy={this.props.y}
-          fill={this.props.fill}
-          r={this.props.radius}
-        />
-      </g>
-    );
-  }
-}
+const Dot: FC<IProps> = (props) => {
+  // See rationale for hidden rect in _glyph.jsx
+  return (
+    <g>
+      <circle cx={props.x} cy={props.y} fill={props.fill} r={props.radius} />
+    </g>
+  );
+};
+
+export default Dot;

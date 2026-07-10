@@ -25,22 +25,20 @@ import React from "react";
  * A modal that is rendered while saving a song.
  * There's no escaping this modal. It's visible until saving completes.
  */
-class ModalSaving extends React.PureComponent {
-  render(): JSX.Element {
-    return (
-      <Dialog
-        title="Saving, please wait&hellip;"
-        isOpen={true}
-        canOutsideClickClose={false}
-        canEscapeKeyClose={false}
-        isCloseButtonShown={false}
-      >
-        <div className={Classes.DIALOG_BODY}>
-          <Spinner />
-        </div>
-      </Dialog>
-    );
-  }
-}
+const ModalSaving: React.FC = React.memo(function ModalSaving() {
+  return (
+    <Dialog
+      title="Saving, please wait&hellip;"
+      isOpen={true}
+      canOutsideClickClose={false}
+      canEscapeKeyClose={false}
+      isCloseButtonShown={false}
+    >
+      <div className={Classes.DIALOG_BODY}>
+        <Spinner />
+      </div>
+    </Dialog>
+  );
+});
 
 export default ModalSaving;

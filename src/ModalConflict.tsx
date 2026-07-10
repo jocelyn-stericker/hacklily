@@ -29,8 +29,8 @@ interface Props {
 /**
  * This is shown when you load a song that was loaded dirty and has been edited elsewhere.
  */
-export default class ModalConflict extends React.PureComponent<Props> {
-  render(): JSX.Element {
+const ModalConflict: React.FC<Props> = React.memo(
+  function ModalConflict(props) {
     return (
       <Dialog isOpen={true} title="Keep unsaved changes?">
         <div className={Classes.DIALOG_BODY}>
@@ -46,18 +46,17 @@ export default class ModalConflict extends React.PureComponent<Props> {
         </div>
         <div className={Classes.DIALOG_FOOTER}>
           <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-            <Button
-              onClick={this.props.resolveLocalStorage}
-              intent={Intent.WARNING}
-            >
+            <Button onClick={props.resolveLocalStorage} intent={Intent.WARNING}>
               Keep unsaved version
             </Button>
-            <Button onClick={this.props.resolveGitHub} intent={Intent.DANGER}>
+            <Button onClick={props.resolveGitHub} intent={Intent.DANGER}>
               Revert to saved version
             </Button>
           </div>
         </div>
       </Dialog>
     );
-  }
-}
+  },
+);
+
+export default ModalConflict;

@@ -64,75 +64,75 @@ type ChgEv = React.ChangeEvent<HTMLInputElement>;
 /**
  * This renders a SPA which demos the makelily modal.
  */
-export default class App extends React.Component<Props> {
-  render(): JSX.Element {
-    const { clef, defaultTool, keySig, singleTaskMode, setQuery, time } =
-      this.props;
+const App: React.FC<Props> = (props) => {
+  const { clef, defaultTool, keySig, singleTaskMode, setQuery, time } = props;
 
-    return (
-      <div className={css(styles.appRoot)}>
-        <div className={css(styles.mockPreview)} />
-        <div className={css(styles.mockHeader)} />
-        <div className={css(styles.presets)}>
-          Makelily sandbox.
-          {" \u00a0"}
-          \clef{" "}
-          <input
-            onChange={(ev: ChgEv): void =>
-              setQuery({ clef: ev.target.value }, true)
-            }
-            value={clef || ""}
-          />{" "}
-          \key{" "}
-          <input
-            onChange={(ev: ChgEv): void =>
-              setQuery({ keySig: ev.target.value }, true)
-            }
-            value={keySig || ""}
-          />{" "}
-          \time{" "}
-          <input
-            onChange={(ev: ChgEv): void =>
-              setQuery({ time: ev.target.value }, true)
-            }
-            value={time || ""}
-          />{" "}
-          <input
-            id="single-task-mode"
-            onChange={(ev: ChgEv): void =>
-              setQuery({ singleTaskMode: ev.target.checked }, true)
-            }
-            type="checkbox"
-            checked={String(singleTaskMode) === "true"}
-            aria-checked={singleTaskMode}
-          />
-          <label htmlFor="single-task-mode">Single task mode</label> default
-          tool{" "}
-          <input
-            onChange={(ev: ChgEv): void =>
-              setQuery({ defaultTool: ev.target.value }, true)
-            }
-            value={defaultTool || ""}
-          />
-        </div>
-        <Makelily
-          clef={clef || ""}
-          defaultTool={defaultTool || ""}
-          keySig={keySig || ""}
-          time={time || ""}
-          singleTaskMode={String(singleTaskMode) === "true"}
-          onHide={(): void => window.location.reload()}
-          // eslint-disable-next-line @typescript-eslint/unbound-method
-          onInsertLy={this.handleInsertLy}
+  const handleInsertLy = React.useCallback(function handleInsertLy(
+    ly: string,
+  ): void {
+    console.log(ly);
+  }, []);
+
+  return (
+    <div className={css(styles.appRoot)}>
+      <div className={css(styles.mockPreview)} />
+      <div className={css(styles.mockHeader)} />
+      <div className={css(styles.presets)}>
+        Makelily sandbox.
+        {" \u00a0"}
+        \clef{" "}
+        <input
+          onChange={(ev: ChgEv): void =>
+            setQuery({ clef: ev.target.value }, true)
+          }
+          value={clef || ""}
+        />{" "}
+        \key{" "}
+        <input
+          onChange={(ev: ChgEv): void =>
+            setQuery({ keySig: ev.target.value }, true)
+          }
+          value={keySig || ""}
+        />{" "}
+        \time{" "}
+        <input
+          onChange={(ev: ChgEv): void =>
+            setQuery({ time: ev.target.value }, true)
+          }
+          value={time || ""}
+        />{" "}
+        <input
+          id="single-task-mode"
+          onChange={(ev: ChgEv): void =>
+            setQuery({ singleTaskMode: ev.target.checked }, true)
+          }
+          type="checkbox"
+          checked={String(singleTaskMode) === "true"}
+          aria-checked={singleTaskMode}
+        />
+        <label htmlFor="single-task-mode">Single task mode</label> default tool{" "}
+        <input
+          onChange={(ev: ChgEv): void =>
+            setQuery({ defaultTool: ev.target.value }, true)
+          }
+          value={defaultTool || ""}
         />
       </div>
-    );
-  }
+      <Makelily
+        clef={clef || ""}
+        defaultTool={defaultTool || ""}
+        keySig={keySig || ""}
+        time={time || ""}
+        singleTaskMode={String(singleTaskMode) === "true"}
+        onHide={(): void => window.location.reload()}
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        onInsertLy={handleInsertLy}
+      />
+    </div>
+  );
+};
 
-  private handleInsertLy(ly: string): void {
-    console.log(ly);
-  }
-}
+export default App;
 
 const styles = StyleSheet.create({
   appRoot: {

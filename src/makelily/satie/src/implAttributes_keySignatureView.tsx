@@ -20,7 +20,7 @@
 
 import { times, map } from "lodash";
 import * as React from "react";
-import { Component } from "react";
+import type { FC } from "react";
 
 import type { Key, Clef, Accidental } from "#/musicxml-interfaces";
 import { MxmlAccidental } from "#/musicxml-interfaces";
@@ -49,24 +49,13 @@ const flats: { [key: string]: Array<number> } = {
 /**
  * Renders a key signature.
  */
-class KeyView extends Component<{ spec: Key; clef: Clef }, {}> {
-  render(): any {
-    return (
-      <g>
-        {map(this.getAccidentals(), (accidental, idx) => (
-          <AccidentalView key={idx} spec={accidental} />
-        ))}
-      </g>
-    );
-  }
+const KeyView: FC<{ spec: Key; clef: Clef }> = (props) => {
+  const { spec, clef } = props;
 
   /**
    * Returns an array representing the position and glyphName of each accidental.
    */
-  getAccidentals(): Accidental[] {
-    // TODO: this is expensive -- compute in attributes!
-    const spec = this.props.spec;
-    const clef = this.props.clef;
+  function getAccidentals(): Accidental[] {
     const widths = keyWidths(spec);
     const positions: number[] = [];
     let x = 0;
@@ -97,11 +86,11 @@ class KeyView extends Component<{ spec: Key; clef: Clef }, {}> {
         const hasOctave = spec.keyOctaves && spec.keyOctaves[idx];
         let octave = hasOctave ? spec.keyOctaves[idx].octave : null;
         if (octave === null) {
-          while (lineForClef_(keyStep, octave, this.props.clef) < 2) {
+          while (lineForClef_(keyStep, octave, clef) < 2) {
             ++octave;
           }
         }
-        const line = lineForClef_(keyStep, octave, this.props.clef);
+        const line = lineForClef_(keyStep, octave, clef);
         let accidental: MxmlAccidental = null;
         switch (keyAlters) {
           case "-2":
@@ -184,7 +173,15 @@ class KeyView extends Component<{ spec: Key; clef: Clef }, {}> {
       };
     }
   }
-}
+
+  return (
+    <g>
+      {map(getAccidentals(), (accidental, idx) => (
+        <AccidentalView key={idx} spec={accidental} />
+      ))}
+    </g>
+  );
+};
 
 function standardClef(clef: Clef) {
   switch (true) {

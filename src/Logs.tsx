@@ -27,69 +27,62 @@ interface Props {
   logs: string | null;
 }
 
-interface State {
-  showLogDrawer: boolean;
-}
-
 /**
  * Renders a logs button, that when hovered, expands to show the output from Lilypond.
  *
  * This is visible in the app whenever the preview is visible.
  */
-export default class Logs extends React.Component<Props, State> {
-  state = {
-    showLogDrawer: false,
-  };
+const Logs: React.FC<Props> = (props) => {
+  const { logs, loading } = props;
 
-  render(): JSX.Element | null {
-    const { logs, loading } = this.props;
-    const { showLogDrawer } = this.state;
+  const [showLogDrawer, setShowLogDrawer] = React.useState<boolean>(false);
 
-    const error = !logs || logs.includes("error") || logs.includes("warning");
-    const icon = error && !loading ? "warning-sign" : "info-sign";
+  const handleClose = React.useCallback(() => {
+    setShowLogDrawer(false);
+  }, []);
 
-    const btn = (
-      <Button
-        loading={loading}
-        intent={error && !loading ? "warning" : "none"}
-        large={true}
-        onClick={this.handleOpen}
+  const handleOpen = React.useCallback(() => {
+    setShowLogDrawer(true);
+  }, []);
+
+  const error = !logs || logs.includes("error") || logs.includes("warning");
+  const icon = error && !loading ? "warning-sign" : "info-sign";
+
+  const btn = (
+    <Button
+      loading={loading}
+      intent={error && !loading ? "warning" : "none"}
+      large={true}
+      onClick={handleOpen}
+      icon={icon}
+    >
+      Logs
+    </Button>
+  );
+
+  return (
+    <div className={css(styles.logsButtonWrapper)}>
+      <Drawer
+        isOpen={showLogDrawer}
+        title="Logs"
+        onClose={handleClose}
+        size="45%"
         icon={icon}
       >
-        Logs
-      </Button>
-    );
+        <pre className={css(styles.logDrawer)}>{logs}</pre>
+      </Drawer>
+      <Tooltip
+        disabled={loading}
+        content={<pre className={css(styles.logPreview)}>{logs}</pre>}
+        position={Position.TOP}
+      >
+        {btn}
+      </Tooltip>
+    </div>
+  );
+};
 
-    return (
-      <div className={css(styles.logsButtonWrapper)}>
-        <Drawer
-          isOpen={showLogDrawer}
-          title="Logs"
-          onClose={this.handleClose}
-          size="45%"
-          icon={icon}
-        >
-          <pre className={css(styles.logDrawer)}>{logs}</pre>
-        </Drawer>
-        <Tooltip
-          disabled={loading}
-          content={<pre className={css(styles.logPreview)}>{logs}</pre>}
-          position={Position.TOP}
-        >
-          {btn}
-        </Tooltip>
-      </div>
-    );
-  }
-
-  handleClose = () => {
-    this.setState({ showLogDrawer: false });
-  };
-
-  handleOpen = () => {
-    this.setState({ showLogDrawer: true });
-  };
-}
+export default Logs;
 
 export const styles = StyleSheet.create({
   logsButtonWrapper: {

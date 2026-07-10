@@ -55,9 +55,9 @@ export interface ButtonSpec {
 }
 
 interface Props {
-  allowEmpty?: boolean;
+  allowEmpty?: boolean | undefined;
   buttons: ButtonSpec[];
-  value: string | number | null;
+  value?: string | number | null | undefined;
   onChange(value: string | number | null): void;
 }
 
@@ -80,56 +80,61 @@ interface Props {
  *
  * Requires stylesheets/perseus-admin-package/editor.less to look nice.
  */
-export default class ButtonGroup extends React.PureComponent<Props> {
-  static defaultProps: Partial<Props> = {
-    allowEmpty: true,
-    value: null,
+const ButtonGroup: React.FC<Props> = React.memo(function ButtonGroup(props) {
+  const {
+    value = null,
+    buttons: buttons0,
+    allowEmpty = true,
+    onChange,
+  } = props;
+
+  const toggleSelect = React.useCallback(
+    function toggleSelect(newValue: string | number | null): void {
+      if (allowEmpty) {
+        // Select the new button or unselect if it's already selected
+        onChange(value !== newValue ? newValue : null);
+      } else {
+        onChange(newValue);
+      }
+    },
+    [allowEmpty, onChange, value],
+  );
+
+  const handleClick = React.useCallback(
+    (ev: React.MouseEvent<HTMLButtonElement>): void => {
+      toggleSelect(JSON.parse(ev.currentTarget.dataset.value || "null"));
+    },
+    [toggleSelect],
+  );
+
+  const buttons: JSX.Element[] = buttons0.map(
+    (button: ButtonSpec, i: number) => {
+      const buttonGroupClassName: string = css(
+        BUTTON_STYLE.buttonStyle,
+        button.value === value && BUTTON_STYLE.selectedStyle,
+      );
+
+      return (
+        <button
+          className={buttonGroupClassName}
+          onClick={handleClick}
+          id={String(i)}
+          key={String(i)}
+          data-value={JSON.stringify(button.value)}
+          title={button.title}
+          type="button"
+        >
+          {button.content || String(button.value)}
+        </button>
+      );
+    },
+  );
+
+  const outerStyle: object = {
+    display: "inline-block",
   };
 
-  render(): JSX.Element {
-    const value: string | number | null = this.props.value;
-    const buttons: JSX.Element[] = this.props.buttons.map(
-      (button: ButtonSpec, i: number) => {
-        const buttonGroupClassName: string = css(
-          BUTTON_STYLE.buttonStyle,
-          button.value === value && BUTTON_STYLE.selectedStyle,
-        );
+  return <div style={outerStyle}>{buttons}</div>;
+});
 
-        return (
-          <button
-            className={buttonGroupClassName}
-            onClick={this.handleClick}
-            id={String(i)}
-            key={String(i)}
-            data-value={JSON.stringify(button.value)}
-            title={button.title}
-            type="button"
-          >
-            {button.content || String(button.value)}
-          </button>
-        );
-      },
-    );
-
-    const outerStyle: object = {
-      display: "inline-block",
-    };
-
-    return <div style={outerStyle}>{buttons}</div>;
-  }
-
-  private handleClick = (ev: React.MouseEvent<HTMLButtonElement>): void => {
-    this.toggleSelect(JSON.parse(ev.currentTarget.dataset.value || "null"));
-  };
-
-  private toggleSelect(newValue: string | number | null): void {
-    const value: string | number | null = this.props.value;
-
-    if (this.props.allowEmpty) {
-      // Select the new button or unselect if it's already selected
-      this.props.onChange(value !== newValue ? newValue : null);
-    } else {
-      this.props.onChange(newValue);
-    }
-  }
-}
+export default ButtonGroup;

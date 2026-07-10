@@ -27,27 +27,27 @@ import type { ToolProps } from "./tool";
 /**
  * Placeholder for when an error was caught.
  */
-export default class ToolError extends React.Component<ToolProps> {
-  render(): JSX.Element {
-    return (
-      <span className={css(tabStyles.tool)}>
-        <div className={css(tabStyles.section)}>
-          <h3 className={css(tabStyles.toolHeading)}>
-            It&apos;s not your fault*!
-          </h3>
-        </div>
-        <div className={css(tabStyles.section)}>
-          The tool you were using crashed, so it has been closed. Please{" "}
-          <a
-            href="https://github.com/hacklily/makelily/issues/new"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            file an issue
-          </a>{" "}
-          so I can try fixing it.
-        </div>
-      </span>
-    );
-  }
-}
+const ToolError: React.FC<ToolProps> = () => {
+  return (
+    <span className={css(tabStyles.tool)}>
+      <div className={css(tabStyles.section)}>
+        <h3 className={css(tabStyles.toolHeading)}>
+          It&apos;s not your fault*!
+        </h3>
+      </div>
+      <div className={css(tabStyles.section)}>
+        The tool you were using crashed, so it has been closed. Please{" "}
+        <a
+          href="https://github.com/hacklily/makelily/issues/new"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          file an issue
+        </a>{" "}
+        so I can try fixing it.
+      </div>
+    </span>
+  );
+};
+
+export default ToolError;

@@ -17,7 +17,7 @@
  */
 
 import * as React from "react";
-import { Component } from "react";
+import type { FC } from "react";
 
 export interface IProps {
   fill: string;
@@ -41,45 +41,45 @@ export interface IProps {
  * Responsible for the rendering a bezier curve, such as a
  * slur or a tie.
  */
-export default class Bezier extends Component<IProps, {}> {
-  render(): any {
-    return (
-      <path
-        d={
-          "M" +
-          this.props.x1 +
-          "," +
-          this.props.y1 +
-          "C" +
-          this.props.x2 +
-          "," +
-          this.props.y2 +
-          " " +
-          this.props.x3 +
-          "," +
-          this.props.y3 +
-          " " +
-          this.props.x4 +
-          "," +
-          this.props.y4 +
-          " " +
-          "C" +
-          this.props.x5 +
-          "," +
-          this.props.y5 +
-          " " +
-          this.props.x6 +
-          "," +
-          this.props.y6 +
-          " " +
-          this.props.x1 +
-          "," +
-          this.props.y1
-        }
-        fill={this.props.fill}
-        stroke={this.props.stroke}
-        strokeWidth={this.props.strokeWidth}
-      />
-    );
-  }
-}
+const Bezier: FC<IProps> = (props) => {
+  return (
+    <path
+      d={
+        "M" +
+        props.x1 +
+        "," +
+        props.y1 +
+        "C" +
+        props.x2 +
+        "," +
+        props.y2 +
+        " " +
+        props.x3 +
+        "," +
+        props.y3 +
+        " " +
+        props.x4 +
+        "," +
+        props.y4 +
+        " " +
+        "C" +
+        props.x5 +
+        "," +
+        props.y5 +
+        " " +
+        props.x6 +
+        "," +
+        props.y6 +
+        " " +
+        props.x1 +
+        "," +
+        props.y1
+      }
+      fill={props.fill}
+      stroke={props.stroke}
+      strokeWidth={props.strokeWidth}
+    />
+  );
+};
+
+export default Bezier;

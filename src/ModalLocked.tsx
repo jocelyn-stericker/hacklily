@@ -26,36 +26,36 @@ import React from "react";
  * A modal that is rendered when this song is being edited in another tab.
  * There's no escaping this modal. You need to reload or close the tab to continue.
  */
-export default class ModalLocked extends React.PureComponent {
-  render(): JSX.Element {
-    return (
-      <Dialog
-        title="Locked"
-        isOpen={true}
-        canOutsideClickClose={false}
-        canEscapeKeyClose={false}
-        isCloseButtonShown={false}
-      >
-        <div className={Classes.DIALOG_BODY}>
-          This song was opened in another tab. You can only edit in one tab at
-          once. If you have closed the other tab, you may{" "}
-          <a onClick={() => window.location.reload()}>resume editing here</a>.
+const ModalLocked: React.FC = React.memo(function ModalLocked() {
+  return (
+    <Dialog
+      title="Locked"
+      isOpen={true}
+      canOutsideClickClose={false}
+      canEscapeKeyClose={false}
+      isCloseButtonShown={false}
+    >
+      <div className={Classes.DIALOG_BODY}>
+        This song was opened in another tab. You can only edit in one tab at
+        once. If you have closed the other tab, you may{" "}
+        <a onClick={() => window.location.reload()}>resume editing here</a>.
+      </div>
+      <div className={Classes.DIALOG_FOOTER}>
+        <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+          <AnchorButton
+            onClick={() => window.location.reload()}
+            intent={Intent.PRIMARY}
+            icon={<RefreshCw size="1em" />}
+          >
+            Reload
+          </AnchorButton>
         </div>
-        <div className={Classes.DIALOG_FOOTER}>
-          <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-            <AnchorButton
-              onClick={() => window.location.reload()}
-              intent={Intent.PRIMARY}
-              icon={<RefreshCw size="1em" />}
-            >
-              Reload
-            </AnchorButton>
-          </div>
-        </div>
-      </Dialog>
-    );
-  }
-}
+      </div>
+    </Dialog>
+  );
+});
+
+export default ModalLocked;
 
 export function lock(songID: string): void {
   // This is a trick to send a notification to other pages editing this document.

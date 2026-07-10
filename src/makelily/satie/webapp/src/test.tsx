@@ -150,7 +150,8 @@ export default class Test extends Component<IProps, IState> {
       };
       request.send();
       this._song = null;
-      this.setState({ // eslint-disable-line react/no-did-update-set-state
+      // eslint-disable-next-line react/no-did-update-set-state
+      this.setState({
         loaded: false,
       });
     }

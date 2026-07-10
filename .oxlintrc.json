@@ -129,6 +129,7 @@
         "typescript/no-unnecessary-type-assertion": "error",
         "typescript/no-unnecessary-condition": "off",
         "typescript/no-useless-default-assignment": "off",
+        "typescript/unbound-method": "off",
         "react-hooks-js/static-components": "error",
         "react-hooks-js/use-memo": "error",
         "react-hooks-js/void-use-memo": "error",

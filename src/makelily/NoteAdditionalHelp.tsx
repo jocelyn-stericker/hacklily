@@ -29,30 +29,10 @@ export interface Props {
 /**
  * Renders help links in the note tool.
  */
-export default class NoteAdditionalHelp extends React.Component<Props> {
-  render(): JSX.Element {
-    const { kind, onHide } = this.props;
+const NoteAdditionalHelp: React.FC<Props> = (props) => {
+  const { kind, onHide } = props;
 
-    return (
-      <span className={css(styles.overlay)} onClick={onHide} role="button">
-        <span className={css(styles.widget)}>
-          {kind === "keyboard" && this.renderKeyboard()}
-          {kind === "midi" && this.renderMIDI()}
-          {kind === "mouse" && this.renderMouse()}
-          {kind === "relative" && this.renderRelative()}
-          {kind === "whyNotEdit" && this.renderWhyNotEdit()}
-
-          <p>
-            <a href="#" role="button" onClick={onHide}>
-              Close
-            </a>
-          </p>
-        </span>
-      </span>
-    );
-  }
-
-  private renderKeyboard(): JSX.Element {
+  function renderKeyboard(): JSX.Element {
     return (
       <span>
         <h3>What keyboard shortcuts are available?</h3>
@@ -123,7 +103,7 @@ export default class NoteAdditionalHelp extends React.Component<Props> {
     );
   }
 
-  private renderMIDI(): JSX.Element {
+  function renderMIDI(): JSX.Element {
     return (
       <span>
         <h3>How do I enter sheet music using a MIDI keyboard?</h3>
@@ -142,7 +122,7 @@ export default class NoteAdditionalHelp extends React.Component<Props> {
     </p>*/
   }
 
-  private renderMouse(): JSX.Element {
+  function renderMouse(): JSX.Element {
     return (
       <span>
         <h3>How do I enter sheet music using a mouse?</h3>
@@ -172,7 +152,7 @@ export default class NoteAdditionalHelp extends React.Component<Props> {
     );
   }
 
-  private renderRelative(): JSX.Element {
+  function renderRelative(): JSX.Element {
     return (
       <span>
         <h3>What is relative output?</h3>
@@ -200,7 +180,7 @@ export default class NoteAdditionalHelp extends React.Component<Props> {
     );
   }
 
-  private renderWhyNotEdit(): JSX.Element {
+  function renderWhyNotEdit(): JSX.Element {
     return (
       <span>
         <h3>What features does this tool have?</h3>
@@ -222,7 +202,27 @@ export default class NoteAdditionalHelp extends React.Component<Props> {
       </span>
     );
   }
-}
+
+  return (
+    <span className={css(styles.overlay)} onClick={onHide} role="button">
+      <span className={css(styles.widget)}>
+        {kind === "keyboard" && renderKeyboard()}
+        {kind === "midi" && renderMIDI()}
+        {kind === "mouse" && renderMouse()}
+        {kind === "relative" && renderRelative()}
+        {kind === "whyNotEdit" && renderWhyNotEdit()}
+
+        <p>
+          <a href="#" role="button" onClick={onHide}>
+            Close
+          </a>
+        </p>
+      </span>
+    </span>
+  );
+};
+
+export default NoteAdditionalHelp;
 
 const styles = StyleSheet.create({
   overlay: {

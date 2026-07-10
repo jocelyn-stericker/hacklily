@@ -27,8 +27,8 @@ import type { ToolProps } from "./tool";
 /**
  * Placeholder for when a tool with an invalid name is requested.
  */
-export default class ToolNotFound extends React.Component<ToolProps> {
-  render(): JSX.Element {
-    return <span className={css(tabStyles.tool)}>Tool not found.</span>;
-  }
-}
+const ToolNotFound: React.FC<ToolProps> = () => {
+  return <span className={css(tabStyles.tool)}>Tool not found.</span>;
+};
+
+export default ToolNotFound;
