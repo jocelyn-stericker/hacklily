@@ -1,6 +1,11 @@
+import {
+  RouterProvider,
+  createRootRoute,
+  createRoute,
+  createRouter,
+} from "@tanstack/react-router";
 import * as React from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 // @ts-ignore: TS2307 - path alias not configured in this tsconfig
 import ErrorBoundary from "#/ErrorBoundary";
@@ -10,23 +15,60 @@ import Home from "./home";
 import Sandbox from "./sandbox";
 import Tests from "./tests";
 
-// @ts-ignore: TS2591 - process not typed in this context
-const prefix = process.env.PLAYGROUND_PREFIX || "";
+const rootRoute = createRootRoute({
+  component: App,
+});
+
+const indexRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/",
+  component: Home,
+});
+
+const testsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/tests",
+  component: Tests,
+});
+
+const testsIdRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/tests/$id",
+  component: function TestsWithId() {
+    const TestsComponent = Tests as React.FC<{ testId?: string }>;
+    return <TestsComponent />;
+  },
+});
+
+const sandboxRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/sandbox",
+  component: Sandbox,
+});
+
+const routeTree = rootRoute.addChildren([
+  indexRoute,
+  testsRoute,
+  testsIdRoute,
+  sandboxRoute,
+]);
+
+const router = createRouter({
+  routeTree,
+  basepath: "/playground",
+  defaultNotFoundComponent: () => <Home />,
+} as any);
+
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router;
+  }
+}
 
 const root = createRoot(document.getElementById("root")!);
 
 root.render(
   <ErrorBoundary>
-    <BrowserRouter>
-      <Routes>
-        <Route path={`${prefix}/`} element={<App />}>
-          <Route index element={<Home />} />
-          <Route path="tests" element={<Tests />} />
-          <Route path="tests/:id" element={<Tests />} />
-          <Route path="sandbox" element={<Sandbox />} />
-          <Route path="*" element={<Home />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <RouterProvider router={router} />
   </ErrorBoundary>,
 );

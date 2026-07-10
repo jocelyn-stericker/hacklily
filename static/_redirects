@@ -1,0 +1,6 @@
+/status /status.html 200
+/status.html /status 302
+/musicxml2ly /musicxml2ly.html 200
+/musicxml2ly.html /musicxml2ly.html 302
+/playground /playground.html 200
+/playground/* /playground.html 200

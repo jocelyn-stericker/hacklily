@@ -1,34 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
-import type { Plugin } from "vite";
 import monacoEditorPlugin from "vite-plugin-monaco-editor-esm";
-
-// Serve `editor.html` for every URL under /editor (e.g. /editor, /editor/42).
-function htmlFallback(prefix: string, htmlFile: string): Plugin {
-  const file = htmlFile.startsWith("/") ? htmlFile : `/${htmlFile}`;
-  return {
-    name: "html-fallback",
-    configureServer(server) {
-      // Registered as a pre-middleware: runs before Vite's static/transform stack.
-      server.middlewares.use((req, res, next) => {
-        const url = (req.url ?? "").split("?")[0];
-        // Exact path or anything nested under it.
-        if (
-          url === prefix ||
-          (url.startsWith(prefix + "/") &&
-            !url.endsWith(".otf") &&
-            !url.endsWith(".xml"))
-        ) {
-          req.url = file; // rewrite so Vite serves editor.html w/ HMR transform
-        }
-        next();
-      });
-    },
-  };
-}
 
 function readLilyPondVersion(dockerfilePath: string): string {
   const content = fs.readFileSync(
@@ -44,13 +20,13 @@ function readLilyPondVersion(dockerfilePath: string): string {
 
 export default defineConfig({
   publicDir: "static",
-  appType: "mpa",
   build: {
     rollupOptions: {
       input: {
         main: "index.html",
         status: "status.html",
         musicxml2ly: "musicxml2ly.html",
+        playground: "playground.html",
       },
     },
   },
@@ -72,10 +48,14 @@ export default defineConfig({
     "process.env.PLAYGROUND_PREFIX": JSON.stringify("/playground"),
   },
   plugins: [
+    tanstackRouter({
+      target: "react",
+      autoCodeSplitting: true,
+      routeFileIgnorePattern: "\\.test\\.",
+    }),
     react(),
     monacoEditorPlugin({
       languageWorkers: ["editorWorkerService"],
     }),
-    htmlFallback("/playground", "/playground.html"),
   ],
 });

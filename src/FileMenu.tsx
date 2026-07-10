@@ -150,7 +150,7 @@ const FileMenu: React.FC<Props> = React.memo(function FileMenu(props) {
       <MenuItem
         icon={<Import size="1em" />}
         text="Import MusicXML&hellip;"
-        href="/musicxml2ly.html"
+        href="/musicxml2ly"
       />
       <MenuItem
         icon={<Save size="1em" />}

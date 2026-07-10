@@ -1,7 +1,6 @@
+import { Link } from "@tanstack/react-router";
 import * as React from "react";
-import { Link } from "react-router-dom";
 
-import { prefix } from "./config";
 import Test from "./test";
 
 export default function Home() {
@@ -26,7 +25,7 @@ export default function Home() {
         name="01a"
         filename={"/lilypond-regression/01a.xml"}
       />
-      <Link to={`${prefix}/tests`}>
+      <Link to="/playground/tests">
         <button>Run test suite »</button>
       </Link>
     </div>

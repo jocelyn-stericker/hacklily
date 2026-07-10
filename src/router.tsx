@@ -18,25 +18,29 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { RouterProvider } from "@tanstack/react-router";
-import { createRoot } from "react-dom/client";
+// TanStack Router root configuration.
 
-import ErrorBoundary from "./ErrorBoundary";
-import { getRouter } from "./router";
+import { createRouter as createTanStackRouter } from "@tanstack/react-router";
+import type { NotFoundRouteProps } from "@tanstack/react-router";
 
-import "./index.css";
+import { routeTree } from "./routeTree.gen";
 
-const router = getRouter();
+export function getRouter() {
+  const router = createTanStackRouter({
+    basepath: "/",
+    routeTree,
+    defaultPreload: "intent",
+    defaultPreloadStaleTime: 0,
+    defaultNotFoundComponent: function NotFound(_: NotFoundRouteProps) {
+      return <p>Not Found</p>;
+    },
+  } as any);
 
-const rootElement = document.getElementById("root");
-if (!rootElement) {
-  throw new Error("Root element not found");
+  return router;
 }
 
-void router.load().then(() => {
-  createRoot(rootElement).render(
-    <ErrorBoundary>
-      <RouterProvider router={router} />
-    </ErrorBoundary>,
-  );
-});
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: ReturnType<typeof getRouter>;
+  }
+}

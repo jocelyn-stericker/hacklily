@@ -18,25 +18,35 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { RouterProvider } from "@tanstack/react-router";
-import { createRoot } from "react-dom/client";
+import {
+  Link,
+  Outlet,
+  createFileRoute,
+  useLocation,
+} from "@tanstack/react-router";
 
-import ErrorBoundary from "./ErrorBoundary";
-import { getRouter } from "./router";
+import * as STYLES from "../makelily/satie/webapp/src/app.css";
 
-import "./index.css";
-
-const router = getRouter();
-
-const rootElement = document.getElementById("root");
-if (!rootElement) {
-  throw new Error("Root element not found");
-}
-
-void router.load().then(() => {
-  createRoot(rootElement).render(
-    <ErrorBoundary>
-      <RouterProvider router={router} />
-    </ErrorBoundary>,
-  );
+export const Route = createFileRoute("/playground")({
+  component: PlaygroundLayout,
 });
+
+function PlaygroundLayout() {
+  const { pathname } = useLocation();
+  const topLink =
+    pathname !== "/playground" && pathname !== "/playground/" ? (
+      <Link to="/playground" className={STYLES.toplink}>
+        « Go home
+      </Link>
+    ) : null;
+
+  return (
+    <div>
+      <header>
+        <div className={STYLES.topbar} />
+        {topLink}
+      </header>
+      <Outlet />
+    </div>
+  );
+}

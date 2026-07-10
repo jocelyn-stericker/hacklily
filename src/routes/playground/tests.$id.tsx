@@ -18,25 +18,16 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { RouterProvider } from "@tanstack/react-router";
-import { createRoot } from "react-dom/client";
+import { createFileRoute, useParams } from "@tanstack/react-router";
 
-import ErrorBoundary from "./ErrorBoundary";
-import { getRouter } from "./router";
+import Tests from "../../makelily/satie/webapp/src/tests";
 
-import "./index.css";
-
-const router = getRouter();
-
-const rootElement = document.getElementById("root");
-if (!rootElement) {
-  throw new Error("Root element not found");
-}
-
-void router.load().then(() => {
-  createRoot(rootElement).render(
-    <ErrorBoundary>
-      <RouterProvider router={router} />
-    </ErrorBoundary>,
-  );
+export const Route = createFileRoute("/playground/tests/$id")({
+  component: TestsWithId,
 });
+
+function TestsWithId() {
+  const { id } = useParams({ from: Route.id });
+
+  return <Tests testId={id} />;
+}

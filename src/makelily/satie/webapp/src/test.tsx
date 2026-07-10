@@ -1,8 +1,8 @@
+import { Link } from "@tanstack/react-router";
 /* eslint-disable no-shadow */
 import { find } from "lodash";
 import * as React from "react";
 import { Component } from "react";
-import { Link } from "react-router-dom";
 
 import type { ISong } from "../../src/satie";
 import { Application, Song } from "../../src/satie";
@@ -45,7 +45,7 @@ export default class Test extends Component<IProps, IState> {
     const showFilterButton = chrome && this.props.showFilterButton;
     const link = showFilterButton ? (
       <Link
-        to={`${prefix}/tests/${this.props.name}/?mode=${
+        to={`/playground/tests/${this.props.name}/?mode=${
           isSingleLine ? "singleline" : "page"
         }`}
       >

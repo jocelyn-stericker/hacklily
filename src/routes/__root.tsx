@@ -18,25 +18,14 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { RouterProvider } from "@tanstack/react-router";
-import { createRoot } from "react-dom/client";
+// Root layout component wrapping all pages.
 
-import ErrorBoundary from "./ErrorBoundary";
-import { getRouter } from "./router";
+import { Outlet, createRootRoute } from "@tanstack/react-router";
 
-import "./index.css";
-
-const router = getRouter();
-
-const rootElement = document.getElementById("root");
-if (!rootElement) {
-  throw new Error("Root element not found");
-}
-
-void router.load().then(() => {
-  createRoot(rootElement).render(
-    <ErrorBoundary>
-      <RouterProvider router={router} />
-    </ErrorBoundary>,
-  );
+export const Route = createRootRoute({
+  component: RootDocument,
 });
+
+function RootDocument() {
+  return <Outlet />;
+}

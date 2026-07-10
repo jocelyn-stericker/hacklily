@@ -1,15 +1,12 @@
+import { Link, Outlet, useLocation } from "@tanstack/react-router";
 import * as React from "react";
-import { Link, useLocation, Outlet } from "react-router-dom";
-
-import { prefix } from "./config";
 
 import * as STYLES from "./app.css";
 
 export default function App() {
-  const location = useLocation();
-  const path = location.pathname;
-  const topLink = path !== prefix + "/" && path !== prefix && (
-    <Link className={STYLES.toplink} to={`${prefix}/`}>
+  const { pathname } = useLocation();
+  const topLink = pathname !== "/playground" && pathname !== "/playground/" && (
+    <Link to="/playground" className={STYLES.toplink}>
       « Go home
     </Link>
   );

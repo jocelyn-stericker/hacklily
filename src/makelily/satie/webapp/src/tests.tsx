@@ -1,8 +1,7 @@
+import { Link, useSearch } from "@tanstack/react-router";
 import { reduce } from "lodash";
 import * as React from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
 
-import { prefix } from "./config";
 import Test from "./test";
 
 import * as STYLES from "./tests.css";
@@ -80,8 +79,6 @@ const TESTS = [
   "22b",
   "22c",
   "22d",
-  "22e",
-  "22f",
   "24a",
   "24b",
   "24c",
@@ -164,10 +161,10 @@ const TESTS = [
   "99b",
 ];
 
-export default function Tests() {
-  const { id } = useParams();
-  const [searchParams] = useSearchParams();
-  const isSingleLine = searchParams.get("mode") === "singleline";
+export default function Tests(props: { testId?: string }) {
+  const id = props.testId;
+  const search = useSearch({ strict: false }) as { mode?: string };
+  const isSingleLine = search.mode === "singleline";
   const filter = id || null;
   const cat = reduce(
     TESTS,
@@ -175,7 +172,7 @@ export default function Tests() {
       const type = testName.substr(0, 2);
       const link = filter ? null : (
         <Link
-          to={`${prefix}/tests/${type}/?mode=${
+          to={`/playground/tests/${type}/?mode=${
             isSingleLine ? "singleline" : "page"
           }`}
         >
@@ -215,11 +212,11 @@ export default function Tests() {
   if (filter) {
     const showMoreLink =
       filter.length > 1
-        ? `${prefix}/tests/${filter.substr(0, filter.length - 1)}/?mode=${
+        ? `/playground/tests/${filter.substr(0, filter.length - 1)}/?mode=${
             isSingleLine ? "singleline" : "page"
           }`
-        : `/tests?mode=${isSingleLine ? "singleline" : "page"}`;
-    const swapModeLink = `${prefix}/tests/${filter}?mode=${
+        : `/playground/tests?mode=${isSingleLine ? "singleline" : "page"}`;
+    const swapModeLink = `/playground/tests/${filter}?mode=${
       isSingleLine ? "page" : "singleline"
     }`;
 

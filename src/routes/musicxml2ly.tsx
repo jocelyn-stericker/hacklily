@@ -18,25 +18,21 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { RouterProvider } from "@tanstack/react-router";
-import { createRoot } from "react-dom/client";
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect } from "react";
 
-import ErrorBoundary from "./ErrorBoundary";
-import { getRouter } from "./router";
+import { initAnalytics, trackPageview } from "../analytics";
+import MusicXML2Ly from "../musicxml2ly/MusicXML2Ly";
 
-import "./index.css";
-
-const router = getRouter();
-
-const rootElement = document.getElementById("root");
-if (!rootElement) {
-  throw new Error("Root element not found");
-}
-
-void router.load().then(() => {
-  createRoot(rootElement).render(
-    <ErrorBoundary>
-      <RouterProvider router={router} />
-    </ErrorBoundary>,
-  );
+export const Route = createFileRoute("/musicxml2ly")({
+  component: MusicXml2LyRoute,
 });
+
+function MusicXml2LyRoute() {
+  useEffect(() => {
+    initAnalytics();
+    trackPageview("/musicxml2ly", "Import MusicXML — Hacklily");
+  }, []);
+
+  return <MusicXML2Ly />;
+}
