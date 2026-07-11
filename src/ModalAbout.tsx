@@ -18,14 +18,16 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import {
-  AnchorButton,
-  Button,
-  Classes,
-  Dialog,
-  Intent,
-} from "@blueprintjs/core";
 import React from "react";
+
+import { Button } from "#/components/ui/button.tsx";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "#/components/ui/dialog.tsx";
 
 interface Props {
   onHide(): void;
@@ -36,137 +38,142 @@ interface Props {
  */
 const ModalAbout: React.FC<Props> = React.memo(function ModalAbout(props) {
   return (
-    <Dialog
-      isOpen={true}
-      onClose={props.onHide}
-      title="About Hacklily"
-      className="w-[565px]"
-    >
-      <div className={Classes.DIALOG_BODY}>
-        <p className={Classes.TEXT_LARGE}>
-          <strong>
-            Hacklily is an online sheet-music editor and publishing tool.
-          </strong>
-        </p>
-        <p>
-          It is powered by{" "}
-          <a
-            href="http://lilypond.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            LilyPond
-          </a>
-          . New to LilyPond? Take a look at the{" "}
-          <a
-            href={`http://lilypond.org/doc/v${
-              process.env.REACT_APP_STABLE_LILYPOND_VERSION?.split(".")
-                .slice(0, 2)
-                .join(".") ?? "2.26"
-            }/Documentation/learning/tutorial`}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            tutorial
-          </a>
-          !
-        </p>
-        {renderLilyPondVersions()}
-        <p>
-          You can view Hacklily&apos;s source and contribute code on{" "}
-          <a
-            href="https://codeberg.org/jocelyn-stericker/hacklily"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Codeberg
-          </a>
-          .
-        </p>
-        <p>
-          Hacklily counts anonymous, cookieless usage stats with{" "}
-          <a
-            href="https://www.goatcounter.com"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            GoatCounter
-          </a>{" "}
-          to see which features get used &mdash; nothing that identifies you.
-          The numbers are public:{" "}
-          <a
-            href="https://stats.hacklily.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            stats.hacklily.org
-          </a>
-          . See the <a href="privacy-statement.html">privacy statement</a> for
-          details.
-        </p>
-        <div
-          className={`${Classes.TEXT_SMALL} ${Classes.TEXT_MUTED}`}
-          style={{ position: "relative" }}
-        >
-          <p>
-            This project is{" "}
-            <a href="https://www.fsf.org/about/what-is-free-software">
-              free software
-            </a>
-            : you can redistribute it and/or modify it under the terms of the
-            GNU General Public License (GNU GPL) as published by the Free
-            Software Foundation, either version 3 of the License, or (at your
-            option) any later version. The code is distributed WITHOUT ANY
-            WARRANTY; without even the implied warranty of MERCHANTABILITY or
-            FITNESS FOR A PARTICULAR PURPOSE. See the GNU GPL for more details.
+    <Dialog open={true} onOpenChange={(open) => !open && props.onHide()}>
+      <DialogContent className="sm:max-w-[565px]">
+        <DialogHeader>
+          <DialogTitle>About Hacklily</DialogTitle>
+        </DialogHeader>
+        <div>
+          <p className="text-lg">
+            <strong>
+              Hacklily is an online sheet-music editor and publishing tool.
+            </strong>
           </p>
           <p>
-            <a href="https://www.gnu.org/licenses/gpl-3.0.html">
-              Read the GNU General Public License version 3.
-              <span className="absolute bottom-0 right-0 max-[530px]:hidden">
-                <img
-                  src="gplv3-127x51.png"
-                  alt="Licensed under the GNU General Public License version 3"
-                />
-              </span>
-            </a>
-          </p>
-          <p style={{ marginBottom: 0 }}>
-            {/* about-javascript.html contains the jslicense1 rel for scrapers */}
-            See{" "}
-            <a href="about-javascript.html">additional license statements</a>,{" "}
-            <a href="dmca.html">DMCA info</a>, and{" "}
-            <a href="privacy-statement.html">privacy statement</a>.
-            <br />
-            &copy; Copyright{" "}
+            It is powered by{" "}
             <a
-              href="https://nettek.ca"
+              href="http://lilypond.org/"
               target="_blank"
               rel="noopener noreferrer"
             >
-              Jocelyn Stericker
-            </a>{" "}
-            2017 - present. 🇨🇦
+              LilyPond
+            </a>
+            . New to LilyPond? Take a look at the{" "}
+            <a
+              href={`http://lilypond.org/doc/v${
+                process.env.REACT_APP_STABLE_LILYPOND_VERSION?.split(".")
+                  .slice(0, 2)
+                  .join(".") ?? "2.26"
+              }/Documentation/learning/tutorial`}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              tutorial
+            </a>
+            !
           </p>
+          {renderLilyPondVersions()}
+          <p>
+            You can view Hacklily&apos;s source and contribute code on{" "}
+            <a
+              href="https://codeberg.org/jocelyn-stericker/hacklily"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Codeberg
+            </a>
+            .
+          </p>
+          <p>
+            Hacklily counts anonymous, cookieless usage stats with{" "}
+            <a
+              href="https://www.goatcounter.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              GoatCounter
+            </a>{" "}
+            to see which features get used &mdash; nothing that identifies you.
+            The numbers are public:{" "}
+            <a
+              href="https://stats.hacklily.org"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              stats.hacklily.org
+            </a>
+            . See the <a href="privacy-statement.html">privacy statement</a> for
+            details.
+          </p>
+          <div
+            className="text-sm text-muted-foreground"
+            style={{ position: "relative" }}
+          >
+            <p>
+              This project is{" "}
+              <a href="https://www.fsf.org/about/what-is-free-software">
+                free software
+              </a>
+              : you can redistribute it and/or modify it under the terms of the
+              GNU General Public License (GNU GPL) as published by the Free
+              Software Foundation, either version 3 of the License, or (at your
+              option) any later version. The code is distributed WITHOUT ANY
+              WARRANTY; without even the implied warranty of MERCHANTABILITY or
+              FITNESS FOR A PARTICULAR PURPOSE. See the GNU GPL for more
+              details.
+            </p>
+            <p>
+              <a href="https://www.gnu.org/licenses/gpl-3.0.html">
+                Read the GNU General Public License version 3.
+                <span className="absolute bottom-0 right-0 max-[530px]:hidden">
+                  <img
+                    src="gplv3-127x51.png"
+                    alt="Licensed under the GNU General Public License version 3"
+                  />
+                </span>
+              </a>
+            </p>
+            <p style={{ marginBottom: 0 }}>
+              {/* about-javascript.html contains the jslicense1 rel for scrapers */}
+              See{" "}
+              <a href="about-javascript.html">additional license statements</a>,{" "}
+              <a href="dmca.html">DMCA info</a>, and{" "}
+              <a href="privacy-statement.html">privacy statement</a>.
+              <br />
+              &copy; Copyright{" "}
+              <a
+                href="https://nettek.ca"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Jocelyn Stericker
+              </a>{" "}
+              2017 - present. 🇨🇦
+            </p>
+          </div>
         </div>
-      </div>
-      <div className={Classes.DIALOG_FOOTER}>
-        <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-          <Button onClick={props.onHide}>Close</Button>
-          <AnchorButton
-            href={`http://lilypond.org/doc/v${
-              process.env.REACT_APP_STABLE_LILYPOND_VERSION?.split(".")
-                .slice(0, 2)
-                .join(".") ?? "2.26"
-            }/Documentation/learning/tutorial`}
-            intent={Intent.PRIMARY}
-            rel="noopener noreferrer"
-            target="_blank"
+        <DialogFooter>
+          <Button onClick={props.onHide} variant="outline">
+            Close
+          </Button>
+          <Button
+            variant="default"
+            onClick={() =>
+              window.open(
+                `http://lilypond.org/doc/v${
+                  process.env.REACT_APP_STABLE_LILYPOND_VERSION?.split(".")
+                    .slice(0, 2)
+                    .join(".") ?? "2.26"
+                }/Documentation/learning/tutorial`,
+                "_blank",
+                "noopener noreferrer",
+              )
+            }
           >
             Start Tutorial
-          </AnchorButton>
-        </div>
-      </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   );
 });
@@ -180,7 +187,7 @@ function renderLilyPondVersions(): JSX.Element | null {
     return null;
   }
   return (
-    <p className={`${Classes.TEXT_SMALL} ${Classes.TEXT_MUTED}`}>
+    <p className="text-sm text-muted-foreground">
       LilyPond renderer versions:{" "}
       {stable && (
         <span>

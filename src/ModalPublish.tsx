@@ -18,16 +18,18 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import {
-  Button,
-  Classes,
-  ControlGroup,
-  Dialog,
-  InputGroup,
-  Intent,
-} from "@blueprintjs/core";
 import { Save, TriangleAlert } from "lucide-react";
 import React from "react";
+
+import { Button } from "#/components/ui/button.tsx";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "#/components/ui/dialog.tsx";
+import { Input } from "#/components/ui/input.tsx";
 
 import { track } from "./analytics";
 import type { Auth } from "./auth";
@@ -114,17 +116,15 @@ class ModalPublish extends React.PureComponent<Props, State> {
     }
 
     return (
-      <Dialog
-        title="Save song"
-        isOpen={true}
-        onClose={onHide}
-        className="w-[565px]"
-      >
-        <div className={Classes.DIALOG_BODY}>
-          <ControlGroup>
-            <div className="self-center mr-1">
+      <Dialog open={true} onOpenChange={(open) => !open && onHide()}>
+        <DialogContent className="sm:max-w-[565px]">
+          <DialogHeader>
+            <DialogTitle>Save song</DialogTitle>
+          </DialogHeader>
+          <div className="flex items-center gap-2">
+            <div className="self-center whitespace-nowrap">
               Save to:&nbsp;
-              <code className={Classes.MONOSPACE_TEXT}>
+              <code className="font-mono">
                 <a
                   href={`https://github.com/${auth.repo}`}
                   target="_blank"
@@ -135,33 +135,35 @@ class ModalPublish extends React.PureComponent<Props, State> {
                 /
               </code>
             </div>
-            <InputGroup
-              value={filename}
-              className="font-mono flex flex-1"
-              placeholder="filename"
-              autoFocus={true}
-              onChange={this.handleChange}
-              rightElement={
-                <div className="h-[30px] leading-[30px] mr-[7px]">
-                  <code className={Classes.MONOSPACE_TEXT}>&nbsp;.ly</code>
-                </div>
-              }
-            />
-          </ControlGroup>
-        </div>
-        <div className={Classes.DIALOG_FOOTER}>
-          <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-            {error}
-            <Button
-              onClick={this.handleSave}
-              disabled={disabled}
-              intent={Intent.PRIMARY}
-              icon={<Save size="1em" />}
-            >
-              Save
-            </Button>
+            <div className="relative flex-1">
+              <Input
+                value={filename}
+                className="font-mono pr-12"
+                placeholder="filename"
+                autoFocus={true}
+                onChange={this.handleChange}
+              />
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                <code className="font-mono text-xs text-muted-foreground">
+                  .ly
+                </code>
+              </div>
+            </div>
           </div>
-        </div>
+          <DialogFooter>
+            <div className="flex items-center gap-2 w-full">
+              {error}
+              <Button
+                onClick={this.handleSave}
+                disabled={disabled}
+                variant="default"
+              >
+                <Save size="1em" />
+                Save
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
       </Dialog>
     );
   }

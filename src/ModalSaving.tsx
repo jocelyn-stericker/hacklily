@@ -18,8 +18,15 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { Classes, Dialog, Spinner } from "@blueprintjs/core";
+import { Loader2 } from "lucide-react";
 import React from "react";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "#/components/ui/dialog.tsx";
 
 /**
  * A modal that is rendered while saving a song.
@@ -28,15 +35,24 @@ import React from "react";
 const ModalSaving: React.FC = React.memo(function ModalSaving() {
   return (
     <Dialog
-      title="Saving, please wait&hellip;"
-      isOpen={true}
-      canOutsideClickClose={false}
-      canEscapeKeyClose={false}
-      isCloseButtonShown={false}
+      open={true}
+      /*
+       * Inescapable by design: `open` is pinned to `true` with no `onOpenChange`,
+       * so base-ui cannot close it on Escape or outside-click (a controlled dialog
+       * with no change handler ignores internal close requests). We also disable
+       * pointer dismissal explicitly and hide the close button. Don't add an
+       * `onOpenChange` here without re-establishing this guarantee.
+       */
+      disablePointerDismissal
     >
-      <div className={Classes.DIALOG_BODY}>
-        <Spinner />
-      </div>
+      <DialogContent showCloseButton={false}>
+        <DialogHeader>
+          <DialogTitle>Saving, please wait&hellip;</DialogTitle>
+        </DialogHeader>
+        <div className="flex justify-center py-4">
+          <Loader2 className="animate-spin size-6" />
+        </div>
+      </DialogContent>
     </Dialog>
   );
 });

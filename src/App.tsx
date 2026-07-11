@@ -149,9 +149,9 @@ interface Props extends QueryProps {
   auth: Auth | null;
 
   /**
-   * From localStorage, the color scheme.
+   * Based on media query.
    */
-  colourScheme: "vs-dark" | "vs";
+  colourScheme: "dark" | "light";
 
   /**
    * From localStorage, used as part of the GitHub OAuth flow.
@@ -164,7 +164,7 @@ interface Props extends QueryProps {
   dirtySongs: { [key: string]: Song };
 
   /**
-   * True if the warning that is shown when LilyPond 2.23 is used should be shown.
+   * True if the warning that is shown when unstable LilyPond is used should be shown.
    */
   hideUnstableNotification: boolean;
 
@@ -183,11 +183,6 @@ interface Props extends QueryProps {
    * Logs in or out of GitHub. Updates localStorage.
    */
   setAuth(auth: Auth | null): void;
-
-  /**
-   * Stores the color scheme in localStorage.
-   */
-  setColourScheme(colourScheme: "vs-dark" | "vs"): void;
 
   /**
    * Sets the CSRF ("state") as part of the GitHub OAuth flow.
@@ -353,13 +348,7 @@ export default class App extends React.PureComponent<Props, State> {
     const { logs, mode, midi, defaultSelection, rendererVersion, windowWidth } =
       this.state;
 
-    const {
-      auth,
-      edit,
-      hideUnstableNotification,
-      colourScheme,
-      setColourScheme,
-    } = this.props;
+    const { auth, edit, hideUnstableNotification } = this.props;
 
     const online: boolean = this.isOnline();
     const preview: React.ReactNode = this.renderPreview();
@@ -378,7 +367,6 @@ export default class App extends React.PureComponent<Props, State> {
 
     const header: React.ReactNode = (
       <Header
-        setColourScheme={setColourScheme}
         onDeleteSong={this.handleDeleteSong}
         onLoadSong={this.handleLoadSong}
         onShowAbout={this.handleShowHelp}
@@ -404,7 +392,6 @@ export default class App extends React.PureComponent<Props, State> {
           (song ? song.baseSHA === PUBLIC_READONLY : false)
         }
         windowWidth={windowWidth}
-        colourScheme={colourScheme}
         canExport={Boolean(
           online && this.rpc && logs && this.state.pendingPreviews === 0,
         )}

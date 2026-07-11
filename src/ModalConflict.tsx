@@ -18,8 +18,16 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { Button, Classes, Dialog, Intent } from "@blueprintjs/core";
 import React from "react";
+
+import { Button } from "#/components/ui/button.tsx";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "#/components/ui/dialog.tsx";
 
 interface Props {
   resolveGitHub(): void;
@@ -32,28 +40,31 @@ interface Props {
 const ModalConflict: React.FC<Props> = React.memo(
   function ModalConflict(props) {
     return (
-      <Dialog isOpen={true} title="Keep unsaved changes?">
-        <div className={Classes.DIALOG_BODY}>
-          <p style={{ marginTop: 0 }}>
-            <strong>This song was edited outside of this browser.</strong> You
-            can either keep the unsaved version from this browser, or revert to
-            the saved version.
-          </p>
-          <p>
-            <strong>Tip: </strong> Next time, save songs before closing
-            Hacklily.
-          </p>
-        </div>
-        <div className={Classes.DIALOG_FOOTER}>
-          <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-            <Button onClick={props.resolveLocalStorage} intent={Intent.WARNING}>
+      <Dialog open={true}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Keep unsaved changes?</DialogTitle>
+          </DialogHeader>
+          <div>
+            <p style={{ marginTop: 0 }}>
+              <strong>This song was edited outside of this browser.</strong> You
+              can either keep the unsaved version from this browser, or revert
+              to the saved version.
+            </p>
+            <p>
+              <strong>Tip: </strong> Next time, save songs before closing
+              Hacklily.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button onClick={props.resolveLocalStorage} variant="secondary">
               Keep unsaved version
             </Button>
-            <Button onClick={props.resolveGitHub} intent={Intent.DANGER}>
+            <Button onClick={props.resolveGitHub} variant="destructive">
               Revert to saved version
             </Button>
-          </div>
-        </div>
+          </DialogFooter>
+        </DialogContent>
       </Dialog>
     );
   },

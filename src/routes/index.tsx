@@ -21,6 +21,8 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { useColourScheme } from "#/components/useColourScheme";
+
 import type { QueryProps, Song } from "../App";
 import App from "../App";
 import type { Auth } from "../auth";
@@ -96,6 +98,7 @@ export const Route = createFileRoute("/")({
 function HacklilyApp() {
   const search = Route.useSearch();
   const navigate = useNavigate();
+  const colourScheme = useColourScheme();
 
   // Track the last hash value so we can detect hash changes (for the long-URL
   // fallback used by ?src=).
@@ -154,8 +157,6 @@ function HacklilyApp() {
   const dirtySongs = getDirtySongs();
   const auth = getAuth();
   const [csrf, setLatestCsrf] = useState(sessionStorage.csrf || null);
-  const colourScheme =
-    (localStorage.colourScheme as "vs-dark" | "vs") || "vs-dark";
   const hideUnstableNotification = getHideUnstableNotification();
 
   const editSong = useCallback((songID: string, song: Song): void => {
@@ -172,11 +173,6 @@ function HacklilyApp() {
     } else {
       localStorage.auth = JSON.stringify(newAuth);
     }
-  }, []);
-
-  const setColourScheme = useCallback((scheme: "vs-dark" | "vs"): void => {
-    localStorage.colourScheme = scheme;
-    document.location.reload();
   }, []);
 
   const setHideUnstableNotification = useCallback((hide: boolean): void => {
@@ -218,7 +214,6 @@ function HacklilyApp() {
       editSong={editSong}
       markSongClean={markSongClean}
       setAuth={setAuth}
-      setColourScheme={setColourScheme}
       setCSRF={setCSRF}
       setHideUnstableNotification={setHideUnstableNotification}
     />

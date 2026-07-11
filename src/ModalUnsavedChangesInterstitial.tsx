@@ -18,9 +18,17 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { Button, Classes, Dialog, Intent } from "@blueprintjs/core";
 import { Save, Trash } from "lucide-react";
 import React from "react";
+
+import { Button } from "#/components/ui/button.tsx";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "#/components/ui/dialog.tsx";
 
 interface Props {
   cancel(): void;
@@ -44,37 +52,34 @@ interface Props {
 const ModalUnsavedChangesInterstitial: React.FC<Props> = React.memo(
   function ModalUnsavedChangesInterstitial(props) {
     return (
-      <Dialog title="Unsaved changes" isOpen={true} onClose={props.cancel}>
-        <div className={Classes.DIALOG_BODY}>
-          <p className={Classes.TEXT_LARGE}>
-            Your changes have not been saved.
-          </p>
-          <p>
-            If you do not save your changes, they will be{" "}
-            <strong>permanently lost</strong>!
-          </p>
-        </div>
-        <div className={Classes.DIALOG_FOOTER}>
-          <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-            <div>
-              <Button onClick={props.cancel}>Cancel</Button>
-              <Button
-                intent={Intent.DANGER}
-                onClick={props.discardChanges}
-                icon={<Trash size="1em" />}
-              >
+      <Dialog open={true} onOpenChange={(open) => !open && props.cancel()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Unsaved changes</DialogTitle>
+          </DialogHeader>
+          <div>
+            <p className="text-lg">Your changes have not been saved.</p>
+            <p>
+              If you do not save your changes, they will be{" "}
+              <strong>permanently lost</strong>!
+            </p>
+          </div>
+          <DialogFooter>
+            <div className="flex gap-2">
+              <Button onClick={props.cancel} variant="outline">
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={props.discardChanges}>
+                <Trash size="1em" />
                 Discard changes
               </Button>
-              <Button
-                icon={<Save size="1em" />}
-                intent={Intent.PRIMARY}
-                onClick={props.save}
-              >
+              <Button variant="default" onClick={props.save}>
+                <Save size="1em" />
                 Save
               </Button>
             </div>
-          </div>
-        </div>
+          </DialogFooter>
+        </DialogContent>
       </Dialog>
     );
   },

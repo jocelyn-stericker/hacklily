@@ -18,8 +18,21 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { Button, Drawer, Position, Tooltip } from "@blueprintjs/core";
+import { AlertTriangleIcon, InfoIcon } from "lucide-react";
 import React from "react";
+
+import { Button } from "#/components/ui/button.tsx";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "#/components/ui/drawer.tsx";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "#/components/ui/tooltip.tsx";
 
 interface Props {
   loading: boolean;
@@ -45,15 +58,12 @@ const Logs: React.FC<Props> = (props) => {
   }, []);
 
   const error = !logs || logs.includes("error") || logs.includes("warning");
-  const icon = error && !loading ? "warning-sign" : "info-sign";
 
   const btn = (
     <Button
-      loading={loading}
-      intent={error && !loading ? "warning" : "none"}
-      large={true}
+      variant={error && !loading ? "destructive" : "outline"}
+      size="lg"
       onClick={handleOpen}
-      icon={icon}
     >
       Logs
     </Button>
@@ -61,28 +71,36 @@ const Logs: React.FC<Props> = (props) => {
 
   return (
     <div className="absolute right-5 bottom-2.5">
-      <Drawer
-        isOpen={showLogDrawer}
-        title="Logs"
-        onClose={handleClose}
-        size="45%"
-        icon={icon}
-      >
-        <pre className="pt-5 pb-5 mt-0 mb-0 mr-0 ml-5 overflow-auto whitespace-pre-wrap">
-          {logs}
-        </pre>
-      </Drawer>
-      <Tooltip
-        disabled={loading}
-        content={
-          <pre className="max-h-[calc(100vh-100px)] whitespace-pre-wrap overflow-hidden m-0 relative pb-4 after:content-[''] after:text-white after:absolute after:-bottom-4 after:font-bold after:w-full after:h-10 after:bg-gradient-to-b after:from-transparent after:to-[rgb(57,75,89)]">
+      <Drawer open={showLogDrawer} onOpenChange={handleClose} direction="right">
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle className="flex items-center justify-center gap-2">
+              {error && !loading ? (
+                <AlertTriangleIcon className="size-4 text-destructive" />
+              ) : (
+                <InfoIcon className="size-4 text-muted-foreground" />
+              )}{" "}
+              Logs
+            </DrawerTitle>
+          </DrawerHeader>
+          <pre className="flex-1 overflow-auto whitespace-pre-wrap p-2 m-0">
             {logs}
           </pre>
-        }
-        position={Position.TOP}
-      >
-        {btn}
-      </Tooltip>
+        </DrawerContent>
+        {loading ? (
+          btn
+        ) : (
+          <Tooltip>
+            <TooltipTrigger render={btn} />
+            <TooltipContent
+              side="top"
+              className="max-h-[calc(100vh-100px)] overflow-hidden"
+            >
+              <pre className="whitespace-pre-wrap m-0">{logs}</pre>
+            </TooltipContent>
+          </Tooltip>
+        )}
+      </Drawer>
     </div>
   );
 };

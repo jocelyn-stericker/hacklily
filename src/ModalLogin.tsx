@@ -18,8 +18,14 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { Classes, Dialog } from "@blueprintjs/core";
 import React from "react";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "#/components/ui/dialog.tsx";
 
 import { CLIENT_ID, getOauthRedirect } from "./auth";
 import { cn } from "./lib/utils";
@@ -57,65 +63,72 @@ export default class ModalLogin extends React.PureComponent<Props> {
 
     if (!CLIENT_ID) {
       return (
-        <Dialog isOpen={true} onClose={onHide}>
-          <div className={Classes.DIALOG_BODY}>
-            GitHub integration is not enabled in this copy of Hacklily since the{" "}
-            <code>REACT_APP_GITHUB_CLIENT_ID</code> environment variable was not
-            set when bundling the application.
-          </div>
+        <Dialog open={true} onOpenChange={(open) => !open && onHide()}>
+          <DialogContent>
+            <div>
+              GitHub integration is not enabled in this copy of Hacklily since
+              the <code>REACT_APP_GITHUB_CLIENT_ID</code> environment variable
+              was not set when bundling the application.
+            </div>
+          </DialogContent>
         </Dialog>
       );
     }
 
     return (
-      <Dialog title="Sign in to continue" isOpen={true} onClose={onHide}>
-        <div className={Classes.DIALOG_BODY}>
-          <p className={Classes.TEXT_LARGE + " " + Classes.RUNNING_TEXT}>
-            <strong>
-              Hacklily is the home for beautiful sheet music. It&apos;s 100%
-              free.
-            </strong>{" "}
-            Sign in now to manage your sheet music library.
-          </p>
-          <p className={Classes.RUNNING_TEXT}>
-            Save songs to your Hacklily library to access them anywhere and
-            share them with others.
-          </p>
-          <p className={Classes.RUNNING_TEXT}>
-            Songs you save will be <strong>public</strong> on GitHub and
-            Hacklily. If you do not have a{" "}
-            <a
-              href="https://help.github.com/articles/github-glossary/#repository"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              repo
-            </a>{" "}
-            named <strong>sheet-music</strong>, Hacklily will create one.
-          </p>
-          <div className="mt-4 w-full text-center">
-            <a href={getOauthRedirect(csrf)}>
-              <button className="bg-[#2a2a2a] bg-[url('./github.svg')] bg-[length:2em] bg-[position:1em] bg-no-repeat border-none rounded-[0.5em] text-white cursor-pointer text-[1em] h-[4em] leading-[1em] px-[2em] pl-[4em] no-underline transition-all duration-500 w-[262px] hover:bg-[#444444] active:bg-[#101010]">
-                Continue with GitHub
-              </button>
-            </a>
+      <Dialog open={true} onOpenChange={(open) => !open && onHide()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Sign in to continue</DialogTitle>
+          </DialogHeader>
+          <div>
+            <p className="text-lg leading-relaxed">
+              <strong>
+                Hacklily is the home for beautiful sheet music. It&apos;s 100%
+                free.
+              </strong>{" "}
+              Sign in now to manage your sheet music library.
+            </p>
+            <p className="leading-relaxed">
+              Save songs to your Hacklily library to access them anywhere and
+              share them with others.
+            </p>
+            <p className="leading-relaxed">
+              Songs you save will be <strong>public</strong> on GitHub and
+              Hacklily. If you do not have a{" "}
+              <a
+                href="https://help.github.com/articles/github-glossary/#repository"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                repo
+              </a>{" "}
+              named <strong>sheet-music</strong>, Hacklily will create one.
+            </p>
+            <div className="mt-4 w-full text-center">
+              <a href={getOauthRedirect(csrf)}>
+                <button className="bg-[#2a2a2a] bg-[url('./github.svg')] bg-[length:2em] bg-[position:1em] bg-no-repeat border-none rounded-[0.5em] text-white cursor-pointer text-[1em] h-[4em] leading-[1em] px-[2em] pl-[4em] no-underline transition-all duration-500 w-[262px] hover:bg-[#444444] active:bg-[#101010]">
+                  Continue with GitHub
+                </button>
+              </a>
+            </div>
+            <p className={cn("text-muted-foreground", "mt-4 -mb-4")}>
+              Only save songs you want to share. See the{" "}
+              <a
+                href="privacy-statement.html"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                privacy statement
+              </a>{" "}
+              and{" "}
+              <a href="dmca.html" target="_blank" rel="noopener noreferrer">
+                DMCA policy
+              </a>
+              .
+            </p>
           </div>
-          <p className={cn(Classes.TEXT_MUTED, "mt-4 -mb-4")}>
-            Only save songs you want to share. See the{" "}
-            <a
-              href="privacy-statement.html"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              privacy statement
-            </a>{" "}
-            and{" "}
-            <a href="dmca.html" target="_blank" rel="noopener noreferrer">
-              DMCA policy
-            </a>
-            .
-          </p>
-        </div>
+        </DialogContent>
       </Dialog>
     );
   }

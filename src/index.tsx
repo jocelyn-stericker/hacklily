@@ -21,6 +21,8 @@
 import { RouterProvider } from "@tanstack/react-router";
 import { createRoot } from "react-dom/client";
 
+import { TooltipProvider } from "#/components/ui/tooltip.tsx";
+
 import ErrorBoundary from "./ErrorBoundary";
 import { getRouter } from "./router";
 
@@ -36,7 +38,9 @@ if (!rootElement) {
 void router.load().then(() => {
   createRoot(rootElement).render(
     <ErrorBoundary>
-      <RouterProvider router={router} />
+      <TooltipProvider>
+        <RouterProvider router={router} />
+      </TooltipProvider>
     </ErrorBoundary>,
   );
 });

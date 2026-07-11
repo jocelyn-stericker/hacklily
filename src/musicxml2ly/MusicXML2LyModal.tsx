@@ -18,8 +18,14 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { Classes, Dialog } from "@blueprintjs/core";
 import React from "react";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "#/components/ui/dialog.tsx";
 
 import { track } from "../analytics";
 import type RPCClient from "../RPCClient";
@@ -32,11 +38,16 @@ interface Props {
 export default class MusicXML2LyModal extends React.PureComponent<Props> {
   render(): JSX.Element {
     return (
-      <Dialog title="Import MusicXML" isOpen={true} onClose={this.props.onHide}>
-        <div className={Classes.DIALOG_BODY}>
-          <p>Select a MusicXML file to import into Hacklily.</p>
-          <input type="file" value="" onChange={this.convert} />
-        </div>
+      <Dialog open={true} onOpenChange={(open) => !open && this.props.onHide()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Import MusicXML</DialogTitle>
+          </DialogHeader>
+          <div>
+            <p>Select a MusicXML file to import into Hacklily.</p>
+            <input type="file" value="" onChange={this.convert} />
+          </div>
+        </DialogContent>
       </Dialog>
     );
   }

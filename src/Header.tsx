@@ -19,19 +19,6 @@
  */
 
 import {
-  Alignment,
-  Button,
-  ButtonGroup,
-  Classes,
-  Menu,
-  MenuItem,
-  Navbar,
-  NavbarDivider,
-  NavbarGroup,
-  Popover,
-  Tooltip,
-} from "@blueprintjs/core";
-import {
   Play,
   Pause,
   File as FileIcon,
@@ -40,8 +27,24 @@ import {
   Music,
   Rewind,
   FastForward,
+  ChevronDown,
 } from "lucide-react";
 import React from "react";
+
+import { Button } from "#/components/ui/button";
+import { ButtonGroup } from "#/components/ui/button-group";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "#/components/ui/dropdown-menu";
+import { Separator } from "#/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "#/components/ui/tooltip";
 
 import { track } from "./analytics";
 import type { Auth } from "./auth";
@@ -74,7 +77,6 @@ interface Player {
 interface Props {
   auth: Auth | null;
   canExport: boolean;
-  colourScheme: "vs-dark" | "vs";
   inSandbox: boolean;
   isDirty: boolean;
   readOnly: boolean;
@@ -100,7 +102,6 @@ interface Props {
   onShowAbout(): void;
   onSignIn(): void;
   onSignOut(): void;
-  setColourScheme(colourScheme: "vs-dark" | "vs"): void;
 }
 
 interface State {
@@ -142,7 +143,6 @@ export default class Header extends React.PureComponent<Props> {
     const {
       auth,
       canExport,
-      colourScheme,
       readOnly,
       inSandbox,
       mode,
@@ -160,7 +160,6 @@ export default class Header extends React.PureComponent<Props> {
       onSignIn,
       onSignOut,
       online,
-      setColourScheme,
       songURL,
       windowWidth,
     } = this.props;
@@ -170,64 +169,75 @@ export default class Header extends React.PureComponent<Props> {
       <React.Fragment>
         <Button
           onClick={this.handleSetView}
-          active={mode === MODE_VIEW}
-          icon={<Eye size="1em" />}
-        />
+          variant={mode === MODE_VIEW ? "default" : "outline"}
+          size="icon-sm"
+        >
+          <Eye size="1em" />
+        </Button>
         <Button
           onClick={this.handleSetEdit}
-          active={mode === MODE_EDIT}
-          icon={<PenLine size="1em" />}
-        />
+          variant={mode === MODE_EDIT ? "default" : "outline"}
+          size="icon-sm"
+        >
+          <PenLine size="1em" />
+        </Button>
       </React.Fragment>
     );
 
     let playButton: React.ReactNode = (
       <Button
         onClick={playing ? this.handlePause : this.handlePlay}
-        icon={playing ? <Pause size="1em" /> : <Play size="1em" />}
+        variant="outline"
         disabled={!midi}
       >
+        {playing ? <Pause size="1em" /> : <Play size="1em" />}
         {playing ? "Pause" : "Play"}
       </Button>
     );
 
     if (!midi) {
       playButton = (
-        <Tooltip
-          content={
-            "No MIDI data found. Make sure you have " +
-            "a \\midi {} and a \\layout {} in your \\score {}."
-          }
-        >
-          {playButton}
+        <Tooltip>
+          <TooltipTrigger render={playButton} />
+          <TooltipContent side="top">
+            {
+              "No MIDI data found. Make sure you have a \\midi {} and a \\layout {} in your \\score {}."
+            }
+          </TooltipContent>
         </Tooltip>
       );
     }
 
     return (
-      <Navbar>
-        <NavbarGroup align={Alignment.LEFT}>
+      <header className="header flex h-12 items-center gap-4 border-b px-4">
+        <div className="flex items-center align gap-2">
           {windowWidth >= MIN_REASONABLE_WIDTH && (
             <img
               src={logoSvg}
-              className="mr-4 py-[9px] scale-x-[-1] w-8"
+              className="mr-4 py-2.25 scale-x-[-1] w-8"
               alt=""
             />
           )}
           {windowWidth >= MIN_BOTH_WIDTH && (
-            <div className={Classes.NAVBAR_HEADING}>Hacklily</div>
+            <div className="text-[16px] -ml-2 mr-3.75">Hacklily</div>
           )}
-          {windowWidth >= MIN_BOTH_WIDTH && <NavbarDivider />}
+          {windowWidth >= MIN_BOTH_WIDTH && (
+            <Separator orientation="vertical" className="h-6 self-center!" />
+          )}
           <ButtonGroup>
-            <Popover
-              content={
+            <DropdownMenu>
+              <DropdownMenuTrigger render={<Button variant="outline" />}>
+                <FileIcon size="1em" />
+                {windowWidth >= MIN_REASONABLE_WIDTH && <span>File</span>}
+                <ChevronDown size="1em" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="min-w-48">
                 <FileMenu
                   auth={auth}
                   canCreateNew={online}
                   canSave={online && !readOnly}
                   canSaveAs={online && !inSandbox}
                   canExport={canExport}
-                  colourScheme={colourScheme}
                   onDeleteSong={onDeleteSong}
                   onExportLy={onExportLy}
                   onExportMIDI={onExportMIDI}
@@ -240,51 +250,39 @@ export default class Header extends React.PureComponent<Props> {
                   onShowNew={onShowNew}
                   onSignIn={onSignIn}
                   onSignOut={onSignOut}
-                  setColourScheme={setColourScheme}
                   songURL={songURL}
                 />
-              }
-              autoFocus={false}
-            >
-              <Button icon={<FileIcon size="1em" />} rightIcon="caret-down">
-                {windowWidth >= MIN_REASONABLE_WIDTH && <span>File</span>}
-              </Button>
-            </Popover>
+              </DropdownMenuContent>
+            </DropdownMenu>
             {windowWidth >= MIN_BOTH_WIDTH && (
-              <Popover
-                content={
-                  <Menu>
-                    <MenuItem
-                      text="Clef&hellip;"
-                      onClick={this.handleShowClef}
-                    />
-                    <MenuItem
-                      text="Key Signature&hellip;"
-                      onClick={this.handleShowKey}
-                    />
-                    <MenuItem
-                      text="Time Signature&hellip;"
-                      onClick={this.handleShowTime}
-                    />
-                    <MenuItem
-                      icon={<Music size="1em" />}
-                      text="Notes&hellip;"
-                      onClick={this.handleShowNotes}
-                    />
-                  </Menu>
-                }
-                autoFocus={false}
-              >
-                <Button icon={<PenLine size="1em" />} rightIcon="caret-down">
+              <DropdownMenu>
+                <DropdownMenuTrigger render={<Button variant="outline" />}>
+                  <PenLine size="1em" />
                   Insert
-                </Button>
-              </Popover>
+                  <ChevronDown size="1em" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="min-w-48">
+                  <DropdownMenuItem onClick={this.handleShowClef}>
+                    Clef&hellip;
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={this.handleShowKey}>
+                    Key Signature&hellip;
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={this.handleShowTime}>
+                    Time Signature&hellip;
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={this.handleShowNotes}>
+                    <Music size="1em" />
+                    Notes&hellip;
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
             {viewMode}
             {played && midi != null ? this.renderTime() : playButton}
           </ButtonGroup>
-        </NavbarGroup>
-      </Navbar>
+        </div>
+      </header>
     );
   }
   private handleFastForward = (): void => {
@@ -415,27 +413,37 @@ export default class Header extends React.PureComponent<Props> {
       <React.Fragment>
         <Button
           title="Rewind"
-          icon={<Rewind size="1em" />}
+          variant="outline"
+          size="icon"
           onClick={this.handleRewind}
-        />
+        >
+          <Rewind size="1em" />
+        </Button>
         <Button
           title={playing ? "Pause" : "Play"}
+          variant="outline"
+          size="icon"
           onClick={playing ? this.handlePause : this.handlePlay}
-          icon={playing ? <Pause size="1em" /> : <Play size="1em" />}
-        />
+        >
+          {playing ? <Pause size="1em" /> : <Play size="1em" />}
+        </Button>
         {windowWidth >= MIN_REASONABLE_WIDTH && (
           <Button
-            className={cn("text-left w-20 justify-end", Classes.MONOSPACE_TEXT)}
+            className={cn("text-left w-20 justify-end", "font-mono")}
+            variant="outline"
             disabled={true}
           >
             {fmtTime}
           </Button>
         )}
         <Button
-          icon={<FastForward size="1em" />}
+          variant="outline"
+          size="icon"
           title="Fast-forward"
           onClick={this.handleFastForward}
-        />
+        >
+          <FastForward size="1em" />
+        </Button>
       </React.Fragment>
     );
   }

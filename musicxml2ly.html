@@ -12,7 +12,7 @@
     <style type="text/css">
       /*
         NOTE: only styles needed for the inital render of Hacklily
-        should be go here
+        should go here
       */
       .App {
         bottom: 0;
@@ -38,10 +38,16 @@
         background-color: #efefef;
         border-bottom: 1px solid black;
         display: flex;
-        font-family: Helvetica, Arial, sans-serif;
         height: 50px;
         min-width: 321px;
         width: 100%;
+        box-sizing: border-box;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .header {
+          background-color: #24343c;
+        }
       }
 
       .lilymonaco-inline-error {

@@ -1,7 +1,168 @@
-@import "normalize.css";
-@import "@blueprintjs/core/lib/css/blueprint.css";
-@import "@blueprintjs/icons/lib/css/blueprint-icons.css";
 @import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+ * shadcn/ui (Base UI flavor) design tokens, ported from braat/src/styles.css.
+ * The components under src/components/ui/* reference these semantic tokens
+ * (bg-popover, text-muted-foreground, ring-ring, border-border, ...) and the
+ * tw-animate-css animations + data-open/data-closed custom variants below.
+ * Without them, every shadcn background / text / ring utility resolves to
+ * nothing (transparent popups, unstyled buttons). Theme follows the OS color
+ * scheme (light / dark).
+ */
+
+/* Custom variants used by Base UI component classes (data-open, data-closed, ...). */
+@custom-variant data-open {
+  &:where([data-state="open"]),
+  &:where([data-open]:not([data-open="false"])) {
+    @slot;
+  }
+}
+
+@custom-variant data-closed {
+  &:where([data-state="closed"]),
+  &:where([data-closed]:not([data-closed="false"])) {
+    @slot;
+  }
+}
+
+@custom-variant data-checked {
+  &:where([data-state="checked"]),
+  &:where([data-checked]:not([data-checked="false"])) {
+    @slot;
+  }
+}
+
+@custom-variant data-unchecked {
+  &:where([data-state="unchecked"]),
+  &:where([data-unchecked]:not([data-unchecked="false"])) {
+    @slot;
+  }
+}
+
+@custom-variant data-selected {
+  &:where([data-selected="true"]) {
+    @slot;
+  }
+}
+
+@custom-variant data-disabled {
+  &:where([data-disabled="true"]),
+  &:where([data-disabled]:not([data-disabled="false"])) {
+    @slot;
+  }
+}
+
+@custom-variant data-active {
+  &:where([data-state="active"]),
+  &:where([data-active]:not([data-active="false"])) {
+    @slot;
+  }
+}
+
+@custom-variant data-horizontal {
+  &:where([data-orientation="horizontal"]) {
+    @slot;
+  }
+}
+
+@custom-variant data-vertical {
+  &:where([data-orientation="vertical"]) {
+    @slot;
+  }
+}
+
+/*
+ * Token values match Blueprint 4's palette so the shadcn pieces blend with the
+ * remaining Blueprint chrome (Navbar, Drawer, ButtonGroup): white surfaces,
+ * #1c2127 text, #5f6b7c muted text, #2d72d2 primary/intent-blue, #cd4246 danger,
+ * rgba(17,20,24,0.2) hairline borders, and a 2px corner radius (Blueprint's
+ * signature sharp look). Dark values mirror Blueprint's dark theme.
+ */
+:root {
+  --background: #f6f7f9;
+  --foreground: #1c2127;
+  --card: #ffffff;
+  --card-foreground: #1c2127;
+  --popover: #ffffff;
+  --popover-foreground: #1c2127;
+  --primary: #2d72d2;
+  --primary-foreground: #ffffff;
+  --secondary: #f6f7f9;
+  --secondary-foreground: #1c2127;
+  --muted: #edeff2;
+  --muted-foreground: #5f6b7c;
+  --accent: #edeff2;
+  --accent-foreground: #1c2127;
+  --destructive: #cd4246;
+  --border: rgba(17, 20, 24, 0.2);
+  --input: rgba(17, 20, 24, 0.2);
+  --ring: #2d72d2;
+  --radius: 2px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #2f343c;
+    --foreground: #f6f7f9;
+    --card: #2f343c;
+    --card-foreground: #f6f7f9;
+    --popover: #2f343c;
+    --popover-foreground: #f6f7f9;
+    --primary: #2d72d2;
+    --primary-foreground: #ffffff;
+    --secondary: #383e47;
+    --secondary-foreground: #f6f7f9;
+    --muted: #404854;
+    --muted-foreground: #abb3bf;
+    --accent: #404854;
+    --accent-foreground: #f6f7f9;
+    --destructive: #cd4246;
+    --border: rgba(255, 255, 255, 0.2);
+    --input: rgba(255, 255, 255, 0.2);
+    --ring: #2d72d2;
+  }
+}
+
+/* Map the semantic tokens to Tailwind's --color-* / --radius-* theme namespace
+   so utilities like bg-popover / text-muted-foreground / ring-ring resolve. */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
 
 @keyframes previewPending {
   0% {

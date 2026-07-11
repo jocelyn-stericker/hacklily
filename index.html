@@ -25,7 +25,7 @@
       }
 
       .content {
-        background-color: #1e1e1e;
+        background-color: white;
         height: calc(100% - 50px);
         position: absolute;
         width: 100%;
@@ -42,6 +42,16 @@
         height: 50px;
         min-width: 321px;
         width: 100%;
+        box-sizing: border-box;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .header {
+          background-color: #24343c;
+        }
+        .content {
+          background-color: #1e1e1e;
+        }
       }
 
       .lilymonaco-inline-error {

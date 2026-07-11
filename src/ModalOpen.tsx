@@ -18,21 +18,28 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import {
-  Button,
-  Classes,
-  Dialog,
-  HTMLTable,
-  Intent,
-  Menu,
-  MenuItem,
-  Popover,
-  Spinner,
-  Tab,
-  Tabs,
-} from "@blueprintjs/core";
-import { Trash, File as FileIcon, Ellipsis } from "lucide-react";
+import { Trash, File as FileIcon, Ellipsis, Loader2 } from "lucide-react";
 import React from "react";
+
+import { Button } from "#/components/ui/button.tsx";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "#/components/ui/dialog.tsx";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "#/components/ui/dropdown-menu.tsx";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "#/components/ui/tabs.tsx";
 
 import type { Auth } from "./auth";
 import type { File } from "./gitfs";
@@ -74,7 +81,7 @@ class GitHubOpen extends React.Component<Props, GitHubState> {
       } else if (!repoTree) {
         songs = (
           <div className={cn(styles.placeholder)}>
-            <Spinner />
+            <Loader2 className="animate-spin size-6" />
           </div>
         );
       } else {
@@ -91,46 +98,41 @@ class GitHubOpen extends React.Component<Props, GitHubState> {
         } else {
           const eachSong: React.ReactNode[] = lilySongs.map((song: File) => {
             const menu = (
-              <Menu data-song={`${auth.repo}/${song.path}`}>
-                <MenuItem
-                  text="Delete"
-                  intent={Intent.DANGER}
-                  icon={<Trash size="1em" />}
-                  onClick={this.handleSongDeleteClick}
-                />
-              </Menu>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={<Button variant="ghost" size="icon-sm" />}
+                >
+                  <Ellipsis size="1em" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem
+                    data-song={`${auth.repo}/${song.path}`}
+                    onClick={this.handleSongDeleteClick}
+                  >
+                    <Trash size="1em" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             );
             return (
               <tr key={song.path} data-song={`${auth.repo}/${song.path}`}>
                 <td
-                  className={Classes.TEXT_OVERFLOW_ELLIPSIS}
+                  className="truncate"
                   onClick={this.handleSongLiClick}
                   title={song.path}
                 >
-                  <FileIcon size="1em" className={cn(styles.docIcon)} />
+                  <FileIcon size="1em" className="mr-2 align-middle inline" />
                   {song.path}
                 </td>
-                <td className={cn(styles.tableIcon)}>
-                  <Popover content={menu}>
-                    <Button
-                      minimal={true}
-                      icon={<Ellipsis size="1em" />}
-                      small={true}
-                    />
-                  </Popover>
-                </td>
+                <td className={cn(styles.tableIcon)}>{menu}</td>
               </tr>
             );
           });
           songs = (
-            <HTMLTable
-              condensed={true}
-              interactive={true}
-              striped={true}
-              className={cn(styles.table)}
-            >
+            <table className="table-fixed w-full overflow-y-auto text-sm [&_tr]:hover:bg-muted [&_tr]:cursor-pointer [&_tr:nth-child(even)]:bg-muted/50">
               <tbody>{eachSong}</tbody>
-            </HTMLTable>
+            </table>
           );
         }
       }
@@ -139,7 +141,7 @@ class GitHubOpen extends React.Component<Props, GitHubState> {
         <div
           className={cn(
             "flex-1 flex flex-row items-center justify-center",
-            Classes.TEXT_LARGE,
+            "text-lg",
           )}
         >
           <div>
@@ -213,27 +215,27 @@ class ModalOpen extends React.PureComponent<Props, {}> {
     const { onHide } = this.props;
 
     return (
-      <Dialog
-        title="Open song"
-        isOpen={true}
-        onClose={onHide}
-        className="w-[565px]"
-      >
-        <div className={Classes.DIALOG_BODY}>
-          <Tabs vertical={true} animate={true} renderActiveTabPanelOnly={true}>
-            <Tab
-              id="github"
-              title={<div>GitHub</div>}
-              panel={<GitHubOpen {...this.props} />}
-              panelClassName="flex flex-1 h-[300px] overflow-y-auto"
-            />
-            <Tab
-              id="more-soon"
-              title={<div>More soon&hellip;</div>}
-              disabled={true}
-            />
+      <Dialog open={true} onOpenChange={(open) => !open && onHide()}>
+        <DialogContent className="sm:max-w-[565px]">
+          <DialogHeader>
+            <DialogTitle>Open song</DialogTitle>
+          </DialogHeader>
+          <Tabs defaultValue="github" orientation="vertical">
+            <TabsList className="flex-col w-fit">
+              <TabsTrigger value="github">GitHub</TabsTrigger>
+              <TabsTrigger value="more-soon" disabled={true}>
+                More soon&hellip;
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent
+              value="github"
+              className="flex-1 h-[300px] overflow-y-auto"
+            >
+              <GitHubOpen {...this.props} />
+            </TabsContent>
+            <TabsContent value="more-soon" />
           </Tabs>
-        </div>
+        </DialogContent>
       </Dialog>
     );
   }
@@ -242,7 +244,5 @@ export default ModalOpen;
 
 const styles = {
   placeholder: "flex-1 flex flex-row items-center justify-center",
-  docIcon: "mr-2 align-middle inline",
   tableIcon: "w-[38px]",
-  table: "table-fixed w-full overflow-y-auto",
 } as const;

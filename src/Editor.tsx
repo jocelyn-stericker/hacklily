@@ -43,7 +43,7 @@ export interface MakelilyProps {
 interface Props {
   code: string | undefined;
 
-  colourScheme: "vs-dark" | "vs";
+  colourScheme: "dark" | "light";
 
   /**
    * When this changes, the selection changes. Used so that when you click on a
@@ -335,7 +335,7 @@ export default class Editor extends React.PureComponent<Props> {
           language="lilypond"
           onChange={onSetCode}
           options={monacoOptions}
-          theme={this.props.colourScheme}
+          theme={this.props.colourScheme === "dark" ? "vs-dark" : "vs"}
           value={code}
           width={width}
         />

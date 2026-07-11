@@ -18,8 +18,16 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { Button, Classes, Dialog, Intent } from "@blueprintjs/core";
 import React from "react";
+
+import { Button } from "#/components/ui/button.tsx";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "#/components/ui/dialog.tsx";
 
 interface Props {
   onHide(): void;
@@ -33,21 +41,24 @@ interface Props {
  */
 const Modal404: React.FC<Props> = React.memo(function Modal404(props) {
   return (
-    <Dialog title="Page not found" isOpen={true} onClose={props.onHide}>
-      <div className={Classes.DIALOG_BODY}>
-        <p>The requested page may have been moved or deleted.</p>
-        <p>
-          Hacklily is a free online sheet-music editor and publishing tool.
-          While you are here, why not give it a try?
-        </p>
-      </div>
-      <div className={Classes.DIALOG_FOOTER}>
-        <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-          <Button onClick={props.onHide} intent={Intent.PRIMARY}>
+    <Dialog open={true} onOpenChange={(open) => !open && props.onHide()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Page not found</DialogTitle>
+        </DialogHeader>
+        <div>
+          <p>The requested page may have been moved or deleted.</p>
+          <p>
+            Hacklily is a free online sheet-music editor and publishing tool.
+            While you are here, why not give it a try?
+          </p>
+        </div>
+        <DialogFooter>
+          <Button onClick={props.onHide} variant="default">
             Continue
           </Button>
-        </div>
-      </div>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   );
 });
