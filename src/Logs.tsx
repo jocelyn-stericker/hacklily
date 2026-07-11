@@ -87,9 +87,7 @@ const Logs: React.FC<Props> = (props) => {
             {logs}
           </pre>
         </DrawerContent>
-        {loading ? (
-          btn
-        ) : (
+        {!loading && (
           <Tooltip>
             <TooltipTrigger render={btn} />
             <TooltipContent
@@ -100,6 +98,7 @@ const Logs: React.FC<Props> = (props) => {
             </TooltipContent>
           </Tooltip>
         )}
+        {loading && btn}
       </Drawer>
     </div>
   );
