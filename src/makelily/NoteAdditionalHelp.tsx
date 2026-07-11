@@ -18,7 +18,6 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css, StyleSheet } from "aphrodite";
 import React from "react";
 
 export interface Props {
@@ -204,8 +203,12 @@ const NoteAdditionalHelp: React.FC<Props> = (props) => {
   }
 
   return (
-    <span className={css(styles.overlay)} onClick={onHide} role="button">
-      <span className={css(styles.widget)}>
+    <span
+      className="bg-[rgba(0,0,0,0.8)] absolute inset-0 cursor-pointer z-[100000]"
+      onClick={onHide}
+      role="button"
+    >
+      <span className="bg-[#f6f7f7] border border-black rounded-[4px] cursor-auto left-[15px] mb-0 p-[15px] absolute right-[15px] top-[50px]">
         {kind === "keyboard" && renderKeyboard()}
         {kind === "midi" && renderMIDI()}
         {kind === "mouse" && renderMouse()}
@@ -223,28 +226,3 @@ const NoteAdditionalHelp: React.FC<Props> = (props) => {
 };
 
 export default NoteAdditionalHelp;
-
-const styles = StyleSheet.create({
-  overlay: {
-    background: "rgba(0, 0, 0, 0.8)",
-    bottom: 0,
-    cursor: "pointer",
-    left: 0,
-    position: "absolute",
-    right: 0,
-    top: 0,
-    zIndex: 100000,
-  },
-  widget: {
-    backgroundColor: "#f6f7f7",
-    border: "1px solid black",
-    borderRadius: 4,
-    cursor: "auto",
-    left: 15,
-    marginBottom: 0,
-    padding: 15,
-    position: "absolute",
-    right: 15,
-    top: 50,
-  },
-});

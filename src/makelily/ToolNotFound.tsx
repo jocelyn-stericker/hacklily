@@ -18,9 +18,9 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from "aphrodite";
 import React from "react";
 
+import { cn } from "../lib/utils";
 import tabStyles from "./tabStyles";
 import type { ToolProps } from "./tool";
 
@@ -28,7 +28,7 @@ import type { ToolProps } from "./tool";
  * Placeholder for when a tool with an invalid name is requested.
  */
 const ToolNotFound: React.FC<ToolProps> = () => {
-  return <span className={css(tabStyles.tool)}>Tool not found.</span>;
+  return <span className={cn(tabStyles.tool)}>Tool not found.</span>;
 };
 
 export default ToolNotFound;

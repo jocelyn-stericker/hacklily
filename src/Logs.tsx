@@ -19,7 +19,6 @@
  */
 
 import { Button, Drawer, Position, Tooltip } from "@blueprintjs/core";
-import { css, StyleSheet } from "aphrodite";
 import React from "react";
 
 interface Props {
@@ -61,7 +60,7 @@ const Logs: React.FC<Props> = (props) => {
   );
 
   return (
-    <div className={css(styles.logsButtonWrapper)}>
+    <div className="absolute right-5 bottom-2.5">
       <Drawer
         isOpen={showLogDrawer}
         title="Logs"
@@ -69,11 +68,17 @@ const Logs: React.FC<Props> = (props) => {
         size="45%"
         icon={icon}
       >
-        <pre className={css(styles.logDrawer)}>{logs}</pre>
+        <pre className="pt-5 pb-5 mt-0 mb-0 mr-0 ml-5 overflow-auto whitespace-pre-wrap">
+          {logs}
+        </pre>
       </Drawer>
       <Tooltip
         disabled={loading}
-        content={<pre className={css(styles.logPreview)}>{logs}</pre>}
+        content={
+          <pre className="max-h-[calc(100vh-100px)] whitespace-pre-wrap overflow-hidden m-0 relative pb-4 after:content-[''] after:text-white after:absolute after:-bottom-4 after:font-bold after:w-full after:h-10 after:bg-gradient-to-b after:from-transparent after:to-[rgb(57,75,89)]">
+            {logs}
+          </pre>
+        }
         position={Position.TOP}
       >
         {btn}
@@ -83,49 +88,3 @@ const Logs: React.FC<Props> = (props) => {
 };
 
 export default Logs;
-
-export const styles = StyleSheet.create({
-  logsButtonWrapper: {
-    position: "absolute",
-    right: 20,
-    bottom: 10,
-  },
-  logPreview: {
-    maxHeight: "calc(100vh - 100px)",
-    whiteSpace: "pre-wrap",
-    overflow: "hidden",
-    margin: 0,
-    position: "relative",
-    paddingBottom: 16,
-    ":after": {
-      content: "''",
-      color: "white",
-      position: "absolute",
-      bottom: -16,
-      fontWeight: "bold",
-      width: "100%",
-      height: 40,
-      background:
-        "-webkit-linear-gradient( rgba(57, 75, 89, 0) 0%, rgba(57, 75, 89, 1) 100%)",
-      backgroundImage:
-        "-moz-linear-gradient( rgba(57, 75, 89, 0) 0%, rgba(57, 75, 89, 1) 100%), " +
-        "-o-linear-gradient( rgba(57, 75, 89, 0) 0%, rgba(57, 75, 89, 1) 100%), " +
-        "linear-gradient( rgba(57, 75, 89, 0) 0%, rgba(57, 75, 89, 1) 100%), " +
-        "-ms-linear-gradient( rgba(57, 75, 89, 0) 0%, rgba(57, 75, 89, 1) 100%)",
-    },
-  },
-  logDrawer: {
-    paddingTop: 20,
-    paddingBottom: 20,
-    marginTop: 0,
-    marginBottom: 0,
-    marginRight: 0,
-    marginLeft: 20,
-    overflow: "auto",
-    whiteSpace: "pre-wrap",
-  },
-  logPreviewHint: {
-    marginTop: 0,
-    marginBottom: 8,
-  },
-});

@@ -18,7 +18,6 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css, StyleSheet } from "aphrodite";
 import { chunk, isEqual, times } from "lodash";
 import { Undo, Redo, Plus } from "lucide-react";
 import * as React from "react";
@@ -34,6 +33,7 @@ import {
   NormalAngledSquare,
 } from "#/musicxml-interfaces";
 
+import { cn } from "../lib/utils";
 import { Addons as SatieAddons } from "./satie/src/satie";
 
 export interface Props {
@@ -297,30 +297,30 @@ const articulations: Notations[] = [
  */
 export default class NotePalette extends React.Component<Props> {
   render(): JSX.Element {
-    const cls: string = css(
+    const cls: string = cn(
       styles.paletteSml,
       styles.paletteBtnOff,
       styles.paletteTxt,
     );
 
     return (
-      <div className={css(styles.controlWidget)}>
+      <div className={cn(styles.controlWidget)}>
         {this.renderSecondRow()}
-        <div className={css(styles.controlRow)}>
+        <div className={cn(styles.controlRow)}>
           {this.renderDuration()}
           {this.renderModifiers()}
           {this.renderAccidentals()}
-          <div className={css(styles.spring)} />
-          <ul className={css(styles.controls)}>
-            <div className={css(styles.controlSeperator)} />
+          <div className={cn(styles.spring)} />
+          <ul className={cn(styles.controls)}>
+            <div className={cn(styles.controlSeperator)} />
             <a href="#" onClick={this.props.undo} className={cls} role="button">
               <Undo />
             </a>
-            <div className={css(styles.controlSeperator)} />
+            <div className={cn(styles.controlSeperator)} />
             <a href="#" onClick={this.props.redo} className={cls} role="button">
               <Redo />
             </a>
-            <div className={css(styles.controlSeperator)} />
+            <div className={cn(styles.controlSeperator)} />
             <a
               href="#"
               onClick={this.props.newMeasure}
@@ -342,7 +342,7 @@ export default class NotePalette extends React.Component<Props> {
     const { accidental, editType } = this.props;
 
     function classNameForAcc(otherAccidental: MxmlAccidental): string {
-      return css(
+      return cn(
         styles.paletteSml,
         accidental === otherAccidental && editType === "N"
           ? styles.paletteBtnOn
@@ -353,22 +353,22 @@ export default class NotePalette extends React.Component<Props> {
     const getTypeClass: (forType: string) => string = (
       forType: string,
     ): string =>
-      css(
+      cn(
         styles.paletteSml,
         editType === forType ? styles.paletteBtnOn : styles.paletteBtnOff,
       );
 
     return (
-      <span className={css(styles.subsection)}>
-        <div className={css(styles.controlSeperator)} />
-        <ul className={css(styles.controls)}>
+      <span className={cn(styles.subsection)}>
+        <div className={cn(styles.controlSeperator)} />
+        <ul className={cn(styles.controls)}>
           <a
             href="#"
             onClick={this.setAccidentalNone}
             className={classNameForAcc(MxmlAccidental.Natural)}
             role="button"
           >
-            <span className={css(styles.bravura)}>
+            <span className={cn(styles.bravura)}>
               <span className="mn_">{"\ue261"}</span>
             </span>
           </a>
@@ -378,7 +378,7 @@ export default class NotePalette extends React.Component<Props> {
             className={classNameForAcc(MxmlAccidental.Flat)}
             role="button"
           >
-            <span className={css(styles.bravura)}>
+            <span className={cn(styles.bravura)}>
               <span className="mn_">{"\ue260"}</span>
             </span>
           </a>
@@ -388,7 +388,7 @@ export default class NotePalette extends React.Component<Props> {
             className={classNameForAcc(MxmlAccidental.Sharp)}
             role="button"
           >
-            <span className={css(styles.bravura)}>
+            <span className={cn(styles.bravura)}>
               <span className="mn_">{"\ue262"}</span>
             </span>
           </a>
@@ -400,7 +400,7 @@ export default class NotePalette extends React.Component<Props> {
             className={getTypeClass("R")}
             role="button"
           >
-            <span className={css(styles.bravura)}>
+            <span className={cn(styles.bravura)}>
               <span className="mn_">{"\ue4e6"}</span>
             </span>
           </a>
@@ -412,11 +412,11 @@ export default class NotePalette extends React.Component<Props> {
             className={getTypeClass("P")}
             role="button"
           >
-            <span className={css(styles.bravura)}>
+            <span className={cn(styles.bravura)}>
               <span className="mn_">{"\ue52f"}</span>
             </span>
           </a>
-          <div className={css(styles.controlSeperator)} />
+          <div className={cn(styles.controlSeperator)} />
         </ul>
       </span>
     );
@@ -433,7 +433,7 @@ export default class NotePalette extends React.Component<Props> {
       (row: Notations[], idx: number) => {
         const columns: JSX.Element[] = row.map(
           (model: Notations, jdx: number): JSX.Element => {
-            const className: string = css(
+            const className: string = cn(
               isEqual(notation, model)
                 ? styles.paletteBtnOn
                 : styles.paletteBtnOff,
@@ -454,7 +454,7 @@ export default class NotePalette extends React.Component<Props> {
         );
 
         return (
-          <ul className={css(styles.controls)} key={idx}>
+          <ul className={cn(styles.controls)} key={idx}>
             {columns}
           </ul>
         );
@@ -462,8 +462,8 @@ export default class NotePalette extends React.Component<Props> {
     );
 
     return (
-      <span className={css(styles.subsection)}>
-        <div className={css(styles.controlSeperator)} />
+      <span className={cn(styles.subsection)}>
+        <div className={cn(styles.controlSeperator)} />
         {rows}
       </span>
     );
@@ -473,7 +473,7 @@ export default class NotePalette extends React.Component<Props> {
     const { note } = this.props;
 
     const classNameForCount: (cnt: Count) => string = (cnt: Count): string => {
-      return css(
+      return cn(
         note === cnt &&
           (this.props.editType === "N" || this.props.editType === "R")
           ? styles.paletteBtnOn
@@ -482,16 +482,16 @@ export default class NotePalette extends React.Component<Props> {
     };
 
     return (
-      <span className={css(styles.subsection)}>
-        <div className={css(styles.controlSeperator)} />
-        <ul className={css(styles.controls)}>
+      <span className={cn(styles.subsection)}>
+        <div className={cn(styles.controlSeperator)} />
+        <ul className={cn(styles.controls)}>
           <a
             href="#"
             onClick={this.setNote32}
             className={classNameForCount(Count._32nd)}
             role="button"
           >
-            <span className={css(styles.bravura)}>
+            <span className={cn(styles.bravura)}>
               <span className="mn_">{"\ud834\udd62"}</span>
             </span>
           </a>
@@ -501,7 +501,7 @@ export default class NotePalette extends React.Component<Props> {
             className={classNameForCount(Count._16th)}
             role="button"
           >
-            <span className={css(styles.bravura)}>
+            <span className={cn(styles.bravura)}>
               <span className="mn_">{"\ud834\udd61"}</span>
             </span>
           </a>
@@ -511,19 +511,19 @@ export default class NotePalette extends React.Component<Props> {
             className={classNameForCount(Count.Eighth)}
             role="button"
           >
-            <span className={css(styles.bravura)}>
+            <span className={cn(styles.bravura)}>
               <span className="mn_">{"\ud834\udd60"}</span>
             </span>
           </a>
         </ul>
-        <ul className={css(styles.controls)}>
+        <ul className={cn(styles.controls)}>
           <a
             href="#"
             onClick={this.setNote4}
             className={classNameForCount(Count.Quarter)}
             role="button"
           >
-            <span className={css(styles.bravura)}>
+            <span className={cn(styles.bravura)}>
               <span className="mn_">{"\ud834\udd5f"}</span>
             </span>
           </a>
@@ -533,7 +533,7 @@ export default class NotePalette extends React.Component<Props> {
             className={classNameForCount(Count.Half)}
             role="button"
           >
-            <span className={css(styles.bravura)}>
+            <span className={cn(styles.bravura)}>
               <span className="mn_">{"\ud834\udd5e"}</span>
             </span>
           </a>
@@ -543,7 +543,7 @@ export default class NotePalette extends React.Component<Props> {
             className={classNameForCount(Count.Whole)}
             role="button"
           >
-            <span className={css(styles.bravura)}>
+            <span className={cn(styles.bravura)}>
               <span className="mn_">{"\ue0a2"}</span>
             </span>
           </a>
@@ -563,7 +563,7 @@ export default class NotePalette extends React.Component<Props> {
       (row: Direction[], idx: number) => {
         const columns: JSX.Element[] = row.map(
           (model: Direction, jdx: number): JSX.Element => {
-            const className: string = css(
+            const className: string = cn(
               isEqual(direction, model)
                 ? styles.paletteBtnOn
                 : styles.paletteBtnOff,
@@ -588,7 +588,7 @@ export default class NotePalette extends React.Component<Props> {
         );
 
         return (
-          <ul className={css(styles.controls)} key={idx}>
+          <ul className={cn(styles.controls)} key={idx}>
             {columns}
           </ul>
         );
@@ -596,8 +596,8 @@ export default class NotePalette extends React.Component<Props> {
     );
 
     return (
-      <span className={css(styles.subsection)}>
-        <div className={css(styles.controlSeperator)} />
+      <span className={cn(styles.subsection)}>
+        <div className={cn(styles.controlSeperator)} />
         {rows}
       </span>
     );
@@ -606,7 +606,7 @@ export default class NotePalette extends React.Component<Props> {
   private renderModifiers(): JSX.Element {
     const { dots, timeModification } = this.props;
 
-    const timeModificationTupletClassName: string = css(
+    const timeModificationTupletClassName: string = cn(
       timeModification ? styles.paletteBtnOn : styles.paletteBtnOff,
     );
 
@@ -622,18 +622,18 @@ export default class NotePalette extends React.Component<Props> {
     );
 
     return (
-      <span className={css(styles.subsection)}>
-        <div className={css(styles.controlSeperator)} />
-        <ul className={css(styles.controls)}>
+      <span className={cn(styles.subsection)}>
+        <div className={cn(styles.controlSeperator)} />
+        <ul className={cn(styles.controls)}>
           <a
             href="#"
             onClick={this.toggleDots}
             className={
-              dots ? css(styles.paletteBtnOn) : css(styles.paletteBtnOff)
+              dots ? cn(styles.paletteBtnOn) : cn(styles.paletteBtnOff)
             }
             role="button"
           >
-            <span className={css(styles.bravura)}>
+            <span className={cn(styles.bravura)}>
               <span className="mn_">
                 {"\ud834\udd5f"}
                 {dotEl}
@@ -646,7 +646,7 @@ export default class NotePalette extends React.Component<Props> {
             className={timeModificationTupletClassName}
             role="button"
           >
-            <span className={css(styles.bravura)}>
+            <span className={cn(styles.bravura)}>
               <span className="mn_">{"\ue883"}</span>
             </span>
           </a>
@@ -659,8 +659,8 @@ export default class NotePalette extends React.Component<Props> {
     if (this.props.editType === "P") {
       return (
         <span>
-          <div className={css(styles.controlRow)}>{this.renderDynamics()}</div>
-          <div className={css(styles.controlRow)}>
+          <div className={cn(styles.controlRow)}>{this.renderDynamics()}</div>
+          <div className={cn(styles.controlRow)}>
             {this.renderArticulations()}
           </div>
         </span>
@@ -694,117 +694,22 @@ export default class NotePalette extends React.Component<Props> {
   };
 }
 
-const styles = StyleSheet.create({
-  bravura: {
-    fontSize: 22,
-  },
-
-  controlHeading: {
-    display: "block",
-    fontSize: 10,
-    height: 10,
-    marginBottom: 2,
-    textAlign: "center",
-    width: "100%",
-  },
-
-  controlWidget: {
-    backgroundColor: "white",
-    borderBottom: "1px solid #bebebe",
-    borderRight: "1px solid #bebebe",
-    bottom: 165,
-    display: "flex",
-    flexDirection: "column",
-    left: 15,
-    position: "absolute",
-    right: 15,
-  },
-
-  controlRow: {
-    borderTop: "1px solid #bebebe",
-    display: "flex",
-    flexDirection: "row",
-    minHeight: 40,
-    overflow: "auto",
-  },
-
-  controlSeperator: {
-    backgroundColor: "#bebebe",
-    height: "100%",
-    width: 1,
-  },
-
-  controls: {
-    display: "flex",
-    listStyleType: "none",
-    margin: 0,
-    paddingLeft: 0,
-  },
-
-  buttonBarSpacer: {
-    width: 40,
-  },
-
-  paletteSml: {
-    fontSize: 22,
-  },
-
-  paletteTxt: {
-    lineHeight: "42px",
-  },
-
-  paletteBtnOn: {
-    background: "rgb(0, 42, 74)",
-    borderBottom: "none",
-    borderBottomWidth: 0,
-    borderRadius: 0,
-    borderTopWidth: 0,
-    color: "white",
-    cursor: "pointer",
-    display: "inline-flex",
-    alignItems: "center",
-    fontSize: 14,
-    height: 40,
-    lineHeight: "36px",
-    minWidth: 20,
-    overflow: "hidden",
-    paddingLeft: 10,
-    paddingRight: 10,
-    textAlign: "center",
-    textDecoration: "none",
-  },
-
-  paletteBtnOff: {
-    [":hover"]: {
-      background: "rgb(26, 68, 100)",
-      color: "white",
-    },
-
-    background: "#f6f7f7",
-    borderBottom: "none",
-    borderBottomWidth: 0,
-    borderRadius: 0,
-    borderTopWidth: 0,
-    color: "rgb(0, 0, 238)",
-    cursor: "pointer",
-    display: "inline-flex",
-    alignItems: "center",
-    fontSize: 14,
-    height: 40,
-    lineHeight: "36px",
-    minWidth: 20,
-    overflow: "hidden",
-    paddingLeft: 10,
-    paddingRight: 10,
-    textAlign: "center",
-    textDecoration: "none",
-  },
-
-  spring: {
-    flex: 1,
-  },
-
-  subsection: {
-    display: "flex",
-  },
-});
+const styles = {
+  bravura: "text-[22px]",
+  controlHeading: "block text-[10px] h-[10px] mb-0.5 text-center w-full",
+  controlWidget:
+    "bg-white border-b border-[#bebebe] border-r border-[#bebebe] bottom-[165px] flex flex-col left-[15px] absolute right-[15px]",
+  controlRow:
+    "border-t border-[#bebebe] flex flex-row min-h-[40px] overflow-auto",
+  controlSeperator: "bg-[#bebebe] h-full w-px",
+  controls: "flex list-none m-0 p-0",
+  buttonBarSpacer: "w-10",
+  paletteSml: "text-[22px]",
+  paletteTxt: "leading-[42px]",
+  paletteBtnOn:
+    "bg-[rgb(0,42,74)] border-0 rounded-none text-white cursor-pointer inline-flex items-center text-[14px] h-10 leading-[36px] min-w-5 overflow-hidden px-2.5 text-center no-underline",
+  paletteBtnOff:
+    "bg-[#f6f7f7] border-0 rounded-none text-[rgb(0,0,238)] cursor-pointer inline-flex items-center text-[14px] h-10 leading-[36px] min-w-5 overflow-hidden px-2.5 text-center no-underline hover:bg-[rgb(26,68,100)] hover:text-white",
+  spring: "flex-1",
+  subsection: "flex",
+} as const;

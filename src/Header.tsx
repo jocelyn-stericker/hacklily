@@ -31,7 +31,6 @@ import {
   Popover,
   Tooltip,
 } from "@blueprintjs/core";
-import { css, StyleSheet } from "aphrodite";
 import {
   Play,
   Pause,
@@ -47,6 +46,7 @@ import React from "react";
 import { track } from "./analytics";
 import type { Auth } from "./auth";
 import FileMenu from "./FileMenu";
+import { cn } from "./lib/utils";
 import logoSvg from "./logo.svg";
 
 export type ViewMode = "view" | "edit" | "both";
@@ -208,7 +208,11 @@ export default class Header extends React.PureComponent<Props> {
       <Navbar>
         <NavbarGroup align={Alignment.LEFT}>
           {windowWidth >= MIN_REASONABLE_WIDTH && (
-            <img src={logoSvg} className={css(styles.logo)} alt="" />
+            <img
+              src={logoSvg}
+              className="mr-4 py-[9px] scale-x-[-1] w-8"
+              alt=""
+            />
           )}
           {windowWidth >= MIN_BOTH_WIDTH && (
             <div className={Classes.NAVBAR_HEADING}>Hacklily</div>
@@ -421,7 +425,7 @@ export default class Header extends React.PureComponent<Props> {
         />
         {windowWidth >= MIN_REASONABLE_WIDTH && (
           <Button
-            className={css(styles.playTime) + " " + Classes.MONOSPACE_TEXT}
+            className={cn("text-left w-20 justify-end", Classes.MONOSPACE_TEXT)}
             disabled={true}
           >
             {fmtTime}
@@ -436,17 +440,3 @@ export default class Header extends React.PureComponent<Props> {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  logo: {
-    marginRight: 16,
-    padding: "9px 0",
-    transform: "scale(-1, 1)",
-    width: 32,
-  },
-  playTime: {
-    textAlign: "left",
-    width: 80,
-    justifyContent: "flex-end",
-  },
-});

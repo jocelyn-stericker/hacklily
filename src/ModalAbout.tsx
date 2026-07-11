@@ -25,7 +25,6 @@ import {
   Dialog,
   Intent,
 } from "@blueprintjs/core";
-import { css, StyleSheet } from "aphrodite";
 import React from "react";
 
 interface Props {
@@ -41,7 +40,7 @@ const ModalAbout: React.FC<Props> = React.memo(function ModalAbout(props) {
       isOpen={true}
       onClose={props.onHide}
       title="About Hacklily"
-      className={css(styles.modal)}
+      className="w-[565px]"
     >
       <div className={Classes.DIALOG_BODY}>
         <p className={Classes.TEXT_LARGE}>
@@ -124,7 +123,7 @@ const ModalAbout: React.FC<Props> = React.memo(function ModalAbout(props) {
           <p>
             <a href="https://www.gnu.org/licenses/gpl-3.0.html">
               Read the GNU General Public License version 3.
-              <span className={css(styles.gpl)}>
+              <span className="absolute bottom-0 right-0 max-[530px]:hidden">
                 <img
                   src="gplv3-127x51.png"
                   alt="Licensed under the GNU General Public License version 3"
@@ -199,17 +198,3 @@ function renderLilyPondVersions(): JSX.Element | null {
 }
 
 export default ModalAbout;
-
-const styles = StyleSheet.create({
-  modal: {
-    width: 565,
-  },
-  gpl: {
-    "@media (max-width: 530px)": {
-      display: "none",
-    },
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-  },
-});

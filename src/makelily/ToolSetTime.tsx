@@ -18,12 +18,12 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from "aphrodite";
 import React from "react";
 
 import type { Time } from "#/musicxml-interfaces";
 import { TimeSymbolType } from "#/musicxml-interfaces";
 
+import { cn } from "../lib/utils";
 import { Addons as SatieAddons } from "./satie/src/satie";
 import tabStyles from "./tabStyles";
 import type { ToolProps } from "./tool";
@@ -119,7 +119,7 @@ export default class ToolSetTime extends React.Component<ToolProps, State> {
         };
 
         const selected: boolean = i === this.state.selectedTime;
-        const className: string = css(
+        const className: string = cn(
           tabStyles.selectableOption,
           selected && tabStyles.selectableSelected,
           tabStyles.paletteSml,
@@ -133,7 +133,7 @@ export default class ToolSetTime extends React.Component<ToolProps, State> {
             key={i}
           >
             <svg
-              className={css(tabStyles.resetFont)}
+              className={cn(tabStyles.resetFont)}
               viewBox={timeSpec.tsViewbox}
             >
               <SatieAddons.TimeSignature spec={timeSpec} />
@@ -144,17 +144,17 @@ export default class ToolSetTime extends React.Component<ToolProps, State> {
     );
 
     return (
-      <div className={css(tabStyles.tool)}>
-        <div className={css(tabStyles.section)}>
-          <h3 className={css(tabStyles.toolHeading)}>Time Signature</h3>
-          <div className={css(tabStyles.selectableList)}>{tsViews}</div>
+      <div className={cn(tabStyles.tool)}>
+        <div className={cn(tabStyles.section)}>
+          <h3 className={cn(tabStyles.toolHeading)}>Time Signature</h3>
+          <div className={cn(tabStyles.selectableList)}>{tsViews}</div>
         </div>
-        <div className={css(tabStyles.spacer)} />
-        <div className={css(tabStyles.section)}>
-          <pre className={css(tabStyles.lyPreview)}>{this.generateLy()}</pre>
+        <div className={cn(tabStyles.spacer)} />
+        <div className={cn(tabStyles.section)}>
+          <pre className={cn(tabStyles.lyPreview)}>{this.generateLy()}</pre>
 
           <button
-            className={css(tabStyles.insert)}
+            className={cn(tabStyles.insert)}
             onClick={this.handleInsertLyClicked}
           >
             Insert this code into Hacklily

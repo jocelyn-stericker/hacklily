@@ -18,7 +18,6 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css, StyleSheet } from "aphrodite";
 import React from "react";
 
 import Makelily from "./Makelily";
@@ -74,10 +73,10 @@ const App: React.FC<Props> = (props) => {
   }, []);
 
   return (
-    <div className={css(styles.appRoot)}>
-      <div className={css(styles.mockPreview)} />
-      <div className={css(styles.mockHeader)} />
-      <div className={css(styles.presets)}>
+    <div className="bg-[#1e1e1e] h-full w-full">
+      <div className="bg-white h-full absolute right-0 w-1/2" />
+      <div className="bg-[#efefef] border-b border-[#000] h-[50px] absolute top-0 w-full" />
+      <div className="text-black font-mono left-5 absolute top-[15px] z-[90000]">
         Makelily sandbox.
         {" \u00a0"}
         \clef{" "}
@@ -133,34 +132,3 @@ const App: React.FC<Props> = (props) => {
 };
 
 export default App;
-
-const styles = StyleSheet.create({
-  appRoot: {
-    backgroundColor: "#1e1e1e",
-    height: "100%",
-    width: "100%",
-  },
-  mockHeader: {
-    backgroundColor: "#efefef",
-    borderBottom: "1px solid #000",
-    height: 50,
-    position: "absolute",
-    top: 0,
-    width: "100%",
-  },
-  mockPreview: {
-    backgroundColor: "white",
-    height: "100%",
-    position: "absolute",
-    right: 0,
-    width: "50%",
-  },
-  presets: {
-    color: "black",
-    fontFamily: "monospace",
-    left: 20,
-    position: "absolute",
-    top: 15,
-    zIndex: 90000,
-  },
-});

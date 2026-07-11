@@ -19,10 +19,10 @@
  */
 
 import { Classes, Dialog } from "@blueprintjs/core";
-import { css, StyleSheet } from "aphrodite";
 import React from "react";
 
 import { CLIENT_ID, getOauthRedirect } from "./auth";
+import { cn } from "./lib/utils";
 
 interface Props {
   csrf: string;
@@ -93,14 +93,14 @@ export default class ModalLogin extends React.PureComponent<Props> {
             </a>{" "}
             named <strong>sheet-music</strong>, Hacklily will create one.
           </p>
-          <div className={css(styles.btnGithubWrapper)}>
+          <div className="mt-4 w-full text-center">
             <a href={getOauthRedirect(csrf)}>
-              <button className={css(styles.btnGithub)}>
+              <button className="bg-[#2a2a2a] bg-[url('./github.svg')] bg-[length:2em] bg-[position:1em] bg-no-repeat border-none rounded-[0.5em] text-white cursor-pointer text-[1em] h-[4em] leading-[1em] px-[2em] pl-[4em] no-underline transition-all duration-500 w-[262px] hover:bg-[#444444] active:bg-[#101010]">
                 Continue with GitHub
               </button>
             </a>
           </div>
-          <p className={Classes.TEXT_MUTED + " " + css(styles.finePrint)}>
+          <p className={cn(Classes.TEXT_MUTED, "mt-4 -mb-4")}>
             Only save songs you want to share. See the{" "}
             <a
               href="privacy-statement.html"
@@ -120,36 +120,3 @@ export default class ModalLogin extends React.PureComponent<Props> {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  btnGithubWrapper: {
-    marginTop: 16,
-    width: "100%",
-    textAlign: "center",
-  },
-  btnGithub: {
-    ":active": {
-      backgroundColor: "#101010",
-    },
-    ":hover": {
-      backgroundColor: "#444444",
-    },
-    backgroundColor: "#2a2a2a",
-    backgroundImage: "url('./github.svg')",
-    backgroundPosition: "1em",
-    backgroundRepeat: "no-repeat",
-    backgroundSize: "2em",
-    border: "none",
-    borderRadius: "0.5em",
-    color: "white",
-    cursor: "pointer",
-    fontSize: "1em",
-    height: "4em",
-    lineHeight: "1em",
-    padding: "0 2em 0 4em",
-    textDecoration: "none",
-    transition: "all 0.5s",
-    width: 262,
-  },
-  finePrint: { marginTop: 16, marginBottom: -16 },
-});

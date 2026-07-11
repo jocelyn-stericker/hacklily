@@ -21,13 +21,11 @@
 import {
   Button,
   Classes,
-  Colors,
   ControlGroup,
   Dialog,
   InputGroup,
   Intent,
 } from "@blueprintjs/core";
-import { css, StyleSheet } from "aphrodite";
 import { Save, TriangleAlert } from "lucide-react";
 import React from "react";
 
@@ -35,6 +33,7 @@ import { track } from "./analytics";
 import type { Auth } from "./auth";
 import type { File } from "./gitfs";
 import { Conflict, FileNotFound, ls, rm, write } from "./gitfs";
+import { cn } from "./lib/utils";
 import { renderVersionFor } from "./lilypondVersion";
 import ModalSaving from "./ModalSaving";
 import type RPCClient from "./RPCClient";
@@ -84,7 +83,7 @@ class ModalPublish extends React.PureComponent<Props, State> {
     if (!filename.length) {
       disabled = true;
       error = (
-        <span className={css(styles.error)}>
+        <span className={cn("text-red-700 flex-1 self-center")}>
           <TriangleAlert size="1em" /> Please enter a filename.
         </span>
       );
@@ -94,13 +93,13 @@ class ModalPublish extends React.PureComponent<Props, State> {
     ) {
       disabled = true;
       error = (
-        <span className={css(styles.error)}>
+        <span className={cn("text-red-700 flex-1 self-center")}>
           <TriangleAlert size="1em" /> That filename is taken.
         </span>
       );
     } else if (invitationRequired) {
       error = (
-        <span className={css(styles.error)}>
+        <span className={cn("text-red-700 flex-1 self-center")}>
           Permission denied. You may need to{" "}
           <a
             href={`https://github.com/${auth.repo}/invitations`}
@@ -119,11 +118,11 @@ class ModalPublish extends React.PureComponent<Props, State> {
         title="Save song"
         isOpen={true}
         onClose={onHide}
-        className={css(styles.modal)}
+        className="w-[565px]"
       >
         <div className={Classes.DIALOG_BODY}>
           <ControlGroup>
-            <div className={css(styles.prefix)}>
+            <div className="self-center mr-1">
               Save to:&nbsp;
               <code className={Classes.MONOSPACE_TEXT}>
                 <a
@@ -138,12 +137,12 @@ class ModalPublish extends React.PureComponent<Props, State> {
             </div>
             <InputGroup
               value={filename}
-              className={css(styles.input)}
+              className="font-mono flex flex-1"
               placeholder="filename"
               autoFocus={true}
               onChange={this.handleChange}
               rightElement={
-                <div className={css(styles.suffix)}>
+                <div className="h-[30px] leading-[30px] mr-[7px]">
                   <code className={Classes.MONOSPACE_TEXT}>&nbsp;.ly</code>
                 </div>
               }
@@ -345,31 +344,3 @@ export async function doUnpublish(
 }
 
 export default ModalPublish;
-
-const styles = StyleSheet.create({
-  prefix: {
-    alignSelf: "center",
-    marginRight: 4,
-  },
-  error: {
-    color: Colors.RED1,
-    flex: 1,
-    alignSelf: "center",
-  },
-  mono: {
-    fontFamily: "monospace",
-  },
-  modal: {
-    width: 565,
-  },
-  input: {
-    fontFamily: "monospace",
-    display: "flex",
-    flex: 1,
-  },
-  suffix: {
-    height: 30,
-    lineHeight: "30px",
-    marginRight: 7,
-  },
-});

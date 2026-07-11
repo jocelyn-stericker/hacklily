@@ -18,9 +18,9 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css, StyleSheet } from "aphrodite";
 import React from "react";
 
+import { cn } from "../lib/utils";
 import { parseClef, parseKeySig, parseTime } from "./parseLy";
 import { Application, requireFont } from "./satie/src/satie";
 import type { ToolProps } from "./tool";
@@ -113,7 +113,7 @@ export default class Makelily extends React.Component<Props, State> {
     const modeElements: JSX.Element[] = modes
       .filter((mode: InsertMode) => mode.name !== null)
       .map((mode: InsertMode, i: number) => {
-        const className: string = css(
+        const className: string = cn(
           styles.modeItem,
           i + 1 === modes.length && styles.modeItemLast,
           mode.key === this.state.toolKey && styles.modeItemSelected,
@@ -141,14 +141,14 @@ export default class Makelily extends React.Component<Props, State> {
     let bar: JSX.Element | null;
     if (!this.props.singleTaskMode) {
       bar = (
-        <div className={css(styles.modeBar)}>
-          <h2 className={css(styles.heading)}>LilyPond Tools</h2>
-          <ul className={css(styles.modeList)}>{modeElements}</ul>
+        <div className={cn(styles.modeBar)}>
+          <h2 className={cn(styles.heading)}>LilyPond Tools</h2>
+          <ul className={cn(styles.modeList)}>{modeElements}</ul>
         </div>
       );
     }
 
-    const contentClass: string = css(
+    const contentClass: string = cn(
       styles.content,
       this.props.singleTaskMode && styles.contentNoBar,
     );
@@ -158,10 +158,10 @@ export default class Makelily extends React.Component<Props, State> {
         <div
           role="button"
           aria-label="close"
-          className={css(styles.modalBg)}
+          className={cn(styles.modalBg)}
           onClick={this.props.onHide}
         />
-        <div className={css(styles.modal)}>
+        <div className={cn(styles.modal)}>
           {bar}
           <div className={contentClass}>
             <Tool
@@ -175,7 +175,7 @@ export default class Makelily extends React.Component<Props, State> {
             href="#"
             onClick={this.props.onHide}
             role="button"
-            className={css(styles.close)}
+            className={cn(styles.close)}
           >
             {"\u00d7"}
           </a>
@@ -192,93 +192,20 @@ export default class Makelily extends React.Component<Props, State> {
   };
 }
 
-const modeBarWidth = 180;
-
-const styles = StyleSheet.create({
-  close: {
-    ":hover": {
-      color: "black",
-    },
-    color: "#6e6e6e",
-    fontSize: 22,
-    position: "absolute",
-    right: 15,
-    textDecoration: "none",
-    top: 22,
-  },
-  content: {
-    bottom: 0,
-    left: modeBarWidth,
-    position: "absolute",
-    right: 0,
-    top: 0,
-  },
-  contentNoBar: {
-    left: 0,
-  },
-  heading: {
-    cursor: "default",
-    fontSize: 18,
-    marginBottom: 0,
-    marginTop: 8,
-    paddingBottom: 16,
-    paddingLeft: 16,
-    paddingTop: 16,
-  },
-  modal: {
-    background: "white",
-    border: "1px solid grey",
-    borderRadius: 4,
-    height: 600,
-    left: "calc(50% - 1020px / 2)",
-    overflow: "hidden",
-    position: "fixed",
-    top: "calc((50% - 600px / 2) * 2 / 3)",
-    width: 1020,
-    zIndex: 1001,
-  },
-  modalBg: {
-    background: "black",
-    bottom: 0,
-    cursor: "pointer",
-    left: 0,
-    opacity: 0.4,
-    position: "fixed",
-    right: 0,
-    top: 0,
-    zIndex: 1000,
-  },
-  modeBar: {
-    backgroundColor: "#F6F7F7",
-    bottom: 0,
-    left: 0,
-    position: "absolute",
-    top: 0,
-    width: modeBarWidth,
-  },
-  modeItem: {
-    ":hover": {
-      textDecoration: "underline",
-    },
-    borderTop: "1px solid #D6D8DA",
-    cursor: "pointer",
-    fontSize: 15,
-    padding: "8px 16px",
-  },
-  modeItemLast: {
-    borderBottom: "1px solid #D6D8DA",
-  },
-  modeItemSelected: {
-    ":hover": {
-      color: "black",
-      textDecoration: "none",
-    },
-    cursor: "default",
-    fontWeight: "bold",
-  },
-  modeList: {
-    listStyleType: "none",
-    margin: 0,
-    padding: 0,
-  },
-});
+const styles = {
+  close:
+    "text-[#6e6e6e] text-[22px] absolute right-[15px] no-underline top-[22px] hover:text-black",
+  content: "absolute inset-y-0 left-[180px] right-0",
+  contentNoBar: "left-0",
+  heading: "cursor-default text-[18px] mb-0 mt-2 pb-4 pl-4 pt-4",
+  modal:
+    "bg-white border border-solid border-[grey] rounded-[4px] h-[600px] left-[calc(50%-1020px/2)] overflow-hidden fixed top-[calc((50%-600px/2)*2/3)] w-[1020px] z-[1001]",
+  modalBg: "bg-black absolute inset-0 cursor-pointer opacity-40 fixed z-[1000]",
+  modeBar: "bg-[#F6F7F7] absolute inset-y-0 left-0 w-[180px]",
+  modeItem:
+    "border-t border-[#D6D8DA] cursor-pointer text-[15px] px-4 py-2 hover:underline",
+  modeItemLast: "border-b border-[#D6D8DA]",
+  modeItemSelected:
+    "cursor-default font-bold hover:text-black hover:no-underline",
+  modeList: "list-none m-0 p-0",
+} as const;

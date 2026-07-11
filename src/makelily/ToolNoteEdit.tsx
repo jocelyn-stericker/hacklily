@@ -18,7 +18,6 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css, StyleSheet } from "aphrodite";
 import invariant from "invariant";
 import {
   find,
@@ -65,6 +64,7 @@ import type {
 } from "#/musicxml-interfaces/builders";
 import type { IAny } from "#/musicxml-interfaces/operations";
 
+import { cn } from "../lib/utils";
 import NoteAdditionalHelp from "./NoteAdditionalHelp";
 import NotePalette from "./NotePalette";
 import type { PartBuilder } from "./satie/src/engine_createPatch";
@@ -246,7 +246,7 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
           patches={this.state.operations}
           onMouseClick={this.handleMouseClick}
           onMouseMove={this.handleMouseMove}
-          pageClassName={css(styles.song)}
+          pageClassName={cn(styles.song)}
           ref={this.setSongRef}
         />
       );
@@ -255,14 +255,14 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
     return (
       <div
         ref={this.domNode}
-        className={css(tabStyles.tool)}
+        className={cn(tabStyles.tool)}
         tabIndex={0}
         onKeyPress={this.handleKeyPress}
         onKeyDown={this.handleKeyDown}
         role="textbox"
       >
         <div
-          className={css(
+          className={cn(
             tabStyles.help,
             this.state.showHelp && tabStyles.helpVisible,
           )}
@@ -290,9 +290,9 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
 
         {this.renderAdditionalHelp()}
         {this.renderPalette()}
-        <div className={css(tabStyles.section)}>
+        <div className={cn(tabStyles.section)}>
           <div
-            className={css(
+            className={cn(
               styles.songContainer,
               tallPalette && styles.songContainerSmall,
             )}
@@ -301,9 +301,9 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
             {song}
           </div>
         </div>
-        <div className={css(tabStyles.spacer)} />
-        <div className={css(tabStyles.section)}>
-          <span className={css(tabStyles.outputOptions)}>
+        <div className={cn(tabStyles.spacer)} />
+        <div className={cn(tabStyles.section)}>
+          <span className={cn(tabStyles.outputOptions)}>
             <input
               type="checkbox"
               checked={this.state.relativeMode}
@@ -322,10 +322,10 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
               </sup>{" "}
             </label>
           </span>
-          <pre className={css(tabStyles.lyPreview)}>{this.generateLy()}</pre>
+          <pre className={cn(tabStyles.lyPreview)}>{this.generateLy()}</pre>
 
           <button
-            className={css(tabStyles.insert)}
+            className={cn(tabStyles.insert)}
             onClick={this.handleInsertLyClicked}
           >
             Insert this code into Hacklily
@@ -1867,22 +1867,10 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
   };
 }
 
-const styles = StyleSheet.create({
-  newBar: {
-    textAlign: "center",
-  },
-  song: {
-    width: "100%",
-  },
-  songContainer: {
-    marginLeft: -18,
-    marginRight: -18,
-    marginTop: -48,
-    maxHeight: 388,
-    overflowX: "hidden",
-    overflowY: "scroll",
-  },
-  songContainerSmall: {
-    maxHeight: 308,
-  },
-});
+const styles = {
+  newBar: "text-center",
+  song: "w-full",
+  songContainer:
+    "-ml-[18px] -mr-[18px] -mt-[48px] max-h-[388px] overflow-x-hidden overflow-y-scroll",
+  songContainerSmall: "max-h-[308px]",
+} as const;

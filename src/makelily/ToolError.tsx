@@ -18,9 +18,9 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from "aphrodite";
 import React from "react";
 
+import { cn } from "../lib/utils";
 import tabStyles from "./tabStyles";
 import type { ToolProps } from "./tool";
 
@@ -29,13 +29,13 @@ import type { ToolProps } from "./tool";
  */
 const ToolError: React.FC<ToolProps> = () => {
   return (
-    <span className={css(tabStyles.tool)}>
-      <div className={css(tabStyles.section)}>
-        <h3 className={css(tabStyles.toolHeading)}>
+    <span className={cn(tabStyles.tool)}>
+      <div className={cn(tabStyles.section)}>
+        <h3 className={cn(tabStyles.toolHeading)}>
           It&apos;s not your fault*!
         </h3>
       </div>
-      <div className={css(tabStyles.section)}>
+      <div className={cn(tabStyles.section)}>
         The tool you were using crashed, so it has been closed. Please{" "}
         <a
           href="https://github.com/hacklily/makelily/issues/new"

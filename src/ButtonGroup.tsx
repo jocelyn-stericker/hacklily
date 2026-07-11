@@ -43,9 +43,9 @@
  * SOFTWARE.
  */
 
-import { css } from "aphrodite";
 import React from "react";
 
+import { cn } from "./lib/utils";
 import { BUTTON_STYLE } from "./styles";
 
 export interface ButtonSpec {
@@ -109,7 +109,7 @@ const ButtonGroup: React.FC<Props> = React.memo(function ButtonGroup(props) {
 
   const buttons: JSX.Element[] = buttons0.map(
     (button: ButtonSpec, i: number) => {
-      const buttonGroupClassName: string = css(
+      const buttonGroupClassName: string = cn(
         BUTTON_STYLE.buttonStyle,
         button.value === value && BUTTON_STYLE.selectedStyle,
       );

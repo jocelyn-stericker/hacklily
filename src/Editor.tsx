@@ -18,7 +18,6 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from "aphrodite";
 import { Lock, TriangleAlert } from "lucide-react";
 import * as monacoEditor from "monaco-editor";
 import React from "react";
@@ -26,6 +25,7 @@ import ReactMonacoEditor from "react-monaco-editor";
 
 import type { ViewMode } from "./Header";
 import { MODE_EDIT, MODE_VIEW } from "./Header";
+import { cn } from "./lib/utils";
 import CodelensProvider from "./monacoConfig/CodelensProvider";
 import Commands from "./monacoConfig/Commands";
 import LILYPOND_COMPLETION_ITEM_PROVIDER from "./monacoConfig/LILYPOND_COMPLETION_ITEM_PROVIDER";
@@ -118,7 +118,7 @@ export default class Editor extends React.PureComponent<Props> {
                 value: error[5],
               },
               inlineClassName: "lilymonaco-inline-error",
-              linesDecorationsClassName: css(APP_STYLE.errorDecoration),
+              linesDecorationsClassName: cn(APP_STYLE.errorDecoration),
             },
             range: {
               // we insert a line on the server:
@@ -275,7 +275,7 @@ export default class Editor extends React.PureComponent<Props> {
       if (this.props.isImmutableSrc) {
         readOnlyNotice = (
           <div
-            className={css(APP_STYLE.urgentEditorNotification)}
+            className={cn(APP_STYLE.urgentEditorNotification)}
             style={{ width }}
           >
             <Lock size="1em" /> to edit, save a copy of this song to your
@@ -285,7 +285,7 @@ export default class Editor extends React.PureComponent<Props> {
       } else {
         readOnlyNotice = (
           <div
-            className={css(APP_STYLE.urgentEditorNotification)}
+            className={cn(APP_STYLE.urgentEditorNotification)}
             style={{ width }}
           >
             <Lock size="1em" /> read-only &mdash; to edit, log in as the owner
@@ -299,14 +299,14 @@ export default class Editor extends React.PureComponent<Props> {
     if (rendererVersion === "unstable" && !hideUnstableNotification) {
       unstableVersionNotice = (
         <div
-          className={css(APP_STYLE.urgentEditorNotification)}
+          className={cn(APP_STYLE.urgentEditorNotification)}
           style={{ width }}
         >
           <TriangleAlert size="1em" /> This song uses LilyPond 2.27, which is an
           unstable development version and may change without notice.{" "}
           <a
             onClick={onHideUnstableNotification}
-            className={css(APP_STYLE.urgentEditorNotificationClose)}
+            className={cn(APP_STYLE.urgentEditorNotificationClose)}
             href="javascript:void(0)"
           >
             I understand.
@@ -323,9 +323,7 @@ export default class Editor extends React.PureComponent<Props> {
     // when that changes.
     return (
       <div
-        className={`monaco ${css(
-          mode === MODE_VIEW && APP_STYLE.monacoHidden,
-        )}`}
+        className={cn("monaco", mode === MODE_VIEW && APP_STYLE.monacoHidden)}
       >
         {readOnlyNotice}
         {unstableVersionNotice}

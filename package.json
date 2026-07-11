@@ -15,7 +15,6 @@
     "@tanstack/router-plugin": "^1.168.19",
     "clsx": "^2.1.1",
     "@xmldom/xmldom": "^0.9.10",
-    "aphrodite": "2.4.0",
     "dompurify": "^3.4.5",
     "hackmidi": "0.0.4",
     "lodash": "^4.17.21",

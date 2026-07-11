@@ -2,3 +2,15 @@
 @import "@blueprintjs/core/lib/css/blueprint.css";
 @import "@blueprintjs/icons/lib/css/blueprint-icons.css";
 @import "tailwindcss";
+
+@keyframes previewPending {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.15;
+  }
+  100% {
+    opacity: 0;
+  }
+}

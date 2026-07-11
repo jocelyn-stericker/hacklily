@@ -18,124 +18,29 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { StyleSheet } from "aphrodite";
+export const APP_STYLE = {
+  errorDecoration:
+    "border-2 border-red-600 text-red-600 italic font-bold underline",
+  errorMask:
+    "bg-black text-white absolute inset-y-0 left-[50%] p-4 text-center",
+  monacoHidden: "hidden",
+  pendingPreviewMask:
+    "bg-black absolute inset-y-0 left-[50%] animate-[previewPending_2s_ease-in-out_infinite]",
+  previewPendingMaskModeView: "left-0",
+  sheetMusicError: "text-[#aeaeae] inline-block text-center align-middle",
+  sheetMusicView:
+    "items-center bg-white border-0 absolute inset-y-0 right-0 flex justify-center overflow-hidden",
+  sheetMusicViewEdit: "left-[50%]",
+  sheetMusicViewView: "left-0",
+  urgentEditorNotification:
+    "bg-[#1e1e1e] text-white font-bold left-0 p-2.5 top-0 z-[100000]",
+  urgentEditorNotificationClose: "text-[#aeaeae]",
+} as const;
 
-const previewPendingAnimation = {
-  "0%": {
-    opacity: 0.0,
-  },
-  "50%": {
-    opacity: 0.15,
-  },
-  "100%": {
-    opacity: 0.0,
-  },
-};
-
-const PREVIEW_WIDTH = "50%";
-const EDITOR_WIDTH = "50%";
-
-export const APP_STYLE = StyleSheet.create({
-  errorDecoration: {
-    border: "2px solid red",
-    color: "red",
-    fontStyle: "oblique",
-    fontWeight: "bold",
-    textDecoration: "underline",
-  },
-  errorMask: {
-    backgroundColor: "black",
-    bottom: 0,
-    color: "white",
-    left: PREVIEW_WIDTH,
-    padding: 15,
-    position: "absolute",
-    right: 0,
-    textAlign: "center",
-    top: 0,
-  },
-  monacoHidden: {
-    display: "none",
-  },
-  pendingPreviewMask: {
-    animationDuration: "2s",
-    animationIterationCount: "infinite",
-    animationName: previewPendingAnimation,
-    animationTimingFunction: "ease-in-out",
-    backgroundColor: "black",
-    bottom: 0,
-    left: PREVIEW_WIDTH,
-    position: "absolute",
-    right: 0,
-    top: 0,
-  },
-  previewPendingMaskModeView: {
-    left: 0,
-  },
-  sheetMusicError: {
-    color: "#aeaeae",
-    display: "inline-block",
-    textAlign: "center",
-    verticalAlign: "middle",
-  },
-  sheetMusicView: {
-    alignItems: "center",
-    backgroundColor: "white",
-    border: "0 none",
-    bottom: 0,
-    display: "flex",
-    justifyContent: "center",
-    overflow: "hidden",
-    position: "absolute",
-    right: "0",
-    top: 0,
-  },
-  sheetMusicViewEdit: {
-    left: EDITOR_WIDTH,
-  },
-  sheetMusicViewView: {
-    left: 0,
-  },
-  urgentEditorNotification: {
-    backgroundColor: "#1e1e1e",
-    color: "white",
-    fontWeight: "bold",
-    left: 0,
-    padding: 10,
-    top: 0,
-    zIndex: 100000,
-  },
-  urgentEditorNotificationClose: {
-    color: "#aeaeae",
-  },
-});
-
-export const GITHUB_STYLE = StyleSheet.create({
-  btnGithub: {
-    ":active": {
-      backgroundColor: "#101010",
-    },
-    ":hover": {
-      backgroundColor: "#444444",
-    },
-    backgroundColor: "#2a2a2a",
-    backgroundImage: "url('./github.svg')",
-    backgroundPosition: "1em",
-    backgroundRepeat: "no-repeat",
-    backgroundSize: "2em",
-    border: "none",
-    borderRadius: "0.5em",
-    color: "white",
-    cursor: "pointer",
-    fontSize: "1em",
-    height: "4em",
-    lineHeight: "1em",
-    padding: "0 2em 0 4em",
-    textDecoration: "none",
-    transition: "all 0.5s",
-    width: 262,
-  },
-});
+export const GITHUB_STYLE = {
+  btnGithub:
+    "bg-[#2a2a2a] bg-[url('./github.svg')] bg-[length:2em] bg-[position:1em] bg-no-repeat border-none rounded-[0.5em] text-white cursor-pointer text-[1em] h-[4em] leading-[1em] px-[2em] pl-[4em] no-underline transition-all duration-500 w-[262px] hover:bg-[#444444] active:bg-[#101010]",
+} as const;
 
 /**
  * @license
@@ -164,44 +69,10 @@ export const GITHUB_STYLE = StyleSheet.create({
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-export const BUTTON_STYLE = StyleSheet.create({
-  buttonStyle: {
-    ":first-child": {
-      borderBottomLeftRadius: "3px",
-      borderLeft: "1px solid #ccc",
-      borderTopLeftRadius: "3px",
-    },
-    // TODO: why is :focus not valid?
-    [":focus" as any]: {
-      zIndex: "2",
-    },
-    ":hover": {
-      backgroundColor: "#ccc",
-    },
-    ":last-child": {
-      borderBottomRightRadius: "3px",
-      borderRight: "1px solid #ccc",
-      borderTopRightRadius: "3px",
-    },
-    backgroundColor: "white",
-    border: "1px solid #ccc",
-    borderLeft: "0",
-    cursor: "pointer",
-    margin: "0",
-    padding: "5px 10px",
-    position: "relative", // for hover
-  },
-
-  downloadChoiceButton: {
-    boxSizing: "border-box",
-    color: "black",
-    display: "inline-block",
-    marginBottom: 10,
-    textDecoration: "none",
-    width: "100%",
-  },
-
-  selectedStyle: {
-    backgroundColor: "#ddd",
-  },
-});
+export const BUTTON_STYLE = {
+  buttonStyle:
+    "bg-white border border-[#ccc] border-l-0 cursor-pointer m-0 px-2.5 py-[5px] relative first:border-l first:border-[#ccc] first:rounded-bl first:rounded-tl last:border-r last:border-[#ccc] last:rounded-br last:rounded-tr hover:bg-[#ccc] focus:z-[2]",
+  downloadChoiceButton:
+    "box-border text-black inline-block mb-2.5 no-underline w-full",
+  selectedStyle: "bg-[#ddd]",
+} as const;

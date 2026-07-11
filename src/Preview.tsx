@@ -18,7 +18,6 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from "aphrodite";
 import DOMPurify from "dompurify";
 import { debounce } from "lodash";
 import type * as monacoEditor from "monaco-editor";
@@ -28,6 +27,7 @@ import { track } from "./analytics";
 import { decodeArrayBuffer } from "./base64Binary";
 import type { ViewMode } from "./Header";
 import { MODE_BOTH, MODE_VIEW } from "./Header";
+import { cn } from "./lib/utils";
 import { renderVersionFor } from "./lilypondVersion";
 import Logs from "./Logs";
 import type { RenderResponse } from "./RPCClient";
@@ -259,7 +259,7 @@ export default class Preview extends React.PureComponent<Props, State> {
   render(): JSX.Element {
     const { mode, logs } = this.props;
     const { pendingPreviews, error } = this.state;
-    const previewMaskStyle: string = css(
+    const previewMaskStyle: string = cn(
       APP_STYLE.pendingPreviewMask,
       mode === MODE_VIEW && APP_STYLE.previewPendingMaskModeView,
     );
@@ -270,14 +270,14 @@ export default class Preview extends React.PureComponent<Props, State> {
     return (
       <div style={{ backgroundColor: "white" }}>
         <iframe
-          className={css(APP_STYLE.sheetMusicView)}
+          className={cn(APP_STYLE.sheetMusicView)}
           frameBorder="0"
           height="100%"
           ref={this.handleSetSheetMusicView}
           width={mode === MODE_BOTH ? "50%" : mode === MODE_VIEW ? "100%" : "0"}
         />
         {pendingPreviews > 0 && <div className={previewMaskStyle} />}
-        {error && <div className={css(APP_STYLE.errorMask)}>{error}</div>}
+        {error && <div className={cn(APP_STYLE.errorMask)}>{error}</div>}
         <Logs
           logs={logs}
           loading={!logs || logs.length === 0 || pendingPreviews > 0}

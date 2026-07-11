@@ -31,13 +31,13 @@ import {
   Tab,
   Tabs,
 } from "@blueprintjs/core";
-import { css, StyleSheet } from "aphrodite";
 import { Trash, File as FileIcon, Ellipsis } from "lucide-react";
 import React from "react";
 
 import type { Auth } from "./auth";
 import type { File } from "./gitfs";
 import { ls } from "./gitfs";
+import { cn } from "./lib/utils";
 
 interface Props {
   auth: Auth | null;
@@ -70,10 +70,10 @@ class GitHubOpen extends React.Component<Props, GitHubState> {
 
     if (auth) {
       if (repoError) {
-        songs = <div className={css(styles.placeholder)}>{repoError}</div>;
+        songs = <div className={cn(styles.placeholder)}>{repoError}</div>;
       } else if (!repoTree) {
         songs = (
-          <div className={css(styles.placeholder)}>
+          <div className={cn(styles.placeholder)}>
             <Spinner />
           </div>
         );
@@ -84,7 +84,7 @@ class GitHubOpen extends React.Component<Props, GitHubState> {
           .sort();
         if (!lilySongs.length) {
           songs = (
-            <div className={css(styles.placeholder)}>
+            <div className={cn(styles.placeholder)}>
               Save a song to see it here.
             </div>
           );
@@ -107,10 +107,10 @@ class GitHubOpen extends React.Component<Props, GitHubState> {
                   onClick={this.handleSongLiClick}
                   title={song.path}
                 >
-                  <FileIcon size="1em" className={css(styles.docIcon)} />
+                  <FileIcon size="1em" className={cn(styles.docIcon)} />
                   {song.path}
                 </td>
-                <td className={css(styles.tableIcon)}>
+                <td className={cn(styles.tableIcon)}>
                   <Popover content={menu}>
                     <Button
                       minimal={true}
@@ -127,7 +127,7 @@ class GitHubOpen extends React.Component<Props, GitHubState> {
               condensed={true}
               interactive={true}
               striped={true}
-              className={css(styles.table)}
+              className={cn(styles.table)}
             >
               <tbody>{eachSong}</tbody>
             </HTMLTable>
@@ -136,7 +136,12 @@ class GitHubOpen extends React.Component<Props, GitHubState> {
       }
     } else {
       songs = (
-        <div className={css(styles.placeholder) + " " + Classes.TEXT_LARGE}>
+        <div
+          className={cn(
+            "flex-1 flex flex-row items-center justify-center",
+            Classes.TEXT_LARGE,
+          )}
+        >
           <div>
             <a onClick={onSignIn}>Sign in</a> to see your songs.
           </div>
@@ -212,7 +217,7 @@ class ModalOpen extends React.PureComponent<Props, {}> {
         title="Open song"
         isOpen={true}
         onClose={onHide}
-        className={css(styles.modal)}
+        className="w-[565px]"
       >
         <div className={Classes.DIALOG_BODY}>
           <Tabs vertical={true} animate={true} renderActiveTabPanelOnly={true}>
@@ -220,7 +225,7 @@ class ModalOpen extends React.PureComponent<Props, {}> {
               id="github"
               title={<div>GitHub</div>}
               panel={<GitHubOpen {...this.props} />}
-              panelClassName={css(styles.panel)}
+              panelClassName="flex flex-1 h-[300px] overflow-y-auto"
             />
             <Tab
               id="more-soon"
@@ -235,76 +240,9 @@ class ModalOpen extends React.PureComponent<Props, {}> {
 }
 export default ModalOpen;
 
-const styles = StyleSheet.create({
-  modal: {
-    width: 565,
-  },
-  placeholder: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  placeholderLink: {
-    ":hover": {
-      color: "black",
-    },
-    color: "blue",
-    fontSize: 16,
-    textDecoration: "underline",
-  },
-  innerSongList: {
-    listStyle: "none",
-    marginLeft: 0,
-    marginTop: 0,
-    paddingLeft: 0,
-  },
-  srOnly: {
-    border: 0,
-    clip: "rect(0,0,0,0)",
-    height: 1,
-    margin: -1,
-    overflow: "hidden",
-    padding: 0,
-    position: "absolute",
-    width: 1,
-  },
-  deleteSong: {
-    ":hover": {
-      color: "red",
-    },
-    color: "#aeaeae",
-    float: "right",
-  },
-  song: {
-    ":hover": {
-      color: "blue",
-    },
-    color: "black",
-    fontSize: 16,
-    marginBottom: 4,
-    textDecoration: "none",
-  },
-  panel: {
-    display: "flex",
-    flex: 1,
-    height: 300,
-    overflowY: "auto",
-  },
-  methodIcon: {
-    marginRight: 8,
-  },
-  table: {
-    tableLayout: "fixed",
-    width: "100%",
-    overflowY: "auto",
-  },
-  tableIcon: {
-    width: 38,
-  },
-  docIcon: {
-    marginRight: 8,
-    verticalAlign: "middle",
-  },
-});
+const styles = {
+  placeholder: "flex-1 flex flex-row items-center justify-center",
+  docIcon: "mr-2 align-middle inline",
+  tableIcon: "w-[38px]",
+  table: "table-fixed w-full overflow-y-auto",
+} as const;

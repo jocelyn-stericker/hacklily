@@ -18,11 +18,11 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from "aphrodite";
 import React from "react";
 
 import type { Clef } from "#/musicxml-interfaces";
 
+import { cn } from "../lib/utils";
 import { Addons as SatieAddons } from "./satie/src/satie";
 import tabStyles from "./tabStyles";
 import type { ToolProps } from "./tool";
@@ -125,7 +125,7 @@ export default class ToolSetClef extends React.Component<ToolProps, State> {
 
         return (
           <span
-            className={css(
+            className={cn(
               tabStyles.selectableOption,
               selected && tabStyles.selectableSelected,
             )}
@@ -134,12 +134,12 @@ export default class ToolSetClef extends React.Component<ToolProps, State> {
             key={i}
           >
             <svg
-              className={css(tabStyles.resetFont)}
+              className={cn(tabStyles.resetFont)}
               viewBox={clefSpec.clefViewbox}
             >
               <SatieAddons.Clef spec={clefSpec} />
             </svg>
-            <span className={css(tabStyles.selectableDescription)}>
+            <span className={cn(tabStyles.selectableDescription)}>
               {clefSpec.enName}
             </span>
           </span>
@@ -152,14 +152,14 @@ export default class ToolSetClef extends React.Component<ToolProps, State> {
       clefSign !== "TAB" && clefSign !== "percussion";
 
     return (
-      <div className={css(tabStyles.tool)}>
-        <div className={css(tabStyles.section)}>
-          <h3 className={css(tabStyles.toolHeading)}>Clef</h3>
-          <div className={css(tabStyles.selectableList)}>{clefViews}</div>
+      <div className={cn(tabStyles.tool)}>
+        <div className={cn(tabStyles.section)}>
+          <h3 className={cn(tabStyles.toolHeading)}>Clef</h3>
+          <div className={cn(tabStyles.selectableList)}>{clefViews}</div>
         </div>
-        <div className={css(tabStyles.section)}>
-          <h3 className={css(tabStyles.toolHeading)}>Octave</h3>
-          <form className={css(tabStyles.radioGroup)}>
+        <div className={cn(tabStyles.section)}>
+          <h3 className={cn(tabStyles.toolHeading)}>Octave</h3>
+          <form className={cn(tabStyles.radioGroup)}>
             <div>
               <input
                 id="set-clef-15va"
@@ -241,12 +241,12 @@ export default class ToolSetClef extends React.Component<ToolProps, State> {
             </div>
           </form>
         </div>
-        <div className={css(tabStyles.spacer)} />
-        <div className={css(tabStyles.section)}>
-          <pre className={css(tabStyles.lyPreview)}>{this.generateLy()}</pre>
+        <div className={cn(tabStyles.spacer)} />
+        <div className={cn(tabStyles.section)}>
+          <pre className={cn(tabStyles.lyPreview)}>{this.generateLy()}</pre>
 
           <button
-            className={css(tabStyles.insert)}
+            className={cn(tabStyles.insert)}
             onClick={this.handleInsertLyClicked}
           >
             Insert this code into Hacklily

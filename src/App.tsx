@@ -18,7 +18,6 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from "aphrodite";
 import { TriangleAlert } from "lucide-react";
 import type * as monacoEditor from "monaco-editor";
 import React from "react";
@@ -30,6 +29,7 @@ import Editor from "./Editor";
 import { cat, FileNotFound, getDefaultBranch, getOrCreateRepo } from "./gitfs";
 import type { ViewMode } from "./Header";
 import Header, { MIN_BOTH_WIDTH, MODE_BOTH, MODE_VIEW } from "./Header";
+import { cn } from "./lib/utils";
 import { renderVersionFor } from "./lilypondVersion";
 import type Makelily from "./makelily/Makelily"; // note: use for types only
 import Modal404 from "./Modal404";
@@ -1240,13 +1240,16 @@ export default class App extends React.PureComponent<Props, State> {
     if (!song) {
       return (
         <div
-          className={css(APP_STYLE.sheetMusicView)}
-          style={{
-            width:
-              mode === MODE_BOTH ? "50%" : mode === MODE_VIEW ? "100%" : "0",
-          }}
+          className={cn(
+            APP_STYLE.sheetMusicView,
+            mode === MODE_BOTH
+              ? "w-1/2"
+              : mode === MODE_VIEW
+                ? "w-full"
+                : "w-0",
+          )}
         >
-          <div className={css(APP_STYLE.sheetMusicError)}>
+          <div className={cn(APP_STYLE.sheetMusicError)}>
             Fetching sheet music&hellip;
           </div>
         </div>
@@ -1268,7 +1271,7 @@ export default class App extends React.PureComponent<Props, State> {
         );
       }
 
-      const previewMaskStyle: string = css(
+      const previewMaskStyle: string = cn(
         APP_STYLE.pendingPreviewMask,
         mode === MODE_VIEW && APP_STYLE.previewPendingMaskModeView,
       );
@@ -1276,11 +1279,14 @@ export default class App extends React.PureComponent<Props, State> {
       return (
         <span>
           <div
-            className={css(APP_STYLE.sheetMusicView)}
-            style={{
-              width:
-                mode === MODE_BOTH ? "50%" : mode === MODE_VIEW ? "100%" : "0",
-            }}
+            className={cn(
+              APP_STYLE.sheetMusicView,
+              mode === MODE_BOTH
+                ? "w-1/2"
+                : mode === MODE_VIEW
+                  ? "w-full"
+                  : "w-0",
+            )}
           />
           <div className={previewMaskStyle} />
         </span>
@@ -1290,13 +1296,16 @@ export default class App extends React.PureComponent<Props, State> {
     if (!BACKEND_WS_URL) {
       return (
         <div
-          className={css(APP_STYLE.sheetMusicView)}
-          style={{
-            width:
-              mode === MODE_BOTH ? "50%" : mode === MODE_VIEW ? "100%" : "0",
-          }}
+          className={cn(
+            APP_STYLE.sheetMusicView,
+            mode === MODE_BOTH
+              ? "w-1/2"
+              : mode === MODE_VIEW
+                ? "w-full"
+                : "w-0",
+          )}
         >
-          <div className={css(APP_STYLE.sheetMusicError)}>
+          <div className={cn(APP_STYLE.sheetMusicError)}>
             Could not connect to server because the{" "}
             <code>REACT_APP_BACKEND_WS_URL</code> environment variable was not
             set during bundling.
@@ -1308,13 +1317,16 @@ export default class App extends React.PureComponent<Props, State> {
     if (wsError) {
       return (
         <div
-          className={css(APP_STYLE.sheetMusicView)}
-          style={{
-            width:
-              mode === MODE_BOTH ? "50%" : mode === MODE_VIEW ? "100%" : "0",
-          }}
+          className={cn(
+            APP_STYLE.sheetMusicView,
+            mode === MODE_BOTH
+              ? "w-1/2"
+              : mode === MODE_VIEW
+                ? "w-full"
+                : "w-0",
+          )}
         >
-          <div className={css(APP_STYLE.sheetMusicError)}>
+          <div className={cn(APP_STYLE.sheetMusicError)}>
             <TriangleAlert size="1em" /> Could not connect to server.
             <br />
             Trying again in {reconnectTimeout}

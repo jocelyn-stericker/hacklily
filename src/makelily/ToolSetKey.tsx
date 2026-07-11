@@ -18,11 +18,11 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from "aphrodite";
 import React from "react";
 
 import type { Clef, Key } from "#/musicxml-interfaces";
 
+import { cn } from "../lib/utils";
 import { Addons as SatieAddons } from "./satie/src/satie";
 import tabStyles from "./tabStyles";
 import type { ToolProps } from "./tool";
@@ -126,7 +126,7 @@ export default class ToolSetKey extends React.Component<ToolProps, State> {
 
       return (
         <span
-          className={css(
+          className={cn(
             tabStyles.selectableOption,
             selected && tabStyles.selectableSelected,
           )}
@@ -134,10 +134,10 @@ export default class ToolSetKey extends React.Component<ToolProps, State> {
           onClick={(): void => this.setState({ selectedKey: i })}
           key={i}
         >
-          <svg className={css(tabStyles.resetFont)} viewBox={keyViewbox}>
+          <svg className={cn(tabStyles.resetFont)} viewBox={keyViewbox}>
             <SatieAddons.KeySignature clef={trebleClef} spec={keySpec} />
           </svg>
-          <span className={css(tabStyles.selectableDescription)}>
+          <span className={cn(tabStyles.selectableDescription)}>
             {getEnglish(key.fifths, this.state.selectedMode)}
           </span>
         </span>
@@ -145,14 +145,14 @@ export default class ToolSetKey extends React.Component<ToolProps, State> {
     });
 
     return (
-      <div className={css(tabStyles.tool)}>
-        <div className={css(tabStyles.section)}>
-          <h3 className={css(tabStyles.toolHeading)}>Key Signature</h3>
-          <div className={css(tabStyles.selectableList)}>{ksViews}</div>
+      <div className={cn(tabStyles.tool)}>
+        <div className={cn(tabStyles.section)}>
+          <h3 className={cn(tabStyles.toolHeading)}>Key Signature</h3>
+          <div className={cn(tabStyles.selectableList)}>{ksViews}</div>
         </div>
-        <div className={css(tabStyles.section)}>
-          <h3 className={css(tabStyles.toolHeading)}>Mode</h3>
-          <form className={css(tabStyles.radioGroup)}>
+        <div className={cn(tabStyles.section)}>
+          <h3 className={cn(tabStyles.toolHeading)}>Mode</h3>
+          <form className={cn(tabStyles.radioGroup)}>
             <div>
               <input
                 id="key-mode-major"
@@ -175,12 +175,12 @@ export default class ToolSetKey extends React.Component<ToolProps, State> {
             </div>
           </form>
         </div>
-        <div className={css(tabStyles.spacer)} />
-        <div className={css(tabStyles.section)}>
-          <pre className={css(tabStyles.lyPreview)}>{this.generateLy()}</pre>
+        <div className={cn(tabStyles.spacer)} />
+        <div className={cn(tabStyles.section)}>
+          <pre className={cn(tabStyles.lyPreview)}>{this.generateLy()}</pre>
 
           <button
-            className={css(tabStyles.insert)}
+            className={cn(tabStyles.insert)}
             onClick={this.handleInsertLyClicked}
           >
             Insert this code into Hacklily

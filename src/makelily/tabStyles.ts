@@ -18,117 +18,26 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { StyleSheet } from "aphrodite";
-
-const tabStyles = StyleSheet.create({
-  help: {
-    left: 15,
-    opacity: 0,
-    pointerEvents: "none",
-    position: "absolute",
-    top: 22,
-    transition: "opacity 0.5s ease-in-out",
-    zIndex: 1,
-  },
-  helpVisible: {
-    opacity: 1,
-    pointerEvents: "auto",
-  },
-  insert: {
-    ":hover": {
-      backgroundColor: "rgb(26, 68, 100)",
-    },
-    backgroundColor: "rgb(0, 42, 74)",
-    borderColor: "rgb(0, 42, 74)",
-    borderRadius: "0 0 4px 4px",
-    borderWidth: "1px 1px 0px 1px !important",
-    boxShadow: "transparent 0px 0px 4px 4px",
-    color: "white",
-    cursor: "pointer",
-    fontSize: 12,
-    height: 30,
-    width: "100%",
-  },
-  lyPreview: {
-    backgroundColor: "#f6f7f7",
-    borderRadius: "4px 4px 0 0",
-    height: 80,
-    marginBottom: 0,
-    overflow: "scroll",
-    padding: 15,
-  },
-  outputOptions: {
-    fontSize: 12,
-    position: "absolute",
-    right: 10,
-    top: 18,
-  },
-  paletteSml: {
-    fontSize: 22,
-  },
-  radioGroup: {
-    marginLeft: 15,
-  },
-  resetFont: {
-    fontSize: "1em",
-  },
-  section: {
-    ":first-of-type": {
-      marginTop: 0,
-    },
-    marginTop: 20,
-    position: "relative",
-  },
-  selectableDescription: {
-    backgroundColor: "rgb(0, 42, 74)",
-    bottom: 0,
-    color: "white",
-    fontSize: 10,
-    height: 14,
-    left: 0,
-    lineHeight: "14px",
-    position: "absolute",
-    right: 0,
-    textAlign: "center",
-  },
-  selectableList: {
-    display: "flex",
-    flexWrap: "wrap",
-  },
-  selectableOption: {
-    ":hover": {
-      backgroundColor: "#f6f7f7",
-    },
-    border: "1px solid #D6D8DA",
-    borderRadius: 4,
-    color: "#aeaeae",
-    cursor: "pointer",
-    display: "inline-block",
-    margin: 15,
-    overflow: "hidden",
-    position: "relative",
-    width: 50,
-  },
-  selectableSelected: {
-    backgroundColor: "#f6f7f7",
-    cursor: "default",
-  },
-  spacer: {
-    flexGrow: 1,
-  },
-  tool: {
-    boxSizing: "border-box",
-    display: "flex",
-    flexDirection: "column",
-    height: "100%",
-    overflowX: "hidden",
-    overflowY: "scroll",
-    padding: "25px 15px 15px 15px",
-  },
-  toolHeading: {
-    fontSize: 18,
-    margin: 0,
-  },
-});
+const tabStyles = {
+  help: "left-[15px] opacity-0 pointer-events-none absolute top-[22px] transition-opacity duration-500 ease-in-out z-[1]",
+  helpVisible: "opacity-100 pointer-events-auto",
+  insert:
+    "bg-[rgb(0,42,74)] border-[rgb(0,42,74)] border border-t-0 border-b border-l border-r rounded-b-[4px] text-white cursor-pointer text-[12px] h-[30px] w-full hover:bg-[rgb(26,68,100)] shadow-[transparent_0px_0px_4px_4px]",
+  lyPreview: "bg-[#f6f7f7] rounded-t-[4px] h-20 mb-0 overflow-scroll p-[15px]",
+  outputOptions: "text-[12px] absolute right-[10px] top-[18px]",
+  paletteSml: "text-[22px]",
+  radioGroup: "ml-[15px]",
+  resetFont: "text-[1em]",
+  section: "mt-5 relative first-of-type:mt-0",
+  selectableDescription:
+    "bg-[rgb(0,42,74)] absolute bottom-0 text-white text-[10px] h-[14px] left-0 leading-[14px] right-0 text-center",
+  selectableList: "flex flex-wrap",
+  selectableOption:
+    "border border-[#D6D8DA] rounded-[4px] text-[#aeaeae] cursor-pointer inline-block m-[15px] overflow-hidden relative w-[50px] hover:bg-[#f6f7f7]",
+  selectableSelected: "bg-[#f6f7f7] cursor-default",
+  spacer: "flex-grow",
+  tool: "box-border flex flex-col h-full overflow-x-hidden overflow-y-scroll p-[25px_15px_15px_15px]",
+  toolHeading: "text-[18px] m-0",
+} as const;
 
 export default tabStyles;
