@@ -341,7 +341,8 @@ function terminateBeam(
     layoutBeam(voice, idx, beamSet, isUnbeamedTuplet);
   }
 
-  // Keep existing beam indicies (= beam number). Cleaned up later in postprocesing.
+  // Keep existing beam indicies (= beam number). Length is cleaned up later in postprocesing.
+  // eslint-disable-next-line @typescript-eslint/no-array-delete
   delete beamSet[voice][idx];
 }
 
