@@ -1,21 +1,5 @@
-/**
- * @license
- * This file is part of Hacklily, a web-based LilyPond editor.
- * Copyright (C) 2017 - present Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2017-present Jocelyn Stericker <jocelyn@nettek.ca>
 
 // The coordinator command source: a WebSocket server that replaces the
 // legacy Qt `HacklilyServer` (now retired; formerly `server/ws-server/`).
@@ -62,7 +46,8 @@ pub trait WsSink: Send {
 
 /// Future returned by `WsSink::send_*`. Using a concrete boxed future
 /// keeps the trait object-friendly.
-pub type SendFut<'a> = std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), String>> + Send + 'a>>;
+pub type SendFut<'a> =
+    std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), String>> + Send + 'a>>;
 
 /// Production `WsSink` wrapping a `SplitSink`.
 struct TungsteniteSink(SplitSink<WebSocketStream<tokio::net::TcpStream>, WsMessage>);
@@ -160,16 +145,20 @@ pub async fn coordinator(
     let listener = TcpListener::bind((cfg.bind_address, cfg.ws_port))
         .await
         .map_err(|e| HacklilyError::CommandSourceError(format!("bind failed: {}", e)))?;
-    info!("coordinator listening on {}:{}", cfg.bind_address, cfg.ws_port);
+    info!(
+        "coordinator listening on {}:{}",
+        cfg.bind_address, cfg.ws_port
+    );
 
-    let conn = ConnState { status: cfg.status.clone() };
+    let conn = ConnState {
+        status: cfg.status.clone(),
+    };
     let github: Arc<dyn GitHub> = Arc::new(auth::ReqwestGitHub::new().map_err(|e| {
         HacklilyError::CommandSourceError(format!("could not build GitHub client: {}", e.message))
     })?);
 
-    let (req_tx, req_rx) = tokio::sync::mpsc::channel::<
-        Result<(RenderRequest, ResponseCallback), HacklilyError>,
-    >(100);
+    let (req_tx, req_rx) =
+        tokio::sync::mpsc::channel::<Result<(RenderRequest, ResponseCallback), HacklilyError>>(100);
 
     // Spawn the accept loop. It owns the listener and spawns one task
     // per connection. Cancellation is via the quit stream: when the
@@ -183,10 +172,7 @@ pub async fn coordinator(
     tokio::spawn(async move {
         loop {
             // Accept a new connection or quit, whichever comes first.
-            let next = futures::future::select(
-                Box::pin(listener.accept()),
-                quit.next(),
-            );
+            let next = futures::future::select(Box::pin(listener.accept()), quit.next());
             match next.await {
                 futures::future::Either::Left((Ok((stream, addr)), _quit)) => {
                     debug!("coordinator: new connection from {}", addr);
@@ -194,13 +180,7 @@ pub async fn coordinator(
                     let github = github_acc_loop.clone();
                     let cfg = cfg_acc_loop.clone();
                     let req_tx = req_tx_acc_loop.clone();
-                    tokio::spawn(handle_connection(
-                        stream,
-                        conn,
-                        github,
-                        cfg,
-                        req_tx,
-                    ));
+                    tokio::spawn(handle_connection(stream, conn, github, cfg, req_tx));
                 }
                 futures::future::Either::Left((Err(e), _quit)) => {
                     error!("coordinator: accept failed: {}", e);
@@ -259,7 +239,11 @@ async fn handle_connection(
         Ok(r) => r,
         Err(err) => {
             let resp = *err;
-            let _ = ws.send(tokio_tungstenite::tungstenite::Message::Text(resp.serialize())).await;
+            let _ = ws
+                .send(tokio_tungstenite::tungstenite::Message::Text(
+                    resp.serialize(),
+                ))
+                .await;
             return;
         }
     };
@@ -286,12 +270,17 @@ async fn handle_worker(
         Err(e) => {
             let resp = Response::error(req.id, jsonrpc::STDERR_INVALID_PARAMS, &e.to_string());
             let _ = ws
-                .send(tokio_tungstenite::tungstenite::Message::Text(resp.serialize()))
+                .send(tokio_tungstenite::tungstenite::Message::Text(
+                    resp.serialize(),
+                ))
                 .await;
             return;
         }
     };
-    info!("coordinator: worker registered (max_jobs={})", params.max_jobs);
+    info!(
+        "coordinator: worker registered (max_jobs={})",
+        params.max_jobs
+    );
 
     // Split so the sink can be shared with the registry for dispatch.
     let (sink, mut stream) = ws.split();
@@ -413,8 +402,15 @@ async fn handle_frontend_first(
                         continue;
                     }
                 };
-                if let Err(e) =
-                    dispatch_frontend_message(req, sink.clone(), &conn, github.clone(), &cfg, &req_tx).await
+                if let Err(e) = dispatch_frontend_message(
+                    req,
+                    sink.clone(),
+                    &conn,
+                    github.clone(),
+                    &cfg,
+                    &req_tx,
+                )
+                .await
                 {
                     warn!("coordinator: error processing message: {:?}", e);
                     // Keep going — one bad request shouldn't kill the session.
@@ -464,13 +460,18 @@ async fn dispatch_frontend_message(
             let params: RenderParams = match serde_json::from_value(req.params.clone()) {
                 Ok(p) => p,
                 Err(e) => {
-                    let resp = Response::error(req.id, jsonrpc::STDERR_INVALID_PARAMS, &e.to_string());
+                    let resp =
+                        Response::error(req.id, jsonrpc::STDERR_INVALID_PARAMS, &e.to_string());
                     let _ = send_text(sink, resp.serialize()).await;
                     return Ok(());
                 }
             };
             if params.src.is_empty() {
-                let resp = Response::error(req.id, jsonrpc::STDERR_INVALID_PARAMS, "src must not be empty");
+                let resp = Response::error(
+                    req.id,
+                    jsonrpc::STDERR_INVALID_PARAMS,
+                    "src must not be empty",
+                );
                 let _ = send_text(sink, resp.serialize()).await;
                 return Ok(());
             }
@@ -494,11 +495,8 @@ async fn dispatch_frontend_message(
                 });
             });
             if req_tx.send(Ok((request, cb))).await.is_err() {
-                let resp = Response::error(
-                    Value::Null,
-                    jsonrpc::ERROR_INTERNAL,
-                    "render queue closed",
-                );
+                let resp =
+                    Response::error(Value::Null, jsonrpc::ERROR_INTERNAL, "render queue closed");
                 let _ = send_text(sink, resp.serialize()).await;
             }
         }
@@ -536,7 +534,14 @@ async fn dispatch_frontend_message(
                 .get("token")
                 .and_then(|v| v.as_str())
                 .unwrap_or("");
-            match auth::sign_out(github.as_ref(), &cfg.github_client_id, &cfg.github_secret, token).await {
+            match auth::sign_out(
+                github.as_ref(),
+                &cfg.github_client_id,
+                &cfg.github_secret,
+                token,
+            )
+            .await
+            {
                 Ok(()) => {
                     let resp = Response::success(req.id, json!("OK"));
                     let _ = send_text(sink, resp.serialize()).await;
@@ -608,7 +613,6 @@ async fn send_text(sink: SharedSink, text: String) -> Result<(), HacklilyError> 
         .map_err(|e| HacklilyError::CommandSourceError(format!("ws send failed: {}", e)))
 }
 
-
 // Helper module to deserialize signIn params without adding a public
 // struct. Kept private to this module.
 mod auth_sign_in_params {
@@ -630,22 +634,23 @@ mod tests {
     async fn render_params_default_version_is_stable() {
         // Verifies the serde default for `version` matches the Qt
         // behaviour of treating omitted version as stable.
-        let v: RenderParams = serde_json::from_str(r#"{"backend":"svg","src":"c4"}"#).expect("parse");
+        let v: RenderParams =
+            serde_json::from_str(r#"{"backend":"svg","src":"c4"}"#).expect("parse");
         assert_eq!(v.version, Version::Stable);
     }
 
     #[tokio::test]
     async fn render_params_explicit_unstable() {
         let v: RenderParams =
-            serde_json::from_str(r#"{"backend":"pdf","src":"c4","version":"unstable"}"#).expect("parse");
+            serde_json::from_str(r#"{"backend":"pdf","src":"c4","version":"unstable"}"#)
+                .expect("parse");
         assert_eq!(v.version, Version::Unstable);
         assert_eq!(v.backend, Backend::Pdf);
     }
 
     #[tokio::test]
     async fn i_haz_computes_params_parses() {
-        let p: IHazComputesParams =
-            serde_json::from_str(r#"{"max_jobs":4}"#).expect("parse");
+        let p: IHazComputesParams = serde_json::from_str(r#"{"max_jobs":4}"#).expect("parse");
         assert_eq!(p.max_jobs, 4);
     }
 
@@ -704,3 +709,4 @@ mod tests {
         listener.local_addr().expect("addr").port()
     }
 }
+

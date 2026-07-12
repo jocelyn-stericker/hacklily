@@ -1,21 +1,5 @@
-/**
- * @license
- * This file is part of Hacklily, a web-based LilyPond editor.
- * Copyright (C) 2018 - present Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2017-present Jocelyn Stericker <jocelyn@nettek.ca>
 use futures::future::FutureExt;
 use log::{debug, error, info, warn};
 use std::collections::{BinaryHeap, HashMap, VecDeque};
@@ -266,7 +250,8 @@ impl State {
 
             // Prefer a local ready container if one is available.
             if !ready_containers.is_empty() {
-                let (request, response_cb) = pending_requests.pop_front().expect("len checked above");
+                let (request, response_cb) =
+                    pending_requests.pop_front().expect("len checked above");
                 let container = ready_containers.pop().expect("len checked above");
                 let timeout = Duration::from_millis(container.meta.timeout);
 
@@ -366,19 +351,12 @@ impl State {
     fn republish_local_status(&self) {
         let snap = self.status.snapshot();
         let total = self.total_containers.max(0) as u64;
-        let free: usize = self
-            .ready_containers
-            .values()
-            .map(|heap| heap.len())
-            .sum();
-        let backlog: usize = self
-            .pending_requests
-            .values()
-            .map(|q| q.len())
-            .sum();
+        let free: usize = self.ready_containers.values().map(|heap| heap.len()).sum();
+        let backlog: usize = self.pending_requests.values().map(|q| q.len()).sum();
         snap.local_total.store(total, Ordering::Relaxed);
         snap.local_free.store(free as u64, Ordering::Relaxed);
-        snap.local_busy.store(total.saturating_sub(free as u64), Ordering::Relaxed);
+        snap.local_busy
+            .store(total.saturating_sub(free as u64), Ordering::Relaxed);
         snap.backlog.store(backlog as u64, Ordering::Relaxed);
     }
 }

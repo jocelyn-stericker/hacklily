@@ -1,21 +1,5 @@
-/**
- * @license
- * This file is part of Hacklily, a web-based LilyPond editor.
- * Copyright (C) 2018 - present Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2018-present Jocelyn Stericker <jocelyn@nettek.ca>
 use futures::future::{self, Either, FutureExt};
 use futures::sink::SinkExt;
 use futures::stream::{self, StreamExt, TryStreamExt};
@@ -97,12 +81,11 @@ async fn ws_worker_client_impl(
                 params: serde_json::to_value(IHazComputesParams { max_jobs })
                     .unwrap_or_else(|_| serde_json::json!({})),
             };
-            let cmd = serde_json::to_string(&handshake)
-                .map_err(|err| {
-                    HacklilyError::CommandSourceError(
-                        "Could not build hello JSON command: ".to_owned() + &err.to_string(),
-                    )
-                })?;
+            let cmd = serde_json::to_string(&handshake).map_err(|err| {
+                HacklilyError::CommandSourceError(
+                    "Could not build hello JSON command: ".to_owned() + &err.to_string(),
+                )
+            })?;
 
             let cmd = Message::Text(cmd);
 

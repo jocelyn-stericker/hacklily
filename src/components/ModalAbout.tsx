@@ -1,22 +1,5 @@
-/**
- * @license
- * This file is part of Hacklily, a web-based LilyPond editor.
- * Copyright (C) 2017 - present Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2017-present Jocelyn Stericker <jocelyn@nettek.ca>
 
 import React from "react";
 
@@ -43,15 +26,12 @@ const ModalAbout: React.FC<Props> = React.memo(function ModalAbout(props) {
         <DialogHeader>
           <DialogTitle>About Hacklily</DialogTitle>
         </DialogHeader>
-        <div>
-          <p className="text-lg">
-            <strong>
-              Hacklily is an online sheet-music editor and publishing tool.
-            </strong>
-          </p>
+        <div className="flex flex-col gap-2">
           <p>
-            It is powered by{" "}
+            Hacklily is an online sheet-music editor and publishing tool. It is
+            powered by{" "}
             <a
+              className="underline"
               href="http://lilypond.org/"
               target="_blank"
               rel="noopener noreferrer"
@@ -60,6 +40,7 @@ const ModalAbout: React.FC<Props> = React.memo(function ModalAbout(props) {
             </a>
             . New to LilyPond? Take a look at the{" "}
             <a
+              className="underline"
               href={`http://lilypond.org/doc/v${
                 process.env.REACT_APP_STABLE_LILYPOND_VERSION?.split(".")
                   .slice(0, 2)
@@ -72,10 +53,10 @@ const ModalAbout: React.FC<Props> = React.memo(function ModalAbout(props) {
             </a>
             !
           </p>
-          {renderLilyPondVersions()}
           <p>
             You can view Hacklily&apos;s source and contribute code on{" "}
             <a
+              className="underline"
               href="https://codeberg.org/jocelyn-stericker/hacklily"
               target="_blank"
               rel="noopener noreferrer"
@@ -87,6 +68,7 @@ const ModalAbout: React.FC<Props> = React.memo(function ModalAbout(props) {
           <p>
             Hacklily counts anonymous, cookieless usage stats with{" "}
             <a
+              className="underline"
               href="https://www.goatcounter.com"
               target="_blank"
               rel="noopener noreferrer"
@@ -94,54 +76,63 @@ const ModalAbout: React.FC<Props> = React.memo(function ModalAbout(props) {
               GoatCounter
             </a>{" "}
             to see which features get used &mdash; nothing that identifies you.
-            The numbers are public:{" "}
+            You can see the numbers for yourself at{" "}
             <a
               href="https://stats.hacklily.org"
               target="_blank"
+              className="underline"
               rel="noopener noreferrer"
             >
               stats.hacklily.org
             </a>
-            . See the <a href="privacy-statement.html">privacy statement</a> for
-            details.
+            .
           </p>
+          {renderLilyPondVersions()}
           <div
-            className="text-sm text-muted-foreground"
+            className="text-xs text-muted-foreground flex flex-col gap-2"
             style={{ position: "relative" }}
           >
             <p>
               This project is{" "}
-              <a href="https://www.fsf.org/about/what-is-free-software">
+              <a
+                className="underline"
+                href="https://www.fsf.org/about/what-is-free-software"
+              >
                 free software
               </a>
               : you can redistribute it and/or modify it under the terms of the
-              GNU General Public License (GNU GPL) as published by the Free
-              Software Foundation, either version 3 of the License, or (at your
-              option) any later version. The code is distributed WITHOUT ANY
-              WARRANTY; without even the implied warranty of MERCHANTABILITY or
-              FITNESS FOR A PARTICULAR PURPOSE. See the GNU GPL for more
+              GNU Affero General Public License (GNU AGPL) as published by the
+              Free Software Foundation, either version 3 of the License, or (at
+              your option) any later version. The code is distributed WITHOUT
+              ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+              or FITNESS FOR A PARTICULAR PURPOSE. See the GNU AGPL for more
               details.
             </p>
             <p>
-              <a href="https://www.gnu.org/licenses/gpl-3.0.html">
-                Read the GNU General Public License version 3.
+              <a
+                className="underline"
+                href="https://www.gnu.org/licenses/agpl-3.0.html"
+              >
+                Read the GNU Affero General Public License version 3.
                 <span className="absolute bottom-0 right-0 max-[530px]:hidden">
                   <img
-                    src="gplv3-127x51.png"
-                    alt="Licensed under the GNU General Public License version 3"
+                    src="agplv3-155x51.png"
+                    alt="Licensed under the GNU Affero General Public License version 3"
                   />
                 </span>
               </a>
             </p>
-            <p style={{ marginBottom: 0 }}>
-              {/* about-javascript.html contains the jslicense1 rel for scrapers */}
+            <p>
               See{" "}
-              <a href="about-javascript.html">additional license statements</a>,{" "}
-              <a href="dmca.html">DMCA info</a>, and{" "}
-              <a href="privacy-statement.html">privacy statement</a>.
-              <br />
+              <a className="underline" href="privacy-statement.html">
+                privacy statement
+              </a>
+              .
+            </p>
+            <p>
               &copy; Copyright{" "}
               <a
+                className="underline"
                 href="https://nettek.ca"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -187,7 +178,7 @@ function renderLilyPondVersions(): JSX.Element | null {
     return null;
   }
   return (
-    <p className="text-sm text-muted-foreground">
+    <p>
       LilyPond renderer versions:{" "}
       {stable && (
         <span>

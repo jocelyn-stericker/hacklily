@@ -1,22 +1,6 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2017-present Jocelyn Stericker <jocelyn@nettek.ca>
 #![warn(clippy::all)]
-/**
- * @license
- * This file is part of Hacklily, a web-based LilyPond editor.
- * Copyright (C) 2017 - present Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 
 // Verifies that the `serve` coordinator exits gracefully on SIGTERM
 // (the signal supervisors like systemd/k8s/`docker stop` send on
@@ -43,15 +27,23 @@ async fn serve_exits_gracefully_on_sigterm() {
 
     let mut cmd = tokio::process::Command::new(bin);
     cmd.args([
-        "--stable-docker-tag", "dummy-sigterm-test",
-        "--stable-worker-count", "0",
-        "--unstable-docker-tag", "dummy-sigterm-test",
-        "--unstable-worker-count", "0",
-        "--render-timeout-msec", "8000",
+        "--stable-docker-tag",
+        "dummy-sigterm-test",
+        "--stable-worker-count",
+        "0",
+        "--unstable-docker-tag",
+        "dummy-sigterm-test",
+        "--unstable-worker-count",
+        "0",
+        "--render-timeout-msec",
+        "8000",
         "serve",
-        "--ws-port", &port.to_string(),
-        "--github-client-id", "",
-        "--github-secret", "",
+        "--ws-port",
+        &port.to_string(),
+        "--github-client-id",
+        "",
+        "--github-secret",
+        "",
     ])
     .kill_on_drop(true);
 
@@ -95,3 +87,4 @@ async fn serve_exits_gracefully_on_sigterm() {
         }
     }
 }
+

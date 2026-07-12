@@ -1,21 +1,5 @@
-/**
- * @license
- * This file is part of Hacklily, a web-based LilyPond editor.
- * Copyright (C) 2017 - present Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2017-present Jocelyn Stericker <jocelyn@nettek.ca>
 
 // The worker registry tracks connected remote renderer workers and
 // manages render dispatch to them. It replaces the Qt coordinator's
@@ -124,12 +108,17 @@ impl WorkerRegistryHandle {
     /// Recompute and publish `remote_*` counters. Callers must NOT
     /// hold `inner` lock when calling this (it acquires it).
     async fn republish_status(&self) {
-        let Some(status) = self.status.as_ref() else { return };
+        let Some(status) = self.status.as_ref() else {
+            return;
+        };
         let snap = status.snapshot();
         let state = self.inner.lock().await;
-        snap.remote_total.store(state.workers.len() as u64, Ordering::Relaxed);
-        snap.remote_busy.store(state.pending.len() as u64, Ordering::Relaxed);
-        snap.remote_free.store(state.idle.len() as u64, Ordering::Relaxed);
+        snap.remote_total
+            .store(state.workers.len() as u64, Ordering::Relaxed);
+        snap.remote_busy
+            .store(state.pending.len() as u64, Ordering::Relaxed);
+        snap.remote_free
+            .store(state.idle.len() as u64, Ordering::Relaxed);
     }
 
     /// Number of currently-registered workers (not slots). Used by
@@ -258,8 +247,8 @@ impl WorkerRegistryHandle {
             method: jsonrpc::method::RENDER.to_owned(),
             params: render_params,
         };
-        let text = serde_json::to_string(&rpc_request)
-            .expect("render request is always serializable");
+        let text =
+            serde_json::to_string(&rpc_request).expect("render request is always serializable");
 
         let worker_id = slot.worker_id.clone();
         let request_id = request.id.clone();
@@ -470,7 +459,11 @@ mod tests {
         // A response returns the slot to free.
         reg.handle_response(
             "rx",
-            RenderResponse { files: vec![], logs: "ok".into(), midi: String::new() },
+            RenderResponse {
+                files: vec![],
+                logs: "ok".into(),
+                midi: String::new(),
+            },
         )
         .await;
         assert_eq!(snap.remote_free.load(Ordering::Relaxed), 2);
@@ -482,3 +475,4 @@ mod tests {
         assert_eq!(snap.remote_free.load(Ordering::Relaxed), 0);
     }
 }
+

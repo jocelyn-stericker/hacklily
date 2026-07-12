@@ -54,10 +54,8 @@ Hacklily is stable and live at <https://www.hacklily.org>. The renderer is fully
 
 Source and issue tracker: <https://codeberg.org/jocelyn-stericker/hacklily>
 
-Contributions are welcome. By the terms of the licenses below, client contributions must be GPLv3-or-later and server contributions must be AGPLv3-or-later.
+Contributions are welcome. By the terms of the licenses below, client contributions must be AGPLv3-or-later and server contributions must be AGPLv3-or-later.
 
 ## License
 
-The client (everything outside `server/`) is licensed under the GNU General Public License version 3 or later, with additional permissions (notably for minimized/compact forms and System Libraries) as described in `LICENSE.txt`. The full GPL text is in `LICENSE.txt`.
-
-The server (everything under `server/`) is licensed under the GNU Affero General Public License version 3 or later. The full AGPL text is in `LICENSE.AGPL.txt`.
+GNU Affero General Public License version 3 or later

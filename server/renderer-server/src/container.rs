@@ -1,21 +1,5 @@
-/**
- * @license
- * This file is part of Hacklily, a web-based LilyPond editor.
- * Copyright (C) 2018 - present Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2018-present Jocelyn Stericker <jocelyn@nettek.ca>
 use log::{debug, error, info, warn};
 use std::os::unix::process::ExitStatusExt;
 use std::process::Stdio;
@@ -74,8 +58,7 @@ impl ContainerHandle {
             // proper error response (with partial logs) before the harness
             // kills the container. See render-impl.bash for the matching
             // read of HACKLILY_RENDER_TIMEOUT_MS.
-            let render_timeout_env =
-                format!("HACKLILY_RENDER_TIMEOUT_MS={}", render_timeout_msec);
+            let render_timeout_env = format!("HACKLILY_RENDER_TIMEOUT_MS={}", render_timeout_msec);
 
             let mut create = Command::new("docker");
             let create = create

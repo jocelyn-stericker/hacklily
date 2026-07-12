@@ -1,21 +1,5 @@
-/**
- * @license
- * This file is part of Hacklily, a web-based LilyPond editor.
- * Copyright (C) 2017 - present Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2017-present Jocelyn Stericker <jocelyn@nettek.ca>
 
 // GitHub OAuth flow for the coordinator, porting the responsibilities
 // previously held by the former Qt `HacklilyServer` (removed in
@@ -415,7 +399,9 @@ mod tests {
                 email: Some("alice@example.com".into()),
             }),
         };
-        let auth = sign_in(&gh, "cid", "sec", "code", "state").await.expect("ok");
+        let auth = sign_in(&gh, "cid", "sec", "code", "state")
+            .await
+            .expect("ok");
         assert_eq!(auth.access_token, "abc");
         assert_eq!(auth.username, "alice");
         assert_eq!(auth.name, "Alice");
@@ -433,7 +419,9 @@ mod tests {
                 email: None,
             }),
         };
-        let auth = sign_in(&gh, "cid", "sec", "code", "state").await.expect("ok");
+        let auth = sign_in(&gh, "cid", "sec", "code", "state")
+            .await
+            .expect("ok");
         assert_eq!(auth.name, "alice");
         assert_eq!(auth.email, "unknown@example.com");
     }
@@ -448,7 +436,9 @@ mod tests {
                 email: Some("".into()),
             }),
         };
-        let auth = sign_in(&gh, "cid", "sec", "code", "state").await.expect("ok");
+        let auth = sign_in(&gh, "cid", "sec", "code", "state")
+            .await
+            .expect("ok");
         assert_eq!(auth.name, "bob");
         assert_eq!(auth.email, "unknown@example.com");
     }
@@ -463,7 +453,9 @@ mod tests {
                 email: None,
             }),
         };
-        let err = sign_in(&gh, "cid", "sec", "code", "state").await.expect_err("err");
+        let err = sign_in(&gh, "cid", "sec", "code", "state")
+            .await
+            .expect_err("err");
         assert!(err.message.contains("bad_code"));
     }
 
@@ -473,7 +465,9 @@ mod tests {
             token: Ok("abc".into()),
             user: Err(AuthError::new("no_user")),
         };
-        let err = sign_in(&gh, "cid", "sec", "code", "state").await.expect_err("err");
+        let err = sign_in(&gh, "cid", "sec", "code", "state")
+            .await
+            .expect_err("err");
         assert!(err.message.contains("no_user"));
     }
 
@@ -497,7 +491,8 @@ mod tests {
 
     #[test]
     fn auth_error_carries_github_response_in_data() {
-        let err = AuthError::with_response("boom", serde_json::json!({"error": "bad_verification"}));
+        let err =
+            AuthError::with_response("boom", serde_json::json!({"error": "bad_verification"}));
         let obj = err.into_error_object();
         assert_eq!(obj.code, crate::jsonrpc::ERROR_GITHUB);
         assert_eq!(obj.message, "boom");
@@ -524,3 +519,4 @@ mod tests {
         assert!(err.message.contains("nope"));
     }
 }
+

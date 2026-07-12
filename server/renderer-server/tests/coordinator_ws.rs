@@ -1,22 +1,6 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2017-present Jocelyn Stericker <jocelyn@nettek.ca>
 #![warn(clippy::all)]
-/**
- * @license
- * This file is part of Hacklily, a web-based LilyPond editor.
- * Copyright (C) 2017 - present Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 
 // End-to-end test of the coordinator WebSocket dispatch path, using
 // real tokio-tungstenite sockets but NO Docker: a fake worker connects,
@@ -185,15 +169,10 @@ async fn coordinator_dispatches_render_to_remote_worker_end_to_end() {
         json!("ok from fake worker"),
         "response carried the worker's result",
     );
-    assert!(
-        v["result"]["files"].is_array(),
-        "response carried files",
-    );
+    assert!(v["result"]["files"].is_array(), "response carried files",);
 
     // The worker task should have completed (it replied and broke out).
-    worker_task
-        .await
-        .expect("worker task did not panic");
+    worker_task.await.expect("worker task did not panic");
 
     // Sanity: the coordinator bumped the renders analytics counter.
     assert!(
@@ -201,3 +180,4 @@ async fn coordinator_dispatches_render_to_remote_worker_end_to_end() {
         "analytics_renders was bumped",
     );
 }
+

@@ -1,22 +1,7 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2018-present Jocelyn Stericker <jocelyn@nettek.ca>
+
 #![warn(clippy::all)]
-/**
- * @license
- * This file is part of Hacklily, a web-based LilyPond editor.
- * Copyright (C) 2018 - present Jocelyn Stericker <jocelyn@nettek.ca>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 use ansi_term::Colour::{Green, Red};
 use clap::{value_t, App, Arg, ArgAction, SubCommand};
 use log::info;
@@ -25,7 +10,10 @@ use std::path::Path;
 
 extern crate renderer_lib;
 
-use renderer_lib::{event_loop, status::StatusHandle, worker_registry::WorkerRegistryHandle, CommandSourceConfig, Config};
+use renderer_lib::{
+    event_loop, status::StatusHandle, worker_registry::WorkerRegistryHandle, CommandSourceConfig,
+    Config,
+};
 
 #[tokio::main]
 async fn main() {
