@@ -2,5 +2,6 @@
 /status.html /status 302!
 /musicxml2ly /musicxml2ly.html 200
 /musicxml2ly.html /musicxml2ly 302!
-/playground /playground.html 200!
-/playground/* /playground.html 200
+/satie /playground.html 200!
+/satie/* /playground.html 200
+/makelily/* /playground.html 200

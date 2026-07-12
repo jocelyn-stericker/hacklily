@@ -27,7 +27,8 @@ export default defineConfig({
         main: "index.html",
         status: "status.html",
         musicxml2ly: "musicxml2ly.html",
-        playground: "playground.html",
+        satie: "playground.html",
+        makelily: "playground.html",
       },
     },
   },
@@ -46,7 +47,7 @@ export default defineConfig({
     "process.env.REACT_APP_UNSTABLE_LILYPOND_VERSION": JSON.stringify(
       readLilyPondVersion("server/renderer-unstable/Dockerfile"),
     ),
-    "process.env.PLAYGROUND_PREFIX": JSON.stringify("/playground"),
+    "process.env.PLAYGROUND_PREFIX": JSON.stringify("/satie"),
   },
   plugins: [
     tanstackRouter({

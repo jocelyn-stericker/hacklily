@@ -10,22 +10,23 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StatusRouteImport } from './routes/status'
-import { Route as PlaygroundRouteImport } from './routes/playground'
+import { Route as SatieRouteImport } from './routes/satie'
 import { Route as Musicxml2lyRouteImport } from './routes/musicxml2ly'
+import { Route as MakelilyRouteImport } from './routes/makelily'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as PlaygroundIndexRouteImport } from './routes/playground/index'
-import { Route as PlaygroundTestsRouteImport } from './routes/playground/tests'
-import { Route as PlaygroundSandboxRouteImport } from './routes/playground/sandbox'
-import { Route as PlaygroundTestsIdRouteImport } from './routes/playground/tests.$id'
+import { Route as SatieIndexRouteImport } from './routes/satie/index'
+import { Route as SatieTestsRouteImport } from './routes/satie/tests'
+import { Route as SatieSandboxRouteImport } from './routes/satie/sandbox'
+import { Route as SatieTestsIdRouteImport } from './routes/satie/tests.$id'
 
 const StatusRoute = StatusRouteImport.update({
   id: '/status',
   path: '/status',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PlaygroundRoute = PlaygroundRouteImport.update({
-  id: '/playground',
-  path: '/playground',
+const SatieRoute = SatieRouteImport.update({
+  id: '/satie',
+  path: '/satie',
   getParentRoute: () => rootRouteImport,
 } as any)
 const Musicxml2lyRoute = Musicxml2lyRouteImport.update({
@@ -33,98 +34,110 @@ const Musicxml2lyRoute = Musicxml2lyRouteImport.update({
   path: '/musicxml2ly',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MakelilyRoute = MakelilyRouteImport.update({
+  id: '/makelily',
+  path: '/makelily',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PlaygroundIndexRoute = PlaygroundIndexRouteImport.update({
+const SatieIndexRoute = SatieIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => PlaygroundRoute,
+  getParentRoute: () => SatieRoute,
 } as any)
-const PlaygroundTestsRoute = PlaygroundTestsRouteImport.update({
+const SatieTestsRoute = SatieTestsRouteImport.update({
   id: '/tests',
   path: '/tests',
-  getParentRoute: () => PlaygroundRoute,
+  getParentRoute: () => SatieRoute,
 } as any)
-const PlaygroundSandboxRoute = PlaygroundSandboxRouteImport.update({
+const SatieSandboxRoute = SatieSandboxRouteImport.update({
   id: '/sandbox',
   path: '/sandbox',
-  getParentRoute: () => PlaygroundRoute,
+  getParentRoute: () => SatieRoute,
 } as any)
-const PlaygroundTestsIdRoute = PlaygroundTestsIdRouteImport.update({
+const SatieTestsIdRoute = SatieTestsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
-  getParentRoute: () => PlaygroundTestsRoute,
+  getParentRoute: () => SatieTestsRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/makelily': typeof MakelilyRoute
   '/musicxml2ly': typeof Musicxml2lyRoute
-  '/playground': typeof PlaygroundRouteWithChildren
+  '/satie': typeof SatieRouteWithChildren
   '/status': typeof StatusRoute
-  '/playground/sandbox': typeof PlaygroundSandboxRoute
-  '/playground/tests': typeof PlaygroundTestsRouteWithChildren
-  '/playground/': typeof PlaygroundIndexRoute
-  '/playground/tests/$id': typeof PlaygroundTestsIdRoute
+  '/satie/sandbox': typeof SatieSandboxRoute
+  '/satie/tests': typeof SatieTestsRouteWithChildren
+  '/satie/': typeof SatieIndexRoute
+  '/satie/tests/$id': typeof SatieTestsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/makelily': typeof MakelilyRoute
   '/musicxml2ly': typeof Musicxml2lyRoute
   '/status': typeof StatusRoute
-  '/playground/sandbox': typeof PlaygroundSandboxRoute
-  '/playground/tests': typeof PlaygroundTestsRouteWithChildren
-  '/playground': typeof PlaygroundIndexRoute
-  '/playground/tests/$id': typeof PlaygroundTestsIdRoute
+  '/satie/sandbox': typeof SatieSandboxRoute
+  '/satie/tests': typeof SatieTestsRouteWithChildren
+  '/satie': typeof SatieIndexRoute
+  '/satie/tests/$id': typeof SatieTestsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/makelily': typeof MakelilyRoute
   '/musicxml2ly': typeof Musicxml2lyRoute
-  '/playground': typeof PlaygroundRouteWithChildren
+  '/satie': typeof SatieRouteWithChildren
   '/status': typeof StatusRoute
-  '/playground/sandbox': typeof PlaygroundSandboxRoute
-  '/playground/tests': typeof PlaygroundTestsRouteWithChildren
-  '/playground/': typeof PlaygroundIndexRoute
-  '/playground/tests/$id': typeof PlaygroundTestsIdRoute
+  '/satie/sandbox': typeof SatieSandboxRoute
+  '/satie/tests': typeof SatieTestsRouteWithChildren
+  '/satie/': typeof SatieIndexRoute
+  '/satie/tests/$id': typeof SatieTestsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/makelily'
     | '/musicxml2ly'
-    | '/playground'
+    | '/satie'
     | '/status'
-    | '/playground/sandbox'
-    | '/playground/tests'
-    | '/playground/'
-    | '/playground/tests/$id'
+    | '/satie/sandbox'
+    | '/satie/tests'
+    | '/satie/'
+    | '/satie/tests/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/makelily'
     | '/musicxml2ly'
     | '/status'
-    | '/playground/sandbox'
-    | '/playground/tests'
-    | '/playground'
-    | '/playground/tests/$id'
+    | '/satie/sandbox'
+    | '/satie/tests'
+    | '/satie'
+    | '/satie/tests/$id'
   id:
     | '__root__'
     | '/'
+    | '/makelily'
     | '/musicxml2ly'
-    | '/playground'
+    | '/satie'
     | '/status'
-    | '/playground/sandbox'
-    | '/playground/tests'
-    | '/playground/'
-    | '/playground/tests/$id'
+    | '/satie/sandbox'
+    | '/satie/tests'
+    | '/satie/'
+    | '/satie/tests/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MakelilyRoute: typeof MakelilyRoute
   Musicxml2lyRoute: typeof Musicxml2lyRoute
-  PlaygroundRoute: typeof PlaygroundRouteWithChildren
+  SatieRoute: typeof SatieRouteWithChildren
   StatusRoute: typeof StatusRoute
 }
 
@@ -137,11 +150,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StatusRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/playground': {
-      id: '/playground'
-      path: '/playground'
-      fullPath: '/playground'
-      preLoaderRoute: typeof PlaygroundRouteImport
+    '/satie': {
+      id: '/satie'
+      path: '/satie'
+      fullPath: '/satie'
+      preLoaderRoute: typeof SatieRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/musicxml2ly': {
@@ -151,6 +164,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Musicxml2lyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/makelily': {
+      id: '/makelily'
+      path: '/makelily'
+      fullPath: '/makelily'
+      preLoaderRoute: typeof MakelilyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -158,69 +178,68 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/playground/': {
-      id: '/playground/'
+    '/satie/': {
+      id: '/satie/'
       path: '/'
-      fullPath: '/playground/'
-      preLoaderRoute: typeof PlaygroundIndexRouteImport
-      parentRoute: typeof PlaygroundRoute
+      fullPath: '/satie/'
+      preLoaderRoute: typeof SatieIndexRouteImport
+      parentRoute: typeof SatieRoute
     }
-    '/playground/tests': {
-      id: '/playground/tests'
+    '/satie/tests': {
+      id: '/satie/tests'
       path: '/tests'
-      fullPath: '/playground/tests'
-      preLoaderRoute: typeof PlaygroundTestsRouteImport
-      parentRoute: typeof PlaygroundRoute
+      fullPath: '/satie/tests'
+      preLoaderRoute: typeof SatieTestsRouteImport
+      parentRoute: typeof SatieRoute
     }
-    '/playground/sandbox': {
-      id: '/playground/sandbox'
+    '/satie/sandbox': {
+      id: '/satie/sandbox'
       path: '/sandbox'
-      fullPath: '/playground/sandbox'
-      preLoaderRoute: typeof PlaygroundSandboxRouteImport
-      parentRoute: typeof PlaygroundRoute
+      fullPath: '/satie/sandbox'
+      preLoaderRoute: typeof SatieSandboxRouteImport
+      parentRoute: typeof SatieRoute
     }
-    '/playground/tests/$id': {
-      id: '/playground/tests/$id'
+    '/satie/tests/$id': {
+      id: '/satie/tests/$id'
       path: '/$id'
-      fullPath: '/playground/tests/$id'
-      preLoaderRoute: typeof PlaygroundTestsIdRouteImport
-      parentRoute: typeof PlaygroundTestsRoute
+      fullPath: '/satie/tests/$id'
+      preLoaderRoute: typeof SatieTestsIdRouteImport
+      parentRoute: typeof SatieTestsRoute
     }
   }
 }
 
-interface PlaygroundTestsRouteChildren {
-  PlaygroundTestsIdRoute: typeof PlaygroundTestsIdRoute
+interface SatieTestsRouteChildren {
+  SatieTestsIdRoute: typeof SatieTestsIdRoute
 }
 
-const PlaygroundTestsRouteChildren: PlaygroundTestsRouteChildren = {
-  PlaygroundTestsIdRoute: PlaygroundTestsIdRoute,
+const SatieTestsRouteChildren: SatieTestsRouteChildren = {
+  SatieTestsIdRoute: SatieTestsIdRoute,
 }
 
-const PlaygroundTestsRouteWithChildren = PlaygroundTestsRoute._addFileChildren(
-  PlaygroundTestsRouteChildren,
+const SatieTestsRouteWithChildren = SatieTestsRoute._addFileChildren(
+  SatieTestsRouteChildren,
 )
 
-interface PlaygroundRouteChildren {
-  PlaygroundSandboxRoute: typeof PlaygroundSandboxRoute
-  PlaygroundTestsRoute: typeof PlaygroundTestsRouteWithChildren
-  PlaygroundIndexRoute: typeof PlaygroundIndexRoute
+interface SatieRouteChildren {
+  SatieSandboxRoute: typeof SatieSandboxRoute
+  SatieTestsRoute: typeof SatieTestsRouteWithChildren
+  SatieIndexRoute: typeof SatieIndexRoute
 }
 
-const PlaygroundRouteChildren: PlaygroundRouteChildren = {
-  PlaygroundSandboxRoute: PlaygroundSandboxRoute,
-  PlaygroundTestsRoute: PlaygroundTestsRouteWithChildren,
-  PlaygroundIndexRoute: PlaygroundIndexRoute,
+const SatieRouteChildren: SatieRouteChildren = {
+  SatieSandboxRoute: SatieSandboxRoute,
+  SatieTestsRoute: SatieTestsRouteWithChildren,
+  SatieIndexRoute: SatieIndexRoute,
 }
 
-const PlaygroundRouteWithChildren = PlaygroundRoute._addFileChildren(
-  PlaygroundRouteChildren,
-)
+const SatieRouteWithChildren = SatieRoute._addFileChildren(SatieRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MakelilyRoute: MakelilyRoute,
   Musicxml2lyRoute: Musicxml2lyRoute,
-  PlaygroundRoute: PlaygroundRouteWithChildren,
+  SatieRoute: SatieRouteWithChildren,
   StatusRoute: StatusRoute,
 }
 export const routeTree = rootRouteImport

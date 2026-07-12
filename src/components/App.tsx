@@ -22,6 +22,7 @@ import { TriangleAlert } from "lucide-react";
 import type * as monacoEditor from "monaco-editor";
 import React from "react";
 
+import type Makelily from "#/components/Makelily";
 import { initAnalytics, track, trackPageview } from "#/lib/analytics";
 import type { Auth } from "#/lib/auth";
 import { checkLogin, revokeGitHubAuth } from "#/lib/auth";
@@ -35,7 +36,6 @@ import { renderVersionFor } from "#/lib/lilypondVersion";
 import type { Song } from "#/lib/localStorage";
 import RPCClient from "#/lib/RPCClient";
 import { cn } from "#/lib/utils";
-import type Makelily from "#/makelily/Makelily"; // note: use for types only
 
 import Editor from "./Editor";
 import type { ViewMode } from "./Header";
@@ -882,7 +882,7 @@ export default class App extends React.PureComponent<Props, State> {
     }
 
     const makelilyComponent: typeof Makelily = (
-      await import("#/makelily/Makelily")
+      await import("#/components/Makelily")
     ).default;
 
     track(`makelily/${tool || this.state.makelilyTool}`);
