@@ -21,8 +21,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
 
-import { initAnalytics, trackPageview } from "../analytics";
-import MusicXML2Ly from "../musicxml2ly/MusicXML2Ly";
+import MusicXML2Ly from "#/components/MusicXML2Ly";
+import { initAnalytics, trackPageview } from "#/lib/analytics";
 
 export const Route = createFileRoute("/musicxml2ly")({
   component: MusicXml2LyRoute,

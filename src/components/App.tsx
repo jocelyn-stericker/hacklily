@@ -22,17 +22,24 @@ import { TriangleAlert } from "lucide-react";
 import type * as monacoEditor from "monaco-editor";
 import React from "react";
 
-import { initAnalytics, track, trackPageview } from "./analytics";
-import type { Auth } from "./auth";
-import { checkLogin, revokeGitHubAuth } from "./auth";
+import { initAnalytics, track, trackPageview } from "#/lib/analytics";
+import type { Auth } from "#/lib/auth";
+import { checkLogin, revokeGitHubAuth } from "#/lib/auth";
+import {
+  cat,
+  FileNotFound,
+  getDefaultBranch,
+  getOrCreateRepo,
+} from "#/lib/gitfs";
+import { renderVersionFor } from "#/lib/lilypondVersion";
+import type { Song } from "#/lib/localStorage";
+import RPCClient from "#/lib/RPCClient";
+import { cn } from "#/lib/utils";
+import type Makelily from "#/makelily/Makelily"; // note: use for types only
+
 import Editor from "./Editor";
-import { cat, FileNotFound, getDefaultBranch, getOrCreateRepo } from "./gitfs";
 import type { ViewMode } from "./Header";
 import Header, { MIN_BOTH_WIDTH, MODE_BOTH, MODE_VIEW } from "./Header";
-import type { Song } from "./lib/localStorage";
-import { cn } from "./lib/utils";
-import { renderVersionFor } from "./lilypondVersion";
-import type Makelily from "./makelily/Makelily"; // note: use for types only
 import Modal404 from "./Modal404";
 import ModalAbout from "./ModalAbout";
 import ModalConflict from "./ModalConflict";
@@ -46,7 +53,6 @@ import ModalPublish, { doPublish, doUnpublish } from "./ModalPublish";
 import ModalSaving from "./ModalSaving";
 import ModalUnsavedChangesInterstitial from "./ModalUnsavedChangesInterstitial";
 import Preview from "./Preview";
-import RPCClient from "./RPCClient";
 import { APP_STYLE } from "./styles";
 
 function last<T>(t: T[]): T {
@@ -876,7 +882,7 @@ export default class App extends React.PureComponent<Props, State> {
     }
 
     const makelilyComponent: typeof Makelily = (
-      await import("./makelily/Makelily")
+      await import("#/makelily/Makelily")
     ).default;
 
     track(`makelily/${tool || this.state.makelilyTool}`);

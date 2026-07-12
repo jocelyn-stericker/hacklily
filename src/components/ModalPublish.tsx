@@ -21,6 +21,7 @@
 import { Save, TriangleAlert } from "lucide-react";
 import React from "react";
 
+import ModalSaving from "#/components/ModalSaving";
 import { Button } from "#/components/ui/button.tsx";
 import {
   Dialog,
@@ -30,15 +31,13 @@ import {
   DialogTitle,
 } from "#/components/ui/dialog.tsx";
 import { Input } from "#/components/ui/input.tsx";
-
-import { track } from "./analytics";
-import type { Auth } from "./auth";
-import type { File } from "./gitfs";
-import { Conflict, FileNotFound, ls, rm, write } from "./gitfs";
-import { cn } from "./lib/utils";
-import { renderVersionFor } from "./lilypondVersion";
-import ModalSaving from "./ModalSaving";
-import type RPCClient from "./RPCClient";
+import { track } from "#/lib/analytics";
+import type { Auth } from "#/lib/auth";
+import type { File } from "#/lib/gitfs";
+import { Conflict, FileNotFound, ls, rm, write } from "#/lib/gitfs";
+import { renderVersionFor } from "#/lib/lilypondVersion";
+import type RPCClient from "#/lib/RPCClient";
+import { cn } from "#/lib/utils";
 
 interface Props {
   auth: Auth;

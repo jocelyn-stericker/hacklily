@@ -18,7 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import countScriptUrl from "./vendor/goatcounter-count.js?url";
+import countScriptUrl from "#/vendor/goatcounter-count.js?url";
 
 // Cookieless, privacy-first analytics via GoatCounter (https://www.goatcounter.com).
 //

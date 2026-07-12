@@ -20,8 +20,8 @@
 
 import React from "react";
 
-import type { Status as ServerStatus } from "../RPCClient";
-import RPCClient from "../RPCClient";
+import type { Status as ServerStatus } from "#/lib/RPCClient";
+import RPCClient from "#/lib/RPCClient";
 
 const INITIAL_WS_COOLOFF = 1;
 const BACKEND_WS_URL: string | undefined = process.env.REACT_APP_BACKEND_WS_URL;

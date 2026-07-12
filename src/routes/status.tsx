@@ -21,8 +21,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
 
-import { initAnalytics, trackPageview } from "../analytics";
-import Status from "../status/Status";
+import Status from "#/components/Status";
+import { initAnalytics, trackPageview } from "#/lib/analytics";
 
 export const Route = createFileRoute("/status")({
   component: StatusRoute,

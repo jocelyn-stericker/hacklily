@@ -21,9 +21,9 @@
 import { RouterProvider } from "@tanstack/react-router";
 import { createRoot } from "react-dom/client";
 
+import ErrorBoundary from "#/components/ErrorBoundary";
 import { TooltipProvider } from "#/components/ui/tooltip.tsx";
 
-import ErrorBoundary from "./ErrorBoundary";
 import { getRouter } from "./router";
 
 import "./index.css";

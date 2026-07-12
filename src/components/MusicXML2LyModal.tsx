@@ -26,9 +26,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "#/components/ui/dialog.tsx";
-
-import { track } from "../analytics";
-import type RPCClient from "../RPCClient";
+import { track } from "#/lib/analytics";
+import type RPCClient from "#/lib/RPCClient";
 
 interface Props {
   rpc: RPCClient;

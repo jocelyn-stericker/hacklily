@@ -27,6 +27,8 @@ import {
   useSyncExternalStore,
 } from "react";
 
+import type { QueryProps } from "#/components/App";
+import App from "#/components/App";
 import { useColourScheme } from "#/components/useColourScheme";
 import {
   editSong,
@@ -35,11 +37,9 @@ import {
   subscribeToDirtySongs,
 } from "#/lib/localStorage.ts";
 
-import type { QueryProps } from "../App";
-import App from "../App";
-import type { Auth } from "../auth";
-import { parseAuth } from "../auth";
-import { parseQuery, toQueryString } from "../util/queryString";
+import type { Auth } from "../lib/auth";
+import { parseAuth } from "../lib/auth";
+import { parseQuery, toQueryString } from "../lib/queryString";
 
 export const Route = createFileRoute("/")({
   component: HacklilyApp,

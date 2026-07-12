@@ -26,7 +26,8 @@ const INITIAL_WS_COOLOFF = 2;
 const BACKEND_WS_URL: string | undefined = process.env.REACT_APP_BACKEND_WS_URL;
 
 import "../index.css";
-import RPCClient from "../RPCClient";
+import RPCClient from "#/lib/RPCClient";
+
 import MusicXML2LyModal from "./MusicXML2LyModal";
 
 interface State {

@@ -23,13 +23,14 @@ import * as monacoEditor from "monaco-editor";
 import React from "react";
 import ReactMonacoEditor from "react-monaco-editor";
 
+import { cn } from "#/lib/utils";
+import CodelensProvider from "#/monacoConfig/CodelensProvider";
+import Commands from "#/monacoConfig/Commands";
+import LILYPOND_COMPLETION_ITEM_PROVIDER from "#/monacoConfig/LILYPOND_COMPLETION_ITEM_PROVIDER";
+import LILYPOND_MONARCH_PROVIDER from "#/monacoConfig/LILYPOND_MONARCH_PROVIDER";
+
 import type { ViewMode } from "./Header";
 import { MODE_EDIT, MODE_VIEW } from "./Header";
-import { cn } from "./lib/utils";
-import CodelensProvider from "./monacoConfig/CodelensProvider";
-import Commands from "./monacoConfig/Commands";
-import LILYPOND_COMPLETION_ITEM_PROVIDER from "./monacoConfig/LILYPOND_COMPLETION_ITEM_PROVIDER";
-import LILYPOND_MONARCH_PROVIDER from "./monacoConfig/LILYPOND_MONARCH_PROVIDER";
 import { APP_STYLE } from "./styles";
 
 let registeredMonacoComponents = false;

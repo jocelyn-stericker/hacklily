@@ -40,11 +40,10 @@ import {
   TabsList,
   TabsTrigger,
 } from "#/components/ui/tabs.tsx";
-
-import type { Auth } from "./auth";
-import type { File } from "./gitfs";
-import { ls } from "./gitfs";
-import { cn } from "./lib/utils";
+import type { Auth } from "#/lib/auth";
+import type { File } from "#/lib/gitfs";
+import { ls } from "#/lib/gitfs";
+import { cn } from "#/lib/utils";
 
 interface Props {
   auth: Auth | null;

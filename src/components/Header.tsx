@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import React from "react";
 
+import FileMenu from "#/components/FileMenu";
 import { Button } from "#/components/ui/button";
 import { ButtonGroup } from "#/components/ui/button-group";
 import {
@@ -45,11 +46,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "#/components/ui/tooltip";
+import { track } from "#/lib/analytics";
+import type { Auth } from "#/lib/auth";
+import { cn } from "#/lib/utils";
 
-import { track } from "./analytics";
-import type { Auth } from "./auth";
-import FileMenu from "./FileMenu";
-import { cn } from "./lib/utils";
 import logoSvg from "./logo.svg";
 
 export type ViewMode = "view" | "edit" | "both";

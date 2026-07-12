@@ -26,9 +26,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "#/components/ui/dialog.tsx";
-
-import { CLIENT_ID, getOauthRedirect } from "./auth";
-import { cn } from "./lib/utils";
+import { CLIENT_ID, getOauthRedirect } from "#/lib/auth";
+import { cn } from "#/lib/utils";
 
 interface Props {
   csrf: string;

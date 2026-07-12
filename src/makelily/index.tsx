@@ -21,7 +21,7 @@
 import * as React from "react";
 import { createRoot } from "react-dom/client";
 
-import ErrorBoundary from "#/ErrorBoundary";
+import ErrorBoundary from "#/components/ErrorBoundary";
 
 import type { QueryProps } from "./App";
 import App, { QUERY_PROP_KEYS } from "./App";

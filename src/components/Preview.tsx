@@ -23,15 +23,16 @@ import { debounce } from "lodash";
 import type * as monacoEditor from "monaco-editor";
 import React from "react";
 
-import { track } from "./analytics";
-import { decodeArrayBuffer } from "./base64Binary";
+import { track } from "#/lib/analytics";
+import { decodeArrayBuffer } from "#/lib/base64Binary";
+import { renderVersionFor } from "#/lib/lilypondVersion";
+import type { RenderResponse } from "#/lib/RPCClient";
+import type RPCClient from "#/lib/RPCClient";
+import { cn } from "#/lib/utils";
+
 import type { ViewMode } from "./Header";
 import { MODE_BOTH, MODE_VIEW } from "./Header";
-import { cn } from "./lib/utils";
-import { renderVersionFor } from "./lilypondVersion";
 import Logs from "./Logs";
-import type { RenderResponse } from "./RPCClient";
-import type RPCClient from "./RPCClient";
 import { APP_STYLE } from "./styles";
 
 // ─────────────────────────────────────────────────────────────

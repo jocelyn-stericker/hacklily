@@ -39,8 +39,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
 } from "#/components/ui/dropdown-menu.tsx";
-
-import type { Auth } from "./auth";
+import type { Auth } from "#/lib/auth";
 
 interface Props {
   auth: Auth | null;
