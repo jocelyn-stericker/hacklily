@@ -113,6 +113,15 @@
         <staff-details number="2">
           
         </staff-details>
+        <staff-details number="3">
+          
+        </staff-details>
+        <staff-details number="4">
+          
+        </staff-details>
+        <staff-details number="5">
+          
+        </staff-details>
       </attributes>
       <forward><duration>0</duration></forward>
       
@@ -184,6 +193,15 @@
           <staff-lines>5</staff-lines>
         </staff-details>
         <staff-details number="2">
+          
+        </staff-details>
+        <staff-details number="3">
+          
+        </staff-details>
+        <staff-details number="4">
+          
+        </staff-details>
+        <staff-details number="5">
           
         </staff-details>
       </attributes>

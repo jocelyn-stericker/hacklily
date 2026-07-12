@@ -616,7 +616,13 @@ export class ModelMetreMutationSpec {
           delete c.timeModification;
         }
         if (!isNaN(this.newDots)) {
-          c.dots = times(this.newDots, () => ({}));
+          if (!c.dots || c.dots.length !== this.newDots) {
+            c.dots = times(this.newDots, () => ({}));
+          }
+          // If dots.length already matches, keep existing dot objects so
+          // layout properties (e.g. defaultY set by refreshMeasure fixups)
+          // are preserved in the ld spec. Otherwise the OT system sees a
+          // mismatch and warns "Your patch is broken".
         } else {
           delete c.dots;
         }

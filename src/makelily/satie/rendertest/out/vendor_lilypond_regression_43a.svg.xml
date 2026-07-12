@@ -102,6 +102,22 @@
           <sign>G</sign>
           <line>2</line>
         </clef>
+        <clef number="3">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="4">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="5">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="6">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
         <clef number="1" additional="no" size="full" after-barline="no" font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <sign>F</sign>
           <line>4</line>
@@ -110,6 +126,15 @@
           <staff-lines>5</staff-lines>
         </staff-details>
         <staff-details number="2">
+          
+        </staff-details>
+        <staff-details number="3">
+          
+        </staff-details>
+        <staff-details number="4">
+          
+        </staff-details>
+        <staff-details number="5">
           
         </staff-details>
       </attributes>
@@ -163,6 +188,22 @@
           <sign>G</sign>
           <line>2</line>
         </clef>
+        <clef number="3">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="4">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="5">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="6">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
         <clef number="1" additional="no" size="full" after-barline="no" font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <sign>F</sign>
           <line>4</line>
@@ -171,6 +212,15 @@
           <staff-lines>5</staff-lines>
         </staff-details>
         <staff-details number="2">
+          
+        </staff-details>
+        <staff-details number="3">
+          
+        </staff-details>
+        <staff-details number="4">
+          
+        </staff-details>
+        <staff-details number="5">
           
         </staff-details>
       </attributes>

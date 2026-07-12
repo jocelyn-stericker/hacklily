@@ -114,6 +114,22 @@
           <sign>G</sign>
           <line>2</line>
         </clef>
+        <clef number="5">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="6">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="7">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="8">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
         <clef number="1" additional="no" size="full" after-barline="no" font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <sign>F</sign>
           <line>4</line>
@@ -193,6 +209,22 @@
           <line>2</line>
         </clef>
         <clef number="4">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="5">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="6">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="7">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="8">
           <sign>G</sign>
           <line>2</line>
         </clef>

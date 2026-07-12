@@ -218,9 +218,9 @@
         <rest>
           
         </rest>
-        <duration>2</duration>
+        <duration>4</duration>
         <voice>1</voice>
-        <type>eighth</type>
+        <type>quarter</type>
         <staff>1</staff>
       </note>
       
@@ -228,9 +228,9 @@
         <rest>
           
         </rest>
-        <duration>4</duration>
+        <duration>2</duration>
         <voice>1</voice>
-        <type>quarter</type>
+        <type>eighth</type>
         <staff>1</staff>
       </note>
       

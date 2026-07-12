@@ -16,7 +16,7 @@
  * matching what the mouse/preview path produces.
  */
 
-import { Count } from "#/musicxml-interfaces";
+import { BeamType, Count } from "#/musicxml-interfaces";
 
 import type { Document } from "../document";
 import { Type } from "../document";
@@ -188,6 +188,144 @@ describe("keyboard note insertion with coarse divisions", function () {
         expect(m.divCount % 1).toBe(0);
       });
     });
+  });
+});
+
+describe("two consecutive 16th notes via keyboard", function () {
+  let song: SongImpl;
+  beforeEach(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        song = new SongImpl({
+          baseSrc: songTemplate,
+          onError: reject,
+          onLoaded: () => resolve(),
+        });
+        song.run();
+      }),
+  );
+
+  /**
+   * Regression test for ToolNoteEdit keyboard note insertion.
+   *
+   * When two consecutive 16th notes are inserted via the keyboard path
+   * (`Patch.createPatch(false, ...)`), `addBeams` correctly assigns
+   * Begin/End beams on both levels (1 and 2) to the two notes. However, the
+   * beam postprocessor's `terminateBeam` used `Array.prototype.splice` to
+   * retire each beam level, even though `activeBeams[voice]` is indexed by
+   * beam number. Splicing level 1 shifted level 2 down to index 1, making
+   * the subsequent `splice(2, 1)` a no-op, so the level-2 beam survived past
+   * the second note and the postprocessor emitted a spurious warning on the
+   * following rest:
+   *
+   *   "Beam in voice 1, level 1 was not explicitly closed before another
+   *    note was added."
+   *
+   * This scenario only became reachable after the divisions-bump fix in
+   * `fixMetre` (commit 0835480f) — before that, inserting a 16th note via
+   * keyboard with `<divisions>1</divisions>` threw
+   * `FractionalDivisionsException`, so the two-16th-notes case (the first
+   * with two beam levels) never reached the postprocessor. 8th notes (one
+   * beam level) never triggered the bug because only `splice(1, 1)` ran.
+   *
+   * The fix replaces `splice` with `delete`, preserving the
+   * beam-number-as-index invariant. This test verifies no spurious beam
+   * warning is emitted and that both notes carry the expected beams.
+   */
+  it("does not warn about unclosed beams when adding two consecutive 16th notes", function () {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const measureUUID = song.getDocument(null).measures[0].uuid;
+    const doc0 = song.getDocument(null);
+
+    // --- First keypress: insert a 16th note at position 0 ---
+    const patch1 = Patch.createPatch(
+      false,
+      doc0,
+      measureUUID,
+      "P1",
+      (part) =>
+        part.voice(1, (voice) =>
+          voice
+            .at(0)
+            .insertChord([
+              (n) =>
+                n
+                  .pitch((pitch) => pitch.step("C").octave(5))
+                  .rest(undefined)
+                  .dots([])
+                  .noteType((noteType) => noteType.duration(Count._16th))
+                  .color("#000000"),
+            ])
+            .next()
+            .addVisualCursor(),
+        ),
+    );
+    const ops1 = song.createCanonicalPatch({ raw: patch1 });
+
+    // --- Second keypress: insert another 16th note at the cursor ---
+    const doc1 = song.getDocument(ops1);
+    const cursorKey: string = (doc1 as any)._visualCursor.key;
+    const cursorPath = cursorKey.replace("SATIE", "").split("_");
+    const cursorIdx = parseInt(cursorPath[5], 10);
+
+    const patch2 = Patch.createPatch(
+      false,
+      doc1,
+      measureUUID,
+      "P1",
+      (part) =>
+        part.voice(1, (voice) =>
+          voice
+            .at(cursorIdx)
+            .insertChord([
+              (n) =>
+                n
+                  .pitch((pitch) => pitch.step("D").octave(5))
+                  .rest(undefined)
+                  .dots([])
+                  .noteType((noteType) => noteType.duration(Count._16th))
+                  .color("#000000"),
+            ])
+            .next()
+            .addVisualCursor(),
+        ),
+    );
+
+    const ops2 = song.createCanonicalPatch(ops1, { raw: patch2 });
+
+    // Verify both notes carry the expected Begin/End beams on both levels.
+    const doc2 = song.getDocument(ops2);
+    const voice2 = doc2.measures[0].parts["P1"].voices[1] as any[];
+    const noteC = voice2.find((m) => m[0]?.pitch?.step === "C");
+    const noteD = voice2.find((m) => m[0]?.pitch?.step === "D");
+    expect(noteC[0].beams.map((b: any) => b.type)).toEqual([
+      BeamType.Begin,
+      BeamType.Begin,
+    ]);
+    expect(noteD[0].beams.map((b: any) => b.type)).toEqual([
+      BeamType.End,
+      BeamType.End,
+    ]);
+
+    // Render to trigger the beam postprocessor (layoutSong).
+    song.toSVG();
+
+    // No beam should be left dangling: the postprocessor must not warn that
+    // a beam was left unclosed before another note was added or at the end
+    // of the measure.
+    const beamWarnings = warnSpy.mock.calls.filter(
+      ([msg]) =>
+        typeof msg === "string" &&
+        (msg.includes(
+          "was not explicitly closed before another note was added",
+        ) ||
+          msg.includes("was not closed before the end of the measure")),
+    );
+
+    warnSpy.mockRestore();
+
+    expect(beamWarnings).toEqual([]);
   });
 });
 

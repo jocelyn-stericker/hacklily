@@ -272,29 +272,29 @@
         <rest>
           
         </rest>
-        <duration>168</duration>
-        <voice>1</voice>
-        <type>eighth</type>
-        <staff>1</staff>
-      </note>
-      
-      <note default-y="0" relative-x="0">
-        <rest>
-          
-        </rest>
-        <duration>168</duration>
-        <voice>1</voice>
-        <type>eighth</type>
-        <staff>1</staff>
-      </note>
-      
-      <note default-y="0" relative-x="0">
-        <rest>
-          
-        </rest>
         <duration>84</duration>
         <voice>1</voice>
         <type>16th</type>
+        <staff>1</staff>
+      </note>
+      
+      <note default-y="0" relative-x="0">
+        <rest>
+          
+        </rest>
+        <duration>168</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <staff>1</staff>
+      </note>
+      
+      <note default-y="0" relative-x="0">
+        <rest>
+          
+        </rest>
+        <duration>168</duration>
+        <voice>1</voice>
+        <type>eighth</type>
         <staff>1</staff>
       </note>
       

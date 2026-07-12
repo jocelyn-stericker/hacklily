@@ -341,7 +341,8 @@ function terminateBeam(
     layoutBeam(voice, idx, beamSet, isUnbeamedTuplet);
   }
 
-  beamSet[voice].splice(idx, 1);
+  // Keep existing beam indicies (= beam number). Cleaned up later in postprocesing.
+  delete beamSet[voice][idx];
 }
 
 function layoutBeam(

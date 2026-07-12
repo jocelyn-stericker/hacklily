@@ -340,7 +340,18 @@ export default class SongImpl
     );
   }
   private _rectifyAppendCanonical = (ops: IAny[]): void => {
-    this._rectify$(this._docPatches.concat(ops), false, () => void 0);
+    // Get the correct state without creating patches.
+    // The next `validate` pass will re-create any needed fixup.
+    forEach(ops, (op) => {
+      applyOp(
+        false,
+        this.state.document.measures,
+        this.state.factory,
+        op,
+        this.state.document,
+        () => void 0,
+      );
+    });
   };
   private _rectifyAppendPreview = (ops: IAny[]): void => {
     this._rectify$(this._docPatches.concat(ops), true, () => void 0);
