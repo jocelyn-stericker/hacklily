@@ -29,6 +29,7 @@ import Editor from "./Editor";
 import { cat, FileNotFound, getDefaultBranch, getOrCreateRepo } from "./gitfs";
 import type { ViewMode } from "./Header";
 import Header, { MIN_BOTH_WIDTH, MODE_BOTH, MODE_VIEW } from "./Header";
+import type { Song } from "./lib/localStorage";
 import { cn } from "./lib/utils";
 import { renderVersionFor } from "./lilypondVersion";
 import type Makelily from "./makelily/Makelily"; // note: use for types only
@@ -127,20 +128,6 @@ export const QUERY_PROP_KEYS: Array<keyof QueryProps> = [
   "src",
   "state",
 ];
-
-export interface Song {
-  /**
-   * The SHA of the clean version of the song. Null if no version has been saved.
-   *
-   * Used to detect changes from other sources while editing a song.
-   */
-  baseSHA: string | null;
-
-  /**
-   * The version of the song, with all the edits.
-   */
-  src: string;
-}
 
 interface Props extends QueryProps {
   /**

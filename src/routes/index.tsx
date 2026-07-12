@@ -19,11 +19,23 @@
  */
 
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 import { useColourScheme } from "#/components/useColourScheme";
+import {
+  editSong,
+  getDirtySongs,
+  markSongClean,
+  subscribeToDirtySongs,
+} from "#/lib/localStorage.ts";
 
-import type { QueryProps, Song } from "../App";
+import type { QueryProps } from "../App";
 import App from "../App";
 import type { Auth } from "../auth";
 import { parseAuth } from "../auth";
@@ -154,18 +166,14 @@ function HacklilyApp() {
   );
 
   // Read localStorage state (same as current index.tsx).
-  const dirtySongs = getDirtySongs();
+  const dirtySongs = useSyncExternalStore(
+    subscribeToDirtySongs,
+    getDirtySongs,
+    () => ({}),
+  );
   const auth = getAuth();
   const [csrf, setLatestCsrf] = useState(sessionStorage.csrf || null);
   const hideUnstableNotification = getHideUnstableNotification();
-
-  const editSong = useCallback((songID: string, song: Song): void => {
-    localStorage[`dirtySong::${songID}`] = JSON.stringify(song);
-  }, []);
-
-  const markSongClean = useCallback((song: string): void => {
-    delete localStorage[`dirtySong::${song}`];
-  }, []);
 
   const setAuth = useCallback((newAuth: Auth | null): void => {
     if (!newAuth) {
@@ -218,20 +226,6 @@ function HacklilyApp() {
       setHideUnstableNotification={setHideUnstableNotification}
     />
   );
-}
-
-function getDirtySongs(): { [key: string]: Song } {
-  const songs: { [key: string]: Song } = {};
-  for (let i = 0; i < localStorage.length; i++) {
-    const key: string | null = localStorage.key(i);
-    if (!key) continue;
-    const value: string | null = localStorage.getItem(key);
-    if (!value) continue;
-    if (key.startsWith("dirtySong::")) {
-      songs[key.split("::")[1]] = JSON.parse(value);
-    }
-  }
-  return songs;
 }
 
 function getAuth(): Auth | null {
