@@ -4,11 +4,11 @@
 // Guile and fontconfig into it.
 Module.preRun = Module.preRun || [];
 Module.preRun.push(() => {
-  ENV.GUILE_AUTO_COMPILE = '0';
-  ENV.GUILE_LOAD_COMPILED_PATH = '/lilypond/guile-ccache';
-  ENV.LILYPOND_DATADIR = '/lilypond/share/lilypond/2.27.1';
-  ENV.LILYPOND_LIBDIR = '/lilypond/lib/lilypond/2.27.1';
-  ENV.FONTCONFIG_FILE = '/lilypond/fonts.conf';
+  ENV.GUILE_AUTO_COMPILE = "0";
+  ENV.GUILE_LOAD_COMPILED_PATH = "/lilypond/guile-ccache";
+  ENV.LILYPOND_DATADIR = "/lilypond/share/lilypond/2.27.1";
+  ENV.LILYPOND_LIBDIR = "/lilypond/lib/lilypond/2.27.1";
+  ENV.FONTCONFIG_FILE = "/lilypond/fonts.conf";
 });
 Module.onRuntimeInitialized = () => {
   // The file packager doesn't preserve mtimes, so preloaded .go bytecode can
@@ -17,13 +17,13 @@ Module.onRuntimeInitialized = () => {
   const future = Date.now() + 864e5;
   const walk = (dir) => {
     for (const name of FS.readdir(dir)) {
-      if (name === '.' || name === '..') continue;
-      const p = dir + '/' + name;
+      if (name === "." || name === "..") continue;
+      const p = dir + "/" + name;
       if (FS.isDir(FS.stat(p).mode)) walk(p);
       else FS.utime(p, future, future);
     }
   };
-  walk('/lilypond/guile-ccache');
-  walk('/lilypond/lib/lilypond/2.27.1/ccache');
-  FS.mkdir('/fccache'); // fontconfig <cachedir>
+  walk("/lilypond/guile-ccache");
+  walk("/lilypond/lib/lilypond/2.27.1/ccache");
+  FS.mkdir("/fccache"); // fontconfig <cachedir>
 };

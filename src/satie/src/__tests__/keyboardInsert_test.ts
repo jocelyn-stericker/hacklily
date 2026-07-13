@@ -239,27 +239,22 @@ describe("two consecutive 16th notes via keyboard", function () {
     const doc0 = song.getDocument(null);
 
     // --- First keypress: insert a 16th note at position 0 ---
-    const patch1 = Patch.createPatch(
-      false,
-      doc0,
-      measureUUID,
-      "P1",
-      (part) =>
-        part.voice(1, (voice) =>
-          voice
-            .at(0)
-            .insertChord([
-              (n) =>
-                n
-                  .pitch((pitch) => pitch.step("C").octave(5))
-                  .rest(undefined)
-                  .dots([])
-                  .noteType((noteType) => noteType.duration(Count._16th))
-                  .color("#000000"),
-            ])
-            .next()
-            .addVisualCursor(),
-        ),
+    const patch1 = Patch.createPatch(false, doc0, measureUUID, "P1", (part) =>
+      part.voice(1, (voice) =>
+        voice
+          .at(0)
+          .insertChord([
+            (n) =>
+              n
+                .pitch((pitch) => pitch.step("C").octave(5))
+                .rest(undefined)
+                .dots([])
+                .noteType((noteType) => noteType.duration(Count._16th))
+                .color("#000000"),
+          ])
+          .next()
+          .addVisualCursor(),
+      ),
     );
     const ops1 = song.createCanonicalPatch({ raw: patch1 });
 
@@ -269,27 +264,22 @@ describe("two consecutive 16th notes via keyboard", function () {
     const cursorPath = cursorKey.replace("SATIE", "").split("_");
     const cursorIdx = parseInt(cursorPath[5], 10);
 
-    const patch2 = Patch.createPatch(
-      false,
-      doc1,
-      measureUUID,
-      "P1",
-      (part) =>
-        part.voice(1, (voice) =>
-          voice
-            .at(cursorIdx)
-            .insertChord([
-              (n) =>
-                n
-                  .pitch((pitch) => pitch.step("D").octave(5))
-                  .rest(undefined)
-                  .dots([])
-                  .noteType((noteType) => noteType.duration(Count._16th))
-                  .color("#000000"),
-            ])
-            .next()
-            .addVisualCursor(),
-        ),
+    const patch2 = Patch.createPatch(false, doc1, measureUUID, "P1", (part) =>
+      part.voice(1, (voice) =>
+        voice
+          .at(cursorIdx)
+          .insertChord([
+            (n) =>
+              n
+                .pitch((pitch) => pitch.step("D").octave(5))
+                .rest(undefined)
+                .dots([])
+                .noteType((noteType) => noteType.duration(Count._16th))
+                .color("#000000"),
+          ])
+          .next()
+          .addVisualCursor(),
+      ),
     );
 
     const ops2 = song.createCanonicalPatch(ops1, { raw: patch2 });

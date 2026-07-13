@@ -17,11 +17,7 @@ const DrawerTrigger = React.forwardRef<
   ref,
 ) {
   return (
-    <DrawerPrimitive.Trigger
-      ref={ref}
-      data-slot="drawer-trigger"
-      {...props}
-    />
+    <DrawerPrimitive.Trigger ref={ref} data-slot="drawer-trigger" {...props} />
   );
 });
 
@@ -67,9 +63,11 @@ const DrawerContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<typeof DrawerPrimitive.Content>
 >(function DrawerContent(
-  { className, children, ...props }: React.ComponentProps<
-    typeof DrawerPrimitive.Content
-  >,
+  {
+    className,
+    children,
+    ...props
+  }: React.ComponentProps<typeof DrawerPrimitive.Content>,
   ref,
 ) {
   return (
@@ -91,34 +89,42 @@ const DrawerContent = React.forwardRef<
   );
 });
 
-const DrawerHeader = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
-  function DrawerHeader({ className, ...props }: React.ComponentProps<"div">, ref) {
-    return (
-      <div
-        ref={ref}
-        data-slot="drawer-header"
-        className={cn(
-          "flex flex-col gap-0.5 p-4 group-data-[vaul-drawer-direction=bottom]/drawer-content:text-center group-data-[vaul-drawer-direction=top]/drawer-content:text-center md:gap-0.5 md:text-left",
-          className,
-        )}
-        {...props}
-      />
-    );
-  },
-);
+const DrawerHeader = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div">
+>(function DrawerHeader(
+  { className, ...props }: React.ComponentProps<"div">,
+  ref,
+) {
+  return (
+    <div
+      ref={ref}
+      data-slot="drawer-header"
+      className={cn(
+        "flex flex-col gap-0.5 p-4 group-data-[vaul-drawer-direction=bottom]/drawer-content:text-center group-data-[vaul-drawer-direction=top]/drawer-content:text-center md:gap-0.5 md:text-left",
+        className,
+      )}
+      {...props}
+    />
+  );
+});
 
-const DrawerFooter = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
-  function DrawerFooter({ className, ...props }: React.ComponentProps<"div">, ref) {
-    return (
-      <div
-        ref={ref}
-        data-slot="drawer-footer"
-        className={cn("mt-auto flex flex-col gap-2 p-4", className)}
-        {...props}
-      />
-    );
-  },
-);
+const DrawerFooter = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div">
+>(function DrawerFooter(
+  { className, ...props }: React.ComponentProps<"div">,
+  ref,
+) {
+  return (
+    <div
+      ref={ref}
+      data-slot="drawer-footer"
+      className={cn("mt-auto flex flex-col gap-2 p-4", className)}
+      {...props}
+    />
+  );
+});
 
 const DrawerTitle = React.forwardRef<
   HTMLHeadingElement,

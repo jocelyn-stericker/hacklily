@@ -8,252 +8,252 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as WasmRouteImport } from './routes/wasm'
-import { Route as StatusRouteImport } from './routes/status'
-import { Route as SatieRouteImport } from './routes/satie'
-import { Route as Musicxml2lyRouteImport } from './routes/musicxml2ly'
-import { Route as MakelilyRouteImport } from './routes/makelily'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as SatieIndexRouteImport } from './routes/satie/index'
-import { Route as SatieTestsRouteImport } from './routes/satie/tests'
-import { Route as SatieSandboxRouteImport } from './routes/satie/sandbox'
-import { Route as SatieTestsIdRouteImport } from './routes/satie/tests.$id'
+import { Route as rootRouteImport } from "./routes/__root";
+import { Route as IndexRouteImport } from "./routes/index";
+import { Route as MakelilyRouteImport } from "./routes/makelily";
+import { Route as Musicxml2lyRouteImport } from "./routes/musicxml2ly";
+import { Route as SatieRouteImport } from "./routes/satie";
+import { Route as SatieIndexRouteImport } from "./routes/satie/index";
+import { Route as SatieSandboxRouteImport } from "./routes/satie/sandbox";
+import { Route as SatieTestsRouteImport } from "./routes/satie/tests";
+import { Route as SatieTestsIdRouteImport } from "./routes/satie/tests.$id";
+import { Route as StatusRouteImport } from "./routes/status";
+import { Route as WasmRouteImport } from "./routes/wasm";
 
 const WasmRoute = WasmRouteImport.update({
-  id: '/wasm',
-  path: '/wasm',
+  id: "/wasm",
+  path: "/wasm",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const StatusRoute = StatusRouteImport.update({
-  id: '/status',
-  path: '/status',
+  id: "/status",
+  path: "/status",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const SatieRoute = SatieRouteImport.update({
-  id: '/satie',
-  path: '/satie',
+  id: "/satie",
+  path: "/satie",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const Musicxml2lyRoute = Musicxml2lyRouteImport.update({
-  id: '/musicxml2ly',
-  path: '/musicxml2ly',
+  id: "/musicxml2ly",
+  path: "/musicxml2ly",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const MakelilyRoute = MakelilyRouteImport.update({
-  id: '/makelily',
-  path: '/makelily',
+  id: "/makelily",
+  path: "/makelily",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const SatieIndexRoute = SatieIndexRouteImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => SatieRoute,
-} as any)
+} as any);
 const SatieTestsRoute = SatieTestsRouteImport.update({
-  id: '/tests',
-  path: '/tests',
+  id: "/tests",
+  path: "/tests",
   getParentRoute: () => SatieRoute,
-} as any)
+} as any);
 const SatieSandboxRoute = SatieSandboxRouteImport.update({
-  id: '/sandbox',
-  path: '/sandbox',
+  id: "/sandbox",
+  path: "/sandbox",
   getParentRoute: () => SatieRoute,
-} as any)
+} as any);
 const SatieTestsIdRoute = SatieTestsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
+  id: "/$id",
+  path: "/$id",
   getParentRoute: () => SatieTestsRoute,
-} as any)
+} as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/makelily': typeof MakelilyRoute
-  '/musicxml2ly': typeof Musicxml2lyRoute
-  '/satie': typeof SatieRouteWithChildren
-  '/status': typeof StatusRoute
-  '/wasm': typeof WasmRoute
-  '/satie/sandbox': typeof SatieSandboxRoute
-  '/satie/tests': typeof SatieTestsRouteWithChildren
-  '/satie/': typeof SatieIndexRoute
-  '/satie/tests/$id': typeof SatieTestsIdRoute
+  "/": typeof IndexRoute;
+  "/makelily": typeof MakelilyRoute;
+  "/musicxml2ly": typeof Musicxml2lyRoute;
+  "/satie": typeof SatieRouteWithChildren;
+  "/status": typeof StatusRoute;
+  "/wasm": typeof WasmRoute;
+  "/satie/sandbox": typeof SatieSandboxRoute;
+  "/satie/tests": typeof SatieTestsRouteWithChildren;
+  "/satie/": typeof SatieIndexRoute;
+  "/satie/tests/$id": typeof SatieTestsIdRoute;
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/makelily': typeof MakelilyRoute
-  '/musicxml2ly': typeof Musicxml2lyRoute
-  '/status': typeof StatusRoute
-  '/wasm': typeof WasmRoute
-  '/satie/sandbox': typeof SatieSandboxRoute
-  '/satie/tests': typeof SatieTestsRouteWithChildren
-  '/satie': typeof SatieIndexRoute
-  '/satie/tests/$id': typeof SatieTestsIdRoute
+  "/": typeof IndexRoute;
+  "/makelily": typeof MakelilyRoute;
+  "/musicxml2ly": typeof Musicxml2lyRoute;
+  "/status": typeof StatusRoute;
+  "/wasm": typeof WasmRoute;
+  "/satie/sandbox": typeof SatieSandboxRoute;
+  "/satie/tests": typeof SatieTestsRouteWithChildren;
+  "/satie": typeof SatieIndexRoute;
+  "/satie/tests/$id": typeof SatieTestsIdRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/makelily': typeof MakelilyRoute
-  '/musicxml2ly': typeof Musicxml2lyRoute
-  '/satie': typeof SatieRouteWithChildren
-  '/status': typeof StatusRoute
-  '/wasm': typeof WasmRoute
-  '/satie/sandbox': typeof SatieSandboxRoute
-  '/satie/tests': typeof SatieTestsRouteWithChildren
-  '/satie/': typeof SatieIndexRoute
-  '/satie/tests/$id': typeof SatieTestsIdRoute
+  __root__: typeof rootRouteImport;
+  "/": typeof IndexRoute;
+  "/makelily": typeof MakelilyRoute;
+  "/musicxml2ly": typeof Musicxml2lyRoute;
+  "/satie": typeof SatieRouteWithChildren;
+  "/status": typeof StatusRoute;
+  "/wasm": typeof WasmRoute;
+  "/satie/sandbox": typeof SatieSandboxRoute;
+  "/satie/tests": typeof SatieTestsRouteWithChildren;
+  "/satie/": typeof SatieIndexRoute;
+  "/satie/tests/$id": typeof SatieTestsIdRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
+  fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
-    | '/'
-    | '/makelily'
-    | '/musicxml2ly'
-    | '/satie'
-    | '/status'
-    | '/wasm'
-    | '/satie/sandbox'
-    | '/satie/tests'
-    | '/satie/'
-    | '/satie/tests/$id'
-  fileRoutesByTo: FileRoutesByTo
+    | "/"
+    | "/makelily"
+    | "/musicxml2ly"
+    | "/satie"
+    | "/status"
+    | "/wasm"
+    | "/satie/sandbox"
+    | "/satie/tests"
+    | "/satie/"
+    | "/satie/tests/$id";
+  fileRoutesByTo: FileRoutesByTo;
   to:
-    | '/'
-    | '/makelily'
-    | '/musicxml2ly'
-    | '/status'
-    | '/wasm'
-    | '/satie/sandbox'
-    | '/satie/tests'
-    | '/satie'
-    | '/satie/tests/$id'
+    | "/"
+    | "/makelily"
+    | "/musicxml2ly"
+    | "/status"
+    | "/wasm"
+    | "/satie/sandbox"
+    | "/satie/tests"
+    | "/satie"
+    | "/satie/tests/$id";
   id:
-    | '__root__'
-    | '/'
-    | '/makelily'
-    | '/musicxml2ly'
-    | '/satie'
-    | '/status'
-    | '/wasm'
-    | '/satie/sandbox'
-    | '/satie/tests'
-    | '/satie/'
-    | '/satie/tests/$id'
-  fileRoutesById: FileRoutesById
+    | "__root__"
+    | "/"
+    | "/makelily"
+    | "/musicxml2ly"
+    | "/satie"
+    | "/status"
+    | "/wasm"
+    | "/satie/sandbox"
+    | "/satie/tests"
+    | "/satie/"
+    | "/satie/tests/$id";
+  fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  MakelilyRoute: typeof MakelilyRoute
-  Musicxml2lyRoute: typeof Musicxml2lyRoute
-  SatieRoute: typeof SatieRouteWithChildren
-  StatusRoute: typeof StatusRoute
-  WasmRoute: typeof WasmRoute
+  IndexRoute: typeof IndexRoute;
+  MakelilyRoute: typeof MakelilyRoute;
+  Musicxml2lyRoute: typeof Musicxml2lyRoute;
+  SatieRoute: typeof SatieRouteWithChildren;
+  StatusRoute: typeof StatusRoute;
+  WasmRoute: typeof WasmRoute;
 }
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/wasm': {
-      id: '/wasm'
-      path: '/wasm'
-      fullPath: '/wasm'
-      preLoaderRoute: typeof WasmRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/status': {
-      id: '/status'
-      path: '/status'
-      fullPath: '/status'
-      preLoaderRoute: typeof StatusRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/satie': {
-      id: '/satie'
-      path: '/satie'
-      fullPath: '/satie'
-      preLoaderRoute: typeof SatieRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/musicxml2ly': {
-      id: '/musicxml2ly'
-      path: '/musicxml2ly'
-      fullPath: '/musicxml2ly'
-      preLoaderRoute: typeof Musicxml2lyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/makelily': {
-      id: '/makelily'
-      path: '/makelily'
-      fullPath: '/makelily'
-      preLoaderRoute: typeof MakelilyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/satie/': {
-      id: '/satie/'
-      path: '/'
-      fullPath: '/satie/'
-      preLoaderRoute: typeof SatieIndexRouteImport
-      parentRoute: typeof SatieRoute
-    }
-    '/satie/tests': {
-      id: '/satie/tests'
-      path: '/tests'
-      fullPath: '/satie/tests'
-      preLoaderRoute: typeof SatieTestsRouteImport
-      parentRoute: typeof SatieRoute
-    }
-    '/satie/sandbox': {
-      id: '/satie/sandbox'
-      path: '/sandbox'
-      fullPath: '/satie/sandbox'
-      preLoaderRoute: typeof SatieSandboxRouteImport
-      parentRoute: typeof SatieRoute
-    }
-    '/satie/tests/$id': {
-      id: '/satie/tests/$id'
-      path: '/$id'
-      fullPath: '/satie/tests/$id'
-      preLoaderRoute: typeof SatieTestsIdRouteImport
-      parentRoute: typeof SatieTestsRoute
-    }
+    "/wasm": {
+      id: "/wasm";
+      path: "/wasm";
+      fullPath: "/wasm";
+      preLoaderRoute: typeof WasmRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/status": {
+      id: "/status";
+      path: "/status";
+      fullPath: "/status";
+      preLoaderRoute: typeof StatusRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/satie": {
+      id: "/satie";
+      path: "/satie";
+      fullPath: "/satie";
+      preLoaderRoute: typeof SatieRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/musicxml2ly": {
+      id: "/musicxml2ly";
+      path: "/musicxml2ly";
+      fullPath: "/musicxml2ly";
+      preLoaderRoute: typeof Musicxml2lyRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/makelily": {
+      id: "/makelily";
+      path: "/makelily";
+      fullPath: "/makelily";
+      preLoaderRoute: typeof MakelilyRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/": {
+      id: "/";
+      path: "/";
+      fullPath: "/";
+      preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/satie/": {
+      id: "/satie/";
+      path: "/";
+      fullPath: "/satie/";
+      preLoaderRoute: typeof SatieIndexRouteImport;
+      parentRoute: typeof SatieRoute;
+    };
+    "/satie/tests": {
+      id: "/satie/tests";
+      path: "/tests";
+      fullPath: "/satie/tests";
+      preLoaderRoute: typeof SatieTestsRouteImport;
+      parentRoute: typeof SatieRoute;
+    };
+    "/satie/sandbox": {
+      id: "/satie/sandbox";
+      path: "/sandbox";
+      fullPath: "/satie/sandbox";
+      preLoaderRoute: typeof SatieSandboxRouteImport;
+      parentRoute: typeof SatieRoute;
+    };
+    "/satie/tests/$id": {
+      id: "/satie/tests/$id";
+      path: "/$id";
+      fullPath: "/satie/tests/$id";
+      preLoaderRoute: typeof SatieTestsIdRouteImport;
+      parentRoute: typeof SatieTestsRoute;
+    };
   }
 }
 
 interface SatieTestsRouteChildren {
-  SatieTestsIdRoute: typeof SatieTestsIdRoute
+  SatieTestsIdRoute: typeof SatieTestsIdRoute;
 }
 
 const SatieTestsRouteChildren: SatieTestsRouteChildren = {
   SatieTestsIdRoute: SatieTestsIdRoute,
-}
+};
 
 const SatieTestsRouteWithChildren = SatieTestsRoute._addFileChildren(
   SatieTestsRouteChildren,
-)
+);
 
 interface SatieRouteChildren {
-  SatieSandboxRoute: typeof SatieSandboxRoute
-  SatieTestsRoute: typeof SatieTestsRouteWithChildren
-  SatieIndexRoute: typeof SatieIndexRoute
+  SatieSandboxRoute: typeof SatieSandboxRoute;
+  SatieTestsRoute: typeof SatieTestsRouteWithChildren;
+  SatieIndexRoute: typeof SatieIndexRoute;
 }
 
 const SatieRouteChildren: SatieRouteChildren = {
   SatieSandboxRoute: SatieSandboxRoute,
   SatieTestsRoute: SatieTestsRouteWithChildren,
   SatieIndexRoute: SatieIndexRoute,
-}
+};
 
-const SatieRouteWithChildren = SatieRoute._addFileChildren(SatieRouteChildren)
+const SatieRouteWithChildren = SatieRoute._addFileChildren(SatieRouteChildren);
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -262,7 +262,7 @@ const rootRouteChildren: RootRouteChildren = {
   SatieRoute: SatieRouteWithChildren,
   StatusRoute: StatusRoute,
   WasmRoute: WasmRoute,
-}
+};
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+  ._addFileTypes<FileRouteTypes>();

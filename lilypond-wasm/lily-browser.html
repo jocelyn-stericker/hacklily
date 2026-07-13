@@ -1,45 +1,63 @@
 <!doctype html>
-<meta charset="utf-8">
+<meta charset="utf-8" />
 <title>lilypond.wasm browser smoke test</title>
 <body>
-<pre id="log"></pre>
-<div id="score"></div>
-<script src="lilypond-web.js"></script>
-<script>
-const logEl = document.getElementById('log');
-const log = (t) => { logEl.textContent += t + '\n'; console.log(t); };
+  <pre id="log"></pre>
+  <div id="score"></div>
+  <script src="lilypond-web.js"></script>
+  <script>
+    const logEl = document.getElementById("log");
+    const log = (t) => {
+      logEl.textContent += t + "\n";
+      console.log(t);
+    };
 
-// Default: smoke/trivial.ly.  ?measures=64 generates smoke/medium.ly.
-const measures = parseInt(new URLSearchParams(location.search).get('measures') || '0', 10);
-const SRC = measures > 0
-  ? '\\version "2.27.1"\n{ '
-    + Array(measures).fill("c'8 d'8 e'8 f'8 g'8 a'8 b'8 c''8").join(' | ')
-    + ' }\n'
-  : '\\version "2.27.1"\n{ c\'4 d\'4 e\'4 f\'4 }\n';
+    // Default: smoke/trivial.ly.  ?measures=64 generates smoke/medium.ly.
+    const measures = parseInt(
+      new URLSearchParams(location.search).get("measures") || "0",
+      10,
+    );
+    const SRC =
+      measures > 0
+        ? '\\version "2.27.1"\n{ ' +
+          Array(measures).fill("c'8 d'8 e'8 f'8 g'8 a'8 b'8 c''8").join(" | ") +
+          " }\n"
+        : "\\version \"2.27.1\"\n{ c'4 d'4 e'4 f'4 }\n";
 
-const t0 = performance.now();
-createLilypond({
-  noInitialRun: true,
-  print: log,
-  printErr: log,
-}).then((M) => {
-  const tInit = performance.now();
-  M.FS.writeFile('/input.ly', SRC);
-  M.FS.mkdir('/render');
-  try {
-    M.callMain(['-dbackend=cairo', '--svg', '-o', '/render/input', '/input.ly']);
-  } catch (e) {
-    // EXIT_RUNTIME=1: exit() unwinds through callMain; ExitStatus is normal.
-    if (e && e.name !== 'ExitStatus') throw e;
-  }
-  const tDone = performance.now();
-  const svg = M.FS.readFile('/render/input.svg', { encoding: 'utf8' });
-  const anchors = (svg.match(/textedit:\/\//g) || []).length;
-  document.getElementById('score').innerHTML = svg;
-  log(`LILY BROWSER: PASS measures=${measures || 'trivial'} bytes=${svg.length}`
-      + ` anchors=${anchors} init_ms=${Math.round(tInit - t0)}`
-      + ` render_ms=${Math.round(tDone - tInit)}`);
-}).catch((e) => {
-  log('LILY BROWSER: FAIL ' + (e && e.message));
-});
-</script>
+    const t0 = performance.now();
+    createLilypond({
+      noInitialRun: true,
+      print: log,
+      printErr: log,
+    })
+      .then((M) => {
+        const tInit = performance.now();
+        M.FS.writeFile("/input.ly", SRC);
+        M.FS.mkdir("/render");
+        try {
+          M.callMain([
+            "-dbackend=cairo",
+            "--svg",
+            "-o",
+            "/render/input",
+            "/input.ly",
+          ]);
+        } catch (e) {
+          // EXIT_RUNTIME=1: exit() unwinds through callMain; ExitStatus is normal.
+          if (e && e.name !== "ExitStatus") throw e;
+        }
+        const tDone = performance.now();
+        const svg = M.FS.readFile("/render/input.svg", { encoding: "utf8" });
+        const anchors = (svg.match(/textedit:\/\//g) || []).length;
+        document.getElementById("score").innerHTML = svg;
+        log(
+          `LILY BROWSER: PASS measures=${measures || "trivial"} bytes=${svg.length}` +
+            ` anchors=${anchors} init_ms=${Math.round(tInit - t0)}` +
+            ` render_ms=${Math.round(tDone - tInit)}`,
+        );
+      })
+      .catch((e) => {
+        log("LILY BROWSER: FAIL " + (e && e.message));
+      });
+  </script>
+</body>

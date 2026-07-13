@@ -1,7 +1,7 @@
 on:
   push:
     tags:
-      - 'server-v*.*.*'
+      - "server-v*.*.*"
 jobs:
   build-and-publish-server:
     runs-on: faith

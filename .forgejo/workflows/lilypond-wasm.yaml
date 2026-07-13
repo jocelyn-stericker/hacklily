@@ -1,7 +1,7 @@
 on:
   push:
     tags:
-      - 'wasm-v*.*.*'
+      - "wasm-v*.*.*"
 jobs:
   build-and-publish-wasm:
     runs-on: faith
