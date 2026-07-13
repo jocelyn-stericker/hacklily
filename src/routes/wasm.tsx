@@ -10,8 +10,8 @@ import {
   validateHacklilySearch as validateSearch,
 } from "#/lib/hacklilyRoute";
 
-export const Route = createFileRoute("/")({
-  component: HacklilyApp,
+export const Route = createFileRoute("/wasm")({
+  component: WasmApp,
   pendingComponent: () => {
     return (
       <div className="App" style={{ zIndex: -2 }}>
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/")({
   beforeLoad,
 });
 
-function HacklilyApp() {
+function WasmApp() {
   const search = Route.useSearch();
-  return <App {...search} {...useHacklilyAppProps(search)} variant="server" />;
+  return <App {...search} {...useHacklilyAppProps(search)} variant="wasm" />;
 }

@@ -18,7 +18,10 @@ import {
 import { renderVersionFor } from "#/lib/lilypondVersion";
 import type { Song } from "#/lib/localStorage";
 import RPCClient from "#/lib/RPCClient";
+import RpcSvgRenderer from "#/lib/RpcSvgRenderer";
+import type { SvgRenderer } from "#/lib/SvgRenderer";
 import { cn } from "#/lib/utils";
+import WasmRenderer from "#/lib/WasmRenderer";
 
 import Editor from "./Editor";
 import type { ViewMode } from "./Header";
@@ -177,6 +180,13 @@ interface Props extends QueryProps {
     updates: Pick<QueryProps, K>,
     replaceState?: boolean,
   ): void;
+
+  /**
+   * Which renderer backs the SVG preview. "server" uses the JSON-RPC WebSocket
+   * (the historical path); "wasm" engraves locally in a lilypond-wasm Web
+   * Worker, with the WebSocket still used for auth/publish/PDF.
+   */
+  variant: "server" | "wasm";
 }
 
 interface State {
@@ -208,6 +218,18 @@ interface State {
   windowWidth: number;
   wsError: boolean;
   branch: string | null;
+
+  /**
+   * (wasm only) True once the lilypond-wasm worker has signaled ready. The
+   * preview gates on this independently of the WebSocket on /wasm.
+   */
+  wasmReady: boolean;
+
+  /**
+   * (wasm only) Non-null when the worker has crashed and is being recycled;
+   * cleared once it boots again.
+   */
+  wasmError: string | null;
 
   makelilyInsertCB?(ly: string): void;
 }
@@ -266,10 +288,13 @@ export default class App extends React.PureComponent<Props, State> {
     windowWidth: window.innerWidth,
     wsError: false,
     branch: null,
+    wasmReady: false,
+    wasmError: null,
   };
 
   private editor: Editor | null = null;
   private rpc: RPCClient | null = null;
+  private svgRenderer: SvgRenderer | null = null;
   private socket: WebSocket | null = null;
 
   componentDidMount(): void {
@@ -290,6 +315,10 @@ export default class App extends React.PureComponent<Props, State> {
     lock(this.props.edit || "null");
     window.addEventListener("beforeunload", this.handleBeforeUnload);
     setEditingNotificationHandler(this.handleEditingNotification);
+
+    if (this.props.variant === "wasm") {
+      this.bootWasmRenderer();
+    }
   }
 
   componentDidUpdate(prevProps: Props): void {
@@ -315,10 +344,30 @@ export default class App extends React.PureComponent<Props, State> {
 
   componentWillUnmount(): void {
     this.disconnectWS();
+    this.destroyWasmRenderer();
     window.removeEventListener("beforeunload", this.handleBeforeUnload);
     window.addEventListener("resize", this.handleWindowResize);
     setEditingNotificationHandler(null);
   }
+
+  private bootWasmRenderer = (): void => {
+    if (this.svgRenderer) {
+      return;
+    }
+    this.svgRenderer = new WasmRenderer({
+      onReady: () => this.setState({ wasmReady: true, wasmError: null }),
+      onCrash: (message: string) =>
+        this.setState({ wasmReady: false, wasmError: message }),
+    });
+  };
+
+  private destroyWasmRenderer = (): void => {
+    if (this.svgRenderer instanceof WasmRenderer) {
+      this.svgRenderer.destroy();
+      this.svgRenderer = null;
+    }
+    this.setState({ wasmReady: false, wasmError: null });
+  };
 
   render(): JSX.Element {
     const { logs, mode, midi, defaultSelection, rendererVersion, windowWidth } =
@@ -448,6 +497,13 @@ export default class App extends React.PureComponent<Props, State> {
       if (this.rpc) {
         this.rpc.destroy();
         this.rpc = null;
+      }
+      // On /wasm the renderer is the WasmRenderer, which is independent of
+      // the WebSocket and must survive reconnects; only / tears down the
+      // server renderer here.
+      if (this.props.variant !== "wasm" && this.svgRenderer) {
+        this.svgRenderer.destroy();
+        this.svgRenderer = null;
       }
     }
   }
@@ -1027,6 +1083,12 @@ export default class App extends React.PureComponent<Props, State> {
       throw new Error("Socket not opened, but handleWSOpen called.");
     }
     this.rpc = new RPCClient(this.socket);
+    // On /wasm the preview renderer is the local WasmRenderer (booted in
+    // componentDidMount), independent of the WebSocket; only / wires the
+    // server renderer to the socket here.
+    if (this.props.variant !== "wasm") {
+      this.svgRenderer = new RpcSvgRenderer(this.rpc);
+    }
     if (this.props.code && this.props.state) {
       try {
         const auth: Auth = await checkLogin(
@@ -1195,7 +1257,9 @@ export default class App extends React.PureComponent<Props, State> {
   }
 
   private renderPreview(): React.ReactNode {
-    const { mode, reconnectTimeout, logs, wsError } = this.state;
+    const { mode, reconnectTimeout, logs, wsError, wasmReady, wasmError } =
+      this.state;
+    const { variant } = this.props;
 
     const song: Song | undefined = this.song();
 
@@ -1219,8 +1283,11 @@ export default class App extends React.PureComponent<Props, State> {
       );
     }
 
-    if (this.socket) {
-      if (online && this.rpc) {
+    if (variant === "wasm") {
+      // The wasm worker is the preview source and is independent of the
+      // WebSocket (used only for auth/publish/PDF on /wasm), so the WS
+      // connect/reconnect state never blocks the preview here.
+      if (wasmReady && this.svgRenderer) {
         return (
           <Preview
             code={song.src}
@@ -1228,7 +1295,46 @@ export default class App extends React.PureComponent<Props, State> {
             onLogsObtained={this.handleLogsObtained}
             onMidiObtained={this.handleMidiObtained}
             onSelectionChanged={this.handleSelectionChanged}
-            rpc={this.rpc}
+            renderer={this.svgRenderer}
+            logs={logs}
+          />
+        );
+      }
+      return (
+        <div
+          className={cn(
+            APP_STYLE.sheetMusicView,
+            mode === MODE_BOTH
+              ? "w-1/2"
+              : mode === MODE_VIEW
+                ? "w-full"
+                : "w-0",
+          )}
+        >
+          <div className={cn(APP_STYLE.sheetMusicError)}>
+            {wasmError ? (
+              <>
+                <TriangleAlert size="1em" /> LilyPond worker crashed (
+                {wasmError}); restarting&hellip;
+              </>
+            ) : (
+              <>Booting LilyPond&hellip;</>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    if (this.socket) {
+      if (online && this.svgRenderer) {
+        return (
+          <Preview
+            code={song.src}
+            mode={mode}
+            onLogsObtained={this.handleLogsObtained}
+            onMidiObtained={this.handleMidiObtained}
+            onSelectionChanged={this.handleSelectionChanged}
+            renderer={this.svgRenderer}
             logs={logs}
           />
         );

@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WasmRouteImport } from './routes/wasm'
 import { Route as StatusRouteImport } from './routes/status'
 import { Route as SatieRouteImport } from './routes/satie'
 import { Route as Musicxml2lyRouteImport } from './routes/musicxml2ly'
@@ -19,6 +20,11 @@ import { Route as SatieTestsRouteImport } from './routes/satie/tests'
 import { Route as SatieSandboxRouteImport } from './routes/satie/sandbox'
 import { Route as SatieTestsIdRouteImport } from './routes/satie/tests.$id'
 
+const WasmRoute = WasmRouteImport.update({
+  id: '/wasm',
+  path: '/wasm',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StatusRoute = StatusRouteImport.update({
   id: '/status',
   path: '/status',
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/musicxml2ly': typeof Musicxml2lyRoute
   '/satie': typeof SatieRouteWithChildren
   '/status': typeof StatusRoute
+  '/wasm': typeof WasmRoute
   '/satie/sandbox': typeof SatieSandboxRoute
   '/satie/tests': typeof SatieTestsRouteWithChildren
   '/satie/': typeof SatieIndexRoute
@@ -81,6 +88,7 @@ export interface FileRoutesByTo {
   '/makelily': typeof MakelilyRoute
   '/musicxml2ly': typeof Musicxml2lyRoute
   '/status': typeof StatusRoute
+  '/wasm': typeof WasmRoute
   '/satie/sandbox': typeof SatieSandboxRoute
   '/satie/tests': typeof SatieTestsRouteWithChildren
   '/satie': typeof SatieIndexRoute
@@ -93,6 +101,7 @@ export interface FileRoutesById {
   '/musicxml2ly': typeof Musicxml2lyRoute
   '/satie': typeof SatieRouteWithChildren
   '/status': typeof StatusRoute
+  '/wasm': typeof WasmRoute
   '/satie/sandbox': typeof SatieSandboxRoute
   '/satie/tests': typeof SatieTestsRouteWithChildren
   '/satie/': typeof SatieIndexRoute
@@ -106,6 +115,7 @@ export interface FileRouteTypes {
     | '/musicxml2ly'
     | '/satie'
     | '/status'
+    | '/wasm'
     | '/satie/sandbox'
     | '/satie/tests'
     | '/satie/'
@@ -116,6 +126,7 @@ export interface FileRouteTypes {
     | '/makelily'
     | '/musicxml2ly'
     | '/status'
+    | '/wasm'
     | '/satie/sandbox'
     | '/satie/tests'
     | '/satie'
@@ -127,6 +138,7 @@ export interface FileRouteTypes {
     | '/musicxml2ly'
     | '/satie'
     | '/status'
+    | '/wasm'
     | '/satie/sandbox'
     | '/satie/tests'
     | '/satie/'
@@ -139,10 +151,18 @@ export interface RootRouteChildren {
   Musicxml2lyRoute: typeof Musicxml2lyRoute
   SatieRoute: typeof SatieRouteWithChildren
   StatusRoute: typeof StatusRoute
+  WasmRoute: typeof WasmRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/wasm': {
+      id: '/wasm'
+      path: '/wasm'
+      fullPath: '/wasm'
+      preLoaderRoute: typeof WasmRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/status': {
       id: '/status'
       path: '/status'
@@ -241,6 +261,7 @@ const rootRouteChildren: RootRouteChildren = {
   Musicxml2lyRoute: Musicxml2lyRoute,
   SatieRoute: SatieRouteWithChildren,
   StatusRoute: StatusRoute,
+  WasmRoute: WasmRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

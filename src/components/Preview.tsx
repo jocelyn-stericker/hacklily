@@ -9,8 +9,7 @@ import React from "react";
 import { track } from "#/lib/analytics";
 import { decodeArrayBuffer } from "#/lib/base64Binary";
 import { renderVersionFor } from "#/lib/lilypondVersion";
-import type { RenderResponse } from "#/lib/RPCClient";
-import type RPCClient from "#/lib/RPCClient";
+import type { SvgRenderer } from "#/lib/SvgRenderer";
 import { cn } from "#/lib/utils";
 
 import type { ViewMode } from "./Header";
@@ -160,9 +159,11 @@ interface Props {
   mode: ViewMode;
 
   /**
-   * Client to use to request the SVG and logs.
+   * Renderer used to engrave the source to SVG. Backed by the server over
+   * the WebSocket today; a wasm worker renderer is planned for the /wasm
+   * route.
    */
-  rpc: RPCClient;
+  renderer: SvgRenderer;
 
   /**
    * Called whenever a preview is rendered. The parent should in turn re-render,
@@ -208,7 +209,8 @@ function cleanLogs(logs: string): string {
 /**
  * Renders an SVG preview of the song in an iframe.
  *
- * The SVG is retreived from the backend server via the RPCClient.
+ * The SVG is retrieved from the backend server (or, on /wasm, a local wasm
+ * worker) via the SvgRenderer.
  *
  * On update, it sends back the logs to the parent so that it can be used to highlight
  * errors in the editor. See onLogsObtained.
@@ -286,26 +288,22 @@ export default class Preview extends React.PureComponent<Props, State> {
       this.handleIFrameLoaded();
     }
 
-    const { code, rpc } = this.props;
+    const { code, renderer } = this.props;
 
     let version: "stable" | "unstable" = "stable";
 
     try {
-      if (!rpc) {
-        throw new Error("rpc must be set!");
+      if (!renderer) {
+        throw new Error("renderer must be set!");
       }
 
       version = renderVersionFor(code);
 
-      const response: RenderResponse = await rpc.call("render", {
-        backend: "svg",
-        src: code,
-        version,
-      });
+      const result = await renderer.renderSvg(code, version);
 
-      const files: string[] = response.result.files;
-      const dirtyLogs = response.result.logs;
-      const midi = response.result.midi || null;
+      const files: string[] = result.files;
+      const dirtyLogs = result.logs;
+      const midi = result.midi || null;
 
       const logs: string = cleanLogs(dirtyLogs);
 
