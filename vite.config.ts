@@ -105,6 +105,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: "index.html",
+        wasm: "index.html",
         status: "status.html",
         musicxml2ly: "musicxml2ly.html",
         satie: "playground.html",
