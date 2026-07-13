@@ -153,14 +153,14 @@ export default class Header extends React.PureComponent<Props> {
         <Button
           onClick={this.handleSetView}
           variant={mode === MODE_VIEW ? "default" : "outline"}
-          size="icon-sm"
+          size="icon"
         >
           <Eye size="1em" />
         </Button>
         <Button
           onClick={this.handleSetEdit}
           variant={mode === MODE_EDIT ? "default" : "outline"}
-          size="icon-sm"
+          size="icon"
         >
           <PenLine size="1em" />
         </Button>
