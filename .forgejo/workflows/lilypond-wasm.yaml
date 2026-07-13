@@ -57,7 +57,7 @@ jobs:
           ./bootstrap.sh --browser
       - name: Publish to Codeberg npm registry
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.CODEBERG_PACKAGES_TOKEN }}
         working-directory: ./lilypond-wasm
         run: |
           mkdir -p dist
