@@ -1,18 +1,9 @@
-# Build lilypond.wasm from source and publish the browser bundle to the
-# Codeberg npm registry.  DRAFT — untested on the runner; expected rough
-# edges are flagged inline.
-#
-# The build is heavy (native Guile + ~14 wasm libraries + LilyPond itself,
-# fonts built with TeX/FontForge host tools): expect 1–2+ hours cold.
-# bootstrap.sh is idempotent and stamps stages under work/, so caching the
-# work/ directory across runs (minus work/src) would make reruns cheap —
-# left out of this draft to keep it simple.
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'wasm-v*.*.*'
 jobs:
-  build-and-publish:
+  build-and-publish-wasm:
     runs-on: faith
     steps:
       - uses: actions/checkout@v5
@@ -73,8 +64,8 @@ jobs:
           cp lily-browser.html lily-warm.html dist/
           cp README.md package.json dist/
           cd dist
-          # Version tracks the LilyPond release, disambiguated per run.
-          npm version "2.27.1-build.${{ github.run_number }}" --no-git-tag-version
+          VERSION="${GITHUB_REF_NAME#wasm-v}"
+          npm version "2.27.1-build.$VERSION" --no-git-tag-version
           npm config set @jocelyn-stericker:registry https://codeberg.org/api/packages/jocelyn-stericker/npm/
           npm config set -- '//codeberg.org/api/packages/jocelyn-stericker/npm/:_authToken' "${NPM_TOKEN}"
           npm publish --tag=alpha
