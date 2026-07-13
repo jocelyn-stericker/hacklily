@@ -15,7 +15,13 @@
 //   -> {type: 'render', id, src}
 //   <- {type: 'ready', warmup_ms}          once, after boot+warmup
 //   <- {type: 'log', line}                 streamed during renders
-//   <- {type: 'result', id, ok, svg, logs, ms}
+//   <- {type: 'result', id, ok, svg, pages, midi, logs, ms}
+//      pages: one SVG string per page (LilyPond writes input.svg for a
+//             single page but input-1.svg, input-2.svg, ... when it breaks
+//             the score across pages); svg is their concatenation, so
+//             innerHTML keeps working for the single-page case and stacks
+//             the pages otherwise.  midi: Uint8Array of input.midi when the
+//             score has a \midi block, else null.
 //
 // Containment is the caller's job: this worker cannot interrupt a runaway
 // render (single-threaded wasm has no preemption), so the page should
@@ -99,14 +105,22 @@ const ready = createLilypond({
   postMessage({ type: 'ready', warmup_ms: Math.round(performance.now() - t0) });
 });
 
+// Everything a render leaves in /render besides the input itself: status,
+// input.svg or input-N.svg pages, input.midi.  Cleared before each render
+// so a shorter score can't pick up a longer predecessor's stale pages.
+const isRenderOutput = (name) =>
+  name === 'status' || (/^input[-.]/.test(name) && name !== 'input.ly');
+
 onmessage = (e) => {
   const { type, id, src } = e.data;
   if (type !== 'render') return;
   ready.then(() => {
     const t0 = performance.now();
     logs = [];
-    for (const f of ['/render/input.svg', '/render/status']) {
-      try { M.FS.unlink(f); } catch (_) { /* absent on first render */ }
+    for (const f of M.FS.readdir('/render')) {
+      if (isRenderOutput(f)) {
+        try { M.FS.unlink('/render/' + f); } catch (_) {}
+      }
     }
     M.FS.writeFile('/render/input.ly', src);
     try {
@@ -117,18 +131,27 @@ onmessage = (e) => {
       postMessage({
         type: 'result', id, ok: false,
         status: 'exception: ' + (err && (err.stack || err.message || String(err))),
-        svg: null, logs, ms: Math.round(performance.now() - t0),
+        svg: null, pages: [], midi: null, logs,
+        ms: Math.round(performance.now() - t0),
       });
       return;
     }
     let status = 'no status written';
     try { status = M.FS.readFile('/render/status', { encoding: 'utf8' }); } catch (_) {}
-    let svg = null;
-    try { svg = M.FS.readFile('/render/input.svg', { encoding: 'utf8' }); } catch (_) {}
+    // Single page -> input.svg; multiple pages -> input-1.svg, input-2.svg, ...
+    const pages = M.FS.readdir('/render')
+      .map((f) => /^input(?:-(\d+))?\.svg$/.exec(f))
+      .filter(Boolean)
+      .sort((a, b) => (+a[1] || 0) - (+b[1] || 0))
+      .map((m) => M.FS.readFile('/render/' + m[0], { encoding: 'utf8' }));
+    let midi = null;
+    try { midi = M.FS.readFile('/render/input.midi'); } catch (_) {}
     postMessage({
       type: 'result', id,
-      ok: status === 'ok' && svg !== null,
-      status, svg, logs,
+      ok: status === 'ok' && pages.length > 0,
+      status,
+      svg: pages.length ? pages.join('\n') : null,
+      pages, midi, logs,
       ms: Math.round(performance.now() - t0),
     });
   });

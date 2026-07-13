@@ -11,6 +11,34 @@ diff -Naur -x subprojects -x _build -x meson.build a/pango/fonts.c b/pango/fonts
  {
    iface->get_item_type = pango_font_family_get_item_type;
    iface->get_n_items = pango_font_family_get_n_items;
+diff -Naur -x subprojects -x _build -x meson.build a/pango/pango-attributes.c b/pango/pango-attributes.c
+--- a/pango/pango-attributes.c	2024-03-31 09:58:26.000000000 +0000
++++ b/pango/pango-attributes.c	2026-07-13 10:40:00.000000000 +0000
+@@ -1920,6 +1920,15 @@
+     }
+ }
+ 
++/* GCopyFunc wrapper: calling the 1-arg pango_attribute_copy through a 2-arg
++ * (GCopyFunc) cast is UB that traps under wasm's typed call_indirect. */
++static gpointer
++copy_attr_func (gconstpointer src,
++                gpointer      user_data G_GNUC_UNUSED)
++{
++  return pango_attribute_copy (src);
++}
++
+ /**
+  * pango_attr_list_copy:
+  * @list: (nullable): a `PangoAttrList`
+@@ -1943,7 +1952,7 @@
+   if (!list->attributes || list->attributes->len == 0)
+     return new;
+ 
+-  new->attributes = g_ptr_array_copy (list->attributes, (GCopyFunc)pango_attribute_copy, NULL);
++  new->attributes = g_ptr_array_copy (list->attributes, copy_attr_func, NULL);
+ 
+   return new;
+ }
 diff -Naur -x subprojects -x _build -x meson.build a/pango/pango-context.c b/pango/pango-context.c
 --- a/pango/pango-context.c	2024-03-31 09:58:26.000000000 +0000
 +++ b/pango/pango-context.c	2026-07-06 10:29:52.033582555 +0000

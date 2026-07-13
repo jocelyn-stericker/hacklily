@@ -48,8 +48,11 @@ worker.onmessage = (e) => {
   if (m.type === 'ready')  console.log(`warm in ${m.warmup_ms} ms`);
   if (m.type === 'log')    console.log(m.line);       // streamed lilypond log
   if (m.type === 'result') {
-    if (m.ok) container.innerHTML = m.svg;            // rendered in m.ms ms
-    else console.warn(m.status, m.logs.join('\n'));   // compile errors etc.
+    if (m.ok) {
+      container.innerHTML = m.svg;   // all pages concatenated (m.ms ms)
+      m.pages;                       // one SVG string per page
+      if (m.midi) m.midi;            // Uint8Array, when the score has \midi
+    } else console.warn(m.status, m.logs.join('\n')); // compile errors etc.
   }
 };
 worker.postMessage({
@@ -85,7 +88,12 @@ node $PREFIX/bin/lilypond -dbackend=cairo --svg -o out score.ly
 ## Hacks
 
  - C casted-function-pointers need to have the correct arity and return type in
-   WASM. There are five patches that fix this class of issue.
+   WASM. There are six patches that fix this class of issue (glib's container
+   sort/free entry points and weak pointers, pango's attribute copying, guile's
+   hashtab/extensions, glib iface_init). The class can be re-audited after a
+   version bump by recompiling with `-fsyntax-only -Wno-everything
+   -Wcast-function-type-strict` and filtering for casts that change arity,
+   return presence, or a non-i32 value class.
  - bdwgc registers no static roots on Emscripten: needed same fix as bdwgc's WASI port
  - `--spill-pointers` was needed to make wasm locals visible to the collector
  - `cross-bytecode.ly` was needed to compile bytecode. `make bytecode` can't cross compile currently.

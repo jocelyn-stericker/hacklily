@@ -312,6 +312,11 @@ if need_stage extract-lily-deps; then
   # removes it along with its pcre2 dependency, so reverse that one commit
   # (extracted verbatim from the series). pcre2 is already in the prefix.
   patch -p1 -R -d "$SRC/glib-$GLIB_V" < "$ROOT/patches/glib-$GLIB_V-gregex-removal-to-reverse.patch"
+  # glib entry points that smuggle a narrower callback through a wider
+  # callback type (g_list_sort, g_array_sort, g_*_free_full, weak pointers,
+  # ...) and call it at the wider arity — same call_indirect-trap UB family
+  # as the pango and Guile patches; fixed with typed trampolines.
+  patch -p1 -d "$SRC/glib-$GLIB_V" < "$ROOT/patches/glib-$GLIB_V-wasm-callback-casts.patch"
   patch -p1 -d "$SRC/harfbuzz-$HARFBUZZ_V" < "$ROOT/patches/harfbuzz-$HARFBUZZ_V-emscripten-no-pthread.patch"
   # pango: run the deferred-FcInit/match/sort worker ops synchronously on
   # wasm (no threads) + give iface_init functions their true 2-arg signature
