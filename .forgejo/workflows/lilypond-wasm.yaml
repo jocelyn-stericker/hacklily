@@ -8,6 +8,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Install deps
+        working-directory: ./lilypond-wasm
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
@@ -40,12 +41,14 @@ jobs:
             npm
           rm -rf /var/lib/apt/lists/*
       - name: Install playwright (headless-Chromium render tests)
+        working-directory: ./lilypond-wasm/
         run: |
           npm install playwright
           # --with-deps needs sudo for system libs; if the runner image
           # already has them, plain `install chromium` suffices.
           npx playwright install --with-deps chromium
       - name: Build and test
+        working-directory: ./lilypond-wasm
         run: |
           # Downloads all sources sha256-pinned (incl. emsdk), builds the
           # whole stack, and runs the node + browser render tests —
@@ -55,6 +58,7 @@ jobs:
       - name: Publish to Codeberg npm registry
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        working-directory: ./lilypond-wasm
         run: |
           mkdir -p dist
           cp work/test/web-lily/lilypond-web.js dist/
