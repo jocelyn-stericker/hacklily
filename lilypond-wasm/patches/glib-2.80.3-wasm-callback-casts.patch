@@ -1,0 +1,279 @@
+--- a/glib/glist.c
++++ b/glib/glist.c
+@@ -155,11 +155,31 @@
+  *
+  * Since: 2.28
+  */
++/* GFunc trampoline: calling a 1-arg GDestroyNotify through a 2-arg (GFunc)
++ * cast is UB that traps under wasm's typed call_indirect; carry the real
++ * callback in the otherwise-unused user_data slot instead. */
++static void
++free_func_gfunc (gpointer data,
++                 gpointer user_data)
++{
++  ((GDestroyNotify) user_data) (data);
++}
++
++/* Same trick for the 2-arg GCompareFunc entry points, whose comparator is
++ * invoked through a 3-arg (GCompareDataFunc) cast further down. */
++static gint
++compare_func_no_data (gconstpointer a,
++                      gconstpointer b,
++                      gpointer      user_data)
++{
++  return ((GCompareFunc) user_data) (a, b);
++}
++
+ void
+ g_list_free_full (GList          *list,
+                   GDestroyNotify  free_func)
+ {
+-  g_list_foreach (list, (GFunc) free_func, NULL);
++  g_list_foreach (list, free_func_gfunc, (gpointer) free_func);
+   g_list_free (list);
+ }
+ 
+@@ -1086,7 +1106,8 @@
+                       gpointer      data,
+                       GCompareFunc  func)
+ {
+-  return g_list_insert_sorted_real (list, data, (GFunc) func, NULL);
++  return g_list_insert_sorted_real (list, data, (GFunc) compare_func_no_data,
++                                    (gpointer) func);
+ }
+ 
+ /**
+@@ -1217,7 +1238,8 @@
+ g_list_sort (GList        *list,
+              GCompareFunc  compare_func)
+ {
+-  return g_list_sort_real (list, (GFunc) compare_func, NULL);
++  return g_list_sort_real (list, (GFunc) compare_func_no_data,
++                           (gpointer) compare_func);
+ }
+ 
+ /**
+--- a/glib/gslist.c
++++ b/glib/gslist.c
+@@ -142,11 +142,31 @@
+  *
+  * Since: 2.28
+  **/
++/* GFunc trampoline: calling a 1-arg GDestroyNotify through a 2-arg (GFunc)
++ * cast is UB that traps under wasm's typed call_indirect; carry the real
++ * callback in the otherwise-unused user_data slot instead. */
++static void
++free_func_gfunc (gpointer data,
++                 gpointer user_data)
++{
++  ((GDestroyNotify) user_data) (data);
++}
++
++/* Same trick for the 2-arg GCompareFunc entry points, whose comparator is
++ * invoked through a 3-arg (GCompareDataFunc) cast further down. */
++static gint
++compare_func_no_data (gconstpointer a,
++                      gconstpointer b,
++                      gpointer      user_data)
++{
++  return ((GCompareFunc) user_data) (a, b);
++}
++
+ void
+ g_slist_free_full (GSList         *list,
+ 		   GDestroyNotify  free_func)
+ {
+-  g_slist_foreach (list, (GFunc) free_func, NULL);
++  g_slist_foreach (list, free_func_gfunc, (gpointer) free_func);
+   g_slist_free (list);
+ }
+ 
+@@ -910,7 +930,8 @@
+                        gpointer      data,
+                        GCompareFunc  func)
+ {
+-  return g_slist_insert_sorted_real (list, data, (GFunc) func, NULL);
++  return g_slist_insert_sorted_real (list, data, (GFunc) compare_func_no_data,
++                                     (gpointer) func);
+ }
+ 
+ /**
+@@ -1017,7 +1038,8 @@
+ g_slist_sort (GSList       *list,
+               GCompareFunc  compare_func)
+ {
+-  return g_slist_sort_real (list, (GFunc) compare_func, NULL);
++  return g_slist_sort_real (list, (GFunc) compare_func_no_data,
++                            (gpointer) compare_func);
+ }
+ 
+ /**
+--- a/glib/gqueue.c
++++ b/glib/gqueue.c
+@@ -77,11 +77,21 @@
+  *
+  * Since: 2.32
+  */
++/* GFunc trampoline: calling a 1-arg GDestroyNotify through a 2-arg (GFunc)
++ * cast is UB that traps under wasm's typed call_indirect; carry the real
++ * callback in the otherwise-unused user_data slot instead. */
++static void
++free_func_gfunc (gpointer data,
++                 gpointer user_data)
++{
++  ((GDestroyNotify) user_data) (data);
++}
++
+ void
+ g_queue_free_full (GQueue        *queue,
+                   GDestroyNotify  free_func)
+ {
+-  g_queue_foreach (queue, (GFunc) free_func, NULL);
++  g_queue_foreach (queue, free_func_gfunc, (gpointer) free_func);
+   g_queue_free (queue);
+ }
+ 
+@@ -140,7 +150,7 @@
+   g_return_if_fail (queue != NULL);
+ 
+   if (free_func != NULL)
+-    g_queue_foreach (queue, (GFunc) free_func, NULL);
++    g_queue_foreach (queue, free_func_gfunc, (gpointer) free_func);
+ 
+   g_queue_clear (queue);
+ }
+--- a/glib/garray.c
++++ b/glib/garray.c
+@@ -903,6 +903,17 @@
+   return farray;
+ }
+ 
++/* GCompareDataFunc trampoline: calling a 2-arg GCompareFunc through a 3-arg
++ * (GCompareDataFunc) cast is UB that traps under wasm's typed call_indirect;
++ * carry the real comparator in the otherwise-unused user_data slot. */
++static gint
++compare_func_no_data (gconstpointer a,
++                      gconstpointer b,
++                      gpointer      user_data)
++{
++  return ((GCompareFunc) user_data) (a, b);
++}
++
+ /**
+  * g_array_sort:
+  * @array: a #GArray
+@@ -928,8 +939,8 @@
+     g_qsort_with_data (array->data,
+                        array->len,
+                        array->elt_size,
+-                       (GCompareDataFunc)compare_func,
+-                       NULL);
++                       compare_func_no_data,
++                       (gpointer) compare_func);
+ }
+ 
+ /**
+@@ -2415,8 +2426,8 @@
+     g_qsort_with_data (array->pdata,
+                        array->len,
+                        sizeof (gpointer),
+-                       (GCompareDataFunc)compare_func,
+-                       NULL);
++                       compare_func_no_data,
++                       (gpointer) compare_func);
+ }
+ 
+ /* Please keep this doc-comment in sync with
+--- a/glib/gtree.c
++++ b/glib/gtree.c
+@@ -119,6 +119,17 @@
+   return node;
+ }
+ 
++/* GCompareDataFunc trampoline: calling a 2-arg GCompareFunc through a 3-arg
++ * (GCompareDataFunc) cast is UB that traps under wasm's typed call_indirect;
++ * carry the real comparator in the otherwise-unused user_data slot. */
++static gint
++compare_func_no_data (gconstpointer a,
++                      gconstpointer b,
++                      gpointer      user_data)
++{
++  return ((GCompareFunc) user_data) (a, b);
++}
++
+ /**
+  * g_tree_new: (constructor)
+  * @key_compare_func: the function used to order the nodes in the #GTree.
+@@ -136,8 +147,8 @@
+ {
+   g_return_val_if_fail (key_compare_func != NULL, NULL);
+ 
+-  return g_tree_new_full ((GCompareDataFunc) key_compare_func, NULL,
+-                          NULL, NULL);
++  return g_tree_new_full (compare_func_no_data,
++                          (gpointer) key_compare_func, NULL, NULL);
+ }
+ 
+ /**
+--- a/gobject/gobject.c
++++ b/gobject/gobject.c
+@@ -3740,6 +3740,30 @@
+     g_critical ("%s: couldn't find weak ref %p(%p)", G_STRFUNC, notify, data);
+ }
+ 
++/* Correctly-typed trampolines: calling 1-arg functions (g_nullify_pointer,
++ * g_object_ref/unref) through 2-arg (GWeakNotify)/(GClosureNotify) casts is
++ * UB that traps under wasm's typed call_indirect. */
++static void
++weak_pointer_nullify (gpointer  data,
++                      GObject  *where_the_object_was G_GNUC_UNUSED)
++{
++  g_nullify_pointer (data);
++}
++
++static void
++closure_ref_object (gpointer  object,
++                    GClosure *closure G_GNUC_UNUSED)
++{
++  g_object_ref (object);
++}
++
++static void
++closure_unref_object (gpointer  object,
++                      GClosure *closure G_GNUC_UNUSED)
++{
++  g_object_unref (object);
++}
++
+ /**
+  * g_object_add_weak_pointer: (skip)
+  * @object: The object that should be weak referenced.
+@@ -3764,7 +3788,7 @@
+   g_return_if_fail (weak_pointer_location != NULL);
+ 
+   g_object_weak_ref (object, 
+-                     (GWeakNotify) g_nullify_pointer, 
++                     weak_pointer_nullify, 
+                      weak_pointer_location);
+ }
+ 
+@@ -3786,7 +3810,7 @@
+   g_return_if_fail (weak_pointer_location != NULL);
+ 
+   g_object_weak_unref (object, 
+-                       (GWeakNotify) g_nullify_pointer, 
++                       weak_pointer_nullify, 
+                        weak_pointer_location);
+ }
+ 
+@@ -5261,8 +5285,8 @@
+   
+   g_closure_add_invalidate_notifier (closure, object, object_remove_closure);
+   g_closure_add_marshal_guards (closure,
+-				object, (GClosureNotify) g_object_ref,
+-				object, (GClosureNotify) g_object_unref);
++				object, closure_ref_object,
++				object, closure_unref_object);
+   object_bit_lock (object, OPTIONAL_BIT_LOCK_CLOSURE_ARRAY);
+   carray = g_datalist_id_remove_no_notify (&object->qdata, quark_closure_array);
+   if (!carray)

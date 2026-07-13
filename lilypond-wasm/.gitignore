@@ -1,0 +1,57 @@
+# Everything here is regenerable via bootstrap.sh (see GUILE-WASM-SPIKE.md).
+
+# downloads
+*.tar.gz
+*.tar.xz
+*.tar.bz2
+
+# extracted / patched source trees (patches live in patches/)
+emsdk/
+gc-*/
+gmp-*/
+guile-3.0.11/
+guile-wasm-src/
+libffi-*/
+libunistring-*/
+lilypond-*/
+zlib-*/
+libpng-*/
+freetype-*/
+expat-*/
+fontconfig-*/
+pcre2-*/
+glib-*/
+fribidi-*/
+harfbuzz-*/
+pixman-*/
+cairo-*/
+pango-1*/
+
+# build and install trees
+guile-wasm-build/
+host-headers/
+install/
+wasm-install/
+work/
+
+# build logs
+*.log
+
+# linked test outputs (sources: eval-test.c, run-scheme.c, lily-api-test.c,
+# pango-smoke.c)
+*.wasm
+*.data
+eval-test.js
+run-scheme.js
+run-scheme-memfs.js
+lily-api-test.js
+webtest/
+webtest-lily/
+out-base/
+out-go/
+out-pruned/
+smoke/*.js
+smoke/out.svg
+emscripten-cross.meson
+dep-hashes.txt
+.claude/settings.local.json*

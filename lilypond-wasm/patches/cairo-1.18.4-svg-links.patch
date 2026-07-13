@@ -1,0 +1,73 @@
+--- a/src/cairo-svg-surface.c
++++ b/src/cairo-svg-surface.c
+@@ -57,6 +57,7 @@
+ #include "cairo-surface-clipper-private.h"
+ #include "cairo-surface-snapshot-inline.h"
+ #include "cairo-svg-surface-private.h"
++#include "cairo-tag-attributes-private.h"
+ 
+ /**
+  * SECTION:cairo-svg
+@@ -4126,6 +4127,54 @@
+     return _cairo_svg_supported_mime_types;
+ }
+ 
++/* Emit LilyPond-style point-and-click links. Cairo's SVG surface has
++ * never implemented the tag/link callback (only the PDF surface does),
++ * so CAIRO_TAG_LINK is otherwise silently dropped for SVG output.
++ * LilyPond drives point-and-click via
++ *   cairo_tag_begin(cr, CAIRO_TAG_LINK, "rect=[...] uri='textedit://...'")
++ * with an empty tag body, so parse the explicit rect(s) at 'begin' and
++ * emit a transparent, clickable <a> overlay. Adapted from the unmerged
++ * upstream MR !254, trimmed to the explicit-rect URI case. xlink:href
++ * (not href) matches the anchor form Hacklily's click handler reads. */
++static cairo_int_status_t
++_cairo_svg_surface_tag (void			*abstract_surface,
++			cairo_bool_t		 begin,
++			const char		*tag_name,
++			const char		*attributes)
++{
++    cairo_svg_surface_t *surface = abstract_surface;
++    cairo_int_status_t status;
++    cairo_link_attrs_t link_attrs;
++    unsigned int i, num_rects;
++
++    if (!begin
++	|| strcmp (tag_name, CAIRO_TAG_LINK) != 0
++	|| surface->paginated_mode == CAIRO_PAGINATED_MODE_ANALYZE)
++	return CAIRO_INT_STATUS_SUCCESS;
++
++    status = _cairo_tag_parse_link_attributes (attributes, &link_attrs);
++    if (unlikely (status))
++	return status;
++
++    if (link_attrs.link_type == TAG_LINK_URI && link_attrs.uri != NULL) {
++	num_rects = _cairo_array_num_elements (&link_attrs.rects);
++	for (i = 0; i < num_rects; i++) {
++	    cairo_rectangle_t rect;
++	    _cairo_array_copy_element (&link_attrs.rects, i, &rect);
++	    _cairo_svg_stream_printf (&surface->xml_node,
++				      "<a xlink:href=\"%s\">"
++				      "<rect x=\"%f\" y=\"%f\" width=\"%f\" height=\"%f\" "
++				      "fill=\"none\" pointer-events=\"all\"/>"
++				      "</a>\n",
++				      link_attrs.uri,
++				      rect.x, rect.y, rect.width, rect.height);
++	}
++    }
++
++    _cairo_tag_free_link_attributes (&link_attrs);
++    return CAIRO_INT_STATUS_SUCCESS;
++}
++
+ static const cairo_surface_backend_t cairo_svg_surface_backend = {
+ 	CAIRO_SURFACE_TYPE_SVG,
+ 	_cairo_svg_surface_finish,
+@@ -4160,6 +4209,7 @@
+ 	NULL, /* has_show_text_glyphs */
+ 	NULL, /* show_text_glyphs */
+ 	_cairo_svg_surface_get_supported_mime_types,
++	_cairo_svg_surface_tag,
+ };
+ 
+ static cairo_status_t

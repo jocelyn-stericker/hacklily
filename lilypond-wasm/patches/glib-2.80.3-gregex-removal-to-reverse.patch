@@ -1,0 +1,241 @@
+From 212b97d0a7f28b9f4f8b2f06bf35006a89ec7382 Mon Sep 17 00:00:00 2001
+From: Kleis Auke Wolthuizen <github@kleisauke.nl>
+Date: Wed, 13 Jul 2022 09:44:36 +0200
+Subject: [PATCH 02/10] Remove GRegex pre-emptively
+
+Unused by libvips or any of the libraries it relies on.
+
+Upstream-Status: Inappropriate [disable feature]
+Upstream may still depend on GRegex.
+---
+ gio/gsettingsschema.c    | 57 +---------------------------------------
+ glib/glib-autocleanups.h |  2 --
+ glib/glib.h              |  1 -
+ glib/meson.build         | 11 +-------
+ gobject/gboxed.c         |  3 ---
+ gobject/glib-types.h     |  9 -------
+ meson.build              | 40 ----------------------------
+ 7 files changed, 2 insertions(+), 121 deletions(-)
+
+diff --git a/gio/gsettingsschema.c b/gio/gsettingsschema.c
+index b1918657da6..7b9328d4843 100644
+--- a/gio/gsettingsschema.c
++++ b/gio/gsettingsschema.c
+@@ -548,62 +548,7 @@ start_element (GMarkupParseContext  *context,
+ static gchar *
+ normalise_whitespace (const gchar *orig)
+ {
+-  /* We normalise by the same rules as in intltool:
+-   *
+-   *   sub cleanup {
+-   *       s/^\s+//;
+-   *       s/\s+$//;
+-   *       s/\s+/ /g;
+-   *       return $_;
+-   *   }
+-   *
+-   *   $message = join "\n\n", map &cleanup, split/\n\s*\n+/, $message;
+-   *
+-   * Where \s is an ascii space character.
+-   *
+-   * We aim for ease of implementation over efficiency -- this code is
+-   * not run in normal applications.
+-   */
+-  static GRegex *cleanup[3];
+-  static GRegex *splitter;
+-  gchar **lines;
+-  gchar *result;
+-  gint i;
+-
+-  if (g_once_init_enter_pointer (&splitter))
+-    {
+-      GRegex *s;
+-
+-      cleanup[0] = g_regex_new ("^\\s+", G_REGEX_DEFAULT,
+-                                G_REGEX_MATCH_DEFAULT, NULL);
+-      cleanup[1] = g_regex_new ("\\s+$", G_REGEX_DEFAULT,
+-                                G_REGEX_MATCH_DEFAULT, NULL);
+-      cleanup[2] = g_regex_new ("\\s+", G_REGEX_DEFAULT,
+-                                G_REGEX_MATCH_DEFAULT, NULL);
+-      s = g_regex_new ("\\n\\s*\\n+", G_REGEX_DEFAULT,
+-                       G_REGEX_MATCH_DEFAULT, NULL);
+-
+-      g_once_init_leave_pointer (&splitter, s);
+-    }
+-
+-  lines = g_regex_split (splitter, orig, 0);
+-  for (i = 0; lines[i]; i++)
+-    {
+-      gchar *a, *b, *c;
+-
+-      a = g_regex_replace_literal (cleanup[0], lines[i], -1, 0, "", 0, 0);
+-      b = g_regex_replace_literal (cleanup[1], a, -1, 0, "", 0, 0);
+-      c = g_regex_replace_literal (cleanup[2], b, -1, 0, " ", 0, 0);
+-      g_free (lines[i]);
+-      g_free (a);
+-      g_free (b);
+-      lines[i] = c;
+-    }
+-
+-  result = g_strjoinv ("\n\n", lines);
+-  g_strfreev (lines);
+-
+-  return result;
++  return orig;
+ }
+ 
+ static void
+diff --git a/glib/glib-autocleanups.h b/glib/glib-autocleanups.h
+index 68be87c84a3..24e74472883 100644
+--- a/glib/glib-autocleanups.h
++++ b/glib/glib-autocleanups.h
+@@ -75,8 +75,6 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(GPatternSpec, g_pattern_spec_free)
+ G_DEFINE_AUTOPTR_CLEANUP_FUNC(GQueue, g_queue_free)
+ G_DEFINE_AUTO_CLEANUP_CLEAR_FUNC(GQueue, g_queue_clear)
+ G_DEFINE_AUTOPTR_CLEANUP_FUNC(GRand, g_rand_free)
+-G_DEFINE_AUTOPTR_CLEANUP_FUNC(GRegex, g_regex_unref)
+-G_DEFINE_AUTOPTR_CLEANUP_FUNC(GMatchInfo, g_match_info_unref)
+ G_DEFINE_AUTOPTR_CLEANUP_FUNC(GScanner, g_scanner_destroy)
+ G_DEFINE_AUTOPTR_CLEANUP_FUNC(GSequence, g_sequence_free)
+ G_DEFINE_AUTOPTR_CLEANUP_FUNC(GSList, g_slist_free)
+diff --git a/glib/glib.h b/glib/glib.h
+index 40e501997aa..d107dabc6f8 100644
+--- a/glib/glib.h
++++ b/glib/glib.h
+@@ -75,7 +75,6 @@
+ #include <glib/grcbox.h>
+ #include <glib/grefcount.h>
+ #include <glib/grefstring.h>
+-#include <glib/gregex.h>
+ #include <glib/gscanner.h>
+ #include <glib/gsequence.h>
+ #include <glib/gshell.h>
+diff --git a/glib/meson.build b/glib/meson.build
+index f4944d5f343..86e801a8346 100644
+--- a/glib/meson.build
++++ b/glib/meson.build
+@@ -220,7 +220,6 @@ glib_sub_headers = files(
+   'grcbox.h',
+   'grefcount.h',
+   'grefstring.h',
+-  'gregex.h',
+   'gscanner.h',
+   'gsequence.h',
+   'gshell.h',
+@@ -314,7 +313,6 @@ glib_sources += files(
+   'grcbox.c',
+   'grefcount.c',
+   'grefstring.c',
+-  'gregex.c',
+   'gscanner.c',
+   'gsequence.c',
+   'gshell.c',
+@@ -400,13 +398,7 @@ else
+   glib_dtrace_hdr = []
+ endif
+ 
+-pcre2_static_args = []
+-
+-if use_pcre2_static_flag
+-  pcre2_static_args = ['-DPCRE2_STATIC']
+-endif
+-
+-glib_c_args = ['-DG_LOG_DOMAIN="GLib"'] + glib_c_args_internal + pcre2_static_args
++glib_c_args = ['-DG_LOG_DOMAIN="GLib"'] + glib_c_args_internal
+ libglib = library('glib-2.0',
+   glib_dtrace_obj, glib_dtrace_hdr,
+   sources : [glib_deprecated_sources, glib_sources],
+@@ -425,7 +417,6 @@ libglib = library('glib-2.0',
+     libm,
+     librt,
+     libsysprof_capture_dep,
+-    pcre2,
+     platform_deps,
+     thread_dep,
+   ],
+diff --git a/gobject/gboxed.c b/gobject/gboxed.c
+index 04cededa0bd..63a4f2f8116 100644
+--- a/gobject/gboxed.c
++++ b/gobject/gboxed.c
+@@ -121,9 +121,6 @@ G_DEFINE_BOXED_TYPE (GByteArray, g_byte_array, g_byte_array_ref, g_byte_array_un
+ G_DEFINE_BOXED_TYPE (GBytes, g_bytes, g_bytes_ref, g_bytes_unref)
+ G_DEFINE_BOXED_TYPE (GTree, g_tree, g_tree_ref, g_tree_unref)
+ 
+-G_DEFINE_BOXED_TYPE (GRegex, g_regex, g_regex_ref, g_regex_unref)
+-G_DEFINE_BOXED_TYPE (GMatchInfo, g_match_info, g_match_info_ref, g_match_info_unref)
+-
+ #define g_variant_type_get_type g_variant_type_get_gtype
+ G_DEFINE_BOXED_TYPE (GVariantType, g_variant_type, g_variant_type_copy, g_variant_type_free)
+ #undef g_variant_type_get_type
+diff --git a/gobject/glib-types.h b/gobject/glib-types.h
+index e31baf144b5..239f7ba7000 100644
+--- a/gobject/glib-types.h
++++ b/gobject/glib-types.h
+@@ -88,15 +88,6 @@ typedef gsize GType;
+  */
+ #define G_TYPE_HASH_TABLE (g_hash_table_get_type ())
+ 
+-/**
+- * G_TYPE_REGEX:
+- *
+- * The #GType for a boxed type holding a #GRegex reference.
+- *
+- * Since: 2.14
+- */
+-#define G_TYPE_REGEX (g_regex_get_type ())
+-
+ /**
+  * G_TYPE_MATCH_INFO:
+  *
+diff --git a/meson.build b/meson.build
+index 8e34c990d11..09db6981928 100644
+--- a/meson.build
++++ b/meson.build
+@@ -2170,46 +2170,6 @@ else
+   libiconv = dependency('iconv')
+ endif
+ 
+-pcre2_req = '>=10.32'
+-
+-# Pick up pcre from the system, or if "--force-fallback-for libpcre2-8" was specified
+-pcre2 = dependency('libpcre2-8', version: pcre2_req, required: false, default_options: ['default_library=static'])
+-if not pcre2.found()
+-  if cc.get_id() == 'msvc' or cc.get_id() == 'clang-cl'
+-  # MSVC: Search for the PCRE2 library by the configuration, which corresponds
+-  # to the output of CMake builds of PCRE2.  Note that debugoptimized
+-  # is really a Release build with .PDB files.
+-    if vs_crt == 'debug'
+-      pcre2 = cc.find_library('pcre2d-8', required : false)
+-    else
+-      pcre2 = cc.find_library('pcre2-8', required : false)
+-    endif
+-  endif
+-endif
+-
+-# Try again with the fallback
+-if not pcre2.found()
+-  pcre2 = dependency('libpcre2-8', version: pcre2_req, allow_fallback: true, default_options: ['default_library=static'])
+-  assert(pcre2.type_name() == 'internal')
+-  # static flags are automatically enabled by the subproject if it's built
+-  # with default_library=static
+-  use_pcre2_static_flag = false
+-elif host_system == 'windows' and pcre2.type_name() != 'internal'
+-  pcre2_static = cc.links('''#define PCRE2_STATIC
+-                             #define PCRE2_CODE_UNIT_WIDTH 8
+-                             #include <pcre2.h>
+-                             int main() {
+-                               void *p = NULL;
+-                               pcre2_code_free(p);
+-                               return 0;
+-                             }''',
+-                         dependencies: pcre2,
+-                         name : 'Windows system PCRE2 is a static build')
+-  use_pcre2_static_flag = pcre2_static
+-else
+-  use_pcre2_static_flag = false
+-endif
+-
+ # Import the gvdb sources as a subproject to avoid having the copylib in-tree
+ subproject('gvdb')
+ gvdb_dep = dependency('gvdb')
+

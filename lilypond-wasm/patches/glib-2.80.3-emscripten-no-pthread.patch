@@ -1,0 +1,19 @@
+--- a/meson.build
++++ b/meson.build
+@@ -2065,7 +2065,15 @@
+   glibconfig_conf.set('g_threads_impl_def', 'WIN32')
+   glib_conf.set('THREADS_WIN32', 1)
+ else
+-  thread_dep = dependency('threads')
++  if host_system == 'emscripten'
++    # Single-threaded wasm: meson's threads dependency would inject -pthread
++    # (shared-memory atomics) into compiles, links and the installed .pc
++    # files. Emscripten's musl provides the pthread API as single-threaded
++    # stubs, so the posix feature probes below still succeed without it.
++    thread_dep = []
++  else
++    thread_dep = dependency('threads')
++  endif
+   threads_implementation = 'posix'
+   pthread_prefix = '''
+       #ifndef _GNU_SOURCE

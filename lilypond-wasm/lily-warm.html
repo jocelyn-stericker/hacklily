@@ -1,0 +1,84 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>lilypond.wasm warm-instance test</title>
+<body>
+<pre id="log"></pre>
+<div id="score"></div>
+<script>
+// Warm-instance test: one worker, many renders.  Checks that repeat renders
+// of the same source are byte-identical (session reset works), that a broken
+// score fails cleanly, that the instance still renders correctly after the
+// failure, that dynamics render (pango attr-list copy path), and that a
+// multi-page score with \midi returns every page plus the MIDI bytes.
+// Prints one "LILY WARM: PASS/FAIL ..." line for browser-test.js.
+const logEl = document.getElementById('log');
+const log = (t) => { logEl.textContent += t + '\n'; console.log(t); };
+
+const TRIVIAL = '\\version "2.27.1"\n{ c\'4 d\'4 e\'4 f\'4 }\n';
+const MEDIUM = '\\version "2.27.1"\n{ '
+  + Array(64).fill("c'8 d'8 e'8 f'8 g'8 a'8 b'8 c''8").join(' | ') + ' }\n';
+const BROKEN = '\\version "2.27.1"\n{ c\'4 \\thisIsNotACommand }\n';
+const DYNAMICS = '\\version "2.27.1"\n{ d\'4\\f e\'4\\p }\n';
+const MULTIPAGE_MIDI = '\\version "2.27.1"\n\\score {\n{ '
+  + Array(200).fill("c'8 d'8 e'8 f'8 g'8 a'8 b'8 c''8").join(' | ')
+  + ' }\n\\layout {}\n\\midi {}\n}\n';
+
+const worker = new Worker('lily-worker.js');
+let nextId = 0;
+const pending = new Map();
+const render = (src) => new Promise((resolve, reject) => {
+  const id = nextId++;
+  pending.set(id, resolve);
+  const deadline = setTimeout(
+    () => reject(new Error(`render ${id} timed out`)), 60000);
+  pending.get(id).deadline = deadline;
+  worker.postMessage({ type: 'render', id, src });
+});
+
+const t0 = performance.now();
+new Promise((resolve) => {
+  worker.onmessage = (e) => {
+    const m = e.data;
+    if (m.type === 'log') log('  | ' + m.line);
+    else if (m.type === 'ready') resolve(m.warmup_ms);
+    else if (m.type === 'result') {
+      clearTimeout(pending.get(m.id).deadline);
+      pending.get(m.id)(m);
+      pending.delete(m.id);
+    }
+  };
+}).then(async (warmupMs) => {
+  const r1 = await render(TRIVIAL);
+  const r2 = await render(TRIVIAL);
+  const rm = await render(MEDIUM);
+  const rb = await render(BROKEN);
+  const r3 = await render(TRIVIAL);
+  const rd = await render(DYNAMICS);
+  const rp = await render(MULTIPAGE_MIDI);
+  const r4 = await render(TRIVIAL);
+
+  const stable = r1.ok && r2.ok && r3.ok && r4.ok
+    && r1.svg === r2.svg && r1.svg === r3.svg && r1.svg === r4.svg;
+  const anchors = r1.ok ? (r1.svg.match(/textedit:\/\//g) || []).length : 0;
+  const brokenLogged = rb.logs.some((l) => l.includes('error'));
+  const recovered = !rb.ok && brokenLogged && r3.ok;
+  const multipage = rp.ok && rp.pages.length > 1
+    && rp.svg === rp.pages.join('\n');
+  const midiOk = rp.midi instanceof Uint8Array && rp.midi.length > 4
+    && String.fromCharCode(...rp.midi.slice(0, 4)) === 'MThd';
+  const noStaleMidi = r4.midi === null && r4.pages.length === 1;
+  const ok = stable && rm.ok && recovered && anchors === 4
+    && rd.ok && multipage && midiOk && noStaleMidi;
+
+  if (r1.ok) document.getElementById('score').innerHTML = r1.svg;
+  log(`LILY WARM: ${ok ? 'PASS' : 'FAIL'}`
+      + ` warmup_ms=${warmupMs} warm1_ms=${r1.ms} warm2_ms=${r2.ms}`
+      + ` medium_ms=${rm.ms} after_error_ms=${r3.ms}`
+      + ` dynamics_ms=${rd.ms} multipage_ms=${rp.ms}`
+      + ` stable=${stable} recovered=${recovered} anchors=${anchors}`
+      + ` dynamics=${rd.ok} pages=${rp.pages ? rp.pages.length : 0}`
+      + ` midi=${midiOk} no_stale=${noStaleMidi}`
+      + (ok ? '' : ` [r1=${r1.status} r2=${r2.status} rm=${rm.status}`
+          + ` rb=${rb.status} r3=${r3.status} rd=${rd.status} rp=${rp.status}]`));
+}).catch((e) => log('LILY WARM: FAIL ' + (e && e.message)));
+</script>

@@ -1,0 +1,307 @@
+diff -Naur -x subprojects -x _build -x meson.build a/pango/fonts.c b/pango/fonts.c
+--- a/pango/fonts.c	2024-03-31 09:58:26.000000000 +0000
++++ b/pango/fonts.c	2026-07-05 14:18:44.730874503 +0000
+@@ -2399,7 +2399,8 @@
+ }
+ 
+ static void
+-pango_font_family_list_model_init (GListModelInterface *iface)
++pango_font_family_list_model_init (GListModelInterface *iface,
++                                   gpointer             iface_data G_GNUC_UNUSED)
+ {
+   iface->get_item_type = pango_font_family_get_item_type;
+   iface->get_n_items = pango_font_family_get_n_items;
+diff -Naur -x subprojects -x _build -x meson.build a/pango/pango-attributes.c b/pango/pango-attributes.c
+--- a/pango/pango-attributes.c	2024-03-31 09:58:26.000000000 +0000
++++ b/pango/pango-attributes.c	2026-07-13 10:40:00.000000000 +0000
+@@ -1920,6 +1920,15 @@
+     }
+ }
+ 
++/* GCopyFunc wrapper: calling the 1-arg pango_attribute_copy through a 2-arg
++ * (GCopyFunc) cast is UB that traps under wasm's typed call_indirect. */
++static gpointer
++copy_attr_func (gconstpointer src,
++                gpointer      user_data G_GNUC_UNUSED)
++{
++  return pango_attribute_copy (src);
++}
++
+ /**
+  * pango_attr_list_copy:
+  * @list: (nullable): a `PangoAttrList`
+@@ -1943,7 +1952,7 @@
+   if (!list->attributes || list->attributes->len == 0)
+     return new;
+ 
+-  new->attributes = g_ptr_array_copy (list->attributes, (GCopyFunc)pango_attribute_copy, NULL);
++  new->attributes = g_ptr_array_copy (list->attributes, copy_attr_func, NULL);
+ 
+   return new;
+ }
+diff -Naur -x subprojects -x _build -x meson.build a/pango/pango-context.c b/pango/pango-context.c
+--- a/pango/pango-context.c	2024-03-31 09:58:26.000000000 +0000
++++ b/pango/pango-context.c	2026-07-06 10:29:52.033582555 +0000
+@@ -686,6 +686,16 @@
+  * Returns: (transfer full): a `PangoFontMetrics` object. The caller must call
+  *   [method@Pango.FontMetrics.unref] when finished using the object.
+  */
++
++/* GFunc wrapper: calling the 1-arg pango_item_free through a 2-arg
++ * (GFunc) cast is UB that traps under wasm's typed call_indirect. */
++static void
++free_item (gpointer data,
++           gpointer user_data G_GNUC_UNUSED)
++{
++  pango_item_free (data);
++}
++
+ PangoFontMetrics *
+ pango_context_get_metrics (PangoContext               *context,
+                            const PangoFontDescription *desc,
+@@ -722,7 +732,7 @@
+ 
+   update_metrics_from_items (metrics, language, sample_str, text_len, items);
+ 
+-  g_list_foreach (items, (GFunc)pango_item_free, NULL);
++  g_list_foreach (items, free_item, NULL);
+   g_list_free (items);
+ 
+   g_object_unref (current_fonts);
+diff -Naur -x subprojects -x _build -x meson.build a/pango/pango-fontmap.c b/pango/pango-fontmap.c
+--- a/pango/pango-fontmap.c	2024-03-31 09:58:26.000000000 +0000
++++ b/pango/pango-fontmap.c	2026-07-05 14:18:44.731207002 +0000
+@@ -48,7 +48,8 @@
+ 
+ static guint pango_font_map_get_n_items (GListModel *list);
+ 
+-static void pango_font_map_list_model_init (GListModelInterface *iface);
++static void pango_font_map_list_model_init (GListModelInterface *iface,
++                                             gpointer             iface_data);
+ 
+ typedef struct {
+   guint n_families;
+@@ -610,7 +611,8 @@
+ }
+ 
+ static void
+-pango_font_map_list_model_init (GListModelInterface *iface)
++pango_font_map_list_model_init (GListModelInterface *iface,
++                                gpointer             iface_data G_GNUC_UNUSED)
+ {
+   iface->get_item_type = pango_font_map_get_item_type;
+   iface->get_n_items = pango_font_map_get_n_items;
+diff -Naur -x subprojects -x _build -x meson.build a/pango/pango-item.c b/pango/pango-item.c
+--- a/pango/pango-item.c	2024-03-31 09:58:26.000000000 +0000
++++ b/pango/pango-item.c	2026-07-06 10:29:56.726585991 +0000
+@@ -87,6 +87,15 @@
+   return result;
+ }
+ 
++/* GFunc wrapper: calling the 1-arg pango_attribute_destroy through a 2-arg
++ * (GFunc) cast is UB that traps under wasm's typed call_indirect. */
++static void
++destroy_attr (gpointer data,
++              gpointer user_data G_GNUC_UNUSED)
++{
++  pango_attribute_destroy (data);
++}
++
+ /**
+  * pango_item_free:
+  * @item: (nullable): a `PangoItem`, may be %NULL
+@@ -101,7 +110,7 @@
+ 
+   if (item->analysis.extra_attrs)
+     {
+-      g_slist_foreach (item->analysis.extra_attrs, (GFunc)pango_attribute_destroy, NULL);
++      g_slist_foreach (item->analysis.extra_attrs, destroy_attr, NULL);
+       g_slist_free (item->analysis.extra_attrs);
+     }
+ 
+diff -Naur -x subprojects -x _build -x meson.build a/pango/pango-markup.c b/pango/pango-markup.c
+--- a/pango/pango-markup.c	2024-03-31 09:58:26.000000000 +0000
++++ b/pango/pango-markup.c	2026-07-06 10:29:59.341587906 +0000
+@@ -190,10 +190,19 @@
+   return factor;
+ }
+ 
++/* GFunc wrapper: calling the 1-arg pango_attribute_destroy through a 2-arg
++ * (GFunc) cast is UB that traps under wasm's typed call_indirect. */
++static void
++destroy_attr (gpointer data,
++              gpointer user_data G_GNUC_UNUSED)
++{
++  pango_attribute_destroy (data);
++}
++
+ static void
+ open_tag_free (OpenTag *ot)
+ {
+-  g_slist_foreach (ot->attrs, (GFunc) pango_attribute_destroy, NULL);
++  g_slist_foreach (ot->attrs, destroy_attr, NULL);
+   g_slist_free (ot->attrs);
+   g_slice_free (OpenTag, ot);
+ }
+diff -Naur -x subprojects -x _build -x meson.build a/pango/pangocairo-fcfont.c b/pango/pangocairo-fcfont.c
+--- a/pango/pangocairo-fcfont.c	2024-03-31 09:58:26.000000000 +0000
++++ b/pango/pangocairo-fcfont.c	2026-07-05 14:18:44.730189589 +0000
+@@ -96,7 +96,8 @@
+ }
+ 
+ static void
+-cairo_font_iface_init (PangoCairoFontIface *iface)
++cairo_font_iface_init (PangoCairoFontIface *iface,
++                       gpointer             iface_data G_GNUC_UNUSED)
+ {
+   iface->create_font_face = pango_cairo_fc_font_create_font_face;
+   iface->create_base_metrics_for_context = pango_cairo_fc_font_create_base_metrics_for_context;
+diff -Naur -x subprojects -x _build -x meson.build a/pango/pangocairo-fcfontmap.c b/pango/pangocairo-fcfontmap.c
+--- a/pango/pangocairo-fcfontmap.c	2024-03-31 09:58:26.000000000 +0000
++++ b/pango/pangocairo-fcfontmap.c	2026-07-05 14:18:44.730250005 +0000
+@@ -88,7 +88,8 @@
+ }
+ 
+ static void
+-cairo_font_map_iface_init (PangoCairoFontMapIface *iface)
++cairo_font_map_iface_init (PangoCairoFontMapIface *iface,
++                           gpointer                 iface_data G_GNUC_UNUSED)
+ {
+   iface->set_resolution = pango_cairo_fc_font_map_set_resolution;
+   iface->get_resolution = pango_cairo_fc_font_map_get_resolution_cairo;
+diff -Naur -x subprojects -x _build -x meson.build a/pango/pangocairo-font.c b/pango/pangocairo-font.c
+--- a/pango/pangocairo-font.c	2024-03-31 09:58:26.000000000 +0000
++++ b/pango/pangocairo-font.c	2026-07-06 10:29:46.799578722 +0000
+@@ -601,9 +601,14 @@
+   cf_priv->metrics_by_lang = NULL;
+ }
+ 
++/* GFunc-typed: calling a 1-arg function through the 2-arg (GFunc) cast is
++ * UB that traps under wasm's typed call_indirect. */
+ static void
+-free_metrics_info (PangoCairoFontMetricsInfo *info)
++free_metrics_info (gpointer data,
++                   gpointer user_data G_GNUC_UNUSED)
+ {
++  PangoCairoFontMetricsInfo *info = data;
++
+   pango_font_metrics_unref (info->metrics);
+   g_slice_free (PangoCairoFontMetricsInfo, info);
+ }
+@@ -624,7 +629,7 @@
+     g_free (cf_priv->glyph_extents_cache);
+   cf_priv->glyph_extents_cache = NULL;
+ 
+-  g_slist_foreach (cf_priv->metrics_by_lang, (GFunc)free_metrics_info, NULL);
++  g_slist_foreach (cf_priv->metrics_by_lang, free_metrics_info, NULL);
+   g_slist_free (cf_priv->metrics_by_lang);
+   cf_priv->metrics_by_lang = NULL;
+ }
+diff -Naur -x subprojects -x _build -x meson.build a/pango/pangofc-font.c b/pango/pangofc-font.c
+--- a/pango/pangofc-font.c	2024-03-31 09:58:26.000000000 +0000
++++ b/pango/pangofc-font.c	2026-07-06 10:29:42.113575291 +0000
+@@ -150,9 +150,14 @@
+   fcfont->priv = pango_fc_font_get_instance_private (fcfont);
+ }
+ 
++/* GFunc-typed: calling a 1-arg function through the 2-arg (GFunc) cast is
++ * UB that traps under wasm's typed call_indirect. */
+ static void
+-free_metrics_info (PangoFcMetricsInfo *info)
++free_metrics_info (gpointer data,
++                   gpointer user_data G_GNUC_UNUSED)
+ {
++  PangoFcMetricsInfo *info = data;
++
+   pango_font_metrics_unref (info->metrics);
+   g_slice_free (PangoFcMetricsInfo, info);
+ }
+@@ -164,7 +169,7 @@
+   PangoFcFontPrivate *priv = fcfont->priv;
+   PangoFcFontMap *fontmap;
+ 
+-  g_slist_foreach (fcfont->metrics_by_lang, (GFunc)free_metrics_info, NULL);
++  g_slist_foreach (fcfont->metrics_by_lang, free_metrics_info, NULL);
+   g_slist_free (fcfont->metrics_by_lang);
+ 
+   fontmap = g_weak_ref_get ((GWeakRef *) &fcfont->fontmap);
+diff -Naur -x subprojects -x _build -x meson.build a/pango/pangofc-fontmap.c b/pango/pangofc-fontmap.c
+--- a/pango/pangofc-fontmap.c	2024-03-31 09:58:26.000000000 +0000
++++ b/pango/pangofc-fontmap.c	2026-07-05 14:21:09.373412957 +0000
+@@ -1007,8 +1007,13 @@
+   g_mutex_init (&pats->mutex);
+   g_cond_init (&pats->cond);
+ 
++#ifdef __EMSCRIPTEN__
++  match_in_thread (thread_data_new (FC_MATCH, pats));
++  sort_in_thread (thread_data_new (FC_SORT, pats));
++#else
+   g_async_queue_push (fontmap->priv->queue, thread_data_new (FC_MATCH, pats));
+   g_async_queue_push (fontmap->priv->queue, thread_data_new (FC_SORT, pats));
++#endif
+ 
+   g_hash_table_insert (fontmap->priv->patterns_hash, pats->pattern, pats);
+ 
+@@ -1444,7 +1449,8 @@
+ }
+ 
+ static void
+-pango_fc_font_map_list_model_init (GListModelInterface *iface)
++pango_fc_font_map_list_model_init (GListModelInterface *iface,
++                                   gpointer             iface_data G_GNUC_UNUSED)
+ {
+   iface->get_item_type = pango_fc_font_map_get_item_type;
+   iface->get_n_items = pango_fc_font_map_get_n_items;
+@@ -1458,6 +1464,24 @@
+ static void
+ start_fontconfig_thread (PangoFcFontMap *fcfontmap)
+ {
++#ifdef __EMSCRIPTEN__
++  /* Single-threaded wasm: no worker thread. Run the deferred FcInit
++   * synchronously; FC_MATCH/FC_SORT ops are likewise run at submit time
++   * (see pango_fc_patterns_new), and the consumers' cond-wait loops see
++   * their results already present. */
++  gboolean need_init = FALSE;
++
++  g_mutex_lock (&fc_init_mutex);
++  if (fc_initialized == DEFAULT_CONFIG_NOT_INITIALIZED)
++    {
++      fc_initialized = DEFAULT_CONFIG_INITIALIZING;
++      need_init = TRUE;
++    }
++  g_mutex_unlock (&fc_init_mutex);
++
++  if (need_init)
++    init_in_thread (thread_data_new (FC_INIT, NULL));
++#else
+   GThread *thread;
+ 
+   g_mutex_lock (&fc_init_mutex);
+@@ -1473,6 +1497,7 @@
+     }
+ 
+   g_mutex_unlock (&fc_init_mutex);
++#endif
+ }
+ 
+ static void
+@@ -1563,7 +1588,9 @@
+   priv->n_families = -1;
+   priv->families = NULL;
+ 
++#ifndef __EMSCRIPTEN__
+   g_async_queue_push (fcfontmap->priv->queue, thread_data_new (FC_END, NULL));
++#endif
+ 
+   g_async_queue_unref (priv->queue);
+   priv->queue = NULL;
+@@ -3360,7 +3387,8 @@
+ }
+ 
+ static void
+-pango_fc_family_list_model_init (GListModelInterface *iface)
++pango_fc_family_list_model_init (GListModelInterface *iface,
++                                 gpointer             iface_data G_GNUC_UNUSED)
+ {
+   iface->get_item_type = pango_fc_family_get_item_type;
+   iface->get_n_items = pango_fc_family_get_n_items;
