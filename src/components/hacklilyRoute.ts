@@ -17,8 +17,10 @@ import { parseAuth } from "#/lib/auth";
 import {
   editSong,
   getDirtySongs,
+  getHideUnstableNotification,
   markSongClean,
-  subscribeToDirtySongs,
+  setHideUnstableNotification,
+  subscribeToLocalStorage,
 } from "#/lib/localStorage";
 import { parseQuery, toQueryString } from "#/lib/queryString";
 
@@ -163,27 +165,23 @@ export function useHacklilyAppProps(search: QueryProps) {
 
   // Read localStorage state (same as current index.tsx).
   const dirtySongs = useSyncExternalStore(
-    subscribeToDirtySongs,
+    subscribeToLocalStorage,
     getDirtySongs,
     () => ({}),
   );
   const auth = getAuth();
   const [csrf, setLatestCsrf] = useState(sessionStorage.csrf || null);
-  const hideUnstableNotification = getHideUnstableNotification();
+  const hideUnstableNotification = useSyncExternalStore(
+    subscribeToLocalStorage,
+    getHideUnstableNotification,
+    () => false,
+  );
 
   const setAuth = useCallback((newAuth: Auth | null): void => {
     if (!newAuth) {
       delete localStorage.auth;
     } else {
       localStorage.auth = JSON.stringify(newAuth);
-    }
-  }, []);
-
-  const setHideUnstableNotification = useCallback((hide: boolean): void => {
-    if (hide) {
-      localStorage.hideUnstableNotification = true;
-    } else {
-      delete localStorage.hideUnstableNotification;
     }
   }, []);
 
@@ -223,8 +221,4 @@ export function useHacklilyAppProps(search: QueryProps) {
 
 function getAuth(): Auth | null {
   return parseAuth(localStorage.auth);
-}
-
-function getHideUnstableNotification(): boolean {
-  return localStorage.hideUnstableNotification || false;
 }

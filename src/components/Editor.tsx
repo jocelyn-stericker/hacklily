@@ -286,8 +286,9 @@ export default class Editor extends React.PureComponent<Props> {
           className={cn(APP_STYLE.urgentEditorNotification)}
           style={{ width }}
         >
-          <TriangleAlert size="1em" /> This song uses LilyPond 2.27, which is an
-          unstable development version and may change without notice.{" "}
+          <TriangleAlert size="1em" className="inline" /> This song uses
+          LilyPond 2.27, which is an unstable development version and may change
+          without notice.{" "}
           <a
             onClick={onHideUnstableNotification}
             className={cn(APP_STYLE.urgentEditorNotificationClose)}

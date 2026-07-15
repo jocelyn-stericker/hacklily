@@ -4,8 +4,6 @@
 export const APP_STYLE = {
   errorDecoration:
     "border-2 border-red-600 text-red-600 italic font-bold underline",
-  errorMask:
-    "bg-black text-white absolute inset-y-0 left-[50%] p-4 text-center",
   monacoHidden: "hidden",
   pendingPreviewMask:
     "bg-black absolute inset-0 left-[50%] animate-[previewPending_2s_ease-in-out_infinite]",
