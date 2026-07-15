@@ -15,7 +15,7 @@
 //   -> {type: 'render', id, src}
 //   <- {type: 'ready', warmup_ms}          once, after boot+warmup
 //   <- {type: 'log', line}                 streamed during renders
-//   <- {type: 'result', id, ok, recycle, svg, pages, midi, logs, status,
+//   <- {type: 'result', id, ok, recycle, pages, midi, logs, status,
 //        warnings, errors, ms}
 //      status: ok | failed | fatal
 //      recycle: true for fatal — conservatively recycle the worker (it
@@ -37,9 +37,7 @@
 //               ok is true iff pages exist and not fatal.
 //      pages: one SVG string per page (LilyPond writes input.svg for a
 //             single page but input-1.svg, input-2.svg, ... when it breaks
-//             the score across pages); svg is their concatenation, so
-//             innerHTML keeps working for the single-page case and stacks
-//             the pages otherwise.  midi: Uint8Array of input.midi when the
+//             the score across pages); midi: Uint8Array of input.midi when the
 //             score has a \midi block, else null.
 //
 // Containment is the caller's job: this worker cannot interrupt a runaway
@@ -219,7 +217,6 @@ onmessage = (e) => {
         recycle: true,
         warnings: 0,
         errors: 0,
-        svg: null,
         pages: [],
         midi: null,
         logs: logs.concat([String((err && (err.stack || err.message)) || err)]),
@@ -277,7 +274,6 @@ onmessage = (e) => {
       recycle,
       warnings,
       errors,
-      svg: pages.length ? pages.join("\n") : null,
       pages,
       midi,
       logs,

@@ -60,7 +60,6 @@ type WorkerMessage =
       recycle?: boolean;
       warnings: number;
       errors: number;
-      svg: string | null;
       pages: string[];
       midi: Uint8Array | null;
       logs: string[];
@@ -79,13 +78,7 @@ type WorkerMessage =
  *   <- {type: "ready", warmup_ms}          once per boot
  *   <- {type: "log", line}                streamed during a render (ignored
  *                                          here; we commit logs on completion)
- *   <- {type: "result", id, ok, svg, logs, status, warnings, errors, ms}
- *
- * On `ok` the `svg` string is wrapped as a one-element `files` array and the
- * warning/error counts are forwarded so the caller can label a render
- * "success-with-warnings". On failure the rejection is shaped like the
- * JSON-RPC error the server returns (`{error: {message, data: {logs}}}`)
- * so <Preview>'s existing catch path works unchanged.
+ *   <- {type: "result", id, ok, pages, logs, status, warnings, errors, ms}
  */
 export default class WasmRenderer implements SvgRenderer {
   private readonly workerURL: string;
@@ -238,9 +231,9 @@ export default class WasmRenderer implements SvgRenderer {
     console.log(m);
 
     const logs: string = Array.isArray(m.logs) ? m.logs.join("\n") : "";
-    if (m.ok && typeof m.svg === "string") {
+    if (m.ok && m.pages?.length > 0) {
       job.resolve({
-        files: [m.svg],
+        files: m.pages,
         logs,
         midi: btoa(Array.from(m.midi, (b) => String.fromCharCode(b)).join("")),
       });
