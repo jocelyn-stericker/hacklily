@@ -22,7 +22,9 @@ if (!webdir) {
 const wantPort = process.env.PORT ? String(process.env.PORT) : "0";
 
 void (async () => {
-  process.on("unhandledRejection", (e) => console.log("[unhandledRejection]", (e && e.message) || e));
+  process.on("unhandledRejection", (e) =>
+    console.log("[unhandledRejection]", (e && e.message) || e),
+  );
   const server = spawn(
     "python3",
     ["-u", "-m", "http.server", wantPort, "--bind", "127.0.0.1"],
@@ -77,7 +79,9 @@ void (async () => {
     page1.on("crash", () => {
       crashed = true;
     });
-    page1.on("pageerror", (err) => console.log("[page1 pageerror]", err.message));
+    page1.on("pageerror", (err) =>
+      console.log("[page1 pageerror]", err.message),
+    );
     page1.on("console", (msg) => console.log("[page1 console]", msg.text()));
     // The renderer may crash *during* navigation (the worker traps shortly
     // after load), so goto / waitForFunction can reject with "Target crashed" —
@@ -120,7 +124,9 @@ void (async () => {
     // renderer survive, so a clean score still engraves.
     const page2 = await browser.newPage();
     page2.on("console", (msg) => console.log("[page2 console]", msg.text()));
-    page2.on("pageerror", (err) => console.log("[page2 pageerror]", err.message));
+    page2.on("pageerror", (err) =>
+      console.log("[page2 pageerror]", err.message),
+    );
     await page2.goto(`http://localhost:${port}/lily-browser.html`);
     const msg = await page2.waitForEvent("console", {
       predicate: (m) => m.text().includes("LILY BROWSER:"),

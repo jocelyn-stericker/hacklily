@@ -222,9 +222,7 @@ onmessage = (e) => {
         svg: null,
         pages: [],
         midi: null,
-        logs: logs.concat([
-          String((err && (err.stack || err.message)) || err),
-        ]),
+        logs: logs.concat([String((err && (err.stack || err.message)) || err)]),
         ms: Math.round(performance.now() - t0),
       });
       return;

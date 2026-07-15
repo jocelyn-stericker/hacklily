@@ -281,7 +281,7 @@ export default class ToolNoteEdit extends React.Component<
 
         {this.renderAdditionalHelp()}
         {this.renderPalette()}
-        <div className={cn(makelilyStyles.section)}>
+        <div className={cn(makelilyStyles.section, "bg-white")}>
           <div
             className={cn(
               styles.songContainer,

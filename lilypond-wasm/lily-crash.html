@@ -2,27 +2,27 @@
 <meta charset="utf-8" />
 <title>lilypond.wasm crash-containment probe</title>
 <body>
-<script>
-  // Crash-containment probe for crash-test.js (playwright).  Spawn a worker
-  // and send a Scheme snippet that dereferences an out-of-bounds pointer
-  // (0xFFFFFFFF on wasm32) — a genuine wasm trap (out-of-bounds memory
-  // access).  Web Workers share the page's renderer process, so the trap
-  // crashes the whole renderer before the worker's catch can fire: no
-  // `result` is ever sent, and this page dies.  crash-test.js therefore
-  // drives everything: it confirms the segfault was dispatched (window.__sent,
-  // set synchronously here before the worker boots), waits for the renderer
-  // to crash, then opens a FRESH page and verifies a clean render still
-  // works — i.e. the crash was contained to the page, and a new renderer
-  // recovers.  This page is intentionally not self-verifying.
-  //
-  // (system foreign is in the bundle because LilyPond pulls it in
-  // transitively; make-pointer truncates to 32-bit on wasm32, so 0xFFFFFFFF
-  // is one past the 4 GiB wasm32 ceiling and the 4-byte i32.load traps.)
-  const SEGFAULT =
-    '\\version "2.27.1"\n#(use-modules (system foreign))\n#(dereference-pointer (make-pointer 4294967295))\n{ c\'4 }\n';
-  const w = new Worker("lily-worker.js");
-  window.__sent = true; // synchronous, before the worker boots
-  w.onmessage = () => {}; // no result expected (the renderer dies first)
-  w.postMessage({ type: "render", id: 1, src: SEGFAULT });
-</script>
+  <script>
+    // Crash-containment probe for crash-test.js (playwright).  Spawn a worker
+    // and send a Scheme snippet that dereferences an out-of-bounds pointer
+    // (0xFFFFFFFF on wasm32) — a genuine wasm trap (out-of-bounds memory
+    // access).  Web Workers share the page's renderer process, so the trap
+    // crashes the whole renderer before the worker's catch can fire: no
+    // `result` is ever sent, and this page dies.  crash-test.js therefore
+    // drives everything: it confirms the segfault was dispatched (window.__sent,
+    // set synchronously here before the worker boots), waits for the renderer
+    // to crash, then opens a FRESH page and verifies a clean render still
+    // works — i.e. the crash was contained to the page, and a new renderer
+    // recovers.  This page is intentionally not self-verifying.
+    //
+    // (system foreign is in the bundle because LilyPond pulls it in
+    // transitively; make-pointer truncates to 32-bit on wasm32, so 0xFFFFFFFF
+    // is one past the 4 GiB wasm32 ceiling and the 4-byte i32.load traps.)
+    const SEGFAULT =
+      '\\version "2.27.1"\n#(use-modules (system foreign))\n#(dereference-pointer (make-pointer 4294967295))\n{ c\'4 }\n';
+    const w = new Worker("lily-worker.js");
+    window.__sent = true; // synchronous, before the worker boots
+    w.onmessage = () => {}; // no result expected (the renderer dies first)
+    w.postMessage({ type: "render", id: 1, src: SEGFAULT });
+  </script>
 </body>

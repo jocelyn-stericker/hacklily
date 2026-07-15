@@ -34,7 +34,7 @@
     // status:"ok" with warnings>0 — i.e. warnings no longer make a separate
     // status, they're only in the counter for badging.
     const BARCHECK =
-      '\\version "2.27.1"\n{ \\time 4/4 c\'4 d\'4 | d\'4 e\'4 f\'4 g\'4 }\n';
+      "\\version \"2.27.1\"\n{ \\time 4/4 c'4 d'4 | d'4 e'4 f'4 g'4 }\n";
     // The fatal-path trigger: a throw in after-line-breaking runs in the
     // backend engraving phase (after parsing), so it escapes the parser's
     // error handling (which would otherwise route it to ly:parser-error ->
@@ -113,10 +113,7 @@
         // Collapse check: a warning-only render is ok with status:"ok" and the
         // warning count in the counter — not a separate ok_with_warnings.
         const warningsCollapsed =
-          rw.ok &&
-          rw.status === "ok" &&
-          rw.warnings > 0 &&
-          rw.errors === 0;
+          rw.ok && rw.status === "ok" && rw.warnings > 0 && rw.errors === 0;
         // Fatal check: the after-line-breaking throw escapes the parser ->
         // status:"fatal", recycle:true, no pages.  And the SAME worker must
         // still render cleanly afterward (r5 ok, byte-identical to r1) — the

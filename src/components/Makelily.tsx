@@ -183,7 +183,7 @@ const styles = {
   contentNoBar: "left-0",
   heading: "cursor-default text-[18px] mb-0 mt-2 pb-4 pl-4 pt-4",
   modal:
-    "bg-white border border-solid border-[grey] rounded-[4px] h-[600px] left-[calc(50%-1020px/2)] overflow-hidden fixed top-[calc((50%-600px/2)*2/3)] w-[1020px] z-[1001]",
+    "bg-background border border-solid border-[grey] rounded-[4px] h-[600px] left-[calc(50%-1020px/2)] overflow-hidden fixed top-[calc((50%-600px/2)*2/3)] w-[1020px] z-[1001]",
   modalBg: "bg-black absolute inset-0 cursor-pointer opacity-40 fixed z-[1000]",
   modeBar: "bg-[#F6F7F7] absolute inset-y-0 left-0 w-[180px]",
   modeItem:

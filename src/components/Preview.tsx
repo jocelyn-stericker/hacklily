@@ -254,7 +254,7 @@ export default class Preview extends React.PureComponent<Props, State> {
     // that we can add a click event (see onSelectionChanged).
 
     return (
-      <div className="bg-white border-l border-black">
+      <div className="bg-background border-l border-black">
         <iframe
           className={cn(APP_STYLE.sheetMusicView)}
           height="100%"

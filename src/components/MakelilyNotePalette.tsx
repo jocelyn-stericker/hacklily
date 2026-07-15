@@ -680,7 +680,7 @@ const styles = {
   bravura: "text-[22px]",
   controlHeading: "block text-[10px] h-[10px] mb-0.5 text-center w-full",
   controlWidget:
-    "bg-white border-b border-[#bebebe] border-r border-[#bebebe] bottom-[165px] flex flex-col left-[15px] absolute right-[15px]",
+    "bg-background border-b border-[#bebebe] border-r border-[#bebebe] bottom-[165px] flex flex-col left-[15px] absolute right-[15px]",
   controlRow:
     "border-t border-[#bebebe] flex flex-row min-h-[40px] overflow-auto",
   controlSeperator: "bg-[#bebebe] h-full w-px",
