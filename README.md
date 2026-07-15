@@ -54,7 +54,7 @@ Hacklily is stable and live at <https://www.hacklily.org>. The renderer is fully
 
 Source and issue tracker: <https://codeberg.org/jocelyn-stericker/hacklily>
 
-Contributions are welcome. By the terms of the licenses below, client contributions must be AGPLv3-or-later and server contributions must be AGPLv3-or-later.
+Contributions are welcome. Must be licensed AGPLv3-or-later.
 
 ## License
 
