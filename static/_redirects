@@ -5,4 +5,4 @@
 /satie /playground.html 200!
 /satie/* /playground.html 200
 /makelily/* /playground.html 200
-/wasm /index.html 200
+/wasm /index.html 200!
