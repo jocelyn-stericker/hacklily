@@ -434,6 +434,7 @@ export default class App extends React.PureComponent<Props, State> {
         <div className="content">
           <Editor
             ref={this.setEditor}
+            variant={this.props.variant}
             code={song ? song.src : undefined}
             colourScheme={this.props.colourScheme}
             mode={mode}

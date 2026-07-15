@@ -52,6 +52,7 @@ interface Props {
   readOnly: boolean;
 
   rendererVersion: "stable" | "unstable";
+  variant: "wasm" | "server";
 
   /**
    * Called when an edit occurs. <Editor /> is a controlled component.
@@ -90,6 +91,7 @@ export default class Editor extends React.PureComponent<Props> {
         /hacklily.ly:([0-9]*):(([0-9]*):([0-9]*))?\s*([ew].*)/g;
       const oldDecorations: string[] = this.oldDecorations || [];
       if (logs) {
+        const isServer = this.props.variant === "server";
         for (
           let error: RegExpExecArray | null = matchErrors.exec(logs);
           error;
@@ -110,9 +112,9 @@ export default class Editor extends React.PureComponent<Props> {
                 error[4] || String(parseInt(error[2], 10) + 1),
                 10,
               ),
-              endLineNumber: parseInt(error[1], 10) - 1,
+              endLineNumber: parseInt(error[1], 10) - (isServer ? 1 : 0),
               startColumn: parseInt(error[3], 10),
-              startLineNumber: parseInt(error[1], 10) - 1,
+              startLineNumber: parseInt(error[1], 10) - (isServer ? 1 : 0),
             },
           });
         }
