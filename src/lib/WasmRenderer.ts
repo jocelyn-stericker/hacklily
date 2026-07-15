@@ -60,12 +60,13 @@ interface QueuedJob {
  *   <- {type: "ready", warmup_ms}          once per boot
  *   <- {type: "log", line}                streamed during a render (ignored
  *                                          here; we commit logs on completion)
- *   <- {type: "result", id, ok, svg, logs, status, ms}
+ *   <- {type: "result", id, ok, svg, logs, status, warnings, errors, ms}
  *
- * On `ok` the `svg` string is wrapped as a one-element `files` array. On
- * failure the rejection is shaped like the JSON-RPC error the server returns
- * (`{error: {message, data: {logs}}}`) so <Preview>'s existing catch path
- * works unchanged.
+ * On `ok` the `svg` string is wrapped as a one-element `files` array and the
+ * warning/error counts are forwarded so the caller can label a render
+ * "success-with-warnings". On failure the rejection is shaped like the
+ * JSON-RPC error the server returns (`{error: {message, data: {logs}}}`)
+ * so <Preview>'s existing catch path works unchanged.
  */
 export default class WasmRenderer implements SvgRenderer {
   readonly capabilities = { midi: false };

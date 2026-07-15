@@ -1,0 +1,136 @@
+--- a/flower/warn.cc	2026-07-14 08:25:20.017402515 -0400
++++ b/flower/warn.cc	2026-07-14 08:25:20.018777856 -0400
+@@ -44,6 +44,21 @@
+ int loglevel = LOGLEVEL_INFO;
+ bool warning_as_error = false;
+ 
++// Defaults are fatal (CLI); the wasm build overrides via
++// -DLY_WARNING_AS_ERROR_FATAL_DEFAULT=false so a render service can surface
++// warnings instead of having the host exit.
++bool warning_as_error_is_fatal = LY_WARNING_AS_ERROR_FATAL_DEFAULT;
++
++long warning_count = 0;
++long error_count = 0;
++
++void
++reset_log_counters ()
++{
++  warning_count = 0;
++  error_count = 0;
++}
++
+ static std::unordered_set<std::string> logged_deprecation_warnings;
+ 
+ bool
+@@ -227,10 +242,11 @@
+   if (is_expected (s))
+     print_message (LOG_DEBUG, location,
+                    _f ("suppressed programming error: %s", s) + "\n");
+-  else if (warning_as_error)
++  else if (warning_as_error && warning_as_error_is_fatal)
+     WarningAsErrorExitDeferrer::deferrable_error (s, location);
+   else
+     {
++      ++error_count;
+       print_message (LOG_ERROR, location,
+                      _f ("programming error: %s", s) + "\n");
+       print_message (LOG_ERROR, location,
+@@ -244,10 +260,13 @@
+ {
+   if (is_expected (s))
+     print_message (LOG_DEBUG, location, _f ("suppressed error: %s", s) + "\n");
+-  else if (warning_as_error)
++  else if (warning_as_error && warning_as_error_is_fatal)
+     WarningAsErrorExitDeferrer::deferrable_error (s, location);
+   else
+-    print_message (LOG_ERROR, location, _f ("error: %s", s) + "\n");
++    {
++      ++error_count;
++      print_message (LOG_ERROR, location, _f ("error: %s", s) + "\n");
++    }
+ }
+ 
+ /* Display a warning message. */
+@@ -257,10 +276,13 @@
+   if (is_expected (s))
+     print_message (LOG_DEBUG, location,
+                    _f ("suppressed warning: %s", s) + "\n");
+-  else if (warning_as_error)
++  else if (warning_as_error && warning_as_error_is_fatal)
+     WarningAsErrorExitDeferrer::deferrable_error (s, location);
+   else
+-    print_message (LOG_WARN, location, _f ("warning: %s", s) + "\n");
++    {
++      ++warning_count;
++      print_message (LOG_WARN, location, _f ("warning: %s", s) + "\n");
++    }
+ }
+ 
+ bool
+--- a/flower/include/warn.hh	2026-07-14 08:25:20.017871268 -0400
++++ b/flower/include/warn.hh	2026-07-14 08:25:20.019220900 -0400
+@@ -44,6 +44,28 @@
+ extern int loglevel;
+ extern bool warning_as_error;
+ 
++// When warning-as-error is set, the CLI/regression suite treats the first
++// warning as fatal (it calls exit(1) so `make test' can detect stray
++// warnings).  An embedded consumer (e.g. lilypond.wasm driven as a render
++// service) would rather keep engraving and surface the warning to the
++// caller as "success-with-warnings" than have the host process exit.  When
++// this is false, warning()/non_fatal_error()/programming_error() print at
++// their natural log level and increment the warning/error counters instead
++// of deferring/calling exit().  Default is fatal (preserves CLI behaviour);
++// the wasm build overrides it with -DLY_WARNING_AS_ERROR_FATAL_DEFAULT=false.
++#ifndef LY_WARNING_AS_ERROR_FATAL_DEFAULT
++#define LY_WARNING_AS_ERROR_FATAL_DEFAULT true
++#endif
++extern bool warning_as_error_is_fatal;
++
++// Per-render diagnostic counters: how many warnings / errors were actually
++// emitted (not suppressed by ly:expect-warning, not below the log level).
++// Embedded callers reset these before a render and read them after, to tell
++// "success-with-warnings" / "success-with-errors" from a clean "ok".
++extern long warning_count;
++extern long error_count;
++void reset_log_counters ();
++
+ // When warning_as_error is set, it can sometimes be undesirable to exit
+ // immediately on the first warning.  Declare a variable of this type to defer
+ // exiting until it goes out of scope.
+--- a/lily/program-option-scheme.cc	2026-07-14 08:25:20.018336228 -0400
++++ b/lily/program-option-scheme.cc	2026-07-14 08:25:20.019663819 -0400
+@@ -487,3 +487,33 @@
+     ret = scm_reverse (ret);
+   return ret;
+ }
++
++LY_DEFINE (ly_reset_log_counters, "ly:reset-log-counters", 0, 0, 0, (),
++           R"(
++Reset the per-render warning/error counters to zero.  Intended for embedded
++use (e.g. lilypond.wasm) so a host can sample how many warnings/errors a
++single render emitted: call this before a render and @code{ly:warning-count}/
++@code{ly:error-count} after.
++           )")
++{
++  reset_log_counters ();
++  return SCM_UNSPECIFIED;
++}
++
++LY_DEFINE (ly_warning_count, "ly:warning-count", 0, 0, 0, (),
++           R"(
++Number of warnings emitted since @code{ly:reset-log-counters} (warnings that
++were suppressed by @code{ly:expect-warning} are not counted).
++           )")
++{
++  return to_scm (warning_count);
++}
++
++LY_DEFINE (ly_error_count, "ly:error-count", 0, 0, 0, (),
++           R"(
++Number of non-fatal errors / programming errors emitted since
++@code{ly:reset-log-counters} (suppressed ones are not counted).
++           )")
++{
++  return to_scm (error_count);
++}

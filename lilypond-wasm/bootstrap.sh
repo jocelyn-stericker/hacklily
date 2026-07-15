@@ -7,11 +7,21 @@
 #   wasm-install/     libguile-3.0.a + deps + share/ccache trees, all
 #                     wasm32-unknown-emscripten
 #   test/             node test binaries (and web/ + web-lily/ if --browser)
+#   dist/             npm-publishable browser bundle (if --browser): the four
+#                     files hacklily serves + dev HTML + README + package.json
 #
 # Usage:
 #   ./bootstrap.sh            run everything (idempotent; stamps in work/.stamps)
-#   ./bootstrap.sh --browser  also build the browser bundle and, if playwright
-#                             is importable, run the headless-Chromium test
+#   ./bootstrap.sh --browser  also build the browser bundle and dist/, and, if
+#                             playwright is importable, run the headless-Chromium
+#                             test
+#
+# Headless-Chromium tests need a one-time setup that CI does for you but a
+# fresh checkout does not:
+#   npm install playwright
+#   npx playwright install --with-deps chromium   # browser + apt system libs
+# (libnspr4/libnss3/...; without --with-deps chromium launches then dies on
+# the first missing .so, and bootstrap.sh fails in the test step.)
 #   ./bootstrap.sh clean      delete the work dir
 #
 # Env overrides: GUILE_WASM_WORK (work dir), EMSDK_DIR (reuse an existing
@@ -438,7 +448,17 @@ meson_dep glib glib-$GLIB_V \
 
 lily_dep fribidi fribidi-$FRIBIDI_V --disable-docs
 
+# harfbuzz: disable asserts in the release build (-Db_ndebug=if-release),
+# matching what upstream harfbuzz itself does from ~9.x on (its meson.build
+# sets 'b_ndebug=if-release') and what prod ships (Debian sid's harfbuzz 12.x,
+# built as release -> NDEBUG).  Without it, 8.5.0's meson.build leaves meson's
+# default b_ndebug=false, so hb_buffer_add_utf8's assert_unicode() is live and
+# aborts on a buffer pango hands back in GLYPHS state without clearing — a
+# benign reuse prod tolerates (assert is a no-op there) but that takes down the
+# whole wasm render, e.g. on a score whose header has C1 control chars
+# (U+0080-U+009F, from UTF-8-decoded-as-Latin-1 mojibake).
 meson_dep harfbuzz harfbuzz-$HARFBUZZ_V \
+  -Db_ndebug=if-release \
   -Dfreetype=enabled -Dglib=enabled -Dgobject=disabled -Dicu=disabled \
   -Dcairo=disabled -Dtests=disabled -Ddocs=disabled -Dbenchmark=disabled \
   -Dintrospection=disabled -Dutilities=disabled
@@ -534,6 +554,15 @@ else
     log "extracting LilyPond"
     rm -rf "$SRC/lilypond-$LILYPOND_V"
     tar -C "$SRC" -xf "$DL/lilypond-$LILYPOND_V.tar.gz"
+    # success-with-warnings: when warning-as-error is set, the embedded/wasm
+    # build must not call exit() on the first warning (Emscripten turns that
+    # into an uncatchable ExitStatus through the warm-instance eval path).
+    # Instead warnings print + increment a counter the host reads back, so a
+    # render can report "success-with-warnings".  CLI behaviour (exit on wae)
+    # is preserved by the default true; the wasm configure below passes
+    # -DLY_WARNING_AS_ERROR_FATAL_DEFAULT=false to flip only that build.
+    patch -p1 -d "$SRC/lilypond-$LILYPOND_V" \
+      < "$ROOT/patches/lilypond-$LILYPOND_V-success-with-warnings.patch"
     done_stage extract-lilypond
   fi
 
@@ -557,7 +586,7 @@ else
      EM_PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig" emconfigure ../configure \
        --build="$(gcc -dumpmachine)" --host=wasm32-unknown-emscripten \
        --prefix="$PREFIX" --disable-documentation \
-       CPPFLAGS="-I$WORK/host-headers" \
+       CPPFLAGS="-I$WORK/host-headers -DLY_WARNING_AS_ERROR_FATAL_DEFAULT=false" \
        PKG_CONFIG="pkg-config --static" \
        LDFLAGS="-g2 -sBINARYEN_EXTRA_PASSES=--spill-pointers -sSTACK_SIZE=8388608 -sALLOW_MEMORY_GROWTH=1 -sNODERAWFS=1 -sEXIT_RUNTIME=1" \
        > "$WORK/lilypond-configure.log" 2>&1
@@ -718,9 +747,28 @@ EOF
        mv out/lilypond.node out/lilypond
        mv out/lilypond.node.wasm out/lilypond.wasm)
       cp "$ROOT/lily-browser.html" "$ROOT/lily-warm.html" \
-         "$ROOT/lily-worker.js" "$WEBLILY/"
+         "$ROOT/lily-crash.html" "$ROOT/lily-worker.js" "$WEBLILY/"
       done_stage lily-browser
     fi
+
+    # --- 13. dist/ (npm-publishable + locally consumable) -----------------
+    # Stages the same four files hacklily's vite plugin serves from the
+    # published package, plus the dev HTML pages, README, and package.json —
+    # i.e. exactly what `npm publish` and `file:`/env-override consumers
+    # expect.  CI bumps the version and publishes from here; locally, point
+    # hacklily at this dir (LILYPOND_WASM_DIR=.../lilypond-wasm/dist) to use
+    # a freshly built wasm without publishing or copying by hand.
+    if need_stage dist; then
+      log "staging dist/"
+      rm -rf "$ROOT/dist"
+      mkdir -p "$ROOT/dist"
+      cp "$WEBLILY/lilypond-web.js" "$WEBLILY/lilypond.wasm" \
+         "$WEBLILY/lilypond.data" "$WEBLILY/lily-worker.js" "$ROOT/dist/"
+      cp "$ROOT/lily-browser.html" "$ROOT/lily-warm.html" \
+         "$ROOT/lily-crash.html" "$ROOT/README.md" "$ROOT/package.json" "$ROOT/dist/"
+      done_stage dist
+    fi
+
     if "$NODE" -e "require.resolve('playwright')" >/dev/null 2>&1; then
       log "running headless-Chromium LilyPond render tests"
       WEBDIR="$WEBLILY" PAGE=lily-browser.html MATCH="LILY BROWSER:" \
@@ -730,8 +778,10 @@ EOF
       log "running warm-instance render test"
       WEBDIR="$WEBLILY" PAGE=lily-warm.html MATCH="LILY WARM:" \
         "$NODE" "$ROOT/browser-test.js"
+      log "running crash-containment test (wasm segfault -> recycle page)"
+      WEBDIR="$WEBLILY" "$NODE" "$ROOT/crash-test.js"
     else
-      log "playwright not found; serve $WEBLILY/lily-browser.html and check the console"
+      log "playwright not found; serve $WEBLILY/lily-browser.html, lily-warm.html, or lily-crash.html and check the console"
     fi
   fi
 fi

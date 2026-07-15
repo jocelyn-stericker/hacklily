@@ -8,8 +8,14 @@
     // Warm-instance test: one worker, many renders.  Checks that repeat renders
     // of the same source are byte-identical (session reset works), that a broken
     // score fails cleanly, that the instance still renders correctly after the
-    // failure, that dynamics render (pango attr-list copy path), and that a
-    // multi-page score with \midi returns every page plus the MIDI bytes.
+    // failure, that a warning-only render comes back status:"ok" with the
+    // warning in the counter (the collapsed taxonomy: warnings no longer make
+    // a separate ok_with_warnings status), that dynamics render (pango
+    // attr-list copy path), that a multi-page score with \midi returns every
+    // page plus the MIDI bytes, and that a fatal render (a Scheme throw during
+    // the backend engraving phase, which escapes the parser and reaches
+    // RENDER_EVAL's catch as status:"fatal" + recycle:true) leaves the warm
+    // instance still usable — proving recycle is conservative, not required.
     // Prints one "LILY WARM: PASS/FAIL ..." line for browser-test.js.
     const logEl = document.getElementById("log");
     const log = (t) => {
@@ -23,6 +29,21 @@
       Array(64).fill("c'8 d'8 e'8 f'8 g'8 a'8 b'8 c''8").join(" | ") +
       " }\n";
     const BROKEN = '\\version "2.27.1"\n{ c\'4 \\thisIsNotACommand }\n';
+    // A genuine warning (barcheck fails: | after 2 notes in 4/4) that does NOT
+    // fail the file.  Under the collapsed taxonomy this must come back
+    // status:"ok" with warnings>0 — i.e. warnings no longer make a separate
+    // status, they're only in the counter for badging.
+    const BARCHECK =
+      '\\version "2.27.1"\n{ \\time 4/4 c\'4 d\'4 | d\'4 e\'4 f\'4 g\'4 }\n';
+    // The fatal-path trigger: a throw in after-line-breaking runs in the
+    // backend engraving phase (after parsing), so it escapes the parser's
+    // error handling (which would otherwise route it to ly:parser-error ->
+    // status "failed") and propagates out of lilypond-file into RENDER_EVAL's
+    // (catch #t ...) -> status "fatal", recycle:true, no pages.  The warm
+    // build keeps the runtime alive across the resulting ly:exit, so the
+    // instance is still usable afterward (asserted by the next render).
+    const FATAL =
+      '\\version "2.27.1"\n\\layout { \\context { \\Voice \\override NoteHead.after-line-breaking = #(lambda (grob) (throw (quote boom) grob)) } }\n{ c\'4 }\n';
     const DYNAMICS = "\\version \"2.27.1\"\n{ d'4\\f e'4\\p }\n";
     const MULTIPAGE_MIDI =
       '\\version "2.27.1"\n\\score {\n{ ' +
@@ -64,8 +85,12 @@
         const rb = await render(BROKEN);
         const r3 = await render(TRIVIAL);
         const rd = await render(DYNAMICS);
+        const rw = await render(BARCHECK);
         const rp = await render(MULTIPAGE_MIDI);
         const r4 = await render(TRIVIAL);
+        // Fatal path last, then prove the warm instance survived it.
+        const rf = await render(FATAL);
+        const r5 = await render(TRIVIAL);
 
         const stable =
           r1.ok &&
@@ -79,7 +104,26 @@
           ? (r1.svg.match(/textedit:\/\//g) || []).length
           : 0;
         const brokenLogged = rb.logs.some((l) => l.includes("error"));
-        const recovered = !rb.ok && brokenLogged && r3.ok;
+        // Under the show-what-was-generated contract, a broken score that
+        // still engraves comes back ok:true with status:"failed" + errors>0;
+        // "recovered" means the worker *detected* the error (failed status,
+        // error logged) and the warm instance still renders cleanly after.
+        const recovered =
+          rb.status === "failed" && rb.errors > 0 && brokenLogged && r3.ok;
+        // Collapse check: a warning-only render is ok with status:"ok" and the
+        // warning count in the counter — not a separate ok_with_warnings.
+        const warningsCollapsed =
+          rw.ok &&
+          rw.status === "ok" &&
+          rw.warnings > 0 &&
+          rw.errors === 0;
+        // Fatal check: the after-line-breaking throw escapes the parser ->
+        // status:"fatal", recycle:true, no pages.  And the SAME worker must
+        // still render cleanly afterward (r5 ok, byte-identical to r1) — the
+        // warm build survives ly:exit, so recycle is conservative.
+        const fatalReported =
+          !rf.ok && rf.status === "fatal" && rf.recycle === true;
+        const reusedAfterFatal = r5.ok && r5.svg === r1.svg;
         const multipage =
           rp.ok && rp.pages.length > 1 && rp.svg === rp.pages.join("\n");
         const midiOk =
@@ -93,23 +137,28 @@
           recovered &&
           anchors === 4 &&
           rd.ok &&
+          warningsCollapsed &&
           multipage &&
           midiOk &&
-          noStaleMidi;
+          noStaleMidi &&
+          fatalReported &&
+          reusedAfterFatal;
 
         if (r1.ok) document.getElementById("score").innerHTML = r1.svg;
         log(
           `LILY WARM: ${ok ? "PASS" : "FAIL"}` +
             ` warmup_ms=${warmupMs} warm1_ms=${r1.ms} warm2_ms=${r2.ms}` +
             ` medium_ms=${rm.ms} after_error_ms=${r3.ms}` +
-            ` dynamics_ms=${rd.ms} multipage_ms=${rp.ms}` +
-            ` stable=${stable} recovered=${recovered} anchors=${anchors}` +
-            ` dynamics=${rd.ok} pages=${rp.pages ? rp.pages.length : 0}` +
+            ` dynamics_ms=${rd.ms} warn_ms=${rw.ms} multipage_ms=${rp.ms}` +
+            ` fatal_ms=${rf.ms} stable=${stable} recovered=${recovered}` +
+            ` anchors=${anchors} dynamics=${rd.ok} warn=${rw.status}/${rw.warnings}` +
+            ` fatal=${rf.status}/${rf.recycle}/${r5.ok} pages=${rp.pages ? rp.pages.length : 0}` +
             ` midi=${midiOk} no_stale=${noStaleMidi}` +
             (ok
               ? ""
               : ` [r1=${r1.status} r2=${r2.status} rm=${rm.status}` +
-                ` rb=${rb.status} r3=${r3.status} rd=${rd.status} rp=${rp.status}]`),
+                ` rb=${rb.status} r3=${r3.status} rd=${rd.status}` +
+                ` rw=${rw.status} rp=${rp.status} rf=${rf.status} r5=${r5.status}]`),
         );
       })
       .catch((e) => log("LILY WARM: FAIL " + (e && e.message)));

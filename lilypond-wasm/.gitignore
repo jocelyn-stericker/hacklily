@@ -33,6 +33,10 @@ host-headers/
 install/
 wasm-install/
 work/
+dist/
+
+# regression-cairo-svg.py output (per-run SVG output + per-file logs + jsonl)
+regression-results/
 
 # build logs
 *.log
