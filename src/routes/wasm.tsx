@@ -8,7 +8,7 @@ import {
   hacklilyBeforeLoad as beforeLoad,
   useHacklilyAppProps,
   validateHacklilySearch as validateSearch,
-} from "#/lib/hacklilyRoute";
+} from "#/components/hacklilyRoute";
 
 export const Route = createFileRoute("/wasm")({
   component: WasmApp,

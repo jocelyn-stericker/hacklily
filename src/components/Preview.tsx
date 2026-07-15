@@ -262,7 +262,15 @@ export default class Preview extends React.PureComponent<Props, State> {
           width={mode === MODE_BOTH ? "50%" : mode === MODE_VIEW ? "100%" : "0"}
         />
         {pendingPreviews > 0 && <div className={previewMaskStyle} />}
-        {error && <div className={cn(APP_STYLE.errorMask)}>{error}</div>}
+        {error && (
+          <div
+            className={cn(
+              "bg-black text-white absolute inset-y-0 left-[50%] p-4 text-center w-[50%]",
+            )}
+          >
+            {error}
+          </div>
+        )}
         <Logs
           logs={logs}
           loading={!logs || logs.length === 0 || pendingPreviews > 0}

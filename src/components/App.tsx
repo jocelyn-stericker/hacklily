@@ -1395,10 +1395,9 @@ export default class App extends React.PureComponent<Props, State> {
                 : "w-0",
           )}
         >
-          <div className={cn(APP_STYLE.sheetMusicError)}>
-            <TriangleAlert size="1em" /> Could not connect to server.
-            <br />
-            Trying again in {reconnectTimeout}
+          <div className={cn(APP_STYLE.sheetMusicError, "flex flex-col")}>
+            <TriangleAlert size="1em" className="self-center" /> Could not
+            connect to server. Trying again in {reconnectTimeout}
             &hellip;
           </div>
         </div>

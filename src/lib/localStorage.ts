@@ -44,6 +44,19 @@ export function markSongClean(song: string): void {
   invalidate();
 }
 
+export function getHideUnstableNotification(): boolean {
+  return localStorage.hideUnstableNotification || false;
+}
+
+export function setHideUnstableNotification(hide: boolean) {
+  if (hide) {
+    localStorage.hideUnstableNotification = true;
+  } else {
+    delete localStorage.hideUnstableNotification;
+  }
+  invalidate();
+}
+
 const listeners = new Set<() => void>();
 
 function invalidate(): void {
@@ -52,12 +65,12 @@ function invalidate(): void {
 }
 
 if (typeof window !== "undefined") {
-  window.addEventListener("storage", (e) => {
-    if (e.key.startsWith("dirtySong::")) invalidate();
+  window.addEventListener("storage", (_e) => {
+    invalidate();
   });
 }
 
-export function subscribeToDirtySongs(callback: () => void): () => void {
+export function subscribeToLocalStorage(callback: () => void): () => void {
   listeners.add(callback);
   return () => {
     listeners.delete(callback);
