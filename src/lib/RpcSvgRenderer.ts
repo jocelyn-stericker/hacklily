@@ -14,8 +14,6 @@ import type { RenderResult, SvgRenderer } from "./SvgRenderer";
  * socket beneath it) are owned by `App`.
  */
 export default class RpcSvgRenderer implements SvgRenderer {
-  readonly capabilities = { midi: true };
-
   constructor(private readonly rpc: RPCClient) {}
 
   async renderSvg(

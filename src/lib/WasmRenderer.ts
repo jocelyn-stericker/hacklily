@@ -48,6 +48,25 @@ interface QueuedJob {
   job: PendingJob;
 }
 
+// TOOD(jocelyn): sync with lily-worker.js
+type WorkerMessage =
+  | { type: "ready"; warmup_ms: number }
+  | { type: "log"; line: string }
+  | {
+      type: "result";
+      id: number;
+      ok: boolean;
+      status: string;
+      recycle?: boolean;
+      warnings: number;
+      errors: number;
+      svg: string | null;
+      pages: string[];
+      midi: Uint8Array | null;
+      logs: string[];
+      ms: number;
+    };
+
 /**
  * An `SvgRenderer` backed by lilypond-wasm running in a Web Worker.
  *
@@ -69,8 +88,6 @@ interface QueuedJob {
  * so <Preview>'s existing catch path works unchanged.
  */
 export default class WasmRenderer implements SvgRenderer {
-  readonly capabilities = { midi: false };
-
   private readonly workerURL: string;
   private readonly deadlineMs: number;
   private readonly onReady?: () => void;
@@ -182,7 +199,7 @@ export default class WasmRenderer implements SvgRenderer {
   }
 
   private handleMessage = (e: MessageEvent): void => {
-    const m: any = e.data;
+    const m: WorkerMessage = e.data;
     if (!m || typeof m.type !== "string") {
       return;
     }
@@ -208,7 +225,7 @@ export default class WasmRenderer implements SvgRenderer {
     this.handleCrash("worker error: " + (ev.message || "unknown"));
   };
 
-  private handleResult(m: any): void {
+  private handleResult(m: WorkerMessage & { type: "result" }): void {
     const job = this.inFlightJob;
     if (!job || m.id !== job.id) {
       // Result for an unknown/expired id (e.g. after a crash). Ignore.
@@ -222,7 +239,11 @@ export default class WasmRenderer implements SvgRenderer {
 
     const logs: string = Array.isArray(m.logs) ? m.logs.join("\n") : "";
     if (m.ok && typeof m.svg === "string") {
-      job.resolve({ files: [m.svg], logs, midi: undefined });
+      job.resolve({
+        files: [m.svg],
+        logs,
+        midi: btoa(Array.from(m.midi, (b) => String.fromCharCode(b)).join("")),
+      });
     } else {
       const status: string =
         typeof m.status === "string" && m.status ? m.status : "render failed";

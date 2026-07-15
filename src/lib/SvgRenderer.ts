@@ -29,13 +29,6 @@ export interface RenderResult {
  */
 export interface SvgRenderer {
   /**
-   * Whether this renderer can also produce MIDI alongside the SVG. The server
-   * renderer can; the wasm renderer cannot (yet). Lets consumers decide
-   * whether to offer MIDI export/playback.
-   */
-  readonly capabilities: { midi: boolean };
-
-  /**
    * Engrave `src` to SVG.
    *
    * `version` is the LilyPond version hint ("stable" | "unstable"), derived
