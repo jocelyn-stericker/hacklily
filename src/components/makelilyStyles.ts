@@ -5,8 +5,8 @@ const makelilyStyles = {
   help: "left-[15px] opacity-0 pointer-events-none absolute top-[22px] transition-opacity duration-500 ease-in-out z-[1]",
   helpVisible: "opacity-100 pointer-events-auto",
   insert:
-    "bg-[rgb(0,42,74)] border-[rgb(0,42,74)] border border-t-0 border-b border-l border-r rounded-b-[4px] text-white cursor-pointer text-[12px] h-[30px] w-full hover:bg-[rgb(26,68,100)] shadow-[transparent_0px_0px_4px_4px]",
-  lyPreview: "bg-[#f6f7f7] rounded-t-[4px] h-20 mb-0 overflow-scroll p-[15px]",
+    "bg-primary border border-t-0 border-b border-l border-r rounded-b-[4px] text-white cursor-pointer text-[12px] h-[30px] w-full hover:bg-[rgb(26,68,100)] shadow-[transparent_0px_0px_4px_4px]",
+  lyPreview: "bg-muted rounded-t-[4px] h-20 mb-0 overflow-scroll p-[15px]",
   outputOptions: "text-[12px] absolute right-[10px] top-[18px]",
   paletteSml: "text-[22px]",
   radioGroup: "ml-[15px]",

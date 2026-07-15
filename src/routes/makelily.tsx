@@ -74,7 +74,7 @@ function MakelilyRoute() {
 
   return (
     <div className="bg-[#1e1e1e] h-full w-full">
-      <div className="bg-white h-full absolute right-0 w-1/2" />
+      <div className="bg-background h-full absolute right-0 w-1/2" />
       <div className="bg-[#efefef] border-b border-black h-12.5 absolute top-0 w-full" />
       <div className="text-black font-mono left-5 absolute top-3.75 z-90000">
         Makelily sandbox.

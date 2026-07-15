@@ -10,7 +10,7 @@ export const APP_STYLE = {
   previewPendingMaskModeView: "left-0",
   sheetMusicError: "text-[#aeaeae] inline-block text-center align-middle",
   sheetMusicView:
-    "items-center bg-white border-0 absolute inset-y-0 right-0 flex justify-center overflow-hidden border-l boder-black",
+    "items-center bg-background border-0 absolute inset-y-0 right-0 flex justify-center overflow-hidden border-l boder-black",
   sheetMusicViewEdit: "left-[50%]",
   sheetMusicViewView: "left-0",
   urgentEditorNotification:
