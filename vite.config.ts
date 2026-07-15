@@ -15,16 +15,21 @@ import monacoEditorPlugin from "vite-plugin-monaco-editor-esm";
  * into git). In dev the files are streamed from node_modules; in build they
  * are copied into `dist/wasm/` so the deployed bundle is self-contained.
  *
+ * For local wasm development, set `LILYPOND_WASM_DIR` to a local build's
+ * dist (or its work/test/web-lily) — e.g.
+ *   LILYPOND_WASM_DIR=$PWD/lilypond-wasm/dist npm run dev
+ * — and the plugin serves from there instead of node_modules. Unset, it
+ * falls back to the published package, so CI/production are untouched.
+ *
  * The worker is a classic worker that does `importScripts('lilypond-web.js')`
  * with a relative URL, and emscripten's `locateFile` resolves `lilypond.wasm`
  * and `lilypond.data` against the worker's own URL — so all four files must
  * live in the same `/wasm/` directory.
  */
 function lilypondWasmPlugin(): Plugin {
-  const pkgDir = path.resolve(
-    __dirname,
-    "node_modules/@jocelyn-stericker/lilypond-wasm",
-  );
+  const pkgDir = process.env.LILYPOND_WASM_DIR
+    ? path.resolve(__dirname, process.env.LILYPOND_WASM_DIR)
+    : path.resolve(__dirname, "node_modules/@jocelyn-stericker/lilypond-wasm");
   const files = [
     "lily-worker.js",
     "lilypond-web.js",

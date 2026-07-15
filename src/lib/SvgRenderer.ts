@@ -12,6 +12,14 @@ export interface RenderResult {
   files: string[];
   logs: string;
   midi?: string;
+  /**
+   * Diagnostics counted by the renderer, when available (the wasm worker
+   * surfaces these; the server path leaves them undefined). Lets the caller
+   * tell a clean render from "success-with-warnings" / "success-with-errors"
+   * without re-parsing the logs.
+   */
+  warnings?: number;
+  errors?: number;
 }
 
 /**

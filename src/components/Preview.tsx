@@ -304,6 +304,8 @@ export default class Preview extends React.PureComponent<Props, State> {
       const files: string[] = result.files;
       const dirtyLogs = result.logs;
       const midi = result.midi || null;
+      const warnings = result.warnings ?? 0;
+      const errors = result.errors ?? 0;
 
       const logs: string = cleanLogs(dirtyLogs);
 
@@ -355,7 +357,20 @@ export default class Preview extends React.PureComponent<Props, State> {
       if (hasOutput) {
         track(`render/${version}`);
       }
-      this.props.onLogsObtained(logs, version);
+      if (hasOutput && (warnings > 0 || errors > 0)) {
+        // success-with-warnings / success-with-errors: the score engraved,
+        // but LilyPond emitted diagnostics. Surface a one-line summary at the
+        // top of the logs so the caller can see it wasn't a clean render.
+        const parts: string[] = [];
+        if (warnings > 0) parts.push(`${warnings} warning(s)`);
+        if (errors > 0) parts.push(`${errors} error(s)`);
+        this.props.onLogsObtained(
+          `[rendered with ${parts.join(", ")}]\n${logs}`,
+          version,
+        );
+      } else {
+        this.props.onLogsObtained(logs, version);
+      }
       if (midi !== this.previousMIDIData) {
         if (midi) {
           this.props.onMidiObtained(decodeArrayBuffer(midi.replace(/\s/g, "")));
