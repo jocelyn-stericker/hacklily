@@ -254,7 +254,7 @@ export default class ToolNoteEdit extends React.Component<
             "inline-flex",
           )}
         >
-          <Info size="1em" className="self-center mr-1" />
+          <Info size="1em" className="self-center mr-1 inline" />
           <span>
             {" "}
             Generate markup

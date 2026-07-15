@@ -63,12 +63,12 @@ export default class ModalLogin extends React.PureComponent<Props> {
           <DialogHeader>
             <DialogTitle>Sign in to continue</DialogTitle>
           </DialogHeader>
-          <div>
-            <p className="text-lg leading-relaxed">
-              <strong>
+          <div className="flex flex-col gap-2">
+            <p className="leading-relaxed">
+              <span className="font-bold">
                 Hacklily is the home for beautiful sheet music. It&apos;s 100%
                 free.
-              </strong>{" "}
+              </span>{" "}
               Sign in now to manage your sheet music library.
             </p>
             <p className="leading-relaxed">
@@ -80,6 +80,7 @@ export default class ModalLogin extends React.PureComponent<Props> {
               Hacklily. If you do not have a{" "}
               <a
                 href="https://help.github.com/articles/github-glossary/#repository"
+                className="underline cursor-pointer text-blue-500"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -88,13 +89,15 @@ export default class ModalLogin extends React.PureComponent<Props> {
               named <strong>sheet-music</strong>, Hacklily will create one.
             </p>
             <div className="mt-4 w-full text-center">
-              <a href={getOauthRedirect(csrf)}>
+              <a href={getOauthRedirect(csrf)} className="cursor-pointer">
                 <button className="bg-[#2a2a2a] bg-[url('./github.svg')] bg-[length:2em] bg-[position:1em] bg-no-repeat border-none rounded-[0.5em] text-white cursor-pointer text-[1em] h-[4em] leading-[1em] px-[2em] pl-[4em] no-underline transition-all duration-500 w-[262px] hover:bg-[#444444] active:bg-[#101010]">
                   Continue with GitHub
                 </button>
               </a>
             </div>
-            <p className={cn("text-muted-foreground", "mt-4 -mb-4")}>
+            <p
+              className={cn("text-muted-foreground", "mt-4 -mb-4 text-xs pb-4")}
+            >
               Only save songs you want to share. See the{" "}
               <a
                 href="privacy-statement.html"

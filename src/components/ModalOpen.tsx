@@ -84,14 +84,14 @@ class GitHubOpen extends React.Component<Props, GitHubState> {
                 <DropdownMenuTrigger
                   render={<Button variant="ghost" size="icon-sm" />}
                 >
-                  <Ellipsis size="1em" />
+                  <Ellipsis size="1em" className="inline" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem
                     data-song={`${auth.repo}/${song.path}`}
                     onClick={this.handleSongDeleteClick}
                   >
-                    <Trash size="1em" />
+                    <Trash size="1em" className="inline" />
                     Delete
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -127,7 +127,13 @@ class GitHubOpen extends React.Component<Props, GitHubState> {
           )}
         >
           <div>
-            <a onClick={onSignIn}>Sign in</a> to see your songs.
+            <a
+              className="underline cursor-pointer text-blue-500"
+              onClick={onSignIn}
+            >
+              Sign in
+            </a>{" "}
+            to see your songs.
           </div>
         </div>
       );

@@ -155,14 +155,14 @@ export default class Header extends React.PureComponent<Props> {
           variant={mode === MODE_VIEW ? "default" : "outline"}
           size="icon"
         >
-          <Eye size="1em" />
+          <Eye size="1em" className="inline" />
         </Button>
         <Button
           onClick={this.handleSetEdit}
           variant={mode === MODE_EDIT ? "default" : "outline"}
           size="icon"
         >
-          <PenLine size="1em" />
+          <PenLine size="1em" className="inline" />
         </Button>
       </React.Fragment>
     );
@@ -173,7 +173,11 @@ export default class Header extends React.PureComponent<Props> {
         variant="outline"
         disabled={!midi}
       >
-        {playing ? <Pause size="1em" /> : <Play size="1em" />}
+        {playing ? (
+          <Pause size="1em" className="inline" />
+        ) : (
+          <Play size="1em" className="inline" />
+        )}
         {playing ? "Pause" : "Play"}
       </Button>
     );
@@ -210,9 +214,9 @@ export default class Header extends React.PureComponent<Props> {
           <ButtonGroup>
             <DropdownMenu>
               <DropdownMenuTrigger render={<Button variant="outline" />}>
-                <FileIcon size="1em" />
+                <FileIcon size="1em" className="inline" />
                 {windowWidth >= MIN_REASONABLE_WIDTH && <span>File</span>}
-                <ChevronDown size="1em" />
+                <ChevronDown size="1em" className="inline" />
               </DropdownMenuTrigger>
               <DropdownMenuContent className="min-w-48">
                 <FileMenu
@@ -240,9 +244,9 @@ export default class Header extends React.PureComponent<Props> {
             {windowWidth >= MIN_BOTH_WIDTH && (
               <DropdownMenu>
                 <DropdownMenuTrigger render={<Button variant="outline" />}>
-                  <PenLine size="1em" />
+                  <PenLine size="1em" className="inline" />
                   Insert
-                  <ChevronDown size="1em" />
+                  <ChevronDown size="1em" className="inline" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="min-w-48">
                   <DropdownMenuItem onClick={this.handleShowClef}>
@@ -255,7 +259,7 @@ export default class Header extends React.PureComponent<Props> {
                     Time Signature&hellip;
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={this.handleShowNotes}>
-                    <Music size="1em" />
+                    <Music size="1em" className="inline" />
                     Notes&hellip;
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -400,7 +404,7 @@ export default class Header extends React.PureComponent<Props> {
           size="icon"
           onClick={this.handleRewind}
         >
-          <Rewind size="1em" />
+          <Rewind size="1em" className="inline" />
         </Button>
         <Button
           title={playing ? "Pause" : "Play"}
@@ -408,7 +412,11 @@ export default class Header extends React.PureComponent<Props> {
           size="icon"
           onClick={playing ? this.handlePause : this.handlePlay}
         >
-          {playing ? <Pause size="1em" /> : <Play size="1em" />}
+          {playing ? (
+            <Pause size="1em" className="inline" />
+          ) : (
+            <Play size="1em" className="inline" />
+          )}
         </Button>
         {windowWidth >= MIN_REASONABLE_WIDTH && (
           <Button
@@ -425,7 +433,7 @@ export default class Header extends React.PureComponent<Props> {
           title="Fast-forward"
           onClick={this.handleFastForward}
         >
-          <FastForward size="1em" />
+          <FastForward size="1em" className="inline" />
         </Button>
       </React.Fragment>
     );

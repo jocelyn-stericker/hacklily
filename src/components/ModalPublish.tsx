@@ -68,7 +68,8 @@ class ModalPublish extends React.PureComponent<Props, State> {
       disabled = true;
       error = (
         <span className={cn("text-red-700 flex-1 self-center")}>
-          <TriangleAlert size="1em" /> Please enter a filename.
+          <TriangleAlert size="1em" className="inline" /> Please enter a
+          filename.
         </span>
       );
     } else if (
@@ -78,7 +79,8 @@ class ModalPublish extends React.PureComponent<Props, State> {
       disabled = true;
       error = (
         <span className={cn("text-red-700 flex-1 self-center")}>
-          <TriangleAlert size="1em" /> That filename is taken.
+          <TriangleAlert size="1em" className="inline" /> That filename is
+          taken.
         </span>
       );
     } else if (invitationRequired) {
@@ -89,6 +91,7 @@ class ModalPublish extends React.PureComponent<Props, State> {
             href={`https://github.com/${auth.repo}/invitations`}
             target="_blank"
             rel="noreferrer noopener"
+            className="underline cursor-pointer text-blue-500"
           >
             enable write access
           </a>{" "}
@@ -111,6 +114,7 @@ class ModalPublish extends React.PureComponent<Props, State> {
                   href={`https://github.com/${auth.repo}`}
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="underline cursor-pointer text-blue-500"
                 >
                   {`${auth.repo}`}
                 </a>
@@ -140,7 +144,7 @@ class ModalPublish extends React.PureComponent<Props, State> {
                 disabled={disabled}
                 variant="default"
               >
-                <Save size="1em" />
+                <Save size="1em" className="inline" />
                 Save
               </Button>
             </div>

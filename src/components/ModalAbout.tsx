@@ -31,7 +31,7 @@ const ModalAbout: React.FC<Props> = React.memo(function ModalAbout(props) {
             Hacklily is an online sheet-music editor and publishing tool. It is
             powered by{" "}
             <a
-              className="underline"
+              className="underline cursor-pointer text-blue-500"
               href="http://lilypond.org/"
               target="_blank"
               rel="noopener noreferrer"
@@ -40,7 +40,7 @@ const ModalAbout: React.FC<Props> = React.memo(function ModalAbout(props) {
             </a>
             . New to LilyPond? Take a look at the{" "}
             <a
-              className="underline"
+              className="underline cursor-pointer text-blue-500"
               href={`http://lilypond.org/doc/v${
                 process.env.REACT_APP_STABLE_LILYPOND_VERSION?.split(".")
                   .slice(0, 2)
@@ -56,7 +56,7 @@ const ModalAbout: React.FC<Props> = React.memo(function ModalAbout(props) {
           <p>
             You can view Hacklily&apos;s source and contribute code on{" "}
             <a
-              className="underline"
+              className="underline cursor-pointer text-blue-500"
               href="https://codeberg.org/jocelyn-stericker/hacklily"
               target="_blank"
               rel="noopener noreferrer"
@@ -68,7 +68,7 @@ const ModalAbout: React.FC<Props> = React.memo(function ModalAbout(props) {
           <p>
             Hacklily counts anonymous, cookieless usage stats with{" "}
             <a
-              className="underline"
+              className="underline cursor-pointer text-blue-500"
               href="https://www.goatcounter.com"
               target="_blank"
               rel="noopener noreferrer"
@@ -80,7 +80,7 @@ const ModalAbout: React.FC<Props> = React.memo(function ModalAbout(props) {
             <a
               href="https://stats.hacklily.org"
               target="_blank"
-              className="underline"
+              className="underline cursor-pointer text-blue-500"
               rel="noopener noreferrer"
             >
               stats.hacklily.org
@@ -95,7 +95,7 @@ const ModalAbout: React.FC<Props> = React.memo(function ModalAbout(props) {
             <p>
               This project is{" "}
               <a
-                className="underline"
+                className="underline cursor-pointer text-blue-500"
                 href="https://www.fsf.org/about/what-is-free-software"
               >
                 free software
@@ -110,7 +110,7 @@ const ModalAbout: React.FC<Props> = React.memo(function ModalAbout(props) {
             </p>
             <p>
               <a
-                className="underline"
+                className="underline cursor-pointer text-blue-500"
                 href="https://www.gnu.org/licenses/agpl-3.0.html"
               >
                 Read the GNU Affero General Public License version 3.
@@ -124,7 +124,10 @@ const ModalAbout: React.FC<Props> = React.memo(function ModalAbout(props) {
             </p>
             <p>
               See{" "}
-              <a className="underline" href="privacy-statement.html">
+              <a
+                className="underline cursor-pointer text-blue-500"
+                href="privacy-statement.html"
+              >
                 privacy statement
               </a>
               .
@@ -132,7 +135,7 @@ const ModalAbout: React.FC<Props> = React.memo(function ModalAbout(props) {
             <p>
               &copy; Copyright{" "}
               <a
-                className="underline"
+                className="underline cursor-pointer text-blue-500"
                 href="https://nettek.ca"
                 target="_blank"
                 rel="noopener noreferrer"

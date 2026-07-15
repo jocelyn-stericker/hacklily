@@ -1315,8 +1315,8 @@ export default class App extends React.PureComponent<Props, State> {
           <div className={cn(APP_STYLE.sheetMusicError)}>
             {wasmError ? (
               <>
-                <TriangleAlert size="1em" /> LilyPond worker crashed (
-                {wasmError}); restarting&hellip;
+                <TriangleAlert size="1em" className="inline" /> LilyPond worker
+                crashed ({wasmError}); restarting&hellip;
               </>
             ) : (
               <>Booting LilyPond&hellip;</>

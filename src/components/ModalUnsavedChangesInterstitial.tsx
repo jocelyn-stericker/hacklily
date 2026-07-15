@@ -53,11 +53,11 @@ const ModalUnsavedChangesInterstitial: React.FC<Props> = React.memo(
                 Cancel
               </Button>
               <Button variant="destructive" onClick={props.discardChanges}>
-                <Trash size="1em" />
+                <Trash size="1em" className="inline" />
                 Discard changes
               </Button>
               <Button variant="default" onClick={props.save}>
-                <Save size="1em" />
+                <Save size="1em" className="inline" />
                 Save
               </Button>
             </div>

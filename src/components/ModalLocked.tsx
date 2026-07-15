@@ -36,11 +36,17 @@ const ModalLocked: React.FC = React.memo(function ModalLocked() {
         <div>
           This song was opened in another tab. You can only edit in one tab at
           once. If you have closed the other tab, you may{" "}
-          <a onClick={() => window.location.reload()}>resume editing here</a>.
+          <a
+            onClick={() => window.location.reload()}
+            className="underline cursor-pointer text-blue-500"
+          >
+            resume editing here
+          </a>
+          .
         </div>
         <DialogFooter>
           <Button onClick={() => window.location.reload()} variant="default">
-            <RefreshCw size="1em" />
+            <RefreshCw size="1em" className="inline" />
             Reload
           </Button>
         </DialogFooter>

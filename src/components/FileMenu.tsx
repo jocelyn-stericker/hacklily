@@ -72,7 +72,7 @@ const FileMenu: React.FC<Props> = React.memo(function FileMenu(props) {
   if (auth) {
     signOut = (
       <DropdownMenuItem onClick={onSignOut}>
-        <LogOut size="1em" />
+        <LogOut size="1em" className="inline" />
         Sign out
       </DropdownMenuItem>
     );
@@ -103,42 +103,42 @@ const FileMenu: React.FC<Props> = React.memo(function FileMenu(props) {
   return (
     <>
       <DropdownMenuItem onClick={onShowNew} disabled={!canCreateNew}>
-        <CirclePlus size="1em" />
+        <CirclePlus size="1em" className="inline" />
         New song
       </DropdownMenuItem>
       <DropdownMenuSeparator />
       <DropdownMenuItem onClick={onShowOpen}>
-        <FolderOpen size="1em" />
+        <FolderOpen size="1em" className="inline" />
         Open&hellip;
       </DropdownMenuItem>
       <DropdownMenuItem onClick={() => window.open("/musicxml2ly", "_self")}>
-        <Import size="1em" />
+        <Import size="1em" className="inline" />
         Import MusicXML&hellip;
       </DropdownMenuItem>
       <DropdownMenuItem onClick={onShowPublish} disabled={!canSave}>
-        <Save size="1em" />
+        <Save size="1em" className="inline" />
         Save
       </DropdownMenuItem>
       <DropdownMenuItem onClick={onShowClone} disabled={!canSaveAs}>
-        <Copy size="1em" />
+        <Copy size="1em" className="inline" />
         Save as&hellip;
       </DropdownMenuItem>
       <DropdownMenuSub disabled={!canExport}>
         <DropdownMenuSubTrigger>
-          <Download size="1em" />
+          <Download size="1em" className="inline" />
           Export
         </DropdownMenuSubTrigger>
         <DropdownMenuSubContent>
           <DropdownMenuItem onClick={onExportLy} disabled={!canExport}>
-            <Code size="1em" />
+            <Code size="1em" className="inline" />
             LilyPond source
           </DropdownMenuItem>
           <DropdownMenuItem onClick={onExportPDF} disabled={!canExport}>
-            <FileText size="1em" />
+            <FileText size="1em" className="inline" />
             PDF
           </DropdownMenuItem>
           <DropdownMenuItem onClick={onExportMIDI} disabled={!canExport}>
-            <Music size="1em" />
+            <Music size="1em" className="inline" />
             MIDI
           </DropdownMenuItem>
           {songURL && <DropdownMenuSeparator />}
@@ -153,8 +153,12 @@ const FileMenu: React.FC<Props> = React.memo(function FileMenu(props) {
           )}
         </DropdownMenuSubContent>
       </DropdownMenuSub>
-      <DropdownMenuSeparator />
-      {signOut}
+      {signOut ? (
+        <>
+          <DropdownMenuSeparator />
+          {signOut}
+        </>
+      ) : null}
       <DropdownMenuSeparator />
       {tutorial}
       {about}

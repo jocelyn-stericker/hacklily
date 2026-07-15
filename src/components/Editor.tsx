@@ -264,8 +264,8 @@ export default class Editor extends React.PureComponent<Props> {
             className={cn(APP_STYLE.urgentEditorNotification)}
             style={{ width }}
           >
-            <Lock size="1em" /> to edit, save a copy of this song to your
-            library.
+            <Lock size="1em" className="inline" /> to edit, save a copy of this
+            song to your library.
           </div>
         );
       } else {
@@ -274,8 +274,8 @@ export default class Editor extends React.PureComponent<Props> {
             className={cn(APP_STYLE.urgentEditorNotification)}
             style={{ width }}
           >
-            <Lock size="1em" /> read-only &mdash; to edit, log in as the owner
-            or save a copy
+            <Lock size="1em" className="inline" /> read-only &mdash; to edit,
+            log in as the owner or save a copy
           </div>
         );
       }
