@@ -122,53 +122,8 @@ Forgejo supports GitHub Actions syntax, but compatibility with third-party marke
 
 ## Nix
 
-You can use [`just`](https://github.com/casey/just) and `nix` for a known-good setup.
-
-Common tasks are wrapped as `just` recipes (run `just` to list them):
-
-| Recipe         | Action                                           |
-| -------------- | ------------------------------------------------ |
-| `just install` | Install dependencies (via lockfile)              |
-| `just dev`     | Dev server on port 3000                          |
-| `just build`   | Production build into `dist/`                    |
-| `just test`    | Vitest unit suite                                |
-| `just e2e`     | Slow end-to-end tests                            |
-| `just check`   | Format + lint-fix                                |
-| `just ci`      | Full CI-equivalent gate (lint, test, e2e, build) |
-
-### Option 1: Devcontainer (VS Code / Codespaces)
-
-Open the repo in VS Code and **Reopen in Container**, or launch a GitHub
-Codespace. The container ([`.devcontainer/`](.devcontainer/)) builds from
-`nixos/nix`, auto-loads the flake devshell in every terminal via direnv, and runs
-`just install` on creation. Once it's up:
-
-```bash
-just dev
-```
-
-### Option 2: direnv + Nix (auto-loading, local)
-
-With [Nix](https://nixos.org/download) (flakes enabled) and
-[direnv](https://direnv.net) + [nix-direnv](https://github.com/nix-community/nix-direnv)
-installed, the devshell loads automatically on `cd` — the repo ships an `.envrc`
-(`use flake`):
-
-```bash
-direnv allow      # one time, trusts the .envrc
-just install
-just dev
-```
-
-### Option 3: Plain Nix (no direnv)
-
-```bash
-nix develop           # enter the devshell (Node 22 + just)
-just install
-just dev
-```
-
-Or run a single command without entering the shell: `nix develop -c just ci`.
+You can, but do not need to, use [`just`](https://github.com/casey/just) and `nix` for development.
+Common tasks are wrapped as `just` recipes (run `just` to list them). You can use VS Code / Codespaces to open a devcontainer, use direnv + Nix, or simply `nix develop`.
 
 ## Contributing
 
