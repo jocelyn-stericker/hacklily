@@ -17,16 +17,16 @@ jobs:
         run: |
           docker build --load \
             -t hacklily-renderer \
-            -t codeberg.org/jocelyn-stericker/hacklily-renderer:latest \
-            -t codeberg.org/jocelyn-stericker/hacklily-renderer:0.0.${{ github.run_number }} \
+            -t slop.nettek.ca/jocelyn-stericker/hacklily-renderer:latest \
+            -t slop.nettek.ca/jocelyn-stericker/hacklily-renderer:0.0.${{ github.run_number }} \
             server/renderer
           docker images | grep hacklily-renderer
       - name: Build unstable renderer
         run: |
           docker build --load \
             -t hacklily-renderer-unstable \
-            -t codeberg.org/jocelyn-stericker/hacklily-renderer-unstable:latest \
-            -t codeberg.org/jocelyn-stericker/hacklily-renderer-unstable:0.0.${{ github.run_number }} \
+            -t slop.nettek.ca/jocelyn-stericker/hacklily-renderer-unstable:latest \
+            -t slop.nettek.ca/jocelyn-stericker/hacklily-renderer-unstable:0.0.${{ github.run_number }} \
             server/renderer-unstable
           docker images | grep hacklily-renderer-unstable
       # -----------------------------------------------------------------
@@ -48,27 +48,27 @@ jobs:
       #     crate. These only run if the tests passed.
       # -----------------------------------------------------------------
       - name: Login to Codeberg Container Registry
-        run: echo "${{ secrets.CODEBERG_PACKAGES_TOKEN }}" | docker login codeberg.org -u jocelyn-stericker --password-stdin
+        run: echo "${{ secrets.SLOP_PACKAGES_TOKEN }}" | docker login slop.nettek.ca -u jocelyn-stericker --password-stdin
       - name: Push stable renderer
         run: |
-          docker push codeberg.org/jocelyn-stericker/hacklily-renderer:latest
-          docker push codeberg.org/jocelyn-stericker/hacklily-renderer:${{ github.ref_name }}
+          docker push slop.nettek.ca/jocelyn-stericker/hacklily-renderer:latest
+          docker push slop.nettek.ca/jocelyn-stericker/hacklily-renderer:${{ github.ref_name }}
       - name: Push unstable renderer
         run: |
-          docker push codeberg.org/jocelyn-stericker/hacklily-renderer-unstable:latest
-          docker push codeberg.org/jocelyn-stericker/hacklily-renderer-unstable:${{ github.ref_name }}
+          docker push slop.nettek.ca/jocelyn-stericker/hacklily-renderer-unstable:latest
+          docker push slop.nettek.ca/jocelyn-stericker/hacklily-renderer-unstable:${{ github.ref_name }}
       - name: Configure Codeberg Cargo registry
         working-directory: server/renderer-server
         run: |
           mkdir -p ~/.cargo
           {
             printf '[registries.codeberg]\n'
-            printf 'index = "sparse+https://codeberg.org/api/packages/jocelyn-stericker/cargo/"\n'
+            printf 'index = "sparse+https://slop.nettek.ca/api/packages/jocelyn-stericker/cargo/"\n'
           } >> ~/.cargo/config.toml
       - name: Publish renderer-server to Codeberg Cargo registry
         working-directory: server/renderer-server
         env:
-          CARGO_REGISTRIES_CODEBERG_TOKEN: "Bearer ${{ secrets.CODEBERG_PACKAGES_TOKEN }}"
+          CARGO_REGISTRIES_CODEBERG_TOKEN: "Bearer ${{ secrets.SLOP_PACKAGES_TOKEN }}"
         run: |
           VERSION="${GITHUB_REF_NAME#server-v}"
           sed -i -E "s/^version = \"[0-9.]+\"/version = \"${VERSION}\"/" Cargo.toml

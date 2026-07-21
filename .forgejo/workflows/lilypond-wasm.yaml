@@ -57,11 +57,11 @@ jobs:
           ./bootstrap.sh --browser
       - name: Publish to Codeberg npm registry
         env:
-          NPM_TOKEN: ${{ secrets.CODEBERG_PACKAGES_TOKEN }}
+          NPM_TOKEN: ${{ secrets.SLOP_PACKAGES_TOKEN }}
         working-directory: ./lilypond-wasm/dist
         run: |
           VERSION="${GITHUB_REF_NAME#wasm-v}"
           npm version "2.27.1-build.$VERSION" --no-git-tag-version
-          npm config set @jocelyn-stericker:registry https://codeberg.org/api/packages/jocelyn-stericker/npm/
-          npm config set -- '//codeberg.org/api/packages/jocelyn-stericker/npm/:_authToken' "${NPM_TOKEN}"
+          npm config set @jocelyn-stericker:registry https://slop.nettek.ca/api/packages/jocelyn-stericker/npm/
+          npm config set -- '//slop.nettek.ca/api/packages/jocelyn-stericker/npm/:_authToken' "${NPM_TOKEN}"
           npm publish --tag=alpha
