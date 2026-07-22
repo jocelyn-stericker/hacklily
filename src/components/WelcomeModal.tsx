@@ -121,18 +121,24 @@ export function WelcomeModal({
               >
                 GNU AGPL v3 or (at your option) any later version
               </a>{' '}
-              &mdash; source code &amp; feedback on{' '}
+              &mdash; source code on{' '}
               <a
-                href="https://codeberg.org/jocelyn-stericker/braat"
+                href="https://slop.nettek.ca/jocelyn-stericker/braat"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Codeberg
+                Forgejo
               </a>
               .
             </span>
             <span className="block">
-              Made by Jocelyn Stericker {'<'}jocelyn@nettek.ca{'>'}{' '}
+              Made by{' '}
+              <a href="https://nettek.ca" target="_blank">
+                Jocelyn Stericker
+              </a>
+              . I love receiving emails from people using Braat. My preferred
+              way of receiving suggestions, issues, or patches is by email,{' '}
+              {'<'}jocelyn@nettek.ca{'>'}.
             </span>
             <span className="block">
               Audio stays in your browser. Anonymous, cookieless usage stats are{' '}

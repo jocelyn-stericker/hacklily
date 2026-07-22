@@ -39,10 +39,10 @@
   "license": "AGPL-3.0-or-later",
   "repository": {
     "type": "git",
-    "url": "https://codeberg.org/jocelyn-stericker/espeak-phonemes.git"
+    "url": "https://slop.nettek.ca/jocelyn-stericker/espeak-phonemes.git"
   },
   "publishConfig": {
-    "registry": "https://codeberg.org/api/packages/jocelyn-stericker/npm/"
+    "registry": "https://slop.nettek.ca/api/packages/jocelyn-stericker/npm/"
   },
   "engines": {
     "node": ">=18"

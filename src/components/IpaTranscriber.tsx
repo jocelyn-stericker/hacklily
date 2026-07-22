@@ -201,17 +201,17 @@ export function IpaTranscriber() {
               >
                 GNU AGPL v3 or (at your option) any later version
               </a>
-              . Braat source code &amp; feedback on{' '}
+              . Braat source code on{' '}
               <a
-                href="https://codeberg.org/jocelyn-stericker/braat"
+                href="https://slop.nettek.ca/jocelyn-stericker/braat"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Codeberg
+                Forgejo
               </a>
               . My lightweight phoneme library/eSpeak NG node module is also{' '}
               <a
-                href="https://codeberg.org/jocelyn-stericker/braat/src/branch/main/vendor/espeak-phonemes"
+                href="https://slop.nettek.ca/jocelyn-stericker/braat/src/branch/main/vendor/espeak-phonemes"
                 target="_blank"
                 rel="noopener noreferrer"
               >

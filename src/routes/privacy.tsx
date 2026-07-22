@@ -194,11 +194,11 @@ function Privacy() {
               </a>
               ; source on{' '}
               <a
-                href="https://codeberg.org/jocelyn-stericker/braat"
+                href="https://slop.nettek.ca/jocelyn-stericker/braat"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Codeberg
+                Forgejo
               </a>
               . Questions? Email{' '}
               <a href="mailto:jocelyn@nettek.ca">jocelyn@nettek.ca</a>.

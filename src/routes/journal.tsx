@@ -747,7 +747,7 @@ function Journal() {
         <DropdownMenuItem
           render={
             <a
-              href="https://codeberg.org/jocelyn-stericker/braat"
+              href="https://slop.nettek.ca/jocelyn-stericker/braat"
               target="_blank"
               rel="noopener noreferrer"
               className="text-foreground!"

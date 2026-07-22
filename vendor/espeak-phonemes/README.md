@@ -19,11 +19,11 @@ to translation-only and adds a phonemes-only data mode, then cross-compiles a
 
 ## Install
 
-This package is published to a Forgejo (Codeberg) npm registry. Add the scope to
+This package is published to a Forgejo npm registry. Add the scope to
 your project's `.npmrc`:
 
 ```
-@jocelyn-stericker:registry=https://codeberg.org/api/packages/jocelyn-stericker/npm/
+@jocelyn-stericker:registry=https://slop.nettek.ca/api/packages/jocelyn-stericker/npm/
 ```
 
 Then install a pinned version (builds are not guaranteed compatible across versions):

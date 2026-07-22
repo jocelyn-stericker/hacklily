@@ -17,7 +17,7 @@ the uncompressed wasm size from 13MB to 1.4MB by installing and using this modul
 
 Add this to your project's `.npmrc`:
 ```
-@jocelyn-stericker:registry=https://codeberg.org/api/packages/jocelyn-stericker/npm/
+@jocelyn-stericker:registry=https://slop.nettek.ca/api/packages/jocelyn-stericker/npm/
 ```
 
 Install a pinned version (I do not guarantee compatibility from one build to another):

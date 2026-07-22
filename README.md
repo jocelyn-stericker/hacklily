@@ -116,7 +116,7 @@ anonymous counts. See https://www.arp242.net/dnt.html.
 
 ## CI/CD
 
-CI runs on Forgejo (Codeberg) via `.forgejo/workflows/ci.yaml`. The workflow lints, tests, builds, and deploys to Grebedoc on every push to `main`.
+CI runs on Forgejo (`.forgejo/workflows/ci.yaml`). The workflow lints, tests, builds, and deploys to Grebedoc on every push to `main`.
 
 Forgejo supports GitHub Actions syntax, but compatibility with third-party marketplace actions is not guaranteed. Prefer runner-agnostic shell steps where possible.
 
@@ -127,9 +127,17 @@ Common tasks are wrapped as `just` recipes (run `just` to list them). You can us
 
 ## Contributing
 
-Source and issue tracker: <https://codeberg.org/jocelyn-stericker/braat>
+The canonical source and issue tracker for Hacklily is my Forgejo instance, <https://slop.nettek.ca/jocelyn-stericker/braat>.
 
-Code, bug reports, or feedback from using it, are welcome.
+I love receiving emails from people using Braat. My preferred way of receiving suggestions, issues, or patches is by email, `jocelyn@nettek.ca`.
+
+You can also:
+ - send a PR or issue to the GitHub mirror: <https://github.com/jocelyn-stericker/braat>
+ - Reach out to me on Mastodon: [@emilyskidsister@hachyderm.io](https://hachyderm.io/@emilyskidsister)
+ - send me an email if you wish to get a login for my Forgejo instance
+ - comment on [this Reddit post](https://www.reddit.com/r/transvoice/comments/1uepl6z/i_built_a_free_opensource_voice_tool_that_doesnt/)
+
+Contributions must be licensed AGPLv3-or-later. Feel free to use AI, but please be mindful that I will need to read the patch.
 
 ## License
 

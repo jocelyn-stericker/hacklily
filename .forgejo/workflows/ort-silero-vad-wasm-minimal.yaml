@@ -46,7 +46,7 @@ jobs:
               --compile_no_warning_as_error \
               --parallel \
               --minimal_build
-      - name: Publish to Codeberg npm registry
+      - name: Publish to Forgejo npm registry
         working-directory: ./vendor/ort-silero-vad-wasm-minimal/
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
