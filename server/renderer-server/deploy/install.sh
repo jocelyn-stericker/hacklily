@@ -40,7 +40,7 @@ UNIT_DIR="${HOME}/.config/systemd/user"
 CARGO_DIR="${HOME}/.cargo"
 LOCAL_BIN="${HOME}/.local/bin"
 
-CARGO_REGISTRY=codeberg
+CARGO_REGISTRY=forgejo
 CARGO_INDEX="sparse+https://slop.nettek.ca/api/packages/jocelyn-stericker/cargo/"
 IMAGE_PREFIX=slop.nettek.ca/jocelyn-stericker
 

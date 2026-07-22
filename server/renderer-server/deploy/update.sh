@@ -16,7 +16,7 @@
 # repo: server/renderer-server/deploy/update.sh
 set -euo pipefail
 
-CARGO_REGISTRY=codeberg
+CARGO_REGISTRY=forgejo
 IMAGE_PREFIX=slop.nettek.ca/jocelyn-stericker
 SERVICE=hacklily-renderer.service
 
