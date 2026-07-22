@@ -48,13 +48,13 @@ A ready-to-use **systemd user service** (unit file, env template, install + upda
 
 ## Status
 
-Hacklily is stable and live at <https://www.hacklily.org>. The renderer is fully on the Rust renderer server, which now serves the frontend directly (the legacy Qt5 coordinator has been retired).
+Hacklily is stable and live at <https://www.hacklily.org>.
 
 ## Contributing
 
 The source and issue tracker for Hacklily is my Forgejo instance, <https://slop.nettek.ca/jocelyn-stericker/hacklily>.
 
-I love receiving emails from people using Hacklily. My prefered way of receiving issues or patches is `jocelyn@nettek.ca`.
+I love receiving emails from people using Hacklily. My preferred way of receiving suggestions, issues, or patches is by email, `jocelyn@nettek.ca`.
 
 You can also:
  - send a PR or issue to the GitHub mirror: <https://github.com/jocelyn-stericker/hacklily>
