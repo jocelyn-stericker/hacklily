@@ -15,18 +15,20 @@ jobs:
       # -----------------------------------------------------------------
       - name: Build stable renderer
         run: |
+          VERSION="${GITHUB_REF_NAME#server-v}"
           docker build --load \
             -t hacklily-renderer \
             -t slop.nettek.ca/jocelyn-stericker/hacklily-renderer:latest \
-            -t slop.nettek.ca/jocelyn-stericker/hacklily-renderer:0.0.${{ github.run_number }} \
+            -t slop.nettek.ca/jocelyn-stericker/hacklily-renderer:${VERSION} \
             server/renderer
           docker images | grep hacklily-renderer
       - name: Build unstable renderer
         run: |
+          VERSION="${GITHUB_REF_NAME#server-v}"
           docker build --load \
             -t hacklily-renderer-unstable \
             -t slop.nettek.ca/jocelyn-stericker/hacklily-renderer-unstable:latest \
-            -t slop.nettek.ca/jocelyn-stericker/hacklily-renderer-unstable:0.0.${{ github.run_number }} \
+            -t slop.nettek.ca/jocelyn-stericker/hacklily-renderer-unstable:${VERSION} \
             server/renderer-unstable
           docker images | grep hacklily-renderer-unstable
       # -----------------------------------------------------------------
