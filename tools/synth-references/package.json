@@ -4,7 +4,8 @@
   "type": "module",
   "description": "Offline generator for reference TTS recordings of the practice passages. Isolated from the root package so the root's onnxruntime-node override (which empties it for the browser build) does not break Node-side ONNX inference here.",
   "scripts": {
-    "synth": "tsx synth.ts"
+    "synth": "tsx synth.ts",
+    "measure": "tsx measure.ts"
   },
   "dependencies": {
     "kokoro-js": "^1.2.1"

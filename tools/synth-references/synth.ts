@@ -80,6 +80,31 @@ const VOICES: VoiceSpec[] = [
       { voice: 'am_onyx', weight: 0.5 },
     ],
   },
+  // --- en-gb (British) reference voices, chosen to match the en-us set's
+  // pitch/resonance spread as far as the en-gb voice pool allows. Native
+  // voices where one fits, plus the Fable × Isabella enby blend where no
+  // native does. Fable itself reads enby and is labelled as such. Measured via
+  // measure.ts on the rainbow passage; see referenceVoices.ts for the curated
+  // f0/f1. Known gaps vs en-us: the deep-dark masc end (am_onyx 84 Hz) is below
+  // the en-gb F0 floor (~100 Hz, bm_lewis), and the bright femme resonance
+  // (af_nova/af_heart ~600 Hz F1) is above the en-gb F1 ceiling (~551 Hz,
+  // bf_lily); en-gb has no counterpart for af_kore or af_heart.
+  { id: 'bm_lewis' }, //     ~100/485  -> am_onyx    (F0 floor)
+  { id: 'bm_george' }, //    ~137/397  -> am_michael (darker F1)
+  { id: 'bm_fable' }, //     ~110/477  enby (native)
+  { id: 'bf_emma' }, //      ~176/489  -> af_nova    (femme; F0 +24, darker F1)
+  { id: 'bf_lily' }, //      ~182/551  -> af_sarah   (brightest en-gb femme)
+  // Enby blend: Fable × Isabella at 0.6/0.4 (isabella 0.4). bf_isabella has
+  // the closest F1 to Fable of any en-gb voice, so a Fable-dominant blend keeps
+  // Fable's resonance (~477) while raising F0 into femme-enby range. Measured
+  // 147/473 on rainbow. (Emma blends were tried but produced unsettling artifacts)
+  {
+    id: 'isabella_fable', //  isabella 0.4 / fable 0.6  -> 147/473 enby
+    blend: [
+      { voice: 'bf_isabella', weight: 0.4 },
+      { voice: 'bm_fable', weight: 0.6 },
+    ],
+  },
 ]
 
 const MP3_BITRATE = '48k' // mono; ~7 KB/s.
@@ -349,6 +374,14 @@ async function main() {
 
       // Drop sentences that no longer exist, then prune their files.
       pEntry.segments.length = segments.length
+      // Drop manifest clip entries for voices no longer in VOICES (their
+      // .mp3s are removed by pruneStale below; keep the manifest in sync).
+      const keepIds = new Set(allVoiceIds)
+      for (const seg of pEntry.segments) {
+        for (const vid of Object.keys(seg.clips)) {
+          if (!keepIds.has(vid)) delete seg.clips[vid]
+        }
+      }
       pruneStale(passageDir, expected)
       persist()
     }

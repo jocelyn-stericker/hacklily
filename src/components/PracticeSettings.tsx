@@ -6,14 +6,21 @@ import {
   BookOpen,
   ChartColumn,
   ExternalLink,
+  Languages,
   Mic,
   Settings,
   Shuffle,
 } from 'lucide-react'
 
 import { journalEnabled } from '#/lib/journal/journalEnabled'
-import { REFERENCE_VOICES, getReferenceVoice } from '#/lib/referenceVoices'
-import type { ReferenceVoice } from '#/lib/referenceVoices'
+import {
+  ACCENTS,
+  ACCENT_NAMES,
+  accentOfVoice,
+  getReferenceVoice,
+  voicesForAccent,
+} from '#/lib/referenceVoices'
+import type { Accent, ReferenceVoice } from '#/lib/referenceVoices'
 import type { PracticeTextSize } from '#/lib/settings'
 
 import { Button } from './ui/button'
@@ -23,7 +30,12 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
 import { Slider } from './ui/slider'
@@ -75,12 +87,17 @@ export function PracticeSettings({
   const sizes: PracticeTextSize[] = ['md', 'lg', 'xl', '2xl']
   const idx = sizes.indexOf(textSize)
 
+  // Voice selection is accent-scoped: the slider indexes the current accent's
+  // voice list, and the accent toggle swaps to the voice at the same vibe
+  // position in the other accent.
+  const accent: Accent = accentOfVoice(referenceVoice)
+  const voices = voicesForAccent(accent)
   const voiceIdx = Math.max(
     0,
-    REFERENCE_VOICES.findIndex((v) => v.id === referenceVoice),
+    voices.findIndex((v) => v.id === referenceVoice),
   )
   const voice: ReferenceVoice =
-    REFERENCE_VOICES[voiceIdx] ?? getReferenceVoice(referenceVoice)
+    voices[voiceIdx] ?? getReferenceVoice(referenceVoice)
 
   return (
     <DropdownMenu>
@@ -123,6 +140,51 @@ export function PracticeSettings({
           />
         </div>
         <DropdownMenuSeparator />
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <Languages />
+            Language
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent className="w-60">
+            <DropdownMenuRadioGroup
+              value={accent}
+              onValueChange={(value) => {
+                const a = value as Accent
+                if (a === accent) return
+                // Preserve the approximate position
+                const prevTarget = voicesForAccent(accent)
+                const target = voicesForAccent(a)
+                const next =
+                  target[
+                    Math.round(
+                      (voiceIdx / (prevTarget.length - 1)) *
+                        (target.length - 1),
+                    )
+                  ]
+                if (next) onReferenceVoiceChange(next.id)
+              }}
+            >
+              {ACCENTS.map((a) => (
+                <DropdownMenuRadioItem key={a} value={a}>
+                  {ACCENT_NAMES[a]}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+            <DropdownMenuSeparator />
+            <p className="px-1.5 py-1 text-[11px] leading-snug text-muted-foreground">
+              Interested in another language? Let me know! Send a list of
+              representative drills and passages to{' '}
+              <a
+                href="mailto:jocelyn@nettek.ca"
+                className="underline underline-offset-4 hover:text-foreground"
+              >
+                jocelyn@nettek.ca
+              </a>
+              .
+            </p>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+        <DropdownMenuSeparator />
         <div className="px-2 py-1.5">
           <div className="flex items-center justify-between pb-1">
             <span className="text-xs font-medium">Reference voice</span>
@@ -131,11 +193,11 @@ export function PracticeSettings({
           <Slider
             value={voiceIdx}
             onValueChange={(value) => {
-              const next = REFERENCE_VOICES[value as number]
+              const next = voices[value as number]
               if (next) onReferenceVoiceChange(next.id)
             }}
             min={0}
-            max={REFERENCE_VOICES.length - 1}
+            max={voices.length - 1}
             step={1}
             aria-label="Reference voice"
             className="mt-1"
