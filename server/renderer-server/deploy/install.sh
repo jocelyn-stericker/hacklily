@@ -2,10 +2,10 @@
 # install.sh — one-time setup for a Hacklily coordinator host.
 #
 # User-level (no root needed for these):
-#   1. Registers the Codeberg Cargo registry in ~/.cargo/config.toml
+#   1. Registers the Forgejo Cargo registry in ~/.cargo/config.toml
 #      (no token: the index is publicly readable).
 #   2. `cargo install`s the latest renderer_server into ~/.local/bin.
-#   3. Pulls the two renderer Docker images from the Codeberg
+#   3. Pulls the two renderer Docker images from the Forgejo
 #      Container Registry and retags them to the local names the
 #      service expects (anonymous pull, no `docker login`).
 #   4. Installs ~/.config/hacklily-renderer/env from env.example
@@ -20,7 +20,7 @@
 #      redirects everything else to https://hacklily.org. Also labels
 #      port 2000 for SELinux so nginx (httpd_t) may proxy to it.
 #
-# No Codeberg credentials are stored on this host. The only secrets are
+# No Forgejo credentials are stored on this host. The only secrets are
 # the GitHub OAuth values you put in the env file yourself, and the
 # Let's Encrypt account key (managed by certbot under /etc/letsencrypt).
 #
@@ -41,8 +41,8 @@ CARGO_DIR="${HOME}/.cargo"
 LOCAL_BIN="${HOME}/.local/bin"
 
 CARGO_REGISTRY=codeberg
-CARGO_INDEX="sparse+https://codeberg.org/api/packages/jocelyn-stericker/cargo/"
-IMAGE_PREFIX=codeberg.org/jocelyn-stericker
+CARGO_INDEX="sparse+https://slop.nettek.ca/api/packages/jocelyn-stericker/cargo/"
+IMAGE_PREFIX=slop.nettek.ca/jocelyn-stericker
 
 # --- args ---
 DOMAIN="render.hacklily.org"
@@ -82,7 +82,7 @@ if [ "$INSTALL_NGINX" -eq 1 ]; then
   EMAIL="${EMAIL:-$CERTBOT_EMAIL}"
 fi
 
-echo "==> Registering Codeberg Cargo registry in ${CARGO_DIR}/config.toml"
+echo "==> Registering Forgejo Cargo registry in ${CARGO_DIR}/config.toml"
 mkdir -p "$CARGO_DIR"
 touch "${CARGO_DIR}/config.toml"
 if grep -q 'registries.'"${CARGO_REGISTRY}" "${CARGO_DIR}/config.toml"; then
@@ -95,7 +95,7 @@ else
   echo "    added"
 fi
 
-echo "==> Installing renderer_server from Codeberg Cargo registry"
+echo "==> Installing renderer_server from Forgejo Cargo registry"
 cargo install --force --registry "$CARGO_REGISTRY" --root "${HOME}/.local" renderer_server
 
 echo "==> Pulling renderer Docker images and retagging locally"

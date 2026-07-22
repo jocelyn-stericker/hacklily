@@ -7,9 +7,9 @@
 #
 # Secrets and tunables live in ~/.config/hacklily-renderer/env
 # (see deploy/env.example); they are injected via EnvironmentFile=.
-# No Codeberg credentials are needed on this host: the Cargo crate
+# No Forgejo credentials are needed on this host: the Cargo crate
 # and the container images are pulled anonymously from the public
-# Codeberg registries (the owning account must remain public).
+# Forgejo registries (the owning account must remain public).
 #
 # Restarting the service never pulls anything. To update the crate
 # and images, run `hacklily-renderer-update` (installed by install.sh
@@ -18,7 +18,7 @@
 
 [Unit]
 Description=Hacklily renderer server (coordinator + local render pool)
-Documentation=https://codeberg.org/jocelyn-stericker/hacklily
+Documentation=https://slop.nettek.ca/jocelyn-stericker/hacklily
 # The user manager reaches default.target well after boot, so the
 # system docker daemon and networking are normally up already. The
 # ExecStartPre below additionally waits for docker to be reachable.

@@ -19,9 +19,9 @@ Files:
 
 ## No credentials on the host
 
-The Codeberg Cargo registry and the Codeberg Container Registry are
+The Forgejo Cargo registry and the Forgejo Container Registry are
 **publicly readable**, so neither `install.sh` nor `update.sh` stores a
-Codeberg token or runs `docker login`. Verified by probing the endpoints
+Forgejo token or runs `docker login`. Verified by probing the endpoints
 anonymously:
 
 - Cargo sparse index + `.crate` download → `HTTP 200` with no auth.
@@ -30,10 +30,10 @@ anonymously:
   performs that exchange automatically, and the manifest fetch succeeds
   (`HTTP 200`).
 
-The only prerequisite is that the owning Codeberg account
+The only prerequisite is that the owning Forgejo account
 (`jocelyn-stericker`) stays **public**. If it is ever made private,
 anonymous pulls will start returning `401` and you will need to
-`docker login codeberg.org` and add a `read:package` token to
+`docker login slop.nettek.ca` and add a `read:package` token to
 `~/.cargo/credentials.toml`. The only secrets that _must_ live on the
 host are the GitHub OAuth values in the `env` file.
 
@@ -270,7 +270,7 @@ is the one-liner. It:
 
 1. `cargo install`s the latest published crate (overwriting the old
    binary in place — the running process is unaffected until restart),
-2. `docker pull`s the latest images from Codeberg and retags them to the
+2. `docker pull`s the latest images from Forgejo and retags them to the
    local names the service uses,
 3. `systemctl --user restart`s the service.
 

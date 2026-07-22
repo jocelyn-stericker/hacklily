@@ -11,7 +11,7 @@ jobs:
       # (1) Build the renderer Docker images. Tag them both with the
       #     local names the test suite looks up (hacklily-renderer /
       #     hacklily-renderer-unstable, see tests/util.rs) and with the
-      #     Codeberg Container Registry tags we'll publish under.
+      #     Forgejo Container Registry tags we'll publish under.
       # -----------------------------------------------------------------
       - name: Build stable renderer
         run: |
@@ -47,7 +47,7 @@ jobs:
       # (3) Publish: push the renderer images and the renderer-server
       #     crate. These only run if the tests passed.
       # -----------------------------------------------------------------
-      - name: Login to Codeberg Container Registry
+      - name: Login to Forgejo Container Registry
         run: echo "${{ secrets.SLOP_PACKAGES_TOKEN }}" | docker login slop.nettek.ca -u jocelyn-stericker --password-stdin
       - name: Push stable renderer
         run: |
@@ -57,19 +57,19 @@ jobs:
         run: |
           docker push slop.nettek.ca/jocelyn-stericker/hacklily-renderer-unstable:latest
           docker push slop.nettek.ca/jocelyn-stericker/hacklily-renderer-unstable:${{ github.ref_name }}
-      - name: Configure Codeberg Cargo registry
+      - name: Configure Forgejo Cargo registry
         working-directory: server/renderer-server
         run: |
           mkdir -p ~/.cargo
           {
-            printf '[registries.codeberg]\n'
+            printf '[registries.forgejo]\n'
             printf 'index = "sparse+https://slop.nettek.ca/api/packages/jocelyn-stericker/cargo/"\n'
           } >> ~/.cargo/config.toml
-      - name: Publish renderer-server to Codeberg Cargo registry
+      - name: Publish renderer-server to Forgejo Cargo registry
         working-directory: server/renderer-server
         env:
-          CARGO_REGISTRIES_CODEBERG_TOKEN: "Bearer ${{ secrets.SLOP_PACKAGES_TOKEN }}"
+          CARGO_REGISTRIES_FORGEJO_TOKEN: "Bearer ${{ secrets.SLOP_PACKAGES_TOKEN }}"
         run: |
           VERSION="${GITHUB_REF_NAME#server-v}"
           sed -i -E "s/^version = \"[0-9.]+\"/version = \"${VERSION}\"/" Cargo.toml
-          cargo publish --registry codeberg --allow-dirty
+          cargo publish --registry forgejo --allow-dirty

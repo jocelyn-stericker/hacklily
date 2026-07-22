@@ -19,15 +19,8 @@ const ToolError: React.FC<MakelilyToolProps> = () => {
         </h3>
       </div>
       <div className={cn(makelilyStyles.section)}>
-        The tool you were using crashed, so it has been closed. Please{" "}
-        <a
-          href="https://codeberg.org/jocelyn-stericker/hacklily/issues"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          file an issue
-        </a>{" "}
-        so I can try fixing it.
+        The tool you were using crashed, so it has been closed. Please send an
+        email to `jocelyn@nettek.ca` so I can try fixing it.
       </div>
     </span>
   );

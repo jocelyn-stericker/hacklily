@@ -44,7 +44,7 @@ The coordinator also supports an optional **HTTP status endpoint** (`--http-stat
 
 Graceful shutdown: send the process **SIGTERM** (this is what systemd, k8s, and `docker stop` send). The coordinator drains in-flight renders and exits 0; because a single render can take up to the render timeout (~8s), set the supervisor's termination grace period to exceed that so in-flight user renders aren't cut off mid-deploy. (SIGINT / Ctrl-C does the same thing for interactive use.)
 
-A ready-to-use **systemd user service** (unit file, env template, install + update scripts, and docs) lives in [`server/renderer-server/deploy/`](server/renderer-server/deploy/). It runs the `serve` coordinator, restarts on crashes, pulls the published crate and renderer images from the public Codeberg registries (no credentials stored on the host), and updates with a single `hacklily-renderer-update` command that pulls the latest versions and restarts. See [`server/renderer-server/deploy/README.md`](server/renderer-server/deploy/README.md) for install and usage.
+A ready-to-use **systemd user service** (unit file, env template, install + update scripts, and docs) lives in [`server/renderer-server/deploy/`](server/renderer-server/deploy/). It runs the `serve` coordinator, restarts on crashes, pulls the published crate and renderer images from the public Forgejo registries (no credentials stored on the host), and updates with a single `hacklily-renderer-update` command that pulls the latest versions and restarts. See [`server/renderer-server/deploy/README.md`](server/renderer-server/deploy/README.md) for install and usage.
 
 ## Status
 
@@ -52,9 +52,16 @@ Hacklily is stable and live at <https://www.hacklily.org>. The renderer is fully
 
 ## Contributing
 
-Source and issue tracker: <https://codeberg.org/jocelyn-stericker/hacklily>
+The source and issue tracker for Hacklily is my Forgejo instance, <https://slop.nettek.ca/jocelyn-stericker/hacklily>.
 
-Contributions are welcome. Must be licensed AGPLv3-or-later.
+I love receiving emails from people using Hacklily. My prefered way of receiving issues or patches is `jocelyn@nettek.ca`.
+
+You can also:
+ - send a PR or issue to the GitHub mirror: <https://github.com/jocelyn-stericker/hacklily>
+ - Reach out to me on Mastodon: [@emilyskidsister@hachyderm.io](https://hachyderm.io/@emilyskidsister)
+ - send me an email if you wish to get a login for my Forgejo instance
+
+Contributions must be licensed AGPLv3-or-later. Feel free to use AI, but please be mindful that I will need to read the patch.
 
 ## License
 

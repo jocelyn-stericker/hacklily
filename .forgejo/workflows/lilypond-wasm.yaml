@@ -55,7 +55,7 @@ jobs:
           # including the warm-instance test (lily-warm.html).  Fails if
           # any render test fails.
           ./bootstrap.sh --browser
-      - name: Publish to Codeberg npm registry
+      - name: Publish to Forgejo npm registry
         env:
           NPM_TOKEN: ${{ secrets.SLOP_PACKAGES_TOKEN }}
         working-directory: ./lilypond-wasm/dist

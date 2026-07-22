@@ -3,7 +3,7 @@
 #
 # Pull the latest published renderer_server crate and renderer Docker
 # images, then restart the hacklily-renderer user service so it picks
-# them up. Safe to re-run. No credentials required: the Codeberg Cargo
+# them up. Safe to re-run. No credentials required: the Forgejo Cargo
 # and container registries are publicly readable (the owning account
 # must remain public).
 #
@@ -17,7 +17,7 @@
 set -euo pipefail
 
 CARGO_REGISTRY=codeberg
-IMAGE_PREFIX=codeberg.org/jocelyn-stericker
+IMAGE_PREFIX=slop.nettek.ca/jocelyn-stericker
 SERVICE=hacklily-renderer.service
 
 STABLE_REMOTE="${IMAGE_PREFIX}/hacklily-renderer:latest"
@@ -25,7 +25,7 @@ UNSTABLE_REMOTE="${IMAGE_PREFIX}/hacklily-renderer-unstable:latest"
 STABLE_LOCAL="hacklily-renderer:latest"
 UNSTABLE_LOCAL="hacklily-renderer-unstable:latest"
 
-echo "==> Installing latest renderer_server from Codeberg Cargo registry"
+echo "==> Installing latest renderer_server from Forgejo Cargo registry"
 # No --version: cargo resolves the highest version in the registry
 # index. --force overwrites an existing install. --root controls the
 # install location so the unit's ExecStart path stays stable.

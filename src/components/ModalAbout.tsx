@@ -57,11 +57,11 @@ const ModalAbout: React.FC<Props> = React.memo(function ModalAbout(props) {
             You can view Hacklily&apos;s source and contribute code on{" "}
             <a
               className="underline cursor-pointer text-blue-500"
-              href="https://codeberg.org/jocelyn-stericker/hacklily"
+              href="https://slop.nettek.ca/jocelyn-stericker/hacklily"
               target="_blank"
               rel="noopener noreferrer"
             >
-              Codeberg
+              Forgejo
             </a>
             .
           </p>
