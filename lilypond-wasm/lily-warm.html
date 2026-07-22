@@ -53,6 +53,10 @@
     const worker = new Worker("lily-worker.js");
     let nextId = 0;
     const pending = new Map();
+    // The worker reports one SVG string per page in `pages` (single page ->
+    // input.svg, multi-page -> input-1.svg, input-2.svg, ...).  Collapse them
+    // back to the concatenated blob the assertions below were written against.
+    const svgOf = (r) => (r.pages.length ? r.pages.join("\n") : "");
     const render = (src) =>
       new Promise((resolve, reject) => {
         const id = nextId++;
@@ -97,11 +101,11 @@
           r2.ok &&
           r3.ok &&
           r4.ok &&
-          r1.svg === r2.svg &&
-          r1.svg === r3.svg &&
-          r1.svg === r4.svg;
+          svgOf(r1) === svgOf(r2) &&
+          svgOf(r1) === svgOf(r3) &&
+          svgOf(r1) === svgOf(r4);
         const anchors = r1.ok
-          ? (r1.svg.match(/textedit:\/\//g) || []).length
+          ? (svgOf(r1).match(/textedit:\/\//g) || []).length
           : 0;
         const brokenLogged = rb.logs.some((l) => l.includes("error"));
         // Under the show-what-was-generated contract, a broken score that
@@ -120,9 +124,8 @@
         // warm build survives ly:exit, so recycle is conservative.
         const fatalReported =
           !rf.ok && rf.status === "fatal" && rf.recycle === true;
-        const reusedAfterFatal = r5.ok && r5.svg === r1.svg;
-        const multipage =
-          rp.ok && rp.pages.length > 1 && rp.svg === rp.pages.join("\n");
+        const reusedAfterFatal = r5.ok && svgOf(r5) === svgOf(r1);
+        const multipage = rp.ok && rp.pages.length > 1;
         const midiOk =
           rp.midi instanceof Uint8Array &&
           rp.midi.length > 4 &&
@@ -141,7 +144,7 @@
           fatalReported &&
           reusedAfterFatal;
 
-        if (r1.ok) document.getElementById("score").innerHTML = r1.svg;
+        if (r1.ok) document.getElementById("score").innerHTML = svgOf(r1);
         log(
           `LILY WARM: ${ok ? "PASS" : "FAIL"}` +
             ` warmup_ms=${warmupMs} warm1_ms=${r1.ms} warm2_ms=${r2.ms}` +
