@@ -132,10 +132,11 @@ The canonical source and issue tracker for Hacklily is my Forgejo instance, <htt
 I love receiving emails from people using Braat. My preferred way of receiving suggestions, issues, or patches is by email, `jocelyn@nettek.ca`.
 
 You can also:
- - send a PR or issue to the GitHub mirror: <https://github.com/jocelyn-stericker/braat>
- - Reach out to me on Mastodon: [@emilyskidsister@hachyderm.io](https://hachyderm.io/@emilyskidsister)
- - send me an email if you wish to get a login for my Forgejo instance
- - comment on [this Reddit post](https://www.reddit.com/r/transvoice/comments/1uepl6z/i_built_a_free_opensource_voice_tool_that_doesnt/)
+
+- send a PR or issue to the GitHub mirror: <https://github.com/jocelyn-stericker/braat>
+- Reach out to me on Mastodon: [@emilyskidsister@hachyderm.io](https://hachyderm.io/@emilyskidsister)
+- send me an email if you wish to get a login for my Forgejo instance
+- comment on [this Reddit post](https://www.reddit.com/r/transvoice/comments/1uepl6z/i_built_a_free_opensource_voice_tool_that_doesnt/)
 
 Contributions must be licensed AGPLv3-or-later. Feel free to use AI, but please be mindful that I will need to read the patch.
 
