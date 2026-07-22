@@ -22,7 +22,7 @@ export default defineConfig({
     silent: 'passed-only',
     // .direnv holds a Nix-store copy of the repo source (no node_modules), so
     // its duplicated *.test.ts files fail to resolve imports. Skip them.
-    exclude: [...configDefaults.exclude, '.direnv/**'],
+    exclude: [...configDefaults.exclude, '.direnv/**', 'vendor/**'],
     execArgv,
     coverage: {
       include: ['src/**/*.{ts,tsx}'],
