@@ -4,7 +4,7 @@ on:
       - "espeak-phonemes-v*.*.*"
 
 jobs:
-  build-publish:
+  build-publish-espeak-phonemes:
     runs-on: faith
     steps:
       - uses: actions/checkout@v5

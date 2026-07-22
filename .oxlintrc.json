@@ -1,6 +1,10 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["import", "typescript", "react"],
+  "plugins": [
+    "import",
+    "typescript",
+    "react"
+  ],
   "categories": {
     "correctness": "error"
   },
@@ -17,7 +21,8 @@
     "**/build/**",
     "**/vite.config.*.timestamp-*.*",
     "**/tools/synth-references/**",
-    "**/src/vendor/**"
+    "**/src/vendor/**",
+    "**/vendor/**"
   ],
   "jsPlugins": [
     {
@@ -31,7 +36,9 @@
   },
   "overrides": [
     {
-      "files": ["**/*.{js,ts,tsx}"],
+      "files": [
+        "**/*.{js,ts,tsx}"
+      ],
       "env": {
         "es2020": true,
         "browser": true
@@ -80,7 +87,10 @@
         "require-yield": "error",
         "use-isnan": "error",
         "valid-typeof": "error",
-        "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
+        "import/consistent-type-specifier-style": [
+          "error",
+          "prefer-top-level"
+        ],
         "import/first": "error",
         "import/no-commonjs": "error",
         "import/no-duplicates": "error",

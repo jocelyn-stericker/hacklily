@@ -11,6 +11,7 @@
     "pnpm-lock.yaml",
     "yarn.lock",
     "src/routeTree.gen.ts",
-    "src/vendor/**"
+    "src/vendor/**",
+    "vendor/**"
   ]
 }
