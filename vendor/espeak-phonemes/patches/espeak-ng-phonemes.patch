@@ -1,0 +1,927 @@
+diff --git a/cmake/config.cmake b/cmake/config.cmake
+index bed830d4..adf38cf3 100644
+--- a/cmake/config.cmake
++++ b/cmake/config.cmake
+@@ -7,6 +7,7 @@ check_symbol_exists(optreset "getopt.h;unistd.h" HAVE_DECL_OPTRESET)
+ check_include_file("sys/endian.h" HAVE_SYS_ENDIAN_H)
+ check_symbol_exists(iswblank "wctype.h" HAVE_ISWBLANK)
+ 
++option(USE_SYNTHESIS "Include speech synthesis support" ON)
+ option(USE_MBROLA "Use mbrola for speech synthesis" ${HAVE_MBROLA})
+ option(USE_LIBSONIC "Use libsonic for faster speech rates" ${HAVE_LIBSONIC})
+ option(USE_LIBPCAUDIO "Use libPcAudio for sound output" ${HAVE_LIBPCAUDIO})
+diff --git a/cmake/data.cmake b/cmake/data.cmake
+index 0b7c8a6a..5e28575d 100644
+--- a/cmake/data.cmake
++++ b/cmake/data.cmake
+@@ -1,27 +1,5 @@
+ list(APPEND _dict_compile_list
+-  ab af am an ar as az
+-  ba be bg bn bpy bs
+-  ca chr cmn crh cs cv cy
+-  da de
+-  el en eo es et eu
+-  fa fi fr
+-  ga gd gn grc gu
+-  hak haw he hi hr ht hu hy
+-  ia id io is it
+-  ja jbo
+-  ka kk kl kn kok ko ku ky
+-  la lb lfn lt lv
+-  mi mk ml mn mr ms mto mt my
+-  nci ne nl nog no
+-  om or
+-  pap pa piqd pl pt py
+-  qdb quc qu qya
+-  ro ru rup
+-  sd shn si sjn sk sl smj sq sr sv sw
+-  ta te ti th tk tn tr tt
+-  ug uk ur uz
+-  vi
+-  yue
++  en
+ )
+ 
+ list(APPEND _mbrola_lang_list
+diff --git a/phsource/phonemes b/phsource/phonemes
+index 283e7935..cecd572b 100644
+--- a/phsource/phonemes
++++ b/phsource/phonemes
+@@ -1666,232 +1666,11 @@ endphoneme
+ // These are grouped by extended table and table name
+ //*******************************************************************
+ 
+-// *** Tables extending base1 ***
+-
+-phonemetable consonants base1
+-include ph_consonants
+-
+-phonemetable base2 base1
+-include ph_base2
+-
+-phonemetable ab base
+-include ph_abkhaz
+-
+-phonemetable am base1
+-include ph_amhari
+-
+-phonemetable ar base1
+-include ph_arabic
+-
+-phonemetable ba base1
+-include ph_bashkir
+-
+-phonemetable cmn base1
+-include ph_cmn
+-
+-phonemetable crh base1
+-include ph_crimean_tatar
+-
+-phonemetable cy base1
+-include ph_welsh
+-
+-phonemetable da base1
+-include ph_danish
++// *** Tables extending en ***
+ 
+ phonemetable en base1
+ include ph_english
+ 
+-phonemetable eo base1
+-include ph_esperanto
+-
+-phonemetable et base1
+-include ph_estonian
+-
+-phonemetable fa base1
+-include ph_farsi
+-
+-phonemetable fi base1
+-include ph_finnish
+-
+-phonemetable fo base1
+-include ph_faroese
+-
+-phonemetable smj base1
+-include ph_lule_saami
+-
+-phonemetable fr base1
+-include ph_french
+-
+-phonemetable ga base1
+-include ph_irish
+-
+-phonemetable gn base1
+-include ph_guarani
+-
+-phonemetable hak base1
+-include ph_hakka
+-
+-phonemetable haw base1
+-include ph_hawaiian
+-
+-phonemetable he base1
+-
+-phonemetable hi_base base1
+-include ph_hindi_base
+-
+-phonemetable hy base1
+-include ph_armenian
+-
+-phonemetable hu base1
+-include ph_hungarian
+-
+-phonemetable is base1
+-include ph_icelandic
+-
+-phonemetable ja base1
+-include ph_japanese
+-
+-phonemetable ka base1
+-include ph_georgian
+-
+-phonemetable ky base1
+-include ph_kyrgyz
+-
+-phonemetable kl base1
+-include ph_greenlandic
+-
+-phonemetable ko base1
+-include ph_korean
+-
+-phonemetable la base1
+-include ph_latin
+-
+-phonemetable lb base1
+-include ph_luxembourgish
+-
+-phonemetable lt base1
+-include ph_lithuanian
+-
+-phonemetable lv base1
+-include ph_latvian
+-
+-phonemetable mn base1
+-include ph_mongolian
+-
+-phonemetable my base1
+-include ph_myanmar
+-
+-phonemetable mt base1
+-include ph_maltese
+-
+-phonemetable no base1
+-include ph_norwegian
+-
+-phonemetable om base1
+-include ph_oromo
+-
+-phonemetable pl base1
+-include ph_polish
+-
+-phonemetable prs base1
+-include ph_dari
+-
+-phonemetable qu base1
+-include ph_quechua
+-
+-phonemetable quc base1
+-
+-phonemetable ru base1
+-include ph_russian
+-
+-phonemetable shn base1
+-include ph_shan
+-
+-phonemetable sq base1
+-include ph_albanian
+-
+-phonemetable sv base1
+-include ph_swedish
+-
+-phonemetable sw base1
+-include ph_swahili
+-
+-phonemetable ti base1
+-include ph_tigrinya
+-
+-phonemetable tn base1
+-include ph_setswana
+-
+-phonemetable tt base1
+-include ph_tatar
+-
+-phonemetable uk base1
+-include ph_ukrainian
+-
+-phonemetable vi base1
+-include ph_vietnam
+-
+-phonemetable yue base1
+-include ph_yue
+-
+-// *** Tables extending base2 ***
+-
+-phonemetable be base2
+-include ph_belarusian
+-
+-phonemetable chr base2
+-include ph_cherokee
+-
+-phonemetable el base2
+-include ph_greek
+-
+-phonemetable es base2
+-include ph_spanish
+-
+-phonemetable eu base2
+-include ph_basque
+-
+-phonemetable grc base2
+-include ph_greek_ancient
+-
+-phonemetable id base2
+-include ph_indonesian
+-
+-phonemetable it base2
+-include ph_italian
+-
+-phonemetable ku base2
+-include ph_kurdish
+-
+-phonemetable mi base2
+-include ph_maori
+-
+-phonemetable mto base2
+-include ph_mixe_mto
+-
+-phonemetable nci base2
+-include ph_nahuatl
+-
+-phonemetable pt base2
+-include ph_pt_brazil
+-
+-phonemetable piqd base2
+-include ph_klingon
+-
+-phonemetable ro base2
+-include ph_romanian
+-
+-phonemetable rup base2
+-include ph_aromanian
+-
+-phonemetable tk base2
+-include ph_turkmen
+-
+-phonemetable tr base2
+-include ph_turkish
+-
+-// *** Tables extending en ***
+-
+ phonemetable en-n en
+ include ph_english_n
+ 
+@@ -1913,177 +1692,4 @@ include ph_english_wi
+ phonemetable en-wm en
+ include ph_english_wm
+ 
+-// *** Hidden dependencies ***
+-// Tables which include/import phonemes from other (in comment) tables
+-// TODO these may be needed to redesign
+-
+-phonemetable af base1 // form en
+-include ph_afrikaans
+-
+-phonemetable de base1 // from en-us
+-include ph_german
+-
+-phonemetable kk base1 // from sq
+-include ph_kazakh
+-
+-phonemetable nl base1 // from af
+-include ph_dutch
+-
+-phonemetable nso base1 // from af
+-include ph_northern-sotho
+-
+-// *** Tables extending other language tables ***
+-
+-phonemetable ia eo
+-include ph_interlingua
+-
+-phonemetable jbo eo
+-include ph_lojban
+-
+-phonemetable py eo
+-include ph_pyash
+-
+-phonemetable qya la
+-include ph_quenya
+-
+-phonemetable sjn la
+-include ph_sindarin
+-
+-phonemetable es-la es
+-include ph_spanish_la
+-
+-phonemetable ca es
+-include ph_catalan
+-
+-phonemetable ca-nw ca
+-include ph_catalan_nw
+-
+-phonemetable ca-va ca
+-include ph_catalan_va
+-
+-phonemetable ca-ba ca
+-include ph_catalan_ba
+-
+-phonemetable an es
+-include ph_aragon
+-
+-phonemetable ht fr
+-include ph_haitian
+-
+-phonemetable hi hi_base
+-include ph_hindi
+-
+-phonemetable gd base1 // hidden dependency, imports from hi
+-include ph_s_gaelic
+-
+-// hi_base
+-phonemetable ne hi_base
+-include ph_nepali
+-
+-phonemetable ur hi_base
+-include ph_urdu
+-
+-phonemetable pa hi_base
+-include ph_punjabi
+-
+-phonemetable ta hi_base
+-include ph_tamil
+-
+-phonemetable kn hi_base
+-include ph_kannada
+-
+-phonemetable ml hi_base
+-include ph_malayalam
+-
+-phonemetable gu hi_base
+-include ph_gujarati
+-
+-phonemetable mr hi_base
+-include ph_marathi
+-
+-phonemetable kok hi_base
+-include ph_konkani
+-
+-phonemetable te hi_base
+-include ph_telugu
+-
+-phonemetable si hi_base
+-include ph_sinhala
+-
+-phonemetable bn hi_base
+-include ph_bengali
+-
+-phonemetable as bn
+-include ph_assamese
+-
+-phonemetable or bn
+-include ph_oriya
+-
+-phonemetable bpy bn
+-include ph_manipuri
+-
+-phonemetable sk pl
+-include ph_slovak
+-
+-phonemetable bg pl
+-include ph_bulgarian
+-
+-phonemetable sl pl
+-include ph_slovenian
+-
+-phonemetable th shn
+-
+-phonemetable cs sk
+-include ph_czech
+-
+-phonemetable hr sk
+-include ph_croatian
+-
+-phonemetable mk hr
+-include ph_macedonian
+-
+-phonemetable sr hr
+-include ph_serbian
+-
+-phonemetable ru-lv ru
+-include ph_russian_lv
+-
+-phonemetable az tr
+-include ph_azerbaijani
+-
+-phonemetable cv tr
+-include ph_chuvash
+-
+-phonemetable ug tr
+-include ph_uyghur
+-
+-phonemetable pt-pt pt
+-include ph_portugal
+-
+-phonemetable vi-hue vi
+-include ph_vietnam_hue
+-
+-phonemetable vi-sgn vi
+-include ph_vietnam_sgn
+-
+-phonemetable sd ur
+-include ph_sindhi
+-
+-phonemetable nog kk
+-
+-phonemetable uz kk
+-include ph_uzbek
+-
+-phonemetable qdb en
+-include ph_langbelta
+-
+-phonemetable ms id
+-
+-phonemetable kaa kk
+-include ph_karakalpak
+-
+-phonemetable ps base1
+-include ph_pashto
+ 
+-phonemetable ab base
+-include ph_abkhaz
+diff --git a/src/libespeak-ng/CMakeLists.txt b/src/libespeak-ng/CMakeLists.txt
+index 53e0ae0c..911bf708 100644
+--- a/src/libespeak-ng/CMakeLists.txt
++++ b/src/libespeak-ng/CMakeLists.txt
+@@ -5,7 +5,7 @@ configure_file(config.h.in ${ESPEAK_CONFIG_H})
+ add_library(espeak-ng-config INTERFACE)
+ target_include_directories(espeak-ng-config INTERFACE ${ESPEAK_CONFIG_DIR})
+ 
+-add_library(espeak-ng
++set(espeak_ng_sources
+   common.c
+   mnemonics.c
+   error.c
+@@ -24,19 +24,30 @@ add_library(espeak-ng
+   readclause.c
+   setlengths.c
+   soundicon.c
+-  spect.c
+   ssml.c
+   synthdata.c
+-  synthesize.c
+   tr_languages.c
+   translate.c
+   translateword.c
+   voices.c
+-  wavegen.c
+   speech.c
++  synthesize.c
+ 
+   espeak_api.c
+ )
++
++if (USE_SYNTHESIS)
++  list(APPEND espeak_ng_sources
++    wavegen.c
++    spect.c
++  )
++else()
++  list(APPEND espeak_ng_sources
++    synth_stubs.c
++  )
++endif()
++
++add_library(espeak-ng ${espeak_ng_sources})
+ set_target_properties(
+   espeak-ng PROPERTIES
+   MACOSX_RPATH ON
+diff --git a/src/libespeak-ng/compiledata.c b/src/libespeak-ng/compiledata.c
+index fd3328c9..db409b81 100644
+--- a/src/libespeak-ng/compiledata.c
++++ b/src/libespeak-ng/compiledata.c
+@@ -406,6 +406,7 @@ typedef struct CompileContext {
+ 	NAMETAB *manifest;
+ 	int n_manifest;
+ 	char phsrc[sizeof(path_home)+40]; // Source: path to the 'phonemes' source file.
++	int phonemes_only; // 1 = write minimal stub spectra/WAV, no formant data
+ } CompileContext;
+ 
+ static void clean_context(CompileContext *ctx) {
+@@ -916,6 +917,9 @@ static espeak_ng_STATUS LoadSpect(CompileContext *ctx, const char *path, int con
+ 	SPECT_SEQ seq_out;
+ 	SPECT_SEQK seqk_out;
+ 
++	memset(&seq_out, 0, sizeof(seq_out));
++	memset(&seqk_out, 0, sizeof(seqk_out));
++
+ 	// create SpectSeq and import data
+ 	spectseq = SpectSeqCreate();
+ 	if (spectseq == NULL)
+@@ -989,62 +993,88 @@ static espeak_ng_STATUS LoadSpect(CompileContext *ctx, const char *path, int con
+ 			if (n_frames == (seq_out.n_frames-1))
+ 				fr_out->length = 0; // give last frame zero length
+ 
+-			// write: peak data
+ 			ctx->count_frames++;
+-			for (peak = 0; peak < 8; peak++) {
+-				if (peak < 7)
+-					fr_out->ffreq[peak] = fr->peaks[peak].pkfreq;
+-
+-				pkheight = spectseq->amplitude * fr->amp_adjust * fr->peaks[peak].pkheight;
+-				pkheight = pkheight/640000;
+-				if (pkheight > 255) pkheight = 255;
+-				fr_out->fheight[peak] = (int)pkheight;
+-
+-				if (peak < 6) {
+-					x =  fr->peaks[peak].pkwidth/4;
+-					if (x > 255) x = 255;
+-					fr_out->fwidth[peak] = x;
+-
+-					if (peak < 3) {
+-						x2 =  fr->peaks[peak].pkright/4;
+-						if (x2 > 255) x2 = 255;
+-						fr_out->fright[peak] = x2;
++
++			if (!ctx->phonemes_only) {
++				// write: peak data
++				for (peak = 0; peak < 8; peak++) {
++					if (peak < 7)
++						fr_out->ffreq[peak] = fr->peaks[peak].pkfreq;
++
++					pkheight = spectseq->amplitude * fr->amp_adjust * fr->peaks[peak].pkheight;
++					pkheight = pkheight/640000;
++					if (pkheight > 255) pkheight = 255;
++					fr_out->fheight[peak] = (int)pkheight;
++
++					if (peak < 6) {
++						x =  fr->peaks[peak].pkwidth/4;
++						if (x > 255) x = 255;
++						fr_out->fwidth[peak] = x;
++
++						if (peak < 3) {
++							x2 =  fr->peaks[peak].pkright/4;
++							if (x2 > 255) x2 = 255;
++							fr_out->fright[peak] = x2;
++						}
+ 					}
+-				}
+ 
+-				if (peak < 4) {
+-					x = fr->peaks[peak].klt_bw / 2;
+-					if (x > 255) x = 255;
+-					fr_out->bw[peak] = x;
++					if (peak < 4) {
++						x = fr->peaks[peak].klt_bw / 2;
++						if (x > 255) x = 255;
++						fr_out->bw[peak] = x;
++					}
+ 				}
+-			}
+ 
+-			for (ix = 0; ix < 5; ix++) {
+-				fr_out->klattp[ix] = fr->klatt_param[ix];
++				for (ix = 0; ix < 5; ix++) {
++					fr_out->klattp[ix] = fr->klatt_param[ix];
+ 
+-				fr_out->klattp[KLATT_FNZ] = fr->klatt_param[KLATT_FNZ] / 2;
+-			}
++					fr_out->klattp[KLATT_FNZ] = fr->klatt_param[KLATT_FNZ] / 2;
++				}
+ 
+-			if (klatt_flag) {
+-				// additional klatt parameters
+-				for (ix = 0; ix < 5; ix++)
+-					fr_out->klattp2[ix] = fr->klatt_param[ix+5];
++				if (klatt_flag) {
++					// additional klatt parameters
++					for (ix = 0; ix < 5; ix++)
++						fr_out->klattp2[ix] = fr->klatt_param[ix+5];
+ 
+-				for (peak = 0; peak < 7; peak++) {
+-					fr_out->klatt_ap[peak] = fr->peaks[peak].klt_ap;
++					for (peak = 0; peak < 7; peak++) {
++						fr_out->klatt_ap[peak] = fr->peaks[peak].klt_ap;
+ 
+-					x = fr->peaks[peak].klt_bp / 2;
+-					if (x > 255) x = 255;
+-					fr_out->klatt_bp[peak] = x;
++						x = fr->peaks[peak].klt_bp / 2;
++						if (x > 255) x = 255;
++						fr_out->klatt_bp[peak] = x;
++					}
++					fr_out->spare = 0;
+ 				}
+-				fr_out->spare = 0;
+-			}
+ 
+-			if (fr_out->bw[1] == 0) {
+-				fr_out->bw[0] = 89 / 2;
+-				fr_out->bw[1] = 90 / 2;
+-				fr_out->bw[2] = 140 / 2;
+-				fr_out->bw[3] = 260 / 2;
++				if (fr_out->bw[1] == 0) {
++					fr_out->bw[0] = 89 / 2;
++					fr_out->bw[1] = 90 / 2;
++					fr_out->bw[2] = 140 / 2;
++					fr_out->bw[3] = 260 / 2;
++				}
++			} else {
++				// phonemes-only mode: zero out formant data
++				for (peak = 0; peak < 7; peak++)
++					fr_out->ffreq[peak] = 0;
++				for (peak = 0; peak < 8; peak++)
++					fr_out->fheight[peak] = 0;
++				for (peak = 0; peak < 6; peak++)
++					fr_out->fwidth[peak] = 0;
++				for (peak = 0; peak < 3; peak++)
++					fr_out->fright[peak] = 0;
++				for (peak = 0; peak < 4; peak++)
++					fr_out->bw[peak] = 0;
++				for (ix = 0; ix < 5; ix++)
++					fr_out->klattp[ix] = 0;
++				if (klatt_flag) {
++					for (ix = 0; ix < 5; ix++)
++						fr_out->klattp2[ix] = 0;
++					for (peak = 0; peak < 7; peak++) {
++						fr_out->klatt_ap[peak] = 0;
++						fr_out->klatt_bp[peak] = 0;
++					}
++					fr_out->spare = 0;
++				}
+ 			}
+ 
+ 			n_frames++;
+@@ -1091,6 +1121,13 @@ static int LoadWavefile(CompileContext *ctx, FILE *f, const char *fname)
+ 	int sr1, sr2;
+ 	int scale_factor = 0;
+ 
++	if (ctx->phonemes_only) {
++		// phonemes-only mode: write a minimal WAV stub (just 4-byte length = 0)
++		displ = ftell(ctx->f_phdata);
++		Write4Bytes(ctx->f_phdata, 0);
++		return displ | 0x800000;
++	}
++
+ 	fseek(f, 24, SEEK_SET);
+ 	sr1 = Read4Bytes(f);
+ 	sr2 = Read4Bytes(f);
+@@ -1288,6 +1325,14 @@ static espeak_ng_STATUS LoadDataFile(CompileContext *ctx, const char *path, int
+ 	}
+ 
+ 	if (*addr == 0) {
++		if (ctx->phonemes_only) {
++			// phonemes-only mode: don't load any data files, write no data.
++			// All references point to offset 8 (just past the 8-byte header).
++			// The one SPECT_SEQ stub at offset 8 satisfies all lookups.
++			*addr = 8;
++			return ENS_OK;
++		}
++
+ 		char buf[sizeof(path_home)+150];
+ 		sprintf(buf, "%s/%s", ctx->phsrc, path);
+ 
+@@ -2362,6 +2407,10 @@ espeak_ng_CompilePhonemeDataPath(long rate,
+ 
+ 	ctx->error_count = 0;
+ 	ctx->f_errors = log;
++	ctx->phonemes_only = (getenv("ESPEAK_PHONEMES_ONLY") != NULL) ? 1 : 0;
++
++	if (ctx->phonemes_only)
++		fprintf(log, "PHONEMES-ONLY mode: writing minimal stub spectra/WAV\n");
+ 
+ 	strncpy0(ctx->current_fname, "phonemes", sizeof(ctx->current_fname));
+ 
+diff --git a/src/libespeak-ng/config.h.in b/src/libespeak-ng/config.h.in
+index 85a1aa05..f8eb366b 100644
+--- a/src/libespeak-ng/config.h.in
++++ b/src/libespeak-ng/config.h.in
+@@ -4,6 +4,7 @@
+ #cmakedefine01 HAVE_SYS_ENDIAN_H
+ #cmakedefine01 HAVE_ISWBLANK
+ 
++#cmakedefine01 USE_SYNTHESIS
+ #cmakedefine01 USE_ASYNC
+ #cmakedefine01 USE_KLATT
+ #cmakedefine01 USE_LIBPCAUDIO
+diff --git a/src/libespeak-ng/synth_stubs.c b/src/libespeak-ng/synth_stubs.c
+new file mode 100644
+index 00000000..08f7b54b
+--- /dev/null
++++ b/src/libespeak-ng/synth_stubs.c
+@@ -0,0 +1,163 @@
++/*
++ * Copyright (C) 2005 to 2013 by Jonathan Duddington
++ * email: jonsd@users.sourceforge.net
++ * Copyright (C) 2013-2017 Reece H. Dunn
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 3 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see: <http://www.gnu.org/licenses/>.
++ *
++ * Stub implementations for synthesis source files excluded from the
++ * phonemes-only build (USE_SYNTHESIS=0). These satisfy link-time
++ * references from translation code while performing no audio synthesis.
++ */
++
++#include "config.h"
++
++#include <stdbool.h>
++#include <stdint.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++
++#include <espeak-ng/espeak_ng.h>
++
++#include "synthesize.h"
++#include "voice.h"
++#include "spect.h"
++#include "wavegen.h"
++
++// wavegen.c stubs
++
++int embedded_value[N_EMBEDDED_VALUES];
++const int embedded_default[N_EMBEDDED_VALUES] = { 0, 50, espeakRATE_NORMAL, 100, 50, 0, 0, 0, espeakRATE_NORMAL, 0, 0, 0, 0, 0, 0 };
++
++int samplerate = 22050;
++unsigned char *out_ptr = NULL;
++unsigned char *out_end = NULL;
++
++intptr_t wcmdq[N_WCMDQ][4];
++int wcmdq_head = 0;
++int wcmdq_tail = 0;
++
++int echo_head = 0;
++int echo_tail = 0;
++int echo_amp = 0;
++short echo_buf[N_ECHO_BUF];
++
++void WavegenInit(int rate, int wavemult_fact)
++{
++	(void)rate;
++	(void)wavemult_fact;
++	samplerate = rate > 0 ? rate : 22050;
++}
++
++void WavegenFini(void)
++{
++}
++
++void InitBreath(void)
++{
++}
++
++void WavegenSetVoice(voice_t *v)
++{
++	(void)v;
++}
++
++void Write4Bytes(FILE *f, int value)
++{
++	int ix;
++	for (ix = 0; ix < 4; ix++) {
++		fputc(value & 0xff, f);
++		value = value >> 8;
++	}
++}
++
++int WavegenFill(void)
++{
++	return 0;
++}
++
++int WcmdqUsed(void)
++{
++	return 0;
++}
++
++void WcmdqStop(void)
++{
++}
++
++void WcmdqInc(void)
++{
++}
++
++int WcmdqFree(void)
++{
++	return 1;
++}
++
++int GetAmplitude(void)
++{
++	return 60;
++}
++
++void SetEmbedded(int control, int value)
++{
++	int command = control & 0x1f;
++	if (command < N_EMBEDDED_VALUES)
++		embedded_value[command] = value;
++}
++
++void SetPitch2(voice_t *voice, int pitch1, int pitch2, int *pitch_base, int *pitch_range)
++{
++	(void)voice;
++	(void)pitch1;
++	(void)pitch2;
++	(void)pitch_base;
++	(void)pitch_range;
++}
++
++// spect.c stubs
++
++float polint(float xa[], float ya[], int n, float x)
++{
++	(void)xa;
++	(void)ya;
++	(void)n;
++	(void)x;
++	return 0;
++}
++
++double GetFrameRms(SpectFrame *frame, int seq_amplitude)
++{
++	(void)frame;
++	(void)seq_amplitude;
++	return 0;
++}
++
++SpectSeq *SpectSeqCreate(void)
++{
++	return NULL;
++}
++
++void SpectSeqDestroy(SpectSeq *spect)
++{
++	(void)spect;
++}
++
++espeak_ng_STATUS LoadSpectSeq(SpectSeq *spect, const char *filename)
++{
++	(void)spect;
++	(void)filename;
++	return ENS_OK;
++}
+diff --git a/src/libespeak-ng/synthesize.c b/src/libespeak-ng/synthesize.c
+index 066ca9b4..a66fef49 100644
+--- a/src/libespeak-ng/synthesize.c
++++ b/src/libespeak-ng/synthesize.c
+@@ -1120,6 +1120,7 @@ extern espeak_ng_OUTPUT_HOOKS* output_hooks;
+ 
+ int Generate(PHONEME_LIST *phoneme_list, int *n_ph, bool resume)
+ {
++#if USE_SYNTHESIS
+ 	static int ix;
+ 	static int embedded_ix;
+ 	static int word_count;
+@@ -1531,6 +1532,13 @@ int Generate(PHONEME_LIST *phoneme_list, int *n_ph, bool resume)
+ 	}
+ 
+ 	return 0; // finished the phoneme list
++#else
++	(void)phoneme_list;
++	(void)n_ph;
++	(void)resume;
++	*n_ph = 0;
++	return 0;
++#endif
+ }
+ 
+ int SpeakNextClause(int control)
+diff --git a/src/wasm/wasm_wrapper.c b/src/wasm/wasm_wrapper.c
+new file mode 100644
+index 00000000..599910eb
+--- /dev/null
++++ b/src/wasm/wasm_wrapper.c
+@@ -0,0 +1,10 @@
++/*
++ * Minimal WASM entry point for the espeak-ng phonemes-only build.
++ * main() exists but INVOKE_RUN=0 prevents auto-execution; the
++ * caller sets up MEMFS, then calls _main() to initialize, or
++ * calls espeak_ng_InitializePath + espeak_ng_Initialize directly.
++ */
++int main(void)
++{
++	return 0;
++}

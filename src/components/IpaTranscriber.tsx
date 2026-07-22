@@ -211,7 +211,7 @@ export function IpaTranscriber() {
               </a>
               . My lightweight phoneme library/eSpeak NG node module is also{' '}
               <a
-                href="https://codeberg.org/jocelyn-stericker/espeak-phonemes"
+                href="https://codeberg.org/jocelyn-stericker/braat/src/branch/main/vendor/espeak-phonemes"
                 target="_blank"
                 rel="noopener noreferrer"
               >

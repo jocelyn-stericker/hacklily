@@ -1,0 +1,71 @@
+on:
+  push:
+    tags:
+      - "espeak-phonemes-v*.*.*"
+
+jobs:
+  build-publish:
+    runs-on: faith
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            git \
+            cmake \
+            ninja-build \
+            build-essential \
+            python3 \
+            nodejs \
+            npm \
+            xz-utils
+          rm -rf /var/lib/apt/lists/*
+
+      - name: Set up Emscripten
+        run: |
+          git clone --depth 1 https://github.com/emscripten-core/emsdk.git "$HOME/emsdk"
+          "$HOME/emsdk/emsdk" install latest
+          "$HOME/emsdk/emsdk" activate latest
+
+      - name: Build (patch espeak-ng, native data, wasm, TypeScript)
+        working-directory: ./vendor/espeak-phonemes/
+        run: |
+          source "$HOME/emsdk/emsdk_env.sh"
+          npm install
+          npm run build
+
+      - name: Test (golden corpus + smoke + size budget)
+        working-directory: ./vendor/espeak-phonemes/
+        run: |
+          npm run test:golden
+          npm run test:smoke
+          npm run check-size
+
+      - name: Publish to Forgejo npm registry
+        working-directory: ./vendor/espeak-phonemes/
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#espeak-phonemes-v}"
+          npm version "${VERSION}" --no-git-tag-version
+          npm config set @jocelyn-stericker:registry https://slop.nettek.ca/api/packages/jocelyn-stericker/npm/
+          npm config set -- '//slop.nettek.ca/api/packages/jocelyn-stericker/npm/:_authToken' "${NPM_TOKEN}"
+          # Forgejo's npm registry has no overwrite: a successful PUT that npm
+          # retries (transient 5xx/429) re-PUTs and gets a spurious 409. Treat
+          # "version already present" as success so the retry can't fail the job.
+          if npm publish --loglevel silly; then
+            echo "published ${VERSION}"
+          elif npm view "@jocelyn-stericker/espeak-phonemes@${VERSION}" version >/dev/null 2>&1; then
+            echo "version ${VERSION} already present (likely a retried PUT) — treating as success"
+          else
+            echo "publish failed and ${VERSION} is not in the registry" >&2
+            exit 1
+          fi
+
+      - name: Dump npm debug log on failure
+        if: failure()
+        run: cat $(ls -t ~/.npm/_logs/*-debug-0.log | head -1)

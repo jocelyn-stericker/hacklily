@@ -1,0 +1,10 @@
+node_modules/
+dist/
+
+# Build artifacts produced by scripts/build.sh (published to npm, not committed)
+/espeak-phonemes.wasm
+/espeak-phonemes.js
+/espeak-ng-data.tar
+
+# npm publish leftovers
+*.tgz
