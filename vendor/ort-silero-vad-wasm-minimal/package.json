@@ -1,0 +1,6 @@
+{
+  "name": "@jocelyn-stericker/ort-silero-vad-wasm-minimal",
+  "version": "0.0.0",
+  "description": "Minimal ONNX Runtime WASM build with Silero VAD v5 model",
+  "license": "MIT"
+}

@@ -1,3 +1,6 @@
 [submodule "espeak-ng"]
 	path = vendor/espeak-phonemes/espeak-ng
 	url = https://github.com/espeak-ng/espeak-ng.git
+[submodule "onnxruntime"]
+	path = vendor/ort-silero-vad-wasm-minimal/onnxruntime
+	url = https://github.com/microsoft/onnxruntime.git

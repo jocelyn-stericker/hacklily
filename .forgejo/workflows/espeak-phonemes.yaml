@@ -1,7 +1,7 @@
 on:
   push:
     tags:
-      - "espeak-phonemes-v*.*.*"
+      - 'espeak-phonemes-v*.*.*'
 
 jobs:
   build-publish-espeak-phonemes:

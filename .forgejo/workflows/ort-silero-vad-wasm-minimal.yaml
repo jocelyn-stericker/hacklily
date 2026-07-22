@@ -1,0 +1,64 @@
+on:
+  push:
+    tags:
+      - 'ort-v*.*.*'
+jobs:
+  deploy-ort-silero-vad-wasm-minimal:
+    runs-on: faith
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: 'recursive'
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            git \
+            cmake \
+            ninja-build \
+            python3 \
+            build-essential \
+            cppcheck \
+            valgrind \
+            clang \
+            lldb \
+            llvm \
+            gdb \
+            python3-pip \
+            python3-flatbuffers \
+            nodejs \
+            npm
+          rm -rf /var/lib/apt/lists/*
+      - name: Build
+        working-directory: ./vendor/ort-silero-vad-wasm-minimal/onnxruntime/
+        run: |
+          ./build.sh \
+              --allow_running_as_root \
+              --config MinSizeRel \
+              --build_wasm \
+              --skip_tests \
+              --disable_wasm_exception_catching \
+              --enable_wasm_simd \
+              --enable_wasm_threads \
+              --include_ops_by_config ../silero_vad_v6_16k_op15.required_operators.config \
+              --enable_reduced_operator_type_support \
+              --target onnxruntime_webassembly \
+              --compile_no_warning_as_error \
+              --parallel \
+              --minimal_build
+      - name: Publish to Codeberg npm registry
+        working-directory: ./vendor/ort-silero-vad-wasm-minimal/
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          mkdir -p dist
+          cp onnxruntime/build/Linux/MinSizeRel/ort-wasm-simd-threaded.wasm dist/
+          cp onnxruntime/build/Linux/MinSizeRel/ort-wasm-simd-threaded.mjs dist/
+          cp silero_vad_v6_16k_op15.ort dist/
+          cp package.json dist/
+          cd dist
+          VERSION="${GITHUB_REF_NAME#ort-v}"
+          npm version "${VERSION}" --no-git-tag-version
+          npm config set @jocelyn-stericker:registry https://slop.nettek.ca/api/packages/jocelyn-stericker/npm/
+          npm config set -- '//slop.nettek.ca/api/packages/jocelyn-stericker/npm/:_authToken' "${NPM_TOKEN}"
+          npm publish
