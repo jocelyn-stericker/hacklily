@@ -53,12 +53,14 @@ jobs:
         run: echo "${{ secrets.SLOP_PACKAGES_TOKEN }}" | docker login slop.nettek.ca -u jocelyn-stericker --password-stdin
       - name: Push stable renderer
         run: |
+          VERSION="${GITHUB_REF_NAME#server-v}"
           docker push slop.nettek.ca/jocelyn-stericker/hacklily-renderer:latest
-          docker push slop.nettek.ca/jocelyn-stericker/hacklily-renderer:${{ github.ref_name }}
+          docker push slop.nettek.ca/jocelyn-stericker/hacklily-renderer:${VERSION}
       - name: Push unstable renderer
         run: |
+          VERSION="${GITHUB_REF_NAME#server-v}"
           docker push slop.nettek.ca/jocelyn-stericker/hacklily-renderer-unstable:latest
-          docker push slop.nettek.ca/jocelyn-stericker/hacklily-renderer-unstable:${{ github.ref_name }}
+          docker push slop.nettek.ca/jocelyn-stericker/hacklily-renderer-unstable:${VERSION}
       - name: Configure Forgejo Cargo registry
         working-directory: server/renderer-server
         run: |
