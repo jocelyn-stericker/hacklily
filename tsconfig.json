@@ -1,6 +1,6 @@
 {
   "include": ["**/*.ts", "**/*.tsx", "vite.config.js"],
-  "exclude": ["dist", "node_modules"],
+  "exclude": ["dist", "node_modules", "vendor"],
   "compilerOptions": {
     "target": "ES2022",
     "jsx": "react-jsx",
