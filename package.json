@@ -56,7 +56,7 @@
     "typescript": "^6.0.3",
     "vite": "^8.0.0",
     "vite-plugin-monaco-editor-esm": "^2.0.2",
-    "vitest": "^4.1.10",
+    "vitest": "^4.1.11",
     "webcola": "^3.4.0"
   },
   "scripts": {
